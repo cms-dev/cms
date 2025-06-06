@@ -170,11 +170,14 @@ class ScoringService(TriggeredService[ScoringOperation, ScoringExecutor]):
         self.enqueue(ScoringOperation(submission_id, dataset_id))
 
     @rpc_method
-    def invalidate_submission(self, submission_id: int | None = None,
-                              dataset_id: int | None = None,
-                              participation_id: int | None = None,
-                              task_id: int | None = None,
-                              contest_id: int | None = None):
+    def invalidate_submission(
+        self,
+        submission_id: int | None = None,
+        dataset_id: int | None = None,
+        participation_id: int | None = None,
+        task_id: int | None = None,
+        contest_id: int | None = None,
+    ):
         """Invalidate (and re-score) some submission results.
 
         Invalidate the scores of the submission results that:

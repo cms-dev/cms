@@ -36,6 +36,7 @@ import collections
 
 from cms.db.user import Participation
 from cms.server.util import Url
+
 try:
     collections.MutableMapping
 except:
@@ -278,7 +279,9 @@ class ContestHandler(BaseHandler):
             .offset(int(user_test_num) - 1) \
             .first()
 
-    def add_notification(self, subject: str, text: str, level: str, text_params: object | None = None):
+    def add_notification(
+        self, subject: str, text: str, level: str, text_params: object | None = None
+    ):
         subject = self._(subject)
         text = self._(text)
         if text_params is not None:
@@ -286,10 +289,14 @@ class ContestHandler(BaseHandler):
         self.service.add_notification(self.current_user.user.username,
                                       self.timestamp, subject, text, level)
 
-    def notify_success(self, subject: str, text: str, text_params: object | None = None):
+    def notify_success(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_SUCCESS, text_params)
 
-    def notify_warning(self, subject: str, text: str, text_params: object | None = None):
+    def notify_warning(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_WARNING, text_params)
 
     def notify_error(self, subject: str, text: str, text_params: object | None = None):

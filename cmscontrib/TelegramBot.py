@@ -103,6 +103,7 @@ def sqlalchemy_to_dict(obj: Base) -> dict:
 
 
 class TelegramBot:
+
     def __init__(self, chat_id: str, token: str, contest_id: int | None) -> None:
         self.chat_id = int(chat_id)
         self.contest_id = contest_id
@@ -288,7 +289,13 @@ class TelegramBot:
                 await self.application.updater.stop()
                 await self.application.stop()
 
-    async def _store(self, obj: dict, store: dict, directory: str, callback: Callable[[dict, dict], Awaitable[dict]]):
+    async def _store(
+        self,
+        obj: dict,
+        store: dict,
+        directory: str,
+        callback: Callable[[dict, dict], Awaitable[dict]],
+    ):
         existing = store.get(obj["id"], dict())
         has_changed = False
         for (k, v) in obj.items():
@@ -302,12 +309,18 @@ class TelegramBot:
             with open(os.path.join(directory, self.file_name(obj_id)), "w") as f:
                 f.write(yaml.safe_dump(obj))
 
-    async def store_question(self, question: dict, changed_callback: Callable[[dict, dict], Awaitable[dict]]):
+    async def store_question(
+        self, question: dict, changed_callback: Callable[[dict, dict], Awaitable[dict]]
+    ):
         await self._store(
             question, self.question_status, self.question_storage_dir, changed_callback
         )
 
-    async def store_announcement(self, announcement: dict, changed_callback: Callable[[dict, dict], Awaitable[dict]]):
+    async def store_announcement(
+        self,
+        announcement: dict,
+        changed_callback: Callable[[dict, dict], Awaitable[dict]],
+    ):
         await self._store(
             announcement,
             self.announcement_status,

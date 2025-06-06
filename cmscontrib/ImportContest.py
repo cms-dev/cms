@@ -60,9 +60,18 @@ class ContestImporter:
 
     """
 
-    def __init__(self, path: str, yes: bool, zero_time: bool, import_tasks: bool,
-                 update_contest: bool, update_tasks: bool, no_statements: bool,
-                 delete_stale_participations: bool, loader_class: type[ContestLoader]):
+    def __init__(
+        self,
+        path: str,
+        yes: bool,
+        zero_time: bool,
+        import_tasks: bool,
+        update_contest: bool,
+        update_tasks: bool,
+        no_statements: bool,
+        delete_stale_participations: bool,
+        loader_class: type[ContestLoader],
+    ):
         self.yes = yes
         self.zero_time = zero_time
         self.import_tasks = import_tasks
@@ -129,7 +138,9 @@ class ContestImporter:
         logger.info("Import finished (new contest id: %s).", contest_id)
         return True
 
-    def _contest_to_db(self, session: Session, new_contest: Contest, contest_has_changed: bool) -> Contest:
+    def _contest_to_db(
+        self, session: Session, new_contest: Contest, contest_has_changed: bool
+    ) -> Contest:
         """Add the new contest to the DB
 
         session: session to use.
@@ -143,8 +154,9 @@ class ContestImporter:
             the user did not ask to update any data.
 
         """
-        contest: Contest | None = session.query(Contest)\
-            .filter(Contest.name == new_contest.name).first()
+        contest: Contest | None = (
+            session.query(Contest).filter(Contest.name == new_contest.name).first()
+        )
 
         if contest is None:
             # Contest not present, we import it.
@@ -172,7 +184,9 @@ class ContestImporter:
 
         return contest
 
-    def _task_to_db(self, session: Session, contest: Contest, tasknum: int, taskname: str) -> Task:
+    def _task_to_db(
+        self, session: Session, contest: Contest, tasknum: int, taskname: str
+    ) -> Task:
         """Add the task to the DB and attach it to the contest
 
         session: session to use.
@@ -240,7 +254,9 @@ class ContestImporter:
         return task
 
     @staticmethod
-    def _participation_to_db(session: Session, contest: Contest, new_p: dict) -> Participation:
+    def _participation_to_db(
+        session: Session, contest: Contest, new_p: dict
+    ) -> Participation:
         """Add the new participation to the DB and attach it to the contest
 
         session: session to use.
@@ -255,16 +271,18 @@ class ContestImporter:
             - the team for this participation does not already exist in the DB.
 
         """
-        user: User | None = session.query(User)\
-            .filter(User.username == new_p["username"]).first()
+        user: User | None = (
+            session.query(User).filter(User.username == new_p["username"]).first()
+        )
         if user is None:
             # FIXME: it would be nice to automatically try to import.
             raise ImportDataError("User \"%s\" not found in database. "
                                   "Use cmsImportUser to import it." %
                                   new_p["username"])
 
-        team: Team | None = session.query(Team)\
-            .filter(Team.code == new_p.get("team")).first()
+        team: Team | None = (
+            session.query(Team).filter(Team.code == new_p.get("team")).first()
+        )
         if team is None and new_p.get("team") is not None:
             # FIXME: it would be nice to automatically try to import.
             raise ImportDataError("Team \"%s\" not found in database. "
@@ -272,10 +290,12 @@ class ContestImporter:
                                   % new_p.get("team"))
 
         # Check that the participation is not already defined.
-        p: Participation | None = session.query(Participation)\
-            .filter(Participation.user_id == user.id)\
-            .filter(Participation.contest_id == contest.id)\
+        p: Participation | None = (
+            session.query(Participation)
+            .filter(Participation.user_id == user.id)
+            .filter(Participation.contest_id == contest.id)
             .first()
+        )
         # FIXME: detect if some details of the participation have been updated
         # and thus the existing participation needs to be changed.
         if p is not None:
@@ -301,8 +321,9 @@ class ContestImporter:
         session.add(new_p)
         return new_p
 
-    def _delete_stale_participations(self, session: Session, contest: Contest,
-                                     usernames_to_keep: set[str]):
+    def _delete_stale_participations(
+        self, session: Session, contest: Contest, usernames_to_keep: set[str]
+    ):
         """Delete the stale participations.
 
         Stale participations are those in the contest, with a username not in

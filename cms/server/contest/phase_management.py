@@ -31,9 +31,17 @@ if typing.TYPE_CHECKING:
     from cms.server.contest.handlers.contest import ContestHandler
 
 
-def compute_actual_phase(timestamp: datetime, contest_start: datetime, contest_stop: datetime,
-                         analysis_start: datetime | None, analysis_stop: datetime | None, per_user_time: timedelta | None,
-                         starting_time: datetime | None, delay_time: timedelta, extra_time: timedelta) -> tuple[int, datetime | None, datetime | None, datetime | None, datetime | None]:
+def compute_actual_phase(
+    timestamp: datetime,
+    contest_start: datetime,
+    contest_stop: datetime,
+    analysis_start: datetime | None,
+    analysis_stop: datetime | None,
+    per_user_time: timedelta | None,
+    starting_time: datetime | None,
+    delay_time: timedelta,
+    extra_time: timedelta,
+) -> tuple[int, datetime | None, datetime | None, datetime | None, datetime | None]:
     """Determine the current phase and when the active phase is.
 
     The "actual phase" of the contest for a certain user is the status
@@ -203,10 +211,13 @@ def actual_phase_required(*actual_phases: int):
 
     """
 
-    _P = typing.ParamSpec('_P')
-    _R = typing.TypeVar('_R')
-    _Self = typing.TypeVar('_Self', bound="ContestHandler")
-    def decorator(func: Callable[typing.Concatenate[_Self, _P], _R]) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
+    _P = typing.ParamSpec("_P")
+    _R = typing.TypeVar("_R")
+    _Self = typing.TypeVar("_Self", bound="ContestHandler")
+
+    def decorator(
+        func: Callable[typing.Concatenate[_Self, _P], _R],
+    ) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
         @wraps(func)
         def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
             if self.r_params["actual_phase"] not in actual_phases and \
@@ -216,5 +227,7 @@ def actual_phase_required(*actual_phases: int):
                 self.redirect(self.contest_url())
             else:
                 return func(self, *args, **kwargs)
+
         return wrapped
+
     return decorator

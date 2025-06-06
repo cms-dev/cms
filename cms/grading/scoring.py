@@ -44,8 +44,9 @@ SubmissionScoreDelta = namedtuple(
      'old_ranking_score_details', 'new_ranking_score_details'])
 
 
-def compute_changes_for_dataset(old_dataset: Dataset,
-                                new_dataset: Dataset) -> list[SubmissionScoreDelta]:
+def compute_changes_for_dataset(
+    old_dataset: Dataset, new_dataset: Dataset
+) -> list[SubmissionScoreDelta]:
     """This function will compute the differences expected when changing from
     one dataset to another.
 
@@ -101,9 +102,14 @@ def compute_changes_for_dataset(old_dataset: Dataset,
 
 # Computing global scores (for ranking).
 
-def task_score(participation: Participation, task: Task,
-               public: bool = False, only_tokened: bool = False,
-               rounded: bool = False) -> tuple[float, bool]:
+
+def task_score(
+    participation: Participation,
+    task: Task,
+    public: bool = False,
+    only_tokened: bool = False,
+    rounded: bool = False,
+) -> tuple[float, bool]:
     """Return the score of a contest's user on a task.
 
     participation: the user and contest for which to
@@ -176,7 +182,9 @@ def task_score(participation: Participation, task: Task,
     return score, partial
 
 
-def _task_score_max_tokened_last(score_details_tokened: list[tuple[float | None, object | None, bool]]) -> float:
+def _task_score_max_tokened_last(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max tokened last" score mode.
 
     This was used in IOI 2010-2012. The score of a participant on a task is
@@ -208,7 +216,9 @@ def _task_score_max_tokened_last(score_details_tokened: list[tuple[float | None,
     return max(last_score, max_tokened_score)
 
 
-def _task_score_max_subtask(score_details_tokened: list[tuple[float | None, object | None, bool]]) -> float:
+def _task_score_max_subtask(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max subtask" score mode.
 
     This has been used in IOI since 2017. The score of a participant on a
@@ -256,7 +266,9 @@ def _task_score_max_subtask(score_details_tokened: list[tuple[float | None, obje
     return sum(max_scores.values())
 
 
-def _task_score_max(score_details_tokened: list[tuple[float | None, object | None, bool]]) -> float:
+def _task_score_max(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max" score mode.
 
     This was used in IOI 2013-2016. The score of a participant on a task is

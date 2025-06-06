@@ -37,6 +37,7 @@ import gevent.socket
 
 from cms import ServiceCoord, Address, ConfigError, async_config, config
 import typing
+
 if typing.TYPE_CHECKING:
     from cms.io.service import Service
 
@@ -190,10 +191,12 @@ def get_service_shards(service: str) -> int:
             return i
 
 
-_ServiceT = typing.TypeVar('_ServiceT', bound="Service")
-def default_argument_parser(description: str,
-                            cls: type[_ServiceT],
-                            ask_contest: Callable[[], int] | None = None) -> _ServiceT:
+_ServiceT = typing.TypeVar("_ServiceT", bound="Service")
+
+
+def default_argument_parser(
+    description: str, cls: type[_ServiceT], ask_contest: Callable[[], int] | None = None
+) -> _ServiceT:
     """Default argument parser for services.
 
     This has two versions, depending on whether the service needs a
@@ -238,8 +241,9 @@ def default_argument_parser(description: str,
         return cls(args.shard, contest_id)
 
 
-def contest_id_from_args(args_contest_id: int | str | None,
-                         ask_contest: Callable[[], int]) -> int | None:
+def contest_id_from_args(
+    args_contest_id: int | str | None, ask_contest: Callable[[], int]
+) -> int | None:
     """Return a valid contest_id from the arguments or None if multicontest
     mode should be used
 

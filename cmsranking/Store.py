@@ -35,7 +35,9 @@ logger = logging.getLogger(__name__)
 LOCK = RLock()
 
 
-EntityT = TypeVar('EntityT', bound=Entity)
+EntityT = TypeVar("EntityT", bound=Entity)
+
+
 class Store(Generic[EntityT]):
     """A store for entities.
 
@@ -47,7 +49,13 @@ class Store(Generic[EntityT]):
     callbacks.
 
     """
-    def __init__(self, entity: type[EntityT], path: str, all_stores: dict[str, "Store"], depends: list["Store"] | None = None):
+    def __init__(
+        self,
+        entity: type[EntityT],
+        path: str,
+        all_stores: dict[str, "Store"],
+        depends: list["Store"] | None = None,
+    ):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind

@@ -38,6 +38,7 @@ from cms.db import SessionGen
 from cms.grading.Job import JobGroup
 from cmscommon.datetime import make_datetime, make_timestamp
 from cms.service.esoperations import ESOperation
+
 if typing.TYPE_CHECKING:
     from cms.service.EvaluationService import EvaluationService
 
@@ -264,8 +265,12 @@ class WorkerPool:
         else:
             return ret
 
-    def find_worker(self, operation: ESOperation | str | None, require_connection: bool = False,
-                    random_worker: bool = False) -> int:
+    def find_worker(
+        self,
+        operation: ESOperation | str | None,
+        require_connection: bool = False,
+        random_worker: bool = False,
+    ) -> int:
         """Return a worker whose assigned operation is operation.
 
         Remember that there is a placeholder operation to signal that the

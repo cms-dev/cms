@@ -123,7 +123,9 @@ def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
     return outcome, [text]
 
 
-def trusted_step(sandbox: Sandbox, commands: list[list[str]]) -> tuple[bool, bool | None, StatsDict | None]:
+def trusted_step(
+    sandbox: Sandbox, commands: list[list[str]]
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Execute some trusted commands in the sandbox.
 
     Even if the commands are trusted, we use the sandbox to limit the resources
@@ -182,8 +184,13 @@ def trusted_step(sandbox: Sandbox, commands: list[list[str]]) -> tuple[bool, boo
         return False, None, None
 
 
-def checker_step(sandbox: Sandbox, checker_digest: str | None, input_digest: str,
-                 correct_output_digest: str, output_filename: str) -> tuple[bool, float | None, list[str] | None]:
+def checker_step(
+    sandbox: Sandbox,
+    checker_digest: str | None,
+    input_digest: str,
+    correct_output_digest: str,
+    output_filename: str,
+) -> tuple[bool, float | None, list[str] | None]:
     """Run the explicit checker given by the admins
 
     sandbox: the sandbox to run the checker in; should already

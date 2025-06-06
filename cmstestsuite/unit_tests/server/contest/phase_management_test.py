@@ -58,8 +58,17 @@ TEST_STEPS = \
     [timedelta(hours=t) for t in (1, 3, 6, 12, 24)]
 
 
-def test(contest_start: str, contest_stop: str, analysis_start: str, analysis_end: str,
-         per_user_time: str | None, starting_time: str | None, delay_time: str, extra_time: str, intervals: tuple):
+def test(
+    contest_start: str,
+    contest_stop: str,
+    analysis_start: str,
+    analysis_end: str,
+    per_user_time: str | None,
+    starting_time: str | None,
+    delay_time: str,
+    extra_time: str,
+    intervals: tuple,
+):
     """Helper to test compute_actual_phase.
 
     It takes all the parameters accepted by compute_actual_phase (with
@@ -162,6 +171,7 @@ def test(contest_start: str, contest_stop: str, analysis_start: str, analysis_en
                     "Check on %s returned %s instead of %s" % (
                         end - step, res, (status, begin, end,
                                           valid_begin, valid_end))
+
 
 # Tell pytest not to collect the "test" function as test
 test.__test__ = False

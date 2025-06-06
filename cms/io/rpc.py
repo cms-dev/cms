@@ -38,6 +38,7 @@ import gevent.socket
 
 from cms.conf import Address, ServiceCoord
 from cms.util import get_service_address
+
 if typing.TYPE_CHECKING:
     from cms.io.service import Service
 
@@ -50,7 +51,9 @@ class RPCError(Exception):
     pass
 
 
-_T = typing.TypeVar('_T', bound=Callable)
+_T = typing.TypeVar("_T", bound=Callable)
+
+
 def rpc_method(func: _T) -> _T:
     """Decorator for a method that other services are allowed to call.
 
@@ -442,7 +445,9 @@ class RemoteServiceClient(RemoteServiceBase):
     the reader loop should be started by calling run.
 
     """
-    def __init__(self, remote_service_coord: ServiceCoord, auto_retry: float | None = None):
+    def __init__(
+        self, remote_service_coord: ServiceCoord, auto_retry: float | None = None
+    ):
         """Create a caller for the service at the given coords.
 
         remote_service_coord: the coordinates (i.e. name
@@ -634,7 +639,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         # Encode it.
         try:
-            data_encoded = json.dumps(request).encode('utf-8')
+            data_encoded = json.dumps(request).encode("utf-8")
         except (TypeError, ValueError):
             logger.error("JSON encoding failed.", exc_info=True)
             result.set_exception(RPCError("JSON encoding failed."))
@@ -671,7 +676,10 @@ class RemoteServiceClient(RemoteServiceBase):
         return (function): a proxy to a RPC.
 
         """
-        def run_callback(func: Callable, plus: object, result: gevent.event.AsyncResult):
+
+        def run_callback(
+            func: Callable, plus: object, result: gevent.event.AsyncResult
+        ):
             """Execute the given callback safely.
 
             Get data and/or error from result and call func passing it

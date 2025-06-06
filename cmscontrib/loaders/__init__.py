@@ -25,15 +25,20 @@ from .tps import TpsTaskLoader
 
 
 LOADERS: dict[str, type[BaseLoader]] = dict(
-    (loader_class.short_name, loader_class) for loader_class in [
+    (loader_class.short_name, loader_class)
+    for loader_class in [
         YamlLoader,
-        PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader,
-        TpsTaskLoader
+        PolygonTaskLoader,
+        PolygonUserLoader,
+        PolygonContestLoader,
+        TpsTaskLoader,
     ]
 )
 
 
-def choose_loader(arg: str | None, path: str, error_callback: Callable[[str], typing.NoReturn]) -> type[BaseLoader]:
+def choose_loader(
+    arg: str | None, path: str, error_callback: Callable[[str], typing.NoReturn]
+) -> type[BaseLoader]:
     """Decide which loader to use.
 
     The choice depends upon the specified argument and possibly

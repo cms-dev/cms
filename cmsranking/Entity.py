@@ -18,6 +18,7 @@
 
 
 import typing
+
 if typing.TYPE_CHECKING:
     from cmsranking.Store import Store
 
@@ -38,7 +39,8 @@ class Entity:
     Provide some virtual methods that other classes should implement.
 
     """
-    key: str # Will be set by the Store managing this entity
+    key: str  # Will be set by the Store managing this entity
+
     def set(self, data: dict):
         """Set all properties using the given data.
 

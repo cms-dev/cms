@@ -46,10 +46,12 @@ from cms.db.usertest import UserTest
 
 
 def _filter_submission_query(
-        q: Query,
-        participation: Participation,
-        contest: Contest | None,
-        task: Task | None, cls: type[Submission | UserTest]) -> Query:
+    q: Query,
+    participation: Participation,
+    contest: Contest | None,
+    task: Task | None,
+    cls: type[Submission | UserTest],
+) -> Query:
     """Filter a query for submissions by participation, contest, task.
 
     Apply to the given query some filters that narrow down the set of
@@ -81,11 +83,12 @@ def _filter_submission_query(
 
 
 def get_submission_count(
-        sql_session: Session,
-        participation: Participation,
-        contest: Contest | None = None,
-        task: Task | None = None,
-        cls: type[Submission | UserTest] = Submission) -> int:
+    sql_session: Session,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> int:
     """Return the number of submissions the contestant sent in.
 
     Count the submissions (or user tests) for the given participation
@@ -107,12 +110,13 @@ def get_submission_count(
 
 
 def check_max_number(
-        sql_session: Session,
-        max_number: int | None,
-        participation: Participation,
-        contest: Contest | None = None,
-        task: Task | None = None,
-        cls: type[Submission | UserTest] = Submission) -> bool:
+    sql_session: Session,
+    max_number: int | None,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> bool:
     """Check whether user already sent in given number of submissions.
 
     Verify whether the given participation did already hit the given
@@ -140,11 +144,12 @@ def check_max_number(
 
 
 def get_latest_submission(
-        sql_session: Session,
-        participation: Participation,
-        contest: Contest | None = None,
-        task: Task | None = None,
-        cls: type[Submission | UserTest] = Submission) -> Submission | UserTest | None:
+    sql_session: Session,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> Submission | UserTest | None:
     """Return the most recent submission the contestant sent in.
 
     Retrieve the submission (or user test) with the latest timestamp
@@ -169,13 +174,14 @@ def get_latest_submission(
 
 
 def check_min_interval(
-        sql_session: Session,
-        min_interval: timedelta | None,
-        timestamp: datetime,
-        participation: Participation,
-        contest: Contest | None = None,
-        task: Task | None = None,
-        cls: type[Submission | UserTest] = Submission) -> bool:
+    sql_session: Session,
+    min_interval: timedelta | None,
+    timestamp: datetime,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> bool:
     """Check whether user sent in latest submission long enough ago.
 
     Verify whether at least the given amount of time has passed since

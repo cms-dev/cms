@@ -36,8 +36,19 @@ testcase".
 import logging
 from typing import Self
 
-from cms.db import Dataset, Evaluation, Executable, File, Manager, Submission, \
-    UserTest, UserTestExecutable, Contest, SubmissionResult, UserTestResult
+from cms.db import (
+    Dataset,
+    Evaluation,
+    Executable,
+    File,
+    Manager,
+    Submission,
+    UserTest,
+    UserTestExecutable,
+    Contest,
+    SubmissionResult,
+    UserTestResult,
+)
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
 
@@ -67,15 +78,23 @@ class Job:
 
     """
 
-    def __init__(self, operation: ESOperation | None = None,
-                 task_type: str | None = None, task_type_parameters: object = None,
-                 language: str | None = None, multithreaded_sandbox: bool = False,
-                 shard: int | None = None, keep_sandbox: bool = False,
-                 sandboxes: list[str] | None = None, info: str | None = None,
-                 success: bool | None = None, text: list[str] | None = None,
-                 files: dict[str, File] | None = None,
-                 managers: dict[str, Manager] | None = None,
-                 executables: dict[str, Executable] | None = None):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        info: str | None = None,
+        success: bool | None = None,
+        text: list[str] | None = None,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        executables: dict[str, Executable] | None = None,
+    ):
         """Initialization.
 
         operation: the operation.
@@ -192,7 +211,9 @@ class Job:
         return cls(**data)
 
     @staticmethod
-    def from_operation(operation: ESOperation, object_: Submission | UserTest, dataset: Dataset) -> "Job":
+    def from_operation(
+        operation: ESOperation, object_: Submission | UserTest, dataset: Dataset
+    ) -> "Job":
         """Produce the job for the operation in the argument.
 
         Return the Job object that has to be sent to Workers to have
@@ -245,22 +266,25 @@ class CompilationJob(Job):
 
     """
 
-    def __init__(self, operation: ESOperation | None = None,
-                 task_type: str | None = None,
-                 task_type_parameters: object = None,
-                 shard: int | None = None,
-                 keep_sandbox: bool = False,
-                 sandboxes: list[str] | None = None,
-                 info: str | None = None,
-                 language: str | None = None,
-                 multithreaded_sandbox: bool = False,
-                 files: dict[str, File] | None = None,
-                 managers: dict[str, Manager] | None = None,
-                 success: bool | None = None,
-                 compilation_success: bool | None = None,
-                 executables: dict[str, Executable] | None = None,
-                 text: list[str] | None = None,
-                 plus: dict | None = None):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        info: str | None = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        success: bool | None = None,
+        compilation_success: bool | None = None,
+        executables: dict[str, Executable] | None = None,
+        text: list[str] | None = None,
+        plus: dict | None = None,
+    ):
         """Initialization.
 
         See base class for the remaining arguments.
@@ -288,7 +312,9 @@ class CompilationJob(Job):
         return res
 
     @staticmethod
-    def from_submission(operation: ESOperation, submission: Submission, dataset: Dataset) -> "CompilationJob":
+    def from_submission(
+        operation: ESOperation, submission: Submission, dataset: Dataset
+    ) -> "CompilationJob":
         """Create a CompilationJob from a submission.
 
         operation: a COMPILATION operation.
@@ -346,7 +372,9 @@ class CompilationJob(Job):
             sr.executables.set(executable)
 
     @staticmethod
-    def from_user_test(operation: ESOperation, user_test: UserTest, dataset: Dataset) -> "CompilationJob":
+    def from_user_test(
+        operation: ESOperation, user_test: UserTest, dataset: Dataset
+    ) -> "CompilationJob":
         """Create a CompilationJob from a user test.
 
         operation: a USER_TEST_COMPILATION operation.
@@ -449,29 +477,32 @@ class EvaluationJob(Job):
     only_execution, get_output.
 
     """
-    def __init__(self, operation: ESOperation | None = None,
-                 task_type: str | None = None,
-                 task_type_parameters: object = None,
-                 shard: int | None = None,
-                 keep_sandbox: bool = False,
-                 sandboxes: list[str] | None = None,
-                 info: str | None = None,
-                 language: str | None = None,
-                 multithreaded_sandbox: bool = False,
-                 files: dict[str, File] | None = None,
-                 managers: dict[str, Manager] | None = None,
-                 executables: dict[str, Executable] | None = None,
-                 input: str | None = None,
-                 output: str | None = None,
-                 time_limit: float | None = None,
-                 memory_limit: int | None = None,
-                 success: bool | None = None,
-                 outcome: str | None = None,
-                 text: list[str] | None = None,
-                 user_output: str | None = None,
-                 plus: dict | None = None,
-                 only_execution: bool | None = False,
-                 get_output: bool | None = False):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        info: str | None = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        executables: dict[str, Executable] | None = None,
+        input: str | None = None,
+        output: str | None = None,
+        time_limit: float | None = None,
+        memory_limit: int | None = None,
+        success: bool | None = None,
+        outcome: str | None = None,
+        text: list[str] | None = None,
+        user_output: str | None = None,
+        plus: dict | None = None,
+        only_execution: bool | None = False,
+        get_output: bool | None = False,
+    ):
         """Initialization.
 
         See base class for the remaining arguments.
@@ -525,7 +556,9 @@ class EvaluationJob(Job):
         return res
 
     @staticmethod
-    def from_submission(operation: ESOperation, submission: Submission, dataset: Dataset) -> "EvaluationJob":
+    def from_submission(
+        operation: ESOperation, submission: Submission, dataset: Dataset
+    ) -> "EvaluationJob":
         """Create an EvaluationJob from a submission.
 
         operation: an EVALUATION operation.
@@ -590,7 +623,9 @@ class EvaluationJob(Job):
             testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
-    def from_user_test(operation: ESOperation, user_test: UserTest, dataset: Dataset) -> "EvaluationJob":
+    def from_user_test(
+        operation: ESOperation, user_test: UserTest, dataset: Dataset
+    ) -> "EvaluationJob":
         """Create an EvaluationJob from a user test.
 
         operation: an USER_TEST_EVALUATION operation.

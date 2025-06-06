@@ -66,7 +66,9 @@ class RPCMiddleware:
     string describing the error that occured (if any).
 
     """
-    def __init__(self, service: Service, auth: Callable[[str, int, str], bool] | None = None):
+    def __init__(
+        self, service: Service, auth: Callable[[str, int, str], bool] | None = None
+    ):
         """Create an HTTP-to-RPC proxy for the given service.
 
         service: the service this application is running for.

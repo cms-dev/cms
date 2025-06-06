@@ -59,7 +59,9 @@ class ProcessMatcher:
         # Running processes, lazily loaded.
         self._procs: dict[str, dict[int | None, psutil.Process]] | None = None
 
-    def find(self, service: ServiceCoord, cpu_times: dict[ServiceCoord, object] | None = None) -> psutil.Process | None:
+    def find(
+        self, service: ServiceCoord, cpu_times: dict[ServiceCoord, object] | None = None
+    ) -> psutil.Process | None:
         """Returns the pid of a given service running on this machine.
 
         service: the service we are interested in.
@@ -96,7 +98,9 @@ class ProcessMatcher:
                 continue
 
     @staticmethod
-    def _get_interesting_running_processes() -> dict[str, dict[int | None, psutil.Process]]:
+    def _get_interesting_running_processes() -> (
+        dict[str, dict[int | None, psutil.Process]]
+    ):
         """Return the processes that might be CMS services
 
         return: maps service names to a map from shards to the corresponding process.
@@ -112,7 +116,9 @@ class ProcessMatcher:
         return ret
 
     @staticmethod
-    def _is_interesting_command_line(cmdline: list[str]) -> tuple[str, int | None] | None:
+    def _is_interesting_command_line(
+        cmdline: list[str],
+    ) -> tuple[str, int | None] | None:
         """Returns if cmdline can be the command line of a service.
 
         cmdline: a command line.
@@ -159,7 +165,9 @@ class ResourceService(Service):
     upon request.
 
     """
-    def __init__(self, shard: int, contest_id: int | None = None, autorestart: bool = False):
+    def __init__(
+        self, shard: int, contest_id: int | None = None, autorestart: bool = False
+    ):
         """If contest_id is not None, we assume the user wants the
         autorestart feature.
 

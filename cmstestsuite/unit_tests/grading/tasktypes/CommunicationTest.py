@@ -339,7 +339,9 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.assertEqual(job.text, text)
         self.assertEqual(job.plus, stats)
 
-    def _set_evaluation_step_return_values(self, sandbox_to_return_value: dict[Sandbox | MagicMock, object]):
+    def _set_evaluation_step_return_values(
+        self, sandbox_to_return_value: dict[Sandbox | MagicMock, object]
+    ):
         """Set the return value of evaluation_step_after_run for each sandbox.
 
         sandbox_to_return_value: map from the

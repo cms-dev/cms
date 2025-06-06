@@ -104,8 +104,8 @@ def safe_put_data(ranking: str, resource: str, data: dict, operation: str):
 def safe_url(url: str) -> str:
     """Return a sanitized URL without sensitive information.
 
-       url: the URL to sanitize.
-       return: sanitized URL.
+    url: the URL to sanitize.
+    return: sanitized URL.
 
     """
     parts = urlsplit(url)
@@ -115,6 +115,7 @@ def safe_url(url: str) -> str:
 
 
 class ProxyOperation(QueueItem):
+
     def __init__(self, type_: int, data: dict):
         self.type_ = type_
         self.data = data

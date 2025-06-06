@@ -28,6 +28,7 @@ import logging
 
 from sqlalchemy import func
 import typing
+
 if typing.TYPE_CHECKING:
     from tornado.httputil import HTTPFile
 
@@ -62,7 +63,13 @@ class UnacceptablePrintJob(Exception):
         self.text_params = text_params
 
 
-def accept_print_job(sql_session: Session, file_cacher: FileCacher, participation: Participation, timestamp: datetime, files: dict[str, list["HTTPFile"]]) -> PrintJob:
+def accept_print_job(
+    sql_session: Session,
+    file_cacher: FileCacher,
+    participation: Participation,
+    timestamp: datetime,
+    files: dict[str, list["HTTPFile"]],
+) -> PrintJob:
     """Add a print job to the database.
 
     This function receives the values that a contestant provides to CWS

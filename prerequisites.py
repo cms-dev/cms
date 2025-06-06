@@ -56,7 +56,13 @@ NO_CONF: bool = False
 CMSUSER: str = "cmsuser"
 
 
-def copyfile(src: str, dest: str, owner: pwd.struct_passwd, perm: int, group: grp.struct_group | None = None):
+def copyfile(
+    src: str,
+    dest: str,
+    owner: pwd.struct_passwd,
+    perm: int,
+    group: grp.struct_group | None = None,
+):
     """Copy the file src to dest, and assign owner and permissions.
 
     src: the complete path of the source file.
@@ -93,7 +99,9 @@ def try_delete(path: str):
             print("[Warning] File not found: ", path)
 
 
-def makedir(dir_path: str, owner: pwd.struct_passwd | None = None, perm: int | None = None):
+def makedir(
+    dir_path: str, owner: pwd.struct_passwd | None = None, perm: int | None = None
+):
     """Create a directory with given owner and permission.
 
     dir_path: the new directory to create.
@@ -109,7 +117,13 @@ def makedir(dir_path: str, owner: pwd.struct_passwd | None = None, perm: int | N
         os.chown(dir_path, owner.pw_uid, owner.pw_gid)
 
 
-def copytree(src_path: str, dest_path: str, owner: pwd.struct_passwd, perm_files: int, perm_dirs: int):
+def copytree(
+    src_path: str,
+    dest_path: str,
+    owner: pwd.struct_passwd,
+    perm_files: int,
+    perm_dirs: int,
+):
     """Copy the *content* of src_path in dest_path, assigning the
     given owner and permissions.
 

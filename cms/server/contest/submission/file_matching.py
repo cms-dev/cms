@@ -68,7 +68,9 @@ def _match_filename(filename: str, language: Language | None, element: str) -> b
     return any(filename == base + ext for ext in language.source_extensions)
 
 
-def _match_extension(filename: str | None, language: Language | None, element: str) -> bool:
+def _match_extension(
+    filename: str | None, language: Language | None, element: str
+) -> bool:
     """Ensure filename is compatible with element w.r.t. the extension.
 
     Return whether the filename (if given) matches the language-specific
@@ -88,7 +90,12 @@ def _match_extension(filename: str | None, language: Language | None, element: s
     return any(filename.endswith(ext) for ext in language.source_extensions)
 
 
-def _match_file(codename: str | None, filename: str | None, language: Language | None, submission_format: set[str]) -> str:
+def _match_file(
+    codename: str | None,
+    filename: str | None,
+    language: Language | None,
+    submission_format: set[str],
+) -> str:
     """Figure out what element of the submission format a file is for.
 
     Return our best guess for which element of the submission format
@@ -135,7 +142,11 @@ def _match_file(codename: str | None, filename: str | None, language: Language |
         % (codename, filename))
 
 
-def _match_files(given_files: list[ReceivedFile], language: Language | None, submission_format: set[str]) -> dict[str, bytes]:
+def _match_files(
+    given_files: list[ReceivedFile],
+    language: Language | None,
+    submission_format: set[str],
+) -> dict[str, bytes]:
     """Fit the given files into the given submission format.
 
     Figure out, for all of the given files, which element of the
@@ -171,10 +182,12 @@ class InvalidFilesOrLanguage(Exception):
     pass
 
 
-def match_files_and_language(given_files: list[ReceivedFile],
-                             given_language_name: str | None,
-                             submission_format: set[str],
-                             allowed_language_names: list[str] | None) -> tuple[dict[str, bytes], Language | None]:
+def match_files_and_language(
+    given_files: list[ReceivedFile],
+    given_language_name: str | None,
+    submission_format: set[str],
+    allowed_language_names: list[str] | None,
+) -> tuple[dict[str, bytes], Language | None]:
     """Figure out what the given files are and which language they're in.
 
     Take a set of files and a set of languages that these files are

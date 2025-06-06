@@ -163,7 +163,11 @@ class EvaluationExecutor(Executor[ESOperation]):
                 item_entry = item.to_dict()
                 del item_entry["testcase_codename"]
                 item_entry["multiplicity"] = 1
-                entry: QueueEntryDict = {"item": item_entry, "priority": priority, "timestamp": make_timestamp(timestamp)}
+                entry: QueueEntryDict = {
+                    "item": item_entry,
+                    "priority": priority,
+                    "timestamp": make_timestamp(timestamp),
+                }
                 self.queue_status_cumulative[key] = entry
         return success
 
@@ -406,7 +410,9 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
         return True
 
     @with_post_finish_lock
-    def enqueue(self, operation: ESOperation, priority: int, timestamp: datetime) -> bool:
+    def enqueue(
+        self, operation: ESOperation, priority: int, timestamp: datetime
+    ) -> bool:
         """Push an operation in the queue.
 
         Push an operation in the operation queue if the submission is
@@ -494,8 +500,9 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
         # Reorganize the results by submission/usertest result and
         # operation type (i.e., group together the testcase
         # evaluations for the same submission and dataset).
-        by_object_and_type: defaultdict[tuple[str, int, int],
-                                        list[tuple[ESOperation, Result]]]
+        by_object_and_type: defaultdict[
+            tuple[str, int, int], list[tuple[ESOperation, Result]]
+        ]
         by_object_and_type = defaultdict(list)
         for operation, result in items:
             t = (operation.type_, operation.object_id, operation.dataset_id)
@@ -576,9 +583,11 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
         logger.info("Done")
 
     def write_results_one_object_and_type(
-            self, session: Session,
-            object_result: SubmissionResult | UserTestResult,
-            operation_results: list[tuple[ESOperation, Result]]):
+        self,
+        session: Session,
+        object_result: SubmissionResult | UserTestResult,
+        operation_results: list[tuple[ESOperation, Result]],
+    ):
         """Write to the DB the results for one object and type.
 
         session: the DB session to use.
@@ -607,9 +616,13 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
                     "Unexpected exception while inserting worker result.",
                     exc_info=True)
 
-    def write_results_one_row(self, session: Session,
-            object_result: SubmissionResult | UserTestResult,
-            operation: ESOperation, result: Result):
+    def write_results_one_row(
+        self,
+        session: Session,
+        object_result: SubmissionResult | UserTestResult,
+        operation: ESOperation,
+        result: Result,
+    ):
         """Write to the DB a single result.
 
         session: the DB session to use.
@@ -866,13 +879,15 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
 
     @rpc_method
     @with_post_finish_lock
-    def invalidate_submission(self,
-                              contest_id: int | None = None,
-                              submission_id: int | None = None,
-                              dataset_id: int | None = None,
-                              participation_id: int | None = None,
-                              task_id: int | None = None,
-                              level: str = "compilation"):
+    def invalidate_submission(
+        self,
+        contest_id: int | None = None,
+        submission_id: int | None = None,
+        dataset_id: int | None = None,
+        participation_id: int | None = None,
+        task_id: int | None = None,
+        level: str = "compilation",
+    ):
         """Request to invalidate some computed data.
 
         Invalidate the compilation and/or evaluation data of the
@@ -919,10 +934,15 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
             submissions: list[Submission] = get_submissions(
                 session,
                 # Give contest_id only if all others are None.
-                contest_id
-                if {participation_id, task_id, submission_id} == {None}
-                else None,
-                participation_id, task_id, submission_id).all()
+                (
+                    contest_id
+                    if {participation_id, task_id, submission_id} == {None}
+                    else None
+                ),
+                participation_id,
+                task_id,
+                submission_id,
+            ).all()
 
             # Then we get all relevant operations, and we remove them
             # both from the queue and from the pool (i.e., we ignore
@@ -944,17 +964,18 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
             submission_results: list[SubmissionResult] = get_submission_results(
                 session,
                 # Give contest_id only if all others are None.
-                contest_id
-                if {participation_id,
-                    task_id,
-                    submission_id,
-                    dataset_id} == {None}
-                else None,
+                (
+                    contest_id
+                    if {participation_id, task_id, submission_id, dataset_id} == {None}
+                    else None
+                ),
                 participation_id,
                 # Provide the task_id only if the entire task has to be
                 # reevaluated and not only a specific dataset.
                 task_id if dataset_id is None else None,
-                submission_id, dataset_id).all()
+                submission_id,
+                dataset_id,
+            ).all()
             logger.info("Submission results to invalidate %s for: %d.",
                         level, len(submission_results))
             for submission_result in submission_results:

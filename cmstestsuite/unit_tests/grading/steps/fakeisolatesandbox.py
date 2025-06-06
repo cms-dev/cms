@@ -44,9 +44,18 @@ class FakeIsolateSandbox(IsolateSandbox):
         assert isinstance(content, bytes)
         self._fake_files[path] = content
 
-    def fake_execute_data(self, success: bool, stdout: bytes, stderr: bytes,
-                          time: float, wall_time: float, memory: int, exit_status: str,
-                          signal: int | None = None, message: str | None = None):
+    def fake_execute_data(
+        self,
+        success: bool,
+        stdout: bytes,
+        stderr: bytes,
+        time: float,
+        wall_time: float,
+        memory: int,
+        exit_status: str,
+        signal: int | None = None,
+        message: str | None = None,
+    ):
         """Set the fake data for the corresponding execution.
 
         Can be called multiple times, and this allows the system under test

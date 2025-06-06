@@ -49,8 +49,18 @@ def N_(msgid):
     return msgid
 
 
-def _tokens_available(mode: str, gen_initial: int, gen_number: int, gen_interval: timedelta, gen_max: int | None,
-                      max_number: int | None, min_interval: timedelta, start: datetime, history: list[datetime], timestamp: datetime) -> tuple[int, datetime | None, datetime | None]:
+def _tokens_available(
+    mode: str,
+    gen_initial: int,
+    gen_number: int,
+    gen_interval: timedelta,
+    gen_max: int | None,
+    max_number: int | None,
+    min_interval: timedelta,
+    start: datetime,
+    history: list[datetime],
+    timestamp: datetime,
+) -> tuple[int, datetime | None, datetime | None]:
     """Return the same as tokens_available, on one set of parameters.
 
     Compute the same three values as tokens_available but taking into
@@ -166,7 +176,9 @@ def _tokens_available(mode: str, gen_initial: int, gen_number: int, gen_interval
     return avail, next_gen_time, expiration
 
 
-def tokens_available(participation: Participation, task: Task, timestamp: datetime) -> tuple[int, datetime | None, datetime | None]:
+def tokens_available(
+    participation: Participation, task: Task, timestamp: datetime
+) -> tuple[int, datetime | None, datetime | None]:
     """Return three pieces of data:
 
     [0] the number of available tokens the user can play on the task
@@ -221,13 +233,15 @@ def tokens_available(participation: Participation, task: Task, timestamp: dateti
     assert task.contest is contest
 
     # Take the list of the tokens already played (sorted by time).
-    token_timestamps: list[tuple[datetime, int]] = participation.sa_session \
-        .query(Token.timestamp, Submission.task_id) \
-        .select_from(Token) \
-        .filter(Token.timestamp <= timestamp) \
-        .join(Submission) \
-        .filter(Submission.participation == participation) \
-        .order_by(Token.timestamp).all()
+    token_timestamps: list[tuple[datetime, int]] = (
+        participation.sa_session.query(Token.timestamp, Submission.task_id)
+        .select_from(Token)
+        .filter(Token.timestamp <= timestamp)
+        .join(Submission)
+        .filter(Submission.participation == participation)
+        .order_by(Token.timestamp)
+        .all()
+    )
 
     contest_history = list(
         ts for ts, _ in token_timestamps)
@@ -320,7 +334,9 @@ class TokenAlreadyPlayed(Exception):
         self.text = text
 
 
-def accept_token(sql_session: Session, submission: Submission, timestamp: datetime) -> Token:
+def accept_token(
+    sql_session: Session, submission: Submission, timestamp: datetime
+) -> Token:
     """Add a token to the database.
 
     This function is primarily called by CWS when a contestant sends a

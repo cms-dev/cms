@@ -31,6 +31,7 @@ import typing
 
 # TODO: stats grew enough to justify having a proper object representing them.
 
+
 # is this a proper enough object? :)
 class StatsDict(typing.TypedDict):
     execution_time: float | None
@@ -40,6 +41,7 @@ class StatsDict(typing.TypedDict):
     signal: typing.NotRequired[int]
     stdout: typing.NotRequired[str]
     stderr: typing.NotRequired[str]
+
 
 def execution_stats(sandbox: Sandbox, collect_output: bool = False) -> StatsDict:
     """Extract statistics from a sandbox about the last ran command.
@@ -69,8 +71,9 @@ def execution_stats(sandbox: Sandbox, collect_output: bool = False) -> StatsDict
     return stats
 
 
-def merge_execution_stats(first_stats: StatsDict | None, second_stats: StatsDict,
-                          concurrent: bool = True) -> StatsDict:
+def merge_execution_stats(
+    first_stats: StatsDict | None, second_stats: StatsDict, concurrent: bool = True
+) -> StatsDict:
     """Merge two execution statistics dictionary.
 
     The first input stats can be None, in which case the second stats is copied

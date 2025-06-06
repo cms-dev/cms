@@ -72,23 +72,33 @@ def language_from_submitted_files(files: dict[str, str]) -> Language | None:
     return language
 
 
-def add_submission(contest_id: int, username: str, task_name: str, timestamp: float, files: dict[str, str]):
+def add_submission(
+    contest_id: int,
+    username: str,
+    task_name: str,
+    timestamp: float,
+    files: dict[str, str],
+):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
-        participation: Participation | None = session.query(Participation)\
-            .join(Participation.user)\
-            .filter(Participation.contest_id == contest_id)\
-            .filter(User.username == username)\
+        participation: Participation | None = (
+            session.query(Participation)
+            .join(Participation.user)
+            .filter(Participation.contest_id == contest_id)
+            .filter(User.username == username)
             .first()
+        )
         if participation is None:
             logging.critical("User `%s' does not exists or "
                              "does not participate in the contest.", username)
             return False
-        task: Task | None = session.query(Task)\
-            .filter(Task.contest_id == contest_id)\
-            .filter(Task.name == task_name)\
+        task: Task | None = (
+            session.query(Task)
+            .filter(Task.contest_id == contest_id)
+            .filter(Task.name == task_name)
             .first()
+        )
         if task is None:
             logging.critical("Unable to find task `%s'.", task_name)
             return False

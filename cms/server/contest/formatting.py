@@ -26,7 +26,11 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from cms.locale import Translation, DEFAULT_TRANSLATION
 
 
-def format_token_rules(tokens: dict, t_type: str | None = None, translation: Translation = DEFAULT_TRANSLATION) -> str:
+def format_token_rules(
+    tokens: dict,
+    t_type: str | None = None,
+    translation: Translation = DEFAULT_TRANSLATION,
+) -> str:
     """Return a human-readable string describing the given token rules
 
     tokens: all the token rules (as seen in Task or Contest),

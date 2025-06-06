@@ -71,6 +71,7 @@ def wait_without_std(procs: list[subprocess.Popen]) -> list[int]:
     return: a list of return codes.
 
     """
+
     def get_to_consume() -> list:
         """Amongst stdout and stderr of list of processes, find the
         ones that are alive and not closed (i.e., that may still want
@@ -188,8 +189,12 @@ class SandboxBase(metaclass=ABCMeta):
     EXIT_TIMEOUT_WALL = 'wall timeout'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher: FileCacher, name: str | None = None,
-                 temp_dir: str | None = None):
+    def __init__(
+        self,
+        file_cacher: FileCacher,
+        name: str | None = None,
+        temp_dir: str | None = None,
+    ):
         """Initialization.
 
         file_cacher: an instance of the FileCacher class
@@ -360,7 +365,9 @@ class SandboxBase(metaclass=ABCMeta):
         os.chmod(real_path, mod)
         return file_
 
-    def create_file_from_storage(self, path: str, digest: str, executable: bool = False):
+    def create_file_from_storage(
+        self, path: str, digest: str, executable: bool = False
+    ):
         """Write a file taken from FS in the sandbox.
 
         path: relative path of the file inside the sandbox.
@@ -371,7 +378,9 @@ class SandboxBase(metaclass=ABCMeta):
         with self.create_file(path, executable) as dest_fobj:
             self.file_cacher.get_file_to_fobj(digest, dest_fobj)
 
-    def create_file_from_string(self, path: str, content: bytes, executable: bool = False):
+    def create_file_from_string(
+        self, path: str, content: bytes, executable: bool = False
+    ):
         """Write some data to a file in the sandbox.
 
         path: relative path of the file inside the sandbox.
@@ -436,7 +445,9 @@ class SandboxBase(metaclass=ABCMeta):
             else:
                 return file_.read(maxlen)
 
-    def get_file_to_storage(self, path: str, description: str = "", trunc_len: int | None = None) -> str:
+    def get_file_to_storage(
+        self, path: str, description: str = "", trunc_len: int | None = None
+    ) -> str:
         """Put a sandbox file in FS and return its digest.
 
         path: relative path of the file inside the sandbox.
@@ -479,7 +490,9 @@ class SandboxBase(metaclass=ABCMeta):
         os.remove(self.relative_path(path))
 
     @abstractmethod
-    def execute_without_std(self, command: list[str], wait: bool = False) -> bool | subprocess.Popen:
+    def execute_without_std(
+        self, command: list[str], wait: bool = False
+    ) -> bool | subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen and discarding standard input, output and
         error. More specifically, the standard input gets closed just
@@ -659,12 +672,15 @@ class StupidSandbox(SandboxBase):
             return "Execution killed with signal %s" % \
                 self.get_killing_signal()
 
-    def _popen(self, command: list[str],
-               stdin: typing.IO | int | None = None,
-               stdout: typing.IO | int | None = None,
-               stderr: typing.IO | int | None = None,
-               preexec_fn: typing.Callable[[], typing.Any] | None = None,
-               close_fds: bool = True) -> subprocess.Popen:
+    def _popen(
+        self,
+        command: list[str],
+        stdin: typing.IO | int | None = None,
+        stdout: typing.IO | int | None = None,
+        stderr: typing.IO | int | None = None,
+        preexec_fn: typing.Callable[[], typing.Any] | None = None,
+        close_fds: bool = True,
+    ) -> subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen, assigning the corresponding standard file
         descriptors.
@@ -699,7 +715,9 @@ class StupidSandbox(SandboxBase):
 
         return p
 
-    def execute_without_std(self, command: list[str], wait: bool = False) -> bool | subprocess.Popen:
+    def execute_without_std(
+        self, command: list[str], wait: bool = False
+    ) -> bool | subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen and discarding standard input, output and
         error. More specifically, the standard input gets closed just
@@ -905,23 +923,23 @@ class IsolateSandbox(SandboxBase):
                      self._home, self.box_exec)
 
         # Default parameters for isolate
-        self.box_id = box_id                   # -b
-        self.cgroup = config.use_cgroups       # --cg
-        self.chdir = self._home_dest           # -c
-        self.dirs = []                         # -d
-        self.preserve_env = False              # -e
-        self.inherit_env = []                  # -E
-        self.set_env = {}                      # -E
-        self.fsize = None                      # -f
-        self.stdin_file: str | None = None     # -i
-        self.stack_space: int | None = None    # -k
+        self.box_id = box_id  # -b
+        self.cgroup = config.use_cgroups  # --cg
+        self.chdir = self._home_dest  # -c
+        self.dirs = []  # -d
+        self.preserve_env = False  # -e
+        self.inherit_env = []  # -E
+        self.set_env = {}  # -E
+        self.fsize = None  # -f
+        self.stdin_file: str | None = None  # -i
+        self.stack_space: int | None = None  # -k
         self.address_space: int | None = None  # -m
-        self.stdout_file: str | None = None    # -o
-        self.stderr_file: str | None = None    # -r
-        self.timeout: float | None = None      # -t
-        self.verbosity: int = 0                # -v
+        self.stdout_file: str | None = None  # -o
+        self.stderr_file: str | None = None  # -r
+        self.timeout: float | None = None  # -t
+        self.verbosity: int = 0  # -v
         self.wallclock_timeout: float | None = None  # -w
-        self.extra_timeout: float | None = None      # -x
+        self.extra_timeout: float | None = None  # -x
 
         self.add_mapped_directory(
             self._home, dest=self._home_dest, options="rw")
@@ -947,9 +965,13 @@ class IsolateSandbox(SandboxBase):
         self.cleanup()
         self.initialize_isolate()
 
-    def add_mapped_directory(self, src: str, dest: str | None = None,
-                             options: str | None = None,
-                             ignore_if_not_existing: bool = False):
+    def add_mapped_directory(
+        self,
+        src: str,
+        dest: str | None = None,
+        options: str | None = None,
+        ignore_if_not_existing: bool = False,
+    ):
         """Add src to the directory to be mapped inside the sandbox.
 
         src: directory to make visible.
@@ -966,8 +988,9 @@ class IsolateSandbox(SandboxBase):
             return
         self.dirs.append((src, dest, options))
 
-    def maybe_add_mapped_directory(self, src: str, dest: str | None = None,
-                                   options: str | None = None):
+    def maybe_add_mapped_directory(
+        self, src: str, dest: str | None = None, options: str | None = None
+    ):
         """Same as add_mapped_directory, with ignore_if_not_existing."""
         return self.add_mapped_directory(src, dest, options,
                                          ignore_if_not_existing=True)
@@ -1285,11 +1308,14 @@ class IsolateSandbox(SandboxBase):
         """
         return os.path.join(self._home_dest, path)
 
-    def _popen(self, command: list[str],
-               stdin: int | None = None,
-               stdout: int | None = None,
-               stderr: int | None = None,
-               close_fds: bool = True) -> subprocess.Popen:
+    def _popen(
+        self,
+        command: list[str],
+        stdin: int | None = None,
+        stdout: int | None = None,
+        stderr: int | None = None,
+        close_fds: bool = True,
+    ) -> subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen, assigning the corresponding standard file
         descriptors.
@@ -1365,7 +1391,9 @@ class IsolateSandbox(SandboxBase):
             f.write("max-rss:0\n")
             f.write("cg-mem:0\n")
 
-    def execute_without_std(self, command: list[str], wait: bool = False) -> bool | subprocess.Popen:
+    def execute_without_std(
+        self, command: list[str], wait: bool = False
+    ) -> bool | subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen and discarding standard input, output and
         error. More specifically, the standard input gets closed just
@@ -1467,6 +1495,6 @@ if typing.TYPE_CHECKING:
     Sandbox = IsolateSandbox
 else:
     Sandbox = {
-        'stupid': StupidSandbox,
-        'isolate': IsolateSandbox,
-        }[config.sandbox_implementation]
+        "stupid": StupidSandbox,
+        "isolate": IsolateSandbox,
+    }[config.sandbox_implementation]

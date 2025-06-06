@@ -96,7 +96,9 @@ def _update_columns(old_object: Base, new_object: Base, spec=None):
             setattr(old_object, prp.key, getattr(new_object, prp.key))
 
 
-def _update_object(old_object: Base, new_object: Base, spec=None, parent: str | None = None):
+def _update_object(
+    old_object: Base, new_object: Base, spec=None, parent: str | None = None
+):
     """Update old_object with the values in new_object
 
     Update all columns with this strategy:
@@ -231,8 +233,13 @@ def _update_dict(old_dict: dict, new_dict: dict, update_value_fn=None):
             del old_dict[key]
 
 
-def _update_list_with_key(old_list: list[Base], new_list: list[Base], key: Callable[[Base], typing.Any],
-                          preserve_old=False, update_value_fn=None):
+def _update_list_with_key(
+    old_list: list[Base],
+    new_list: list[Base],
+    key: Callable[[Base], typing.Any],
+    preserve_old=False,
+    update_value_fn=None,
+):
     """Update a SQLAlchemy list-relationship, using key for identity
 
     Make old_list look like new_list, in a similar way to _update_dict, as

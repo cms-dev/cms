@@ -30,10 +30,15 @@ logger = logging.getLogger(__name__)
 
 
 def import_testcases_from_zipfile(
-        session: Session, file_cacher: FileCacher, dataset: Dataset,
-        archive: str | typing.BinaryIO, input_re: re.Pattern,
-        output_re: re.Pattern, overwrite: bool, public: bool
-        ) -> tuple[str, str]:
+    session: Session,
+    file_cacher: FileCacher,
+    dataset: Dataset,
+    archive: str | typing.BinaryIO,
+    input_re: re.Pattern,
+    output_re: re.Pattern,
+    overwrite: bool,
+    public: bool,
+) -> tuple[str, str]:
     """Import testcases from a zipped archive
 
     session: session to use to add the testcases.

@@ -322,11 +322,11 @@ class Communication(TaskType):
             manager_command,
             manager_time_limit,
             config.trusted_sandbox_max_memory_kib * 1024,
-            dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw"))
-                          for i in indices),
+            dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw")) for i in indices),
             writable_files=[self.OUTPUT_FILENAME],
             stdin_redirect=self.INPUT_FILENAME,
-            multiprocess=job.multithreaded_sandbox)
+            multiprocess=job.multithreaded_sandbox,
+        )
         # the static return type of evaluation_step_... is bool | Popen,
         # but it's only bool if wait=True, which it isn't here.
         manager = typing.cast(subprocess.Popen, manager_)
@@ -365,7 +365,8 @@ class Communication(TaskType):
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},
                 stdin_redirect=stdin_redirect,
                 stdout_redirect=stdout_redirect,
-                multiprocess=job.multithreaded_sandbox)
+                multiprocess=job.multithreaded_sandbox,
+            )
             # the static return type of evaluation_step_... is bool | Popen,
             # but it's only bool if wait=True, which it isn't here.
             processes[i] = typing.cast(subprocess.Popen, the_process)

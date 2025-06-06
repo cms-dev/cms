@@ -84,7 +84,12 @@ class Executor(typing.Generic[QueueItemT], metaclass=ABCMeta):
         """
         return self._operation_queue.get_status()
 
-    def enqueue(self, item: QueueItemT, priority: int | None = None, timestamp: datetime | None = None) -> bool:
+    def enqueue(
+        self,
+        item: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> bool:
         """Add an item to the queue.
 
         item: the item to add.
@@ -198,7 +203,9 @@ class Executor(typing.Generic[QueueItemT], metaclass=ABCMeta):
 
 # The correct bound here is Executor[QueueItemT], but expressing that would
 # require higher-kinded types, which python's typechecking does not support.
-ExecutorT = typing.TypeVar('ExecutorT', bound=Executor)
+ExecutorT = typing.TypeVar("ExecutorT", bound=Executor)
+
+
 class TriggeredService(Service, typing.Generic[QueueItemT, ExecutorT]):
 
     """A service receiving notifications to perform an operation.
@@ -265,8 +272,12 @@ class TriggeredService(Service, typing.Generic[QueueItemT, ExecutorT]):
         """
         return self._executors[0]
 
-    def enqueue(self, operation: QueueItemT, priority: int | None = None,
-                timestamp: datetime | None = None) -> int:
+    def enqueue(
+        self,
+        operation: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> int:
         """Add an operation to the queue of each executor.
 
         operation: the operation to enqueue.

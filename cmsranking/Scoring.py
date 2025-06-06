@@ -302,7 +302,9 @@ class ScoringStore:
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-    def update_submission(self, key: str, old_submission: Submission, submission: Submission):
+    def update_submission(
+        self, key: str, old_submission: Submission, submission: Submission
+    ):
         if old_submission.user != submission.user or \
                 old_submission.task != submission.task:
             # TODO Delete all subchanges from the Score of the old
@@ -344,7 +346,9 @@ class ScoringStore:
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-    def update_subchange(self, key: str, old_subchange: Subchange, subchange: Subchange):
+    def update_subchange(
+        self, key: str, old_subchange: Subchange, subchange: Subchange
+    ):
         if old_subchange.submission != subchange.submission:
             self.delete_subchange(key, old_subchange)
             self.create_subchange(key, subchange)

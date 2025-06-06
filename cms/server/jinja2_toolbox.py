@@ -92,7 +92,9 @@ def any_(ctx: Context, l: list, test: str | None = None, *args) -> bool:
 
 
 @contextfilter
-def dictselect(ctx: Context, d: dict, test: str | None = None, *args, by: str = "key") -> dict:
+def dictselect(
+    ctx: Context, d: dict, test: str | None = None, *args, by: str = "key"
+) -> dict:
     """Filter the given dict: keep only items that pass the given test.
 
     ctx: a Jinja2 context, needed to retrieve the test

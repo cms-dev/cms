@@ -46,7 +46,7 @@ class Task(Entity):
         self.short_name: str = None
         self.contest: str = None
         self.max_score: float = None
-        self.score_precision: int # TODO why is this not set here?
+        self.score_precision: int  # TODO why is this not set here?
         self.extra_headers: list[str] = None
         self.order: int = None
         self.score_mode: str = None

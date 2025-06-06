@@ -104,7 +104,9 @@ def submission_to_evaluate(submission_result: SubmissionResult | None) -> bool:
         submission_result.evaluation_tries < MAX_EVALUATION_TRIES
 
 
-def submission_to_evaluate_on_testcase(submission_result: SubmissionResult, testcase_codename: str) -> bool:
+def submission_to_evaluate_on_testcase(
+    submission_result: SubmissionResult, testcase_codename: str
+) -> bool:
     """Return whether ES is interested in evaluating the submission
     on the given testcase.
 
@@ -151,9 +153,9 @@ def user_test_to_evaluate(user_test_result: UserTestResult | None) -> bool:
         r.evaluation_tries < MAX_USER_TEST_EVALUATION_TRIES
 
 
-def submission_get_operations(submission_result: SubmissionResult | None,
-                              submission: Submission,
-                              dataset: Dataset) -> Generator[tuple["ESOperation", int, datetime]]:
+def submission_get_operations(
+    submission_result: SubmissionResult | None, submission: Submission, dataset: Dataset
+) -> Generator[tuple["ESOperation", int, datetime]]:
     """Generate all operations originating from a submission for a given
     dataset.
 
@@ -203,7 +205,9 @@ def submission_get_operations(submission_result: SubmissionResult | None,
                     submission.timestamp
 
 
-def user_test_get_operations(user_test: UserTest, dataset: Dataset) -> Generator[tuple["ESOperation", int, datetime]]:
+def user_test_get_operations(
+    user_test: UserTest, dataset: Dataset
+) -> Generator[tuple["ESOperation", int, datetime]]:
     """Generate all operations originating from a user test for a given
     dataset.
 
@@ -246,8 +250,9 @@ def user_test_get_operations(user_test: UserTest, dataset: Dataset) -> Generator
             user_test.timestamp
 
 
-def get_relevant_operations(level: str, submissions: list[Submission],
-                            dataset_id: int | None = None) -> list["ESOperation"]:
+def get_relevant_operations(
+    level: str, submissions: list[Submission], dataset_id: int | None = None
+) -> list["ESOperation"]:
     """Return all possible operations involving the submissions
 
     level: the starting level; if 'compilation', then we
@@ -289,7 +294,9 @@ def get_relevant_operations(level: str, submissions: list[Submission],
     return operations
 
 
-def get_submissions_operations(session: Session, contest_id: int | None = None) -> list[tuple["ESOperation", int, datetime]]:
+def get_submissions_operations(
+    session: Session, contest_id: int | None = None
+) -> list[tuple["ESOperation", int, datetime]]:
     """Return all the operations to do for submissions in the contest.
 
     session: the database session to use.
@@ -395,7 +402,9 @@ def get_submissions_operations(session: Session, contest_id: int | None = None) 
     return operations
 
 
-def get_user_tests_operations(session: Session, contest_id: int | None = None) -> list[tuple["ESOperation", int, datetime]]:
+def get_user_tests_operations(
+    session: Session, contest_id: int | None = None
+) -> list[tuple["ESOperation", int, datetime]]:
     """Return all the operations to do for user tests in the contest.
 
     session: the database session to use.
@@ -501,8 +510,13 @@ class ESOperation(QueueItem):
     USER_TEST_EVALUATION = "evaluate_test"
 
     # Testcase codename is only needed for EVALUATION type of operation
-    def __init__(self, type_: str, object_id: int, dataset_id: int,
-                 testcase_codename: str | None = None):
+    def __init__(
+        self,
+        type_: str,
+        object_id: int,
+        dataset_id: int,
+        testcase_codename: str | None = None,
+    ):
         self.type_ = type_
         self.object_id = object_id
         self.dataset_id = dataset_id

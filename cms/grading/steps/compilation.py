@@ -65,8 +65,9 @@ COMPILATION_MESSAGES = MessageCollection([
 ])
 
 
-def compilation_step(sandbox: Sandbox, commands: list[list[str]]
-        ) -> tuple[bool, bool | None, list[str] | None, StatsDict | None]:
+def compilation_step(
+    sandbox: Sandbox, commands: list[list[str]]
+) -> tuple[bool, bool | None, list[str] | None, StatsDict | None]:
     """Execute some compilation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after

@@ -113,7 +113,9 @@ def _white_diff(output: typing.BinaryIO, res: typing.BinaryIO) -> bool:
                 return False
 
 
-def white_diff_fobj_step(output_fobj: typing.BinaryIO, correct_output_fobj: typing.BinaryIO) -> tuple[float, list[str]]:
+def white_diff_fobj_step(
+    output_fobj: typing.BinaryIO, correct_output_fobj: typing.BinaryIO
+) -> tuple[float, list[str]]:
     """Compare user output and correct output with a simple diff.
 
     It gives an outcome 1.0 if the output and the reference output are
@@ -133,7 +135,9 @@ def white_diff_fobj_step(output_fobj: typing.BinaryIO, correct_output_fobj: typi
         return 0.0, [EVALUATION_MESSAGES.get("wrong").message]
 
 
-def white_diff_step(sandbox: Sandbox, output_filename: str, correct_output_filename: str) -> tuple[float, list[str]]:
+def white_diff_step(
+    sandbox: Sandbox, output_filename: str, correct_output_filename: str
+) -> tuple[float, list[str]]:
     """Compare user output and correct output with a simple diff.
 
     It gives an outcome 1.0 if the output and the reference output are

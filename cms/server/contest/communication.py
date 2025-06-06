@@ -60,7 +60,13 @@ class UnacceptableQuestion(Exception):
         self.text_params = text_params
 
 
-def accept_question(sql_session: Session, participation: Participation, timestamp: datetime, subject: str, text: str) -> Question:
+def accept_question(
+    sql_session: Session,
+    participation: Participation,
+    timestamp: datetime,
+    subject: str,
+    text: str,
+) -> Question:
     """Add a contestant-submitted question to the database.
 
     Validate and add a question received from a contestant (usually
@@ -106,7 +112,12 @@ def accept_question(sql_session: Session, participation: Participation, timestam
     return question
 
 
-def get_communications(sql_session: Session, participation: Participation, timestamp: datetime, after: datetime | None = None) -> list[dict]:
+def get_communications(
+    sql_session: Session,
+    participation: Participation,
+    timestamp: datetime,
+    after: datetime | None = None,
+) -> list[dict]:
     """Retrieve some contestant's communications at some given time.
 
     Return the list of admin-to-contestant communications (that is,

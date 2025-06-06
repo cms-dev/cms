@@ -474,8 +474,14 @@ class RootHandler:
 
 class RoutingHandler:
 
-    def __init__(self, root_handler: RootHandler, event_handler: DataWatcher, logo_handler: ImageHandler,
-                 score_handler: ScoreHandler, history_handler: HistoryHandler):
+    def __init__(
+        self,
+        root_handler: RootHandler,
+        event_handler: DataWatcher,
+        logo_handler: ImageHandler,
+        score_handler: ScoreHandler,
+        history_handler: HistoryHandler,
+    ):
         self.router = Map([
             Rule("/", methods=["GET"], endpoint="root"),
             Rule("/history", methods=["GET"], endpoint="history"),

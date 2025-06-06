@@ -78,7 +78,9 @@ class TeamImporter:
         logger.info("Import finished (new team id: %s).", team_id)
         return True
 
-    def do_import_all(self, base_path: str, get_loader: Callable[[str], type[TeamLoader]]):
+    def do_import_all(
+        self, base_path: str, get_loader: Callable[[str], type[TeamLoader]]
+    ):
         """Get the participation list from the ContestLoader and then
         try to import the needed teams.
 
@@ -102,7 +104,9 @@ class TeamImporter:
 
     @staticmethod
     def _team_to_db(session: Session, team: Team):
-        old_team: Team | None = session.query(Team).filter(Team.code == team.code).first()
+        old_team: Team | None = (
+            session.query(Team).filter(Team.code == team.code).first()
+        )
         if old_team is not None:
             raise ImportDataError("Team \"%s\" already exists." % team.code)
         session.add(team)

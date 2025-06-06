@@ -60,7 +60,9 @@ class QueueItem:
         """Return a dict() representation of the object."""
         return self.__dict__
 
-QueueItemT = typing.TypeVar('QueueItemT', bound=QueueItem)
+
+QueueItemT = typing.TypeVar("QueueItemT", bound=QueueItem)
+
 
 @total_ordering
 class QueueEntry(typing.Generic[QueueItemT]):
@@ -69,7 +71,9 @@ class QueueEntry(typing.Generic[QueueItemT]):
 
     """
 
-    def __init__(self, item: QueueItemT, priority: int, timestamp: datetime, index: int):
+    def __init__(
+        self, item: QueueItemT, priority: int, timestamp: datetime, index: int
+    ):
         """Create a QueueEntry object.
 
         item: the payload.
@@ -95,12 +99,14 @@ class QueueEntry(typing.Generic[QueueItemT]):
         return (self.priority, self.timestamp, self.index) \
                < (other.priority, other.timestamp, other.index)
 
+
 class QueueEntryDict(TypedDict):
-    """Serialized form of QueueEntry, for sending over RPC.
-    """
+    """Serialized form of QueueEntry, for sending over RPC."""
+
     item: dict
     priority: int
     timestamp: float
+
 
 class PriorityQueue(typing.Generic[QueueItemT]):
 
@@ -234,8 +240,12 @@ class PriorityQueue(typing.Generic[QueueItemT]):
         idx = self._up_heap(idx)
         return self._down_heap(idx)
 
-    def push(self, item: QueueItemT, priority: int | None = None,
-             timestamp: datetime | None = None) -> bool:
+    def push(
+        self,
+        item: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> bool:
         """Push an item in the queue. If timestamp is not specified,
         uses the current time.
 

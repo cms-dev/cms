@@ -35,6 +35,7 @@ import traceback
 import collections
 
 from cms.db.user import Participation
+
 try:
     collections.MutableMapping
 except:
@@ -53,9 +54,9 @@ from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
 from cmscommon.datetime import utc as utc_tzinfo
 import typing
+
 if typing.TYPE_CHECKING:
     from cms.server.contest.server import ContestWebServer
-
 
 
 logger = logging.getLogger(__name__)

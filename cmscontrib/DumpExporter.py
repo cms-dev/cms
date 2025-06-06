@@ -39,15 +39,41 @@ import tarfile
 import tempfile
 from datetime import date
 
-from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum, TypeEngine
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    Float,
+    String,
+    Unicode,
+    DateTime,
+    Interval,
+    Enum,
+    TypeEngine,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 from cms import rmtree, utf8_decoder
-from cms.db import version as model_version, Codename, Filename, \
-    FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, User, \
-    Task, Submission, UserTest, SubmissionResult, UserTestResult, PrintJob, \
-    Announcement, Participation, Base, enumerate_files
+from cms.db import (
+    version as model_version,
+    Codename,
+    Filename,
+    FilenameSchema,
+    FilenameSchemaArray,
+    Digest,
+    SessionGen,
+    Contest,
+    User,
+    Task,
+    Submission,
+    UserTest,
+    SubmissionResult,
+    UserTestResult,
+    PrintJob,
+    Announcement,
+    Participation,
+    Base,
+    enumerate_files,
+)
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from cmscommon.digest import path_digest
@@ -133,10 +159,18 @@ class DumpExporter:
 
     """
 
-    def __init__(self, contest_ids: list[int] | None, export_target: str,
-                 dump_files: bool, dump_model: bool, skip_generated: bool,
-                 skip_submissions: bool, skip_user_tests: bool,
-                 skip_users: bool, skip_print_jobs: bool):
+    def __init__(
+        self,
+        contest_ids: list[int] | None,
+        export_target: str,
+        dump_files: bool,
+        dump_model: bool,
+        skip_generated: bool,
+        skip_submissions: bool,
+        skip_user_tests: bool,
+        skip_users: bool,
+        skip_print_jobs: bool,
+    ):
         if contest_ids is None:
             with SessionGen() as session:
                 contests: list[Contest] = session.query(Contest).all()
@@ -146,8 +180,9 @@ class DumpExporter:
                     self.users_ids = [user.id for user in users]
                 else:
                     self.users_ids = []
-                tasks: list[Task] = session.query(Task)\
-                    .filter(Task.contest_id.is_(None)).all()
+                tasks: list[Task] = (
+                    session.query(Task).filter(Task.contest_id.is_(None)).all()
+                )
                 self.tasks_ids = [task.id for task in tasks]
         else:
             # FIXME: this is ATM broken, because if you export a contest, you
@@ -359,8 +394,9 @@ class DumpExporter:
 
         return data
 
-    def safe_get_file(self, digest: str, path: str, descr_path: str | None = None) -> bool:
-
+    def safe_get_file(
+        self, digest: str, path: str, descr_path: str | None = None
+    ) -> bool:
         """Get file from FileCacher ensuring that the digest is
         correct.
 

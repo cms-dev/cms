@@ -34,8 +34,13 @@ from .stats import execution_stats, merge_execution_stats, StatsDict
 logger = logging.getLogger(__name__)
 
 
-def _generic_execution(sandbox: Sandbox, command: list[str], exec_num: int,
-                       step_name: str, collect_output: bool = False) -> StatsDict | None:
+def _generic_execution(
+    sandbox: Sandbox,
+    command: list[str],
+    exec_num: int,
+    step_name: str,
+    collect_output: bool = False,
+) -> StatsDict | None:
     """A single command execution of a multi-command step.
 
     sandbox: the sandbox to use, already created and configured.
@@ -64,8 +69,12 @@ def _generic_execution(sandbox: Sandbox, command: list[str], exec_num: int,
     return execution_stats(sandbox, collect_output=collect_output)
 
 
-def generic_step(sandbox: Sandbox, commands: list[list[str]], step_name: str,
-                 collect_output: bool = False) -> StatsDict | None:
+def generic_step(
+    sandbox: Sandbox,
+    commands: list[list[str]],
+    step_name: str,
+    collect_output: bool = False,
+) -> StatsDict | None:
     """Execute some commands in the sandbox.
 
     Execute the commands sequentially in the (already created and configured)

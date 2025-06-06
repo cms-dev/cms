@@ -31,6 +31,7 @@ from abc import ABCMeta, abstractmethod
 
 from jinja2 import Markup, Template
 import typing
+
 if typing.TYPE_CHECKING:
     from tornado.web import RequestHandler
 
@@ -203,7 +204,9 @@ class ParameterTypeCollection(ParameterType):
 </table>
 """)
 
-    def __init__(self, name, short_name, description, subparameters: list[ParameterType]):
+    def __init__(
+        self, name, short_name, description, subparameters: list[ParameterType]
+    ):
         """Initialization.
 
         subparameters: list of types of each sub-parameter.

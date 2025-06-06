@@ -303,7 +303,6 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
         self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
 
-
     def test_import_old(self):
         """Test importing an old dump.
 

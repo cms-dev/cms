@@ -36,12 +36,18 @@ from cmscommon.importers import import_testcases_from_zipfile
 logger = logging.getLogger(__name__)
 
 
-def add_testcases(archive: str, input_template: str, output_template: str,
-                  task_name: str, dataset_description: str | None = None, contest_name: str | None = None,
-                  public: bool = False, overwrite: bool = False):
+def add_testcases(
+    archive: str,
+    input_template: str,
+    output_template: str,
+    task_name: str,
+    dataset_description: str | None = None,
+    contest_name: str | None = None,
+    public: bool = False,
+    overwrite: bool = False,
+):
     with SessionGen() as session:
-        task: Task | None = session.query(Task)\
-            .filter(Task.name == task_name).first()
+        task: Task | None = session.query(Task).filter(Task.name == task_name).first()
         if not task:
             logger.error("No task called %s found." % task_name)
             return False
@@ -56,8 +62,9 @@ def add_testcases(archive: str, input_template: str, output_template: str,
                              % dataset_description)
                 return False
         if contest_name is not None:
-            contest: Contest | None = session.query(Contest)\
-                .filter(Contest.name == contest_name).first()
+            contest: Contest | None = (
+                session.query(Contest).filter(Contest.name == contest_name).first()
+            )
             if task.contest != contest:
                 logger.error("%s is not in %s" %
                              (task_name, contest_name))

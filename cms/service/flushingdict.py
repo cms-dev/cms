@@ -29,8 +29,10 @@ from gevent.lock import RLock
 logger = logging.getLogger(__name__)
 
 
-KeyT = typing.TypeVar('KeyT')
-ValueT = typing.TypeVar('ValueT')
+KeyT = typing.TypeVar("KeyT")
+ValueT = typing.TypeVar("ValueT")
+
+
 class FlushingDict(typing.Generic[KeyT, ValueT]):
     """A dict that periodically flushes its content to a callback.
 
@@ -42,7 +44,12 @@ class FlushingDict(typing.Generic[KeyT, ValueT]):
 
     """
 
-    def __init__(self, size: int, flush_latency_seconds: float, callback: Callable[[list[tuple[KeyT, ValueT]]], typing.Any]):
+    def __init__(
+        self,
+        size: int,
+        flush_latency_seconds: float,
+        callback: Callable[[list[tuple[KeyT, ValueT]]], typing.Any],
+    ):
         # Elements contained in the dict that force a flush.
         self.size = size
 

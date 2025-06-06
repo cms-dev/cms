@@ -53,6 +53,7 @@ class ReceivedFile(typing.NamedTuple):
     filename: str | None
     content: bytes
 
+
 class InvalidArchive(Exception):
     """Raised when the archive submitted by the user cannot be opened."""
 
@@ -100,7 +101,9 @@ def extract_files_from_archive(data: bytes) -> list[ReceivedFile]:
     return result
 
 
-def extract_files_from_tornado(tornado_files: dict[str, list["HTTPFile"]]) -> list[ReceivedFile]:
+def extract_files_from_tornado(
+    tornado_files: dict[str, list["HTTPFile"]],
+) -> list[ReceivedFile]:
     """Transform some files as received by Tornado into our format.
 
     Given the files as provided by Tornado on the HTTPServerRequest's

@@ -188,8 +188,8 @@ def validate_password(authentication: str, password: str) -> bool:
     """
     method, payload = parse_authentication(authentication)
     if method == "bcrypt":
-        password_bytes = password.encode('utf-8')
-        payload_bytes = payload.encode('utf-8')
+        password_bytes = password.encode("utf-8")
+        payload_bytes = payload.encode("utf-8")
         try:
             return bcrypt.hashpw(password_bytes, payload_bytes) == payload_bytes
         except ValueError:
@@ -225,8 +225,8 @@ def hash_password(password: str, method: str = "bcrypt") -> str:
 
     """
     if method == "bcrypt":
-        password_bytes = password.encode('utf-8')
-        payload = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('ascii')
+        password_bytes = password.encode("utf-8")
+        payload = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("ascii")
     elif method == "plaintext":
         payload = password
     else:

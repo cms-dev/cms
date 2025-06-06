@@ -58,8 +58,16 @@ class TaskImporter:
 
     """
 
-    def __init__(self, path: str, prefix: str | None, override_name: str | None, update: bool, no_statement: bool,
-                 contest_id: int | None, loader_class: type[TaskLoader]):
+    def __init__(
+        self,
+        path: str,
+        prefix: str | None,
+        override_name: str | None,
+        update: bool,
+        no_statement: bool,
+        contest_id: int | None,
+        loader_class: type[TaskLoader],
+    ):
         """Create the importer object for a task.
 
         path: the path to the file or directory to import.
@@ -121,7 +129,9 @@ class TaskImporter:
         logger.info("Import finished (new task id: %s).", task_id)
         return True
 
-    def _task_to_db(self, session: Session, contest: Contest, new_task: Task, task_has_changed: bool):
+    def _task_to_db(
+        self, session: Session, contest: Contest, new_task: Task, task_has_changed: bool
+    ):
         """Add the task to the DB
 
         Return the task, or raise in case of one of these errors:
@@ -129,7 +139,9 @@ class TaskImporter:
         - if the task is already in the DB and attached to another contest.
 
         """
-        task: Task | None = session.query(Task).filter(Task.name == new_task.name).first()
+        task: Task | None = (
+            session.query(Task).filter(Task.name == new_task.name).first()
+        )
         if task is None:
             if contest is not None:
                 logger.info("Attaching task to contest (id %s.)",

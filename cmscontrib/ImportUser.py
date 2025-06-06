@@ -93,7 +93,9 @@ class UserImporter:
         logger.info("Import finished (new user id: %s).", user_id)
         return True
 
-    def do_import_all(self, base_path: str, get_loader: Callable[[str], type[UserLoader]]):
+    def do_import_all(
+        self, base_path: str, get_loader: Callable[[str], type[UserLoader]]
+    ):
         """Get the participation list from the ContestLoader and then
         try to import the corresponding users.
 
@@ -118,8 +120,9 @@ class UserImporter:
         was already present in the DB.
 
         """
-        old_user: User | None = session.query(User)\
-            .filter(User.username == user.username).first()
+        old_user: User | None = (
+            session.query(User).filter(User.username == user.username).first()
+        )
         if old_user is not None:
             raise ImportDataError(
                 "User \"%s\" already exists." % user.username)

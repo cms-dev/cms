@@ -502,10 +502,12 @@ class RemoveTaskHandler(BaseHandler):
         self.sql_session.delete(task)
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
-            following_tasks: list[Task] = self.sql_session.query(Task)\
-                .filter(Task.contest_id == contest_id)\
-                .filter(Task.num > num)\
+            following_tasks: list[Task] = (
+                self.sql_session.query(Task)
+                .filter(Task.contest_id == contest_id)
+                .filter(Task.num > num)
                 .all()
+            )
             for task in following_tasks:
                 task.num -= 1
         if self.try_commit():

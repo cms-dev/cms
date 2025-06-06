@@ -83,8 +83,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
 
             assert attrs.get("name") is not None, "No contest name specified."
 
-            allowed_localizations: str = \
-                self.get_argument("allowed_localizations", "")
+            allowed_localizations: str = self.get_argument("allowed_localizations", "")
             if allowed_localizations:
                 attrs["allowed_localizations"] = \
                     [x.strip() for x in allowed_localizations.split(",")

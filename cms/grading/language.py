@@ -104,10 +104,12 @@ class Language(metaclass=ABCMeta):
         return ""
 
     @abstractmethod
-    def get_compilation_commands(self,
-                                 source_filenames: list[str],
-                                 executable_filename: str,
-                                 for_evaluation: bool = True) -> list[list[str]]:
+    def get_compilation_commands(
+        self,
+        source_filenames: list[str],
+        executable_filename: str,
+        for_evaluation: bool = True,
+    ) -> list[list[str]]:
         """Return the compilation commands.
 
         The compilation commands are for the specified language,
@@ -132,8 +134,11 @@ class Language(metaclass=ABCMeta):
 
     @abstractmethod
     def get_evaluation_commands(
-            self, executable_filename: str, main: str | None = None,
-            args: list[str] | None = None) -> list[list[str]]:
+        self,
+        executable_filename: str,
+        main: str | None = None,
+        args: list[str] | None = None,
+    ) -> list[list[str]]:
         """Return the evaluation commands.
 
         executable_filename: the name of the "executable" (does not

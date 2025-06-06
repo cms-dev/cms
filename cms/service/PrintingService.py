@@ -51,6 +51,7 @@ def N_(message):
 
 
 class PrintingOperation(QueueItem):
+
     def __init__(self, printjob_id: int):
         self.printjob_id = printjob_id
 

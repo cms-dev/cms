@@ -164,10 +164,13 @@ class Service:
         remote_service = RemoteServiceServer(self, address)
         remote_service.handle(sock)
 
-    def connect_to(self, coord: ServiceCoord,
-                   on_connect: Callable[[object], Any] | None = None,
-                   on_disconnect: Callable[[object], Any] | None = None,
-                   must_be_present: bool = True) -> RemoteServiceClient:
+    def connect_to(
+        self,
+        coord: ServiceCoord,
+        on_connect: Callable[[object], Any] | None = None,
+        on_disconnect: Callable[[object], Any] | None = None,
+        must_be_present: bool = True,
+    ) -> RemoteServiceClient:
         """Return a proxy to a remote service.
 
         Obtain a communication channel to the remote service at the
@@ -210,7 +213,13 @@ class Service:
 
         return service
 
-    def add_timeout(self, func: Callable, plus: dict | None, seconds: float, immediately: bool = False):
+    def add_timeout(
+        self,
+        func: Callable,
+        plus: dict | None,
+        seconds: float,
+        immediately: bool = False,
+    ):
         """Register a function to be called repeatedly.
 
         func: the function to call.

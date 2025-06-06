@@ -38,6 +38,7 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import typing
+
 if typing.TYPE_CHECKING:
     from tornado.web import RequestHandler
 else:

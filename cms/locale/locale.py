@@ -113,7 +113,9 @@ class Translation:
         """
         return babel.dates.format_time(dt, tzinfo=timezone, locale=self.locale)
 
-    def format_datetime_smart(self, dt: datetime, now: datetime, timezone: tzinfo) -> str:
+    def format_datetime_smart(
+        self, dt: datetime, now: datetime, timezone: tzinfo
+    ) -> str:
         """Return dt formatted as '[date] time'.
 
         Date is present in the output if it is not today.
@@ -355,5 +357,7 @@ def filter_language_codes(lang_codes: list[str], prefixes: list[str]) -> list[st
     return filtered_lang_codes
 
 
-def choose_language_code(preferred: Iterable[str], available: Iterable[str]) -> str | None:
+def choose_language_code(
+    preferred: Iterable[str], available: Iterable[str]
+) -> str | None:
     return babel.core.negotiate_locale(preferred, available, sep="-")

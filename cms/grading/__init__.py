@@ -54,7 +54,9 @@ class JobException(Exception):
         return "JobException(\"%s\")" % (repr(self.msg))
 
 
-def format_status_text(status: list[str], translation: Translation = DEFAULT_TRANSLATION):
+def format_status_text(
+    status: list[str], translation: Translation = DEFAULT_TRANSLATION
+):
     """Format the given status text in the given locale.
 
     A status text is the content of SubmissionResult.compilation_text,

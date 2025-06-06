@@ -36,6 +36,7 @@ import collections
 
 from cms.db.task import Task
 from cms.db.user import Participation
+
 try:
     collections.MutableMapping
 except:
@@ -129,12 +130,14 @@ class TaskSubmissionsHandler(ContestHandler):
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submissions: list[Submission] = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .options(joinedload(Submission.token))\
-            .options(joinedload(Submission.results))\
+        submissions: list[Submission] = (
+            self.sql_session.query(Submission)
+            .filter(Submission.participation == participation)
+            .filter(Submission.task == task)
+            .options(joinedload(Submission.token))
+            .options(joinedload(Submission.results))
             .all()
+        )
 
         public_score, is_public_score_partial = task_score(
             participation, task, public=True, rounded=True)

@@ -41,16 +41,43 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum, TypeEngine
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    Float,
+    String,
+    Unicode,
+    DateTime,
+    Interval,
+    Enum,
+    TypeEngine,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import cms.db as class_hook
 from cms import utf8_decoder
-from cms.db import version as model_version, Codename, Filename, \
-    FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
-    Submission, SubmissionResult, User, Participation, UserTest, \
-    UserTestResult, PrintJob, Announcement, Base, init_db, drop_db, enumerate_files
+from cms.db import (
+    version as model_version,
+    Codename,
+    Filename,
+    FilenameSchema,
+    FilenameSchemaArray,
+    Digest,
+    SessionGen,
+    Contest,
+    Submission,
+    SubmissionResult,
+    User,
+    Participation,
+    UserTest,
+    UserTestResult,
+    PrintJob,
+    Announcement,
+    Base,
+    init_db,
+    drop_db,
+    enumerate_files,
+)
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -125,10 +152,18 @@ class DumpImporter:
 
     """
 
-    def __init__(self, drop: bool, import_source: str,
-                 load_files: bool, load_model: bool, skip_generated: bool,
-                 skip_submissions: bool, skip_user_tests: bool,
-                 skip_users: bool, skip_print_jobs: bool):
+    def __init__(
+        self,
+        drop: bool,
+        import_source: str,
+        load_files: bool,
+        load_model: bool,
+        skip_generated: bool,
+        skip_submissions: bool,
+        skip_user_tests: bool,
+        skip_users: bool,
+        skip_print_jobs: bool,
+    ):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
@@ -430,7 +465,6 @@ class DumpImporter:
                     "Unknown RelationshipProperty value: %s" % type(val))
 
     def safe_put_file(self, path: str, descr_path: str) -> bool:
-
         """Put a file to FileCacher signaling every error (including
         digest mismatch).
 

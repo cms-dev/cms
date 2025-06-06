@@ -204,9 +204,14 @@ def check_manager_present(job: Job, codename: str) -> bool:
     return True
 
 
-def eval_output(file_cacher: FileCacher, job: Job, checker_codename: str | None,
-                user_output_path: str | None = None, user_output_digest: str | None = None,
-                user_output_filename: str = "") -> tuple[bool, float | None, list[str] | None]:
+def eval_output(
+    file_cacher: FileCacher,
+    job: Job,
+    checker_codename: str | None,
+    user_output_path: str | None = None,
+    user_output_digest: str | None = None,
+    user_output_filename: str = "",
+) -> tuple[bool, float | None, list[str] | None]:
     """Evaluate ("check") a user output using a white diff or a checker.
 
     file_cacher: file cacher to use to get files.

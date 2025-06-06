@@ -39,6 +39,7 @@ import collections
 import typing
 
 from cms.db.session import Session
+
 try:
     collections.MutableMapping
 except:
@@ -78,7 +79,10 @@ def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
         RequestHandler.
 
     """
-    def helper(self: tornado_web.RequestHandler, dest: dict, name: str, empty: object = empty):
+
+    def helper(
+        self: tornado_web.RequestHandler, dest: dict, name: str, empty: object = empty
+    ):
         """Read the argument called "name" and save it in "dest".
 
         self: a thing with a get_argument method.
@@ -94,6 +98,7 @@ def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
             dest[name] = empty
         else:
             dest[name] = func(value)
+
     return helper
 
 
@@ -136,7 +141,9 @@ def parse_datetime(value: str) -> datetime:
         raise ValueError("Can't cast %s to datetime." % value)
 
 
-def parse_ip_networks(networks: str) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+def parse_ip_networks(
+    networks: str,
+) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
     """Parse and validate a comma-separated list of IP networks.
 
     networks: a comma-separated list of IP networks, which
@@ -176,10 +183,13 @@ def require_permission(permission: str = "authenticated", self_allowed: bool = F
                           BaseHandler.AUTHENTICATED]:
         raise ValueError("Invalid permission level %s." % permission)
 
-    _P = typing.ParamSpec('_P')
-    _R = typing.TypeVar('_R')
-    _T = typing.TypeVar('_T', bound=BaseHandler)
-    def decorator(func: Callable[typing.Concatenate[_T, _P], _R]) -> Callable[typing.Concatenate[_T, _P], _R]:
+    _P = typing.ParamSpec("_P")
+    _R = typing.TypeVar("_R")
+    _T = typing.TypeVar("_T", bound=BaseHandler)
+
+    def decorator(
+        func: Callable[typing.Concatenate[_T, _P], _R],
+    ) -> Callable[typing.Concatenate[_T, _P], _R]:
         """Decorator for requiring a permission level
 
         """
@@ -270,8 +280,11 @@ class BaseHandler(CommonRequestHandler):
 
         return admin
 
-    _GetItemT = typing.TypeVar('_GetItemT', bound=cms.db.Base)
-    def safe_get_item(self, cls: type[_GetItemT], ident: int | str, session: "Session | None" = None) -> _GetItemT:
+    _GetItemT = typing.TypeVar("_GetItemT", bound=cms.db.Base)
+
+    def safe_get_item(
+        self, cls: type[_GetItemT], ident: int | str, session: "Session | None" = None
+    ) -> _GetItemT:
         """Get item from database of class cls and id ident, using
         session if given, or self.sql_session if not given. If id is
         not found, raise a 404.
@@ -570,7 +583,9 @@ class BaseHandler(CommonRequestHandler):
         else:
             dest["password"] = hash_password("", method)
 
-    def render_params_for_submissions(self, query: Query, page: int, page_size: int = 50):
+    def render_params_for_submissions(
+        self, query: Query, page: int, page_size: int = 50
+    ):
         """Add data about the requested submissions to r_params.
 
         query: the query giving back all interesting submissions.
@@ -604,7 +619,9 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_pages"] = \
             (count + page_size - 1) // page_size
 
-    def render_params_for_user_tests(self, query: Query, page: int, page_size: int = 50):
+    def render_params_for_user_tests(
+        self, query: Query, page: int, page_size: int = 50
+    ):
         """Add data about the requested user tests to r_params.
 
         query: the query giving back all interesting user tests.
@@ -688,4 +705,5 @@ def SimpleContestHandler(page) -> type[BaseHandler]:
 
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
+
     return Cls

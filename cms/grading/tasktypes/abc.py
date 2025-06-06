@@ -33,6 +33,7 @@ import re
 from abc import ABCMeta, abstractmethod
 
 import typing
+
 if typing.TYPE_CHECKING:
     from tornado.web import RequestHandler
 
@@ -141,7 +142,9 @@ class TaskType(metaclass=ABCMeta):
     testable = True
 
     @abstractmethod
-    def get_compilation_commands(self, submission_format: list[str]) -> dict[str, list[list[str]]] | None:
+    def get_compilation_commands(
+        self, submission_format: list[str]
+    ) -> dict[str, list[list[str]]] | None:
         """Return the compilation commands for all supported languages
 
         submission_format: the list of files provided by the

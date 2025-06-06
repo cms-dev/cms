@@ -119,7 +119,9 @@ class TestRPC(unittest.TestCase):
         self.servers.append(server)
         server.handle(socket_)
 
-    def get_client(self, coord: ServiceCoord, block: bool = True, auto_retry: float | None = None) -> RemoteServiceClient:
+    def get_client(
+        self, coord: ServiceCoord, block: bool = True, auto_retry: float | None = None
+    ) -> RemoteServiceClient:
         """Obtain a new RemoteServiceClient to connect to a server.
 
         Instantiate a RemoteServiceClient, spawn its greenlet and add

@@ -83,14 +83,17 @@ EVALUATION_MESSAGES = MessageCollection([
 ])
 
 
-def evaluation_step(sandbox: Sandbox, commands: list[list[str]],
-                    time_limit: float | None = None,
-                    memory_limit: int | None = None,
-                    dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
-                    writable_files: list[str] | None = None,
-                    stdin_redirect: str | None = None,
-                    stdout_redirect: str | None = None,
-                    multiprocess: bool = False) -> tuple[bool, bool | None, StatsDict | None]:
+def evaluation_step(
+    sandbox: Sandbox,
+    commands: list[list[str]],
+    time_limit: float | None = None,
+    memory_limit: int | None = None,
+    dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
+    writable_files: list[str] | None = None,
+    stdin_redirect: str | None = None,
+    stdout_redirect: str | None = None,
+    multiprocess: bool = False,
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Execute some evaluation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after
@@ -149,15 +152,18 @@ def evaluation_step(sandbox: Sandbox, commands: list[list[str]],
     return success, evaluation_success, stats
 
 
-def evaluation_step_before_run(sandbox: Sandbox, command: list[str],
-                               time_limit: float | None = None,
-                               memory_limit: int | None = None,
-                               dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
-                               writable_files: list[str] | None = None,
-                               stdin_redirect: str | None = None,
-                               stdout_redirect: str | None = None,
-                               multiprocess: bool = False,
-                               wait: bool = False) -> bool | subprocess.Popen:
+def evaluation_step_before_run(
+    sandbox: Sandbox,
+    command: list[str],
+    time_limit: float | None = None,
+    memory_limit: int | None = None,
+    dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
+    writable_files: list[str] | None = None,
+    stdin_redirect: str | None = None,
+    stdout_redirect: str | None = None,
+    multiprocess: bool = False,
+    wait: bool = False,
+) -> bool | subprocess.Popen:
     """First part of an evaluation step, up to the execution, included.
 
     See evaluation_step for the meaning of the common arguments. This version
@@ -218,7 +224,9 @@ def evaluation_step_before_run(sandbox: Sandbox, command: list[str],
     return sandbox.execute_without_std(command, wait=wait)
 
 
-def evaluation_step_after_run(sandbox: Sandbox) -> tuple[bool, bool | None, StatsDict | None]:
+def evaluation_step_after_run(
+    sandbox: Sandbox,
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Final part of an evaluation step, collecting the results after the run.
 
     See evaluation_step for the meaning of the argument and the return value.

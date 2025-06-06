@@ -757,9 +757,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             # Otherwise, the task type is Batch
             else:
                 args["task_type"] = "Batch"
-                args["task_type_parameters"] = \
-                    [compilation_param, [infile_param, outfile_param],
-                     evaluation_param]
+                args["task_type_parameters"] = [
+                    compilation_param,
+                    [infile_param, outfile_param],
+                    evaluation_param,
+                ]
 
         args["testcases"] = []
         for i in range(n_input):

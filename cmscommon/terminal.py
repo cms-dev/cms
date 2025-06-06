@@ -66,8 +66,13 @@ def has_color_support(stream: typing.IO) -> bool:
     return False
 
 
-def add_color_to_string(string: str, color: int, stream: typing.IO = sys.stdout,
-                        bold: bool = False, force: bool = False) -> str:
+def add_color_to_string(
+    string: str,
+    color: int,
+    stream: typing.IO = sys.stdout,
+    bold: bool = False,
+    force: bool = False,
+) -> str:
     """Format the string to be printed with the given color.
 
     Insert formatting characters that, when printed on a terminal, will
@@ -98,7 +103,9 @@ def add_color_to_string(string: str, color: int, stream: typing.IO = sys.stdout,
         return string
 
 
-def move_cursor(direction: int, amount: int=1, stream: typing.IO=sys.stdout, erase: bool=False):
+def move_cursor(
+    direction: int, amount: int = 1, stream: typing.IO = sys.stdout, erase: bool = False
+):
     """Move the cursor.
 
     If the stream is a TTY, print characters that will move the cursor

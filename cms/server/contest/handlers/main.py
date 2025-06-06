@@ -37,6 +37,7 @@ import re
 import collections
 
 from cms.db.contest import Contest
+
 try:
     collections.MutableMapping
 except:
@@ -181,9 +182,9 @@ class RegistrationHandler(ContestHandler):
         password: str = self.get_argument("password")
 
         # Find user if it exists
-        user: User | None = self.sql_session.query(User)\
-                        .filter(User.username == username)\
-                        .first()
+        user: User | None = (
+            self.sql_session.query(User).filter(User.username == username).first()
+        )
         if user is None:
             raise tornado_web.HTTPError(404)
 
@@ -198,9 +199,9 @@ class RegistrationHandler(ContestHandler):
         if self.sql_session.query(Team).count() > 0:
             try:
                 team_code: str = self.get_argument("team")
-                team: Team | None = self.sql_session.query(Team)\
-                           .filter(Team.code == team_code)\
-                           .one()
+                team: Team | None = (
+                    self.sql_session.query(Team).filter(Team.code == team_code).one()
+                )
             except (tornado_web.MissingArgumentError, NoResultFound):
                 raise tornado_web.HTTPError(400)
         else:
@@ -329,9 +330,11 @@ class PrintingHandler(ContestHandler):
         if not self.r_params["printing_enabled"]:
             raise tornado_web.HTTPError(404)
 
-        printjobs: list[PrintJob] = self.sql_session.query(PrintJob)\
-            .filter(PrintJob.participation == participation)\
+        printjobs: list[PrintJob] = (
+            self.sql_session.query(PrintJob)
+            .filter(PrintJob.participation == participation)
             .all()
+        )
 
         remaining_jobs = max(0, config.max_jobs_per_user - len(printjobs))
 

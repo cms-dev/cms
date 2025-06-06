@@ -31,10 +31,29 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Query
 
 from cms import ConfigError
-from . import SessionGen, Digest, Contest, Participation, Statement, \
-    Attachment, Task, Manager, Dataset, Testcase, Submission, File, \
-    SubmissionResult, Executable, UserTest, UserTestFile, UserTestManager, \
-    UserTestResult, UserTestExecutable, PrintJob, Session
+from . import (
+    SessionGen,
+    Digest,
+    Contest,
+    Participation,
+    Statement,
+    Attachment,
+    Task,
+    Manager,
+    Dataset,
+    Testcase,
+    Submission,
+    File,
+    SubmissionResult,
+    Executable,
+    UserTest,
+    UserTestFile,
+    UserTestManager,
+    UserTestResult,
+    UserTestExecutable,
+    PrintJob,
+    Session,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -137,10 +156,13 @@ def ask_for_contest(skip: int | None = None) -> int:
     return contest_id
 
 
-def get_submissions(session: Session, contest_id: int | None = None,
-                    participation_id: int | None = None,
-                    task_id: int | None = None,
-                    submission_id: int | None = None) -> Query:
+def get_submissions(
+    session: Session,
+    contest_id: int | None = None,
+    participation_id: int | None = None,
+    task_id: int | None = None,
+    submission_id: int | None = None,
+) -> Query:
     """Search for submissions that match the given criteria
 
     The submissions will be returned as a list, and the last four
@@ -192,11 +214,14 @@ def get_submissions(session: Session, contest_id: int | None = None,
     return query
 
 
-def get_submission_results(session: Session, contest_id: int | None = None,
-                           participation_id: int | None = None,
-                           task_id: int | None = None,
-                           submission_id: int | None = None,
-                           dataset_id: int | None = None) -> Query:
+def get_submission_results(
+    session: Session,
+    contest_id: int | None = None,
+    participation_id: int | None = None,
+    task_id: int | None = None,
+    submission_id: int | None = None,
+    dataset_id: int | None = None,
+) -> Query:
     """Search for submission results that match the given criteria
 
     The submission results will be returned as a list, and the last
@@ -279,9 +304,14 @@ def get_datasets_to_judge(task: Task) -> list[Dataset]:
 
 
 def enumerate_files(
-    session: Session, contest: Contest | None = None,
-        skip_submissions=False, skip_user_tests=False, skip_users=False,
-        skip_print_jobs=False, skip_generated=False) -> set[str]:
+    session: Session,
+    contest: Contest | None = None,
+    skip_submissions=False,
+    skip_user_tests=False,
+    skip_users=False,
+    skip_print_jobs=False,
+    skip_generated=False,
+) -> set[str]:
     """Enumerate all the files (by digest) referenced by the
     contest.
 

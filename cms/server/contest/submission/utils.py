@@ -43,12 +43,13 @@ from .check import get_latest_submission
 
 
 def fetch_file_digests_from_previous_submission(
-        sql_session: Session,
-        participation: Participation,
-        task: Task,
-        language: Language | None,
-        codenames: set[str],
-        cls: type[Submission | UserTest] = Submission) -> dict[str, str]:
+    sql_session: Session,
+    participation: Participation,
+    task: Task,
+    language: Language | None,
+    codenames: set[str],
+    cls: type[Submission | UserTest] = Submission,
+) -> dict[str, str]:
     """Retrieve digests of files with given codenames from latest submission.
 
     Get the most recent submission of the given contestant on the given
@@ -91,7 +92,7 @@ def fetch_file_digests_from_previous_submission(
         if codename in latest_submission.files:
             digests[codename] = latest_submission.files[codename].digest
         elif cls is UserTest:
-            assert isinstance(latest_submission, UserTest) # for type checking
+            assert isinstance(latest_submission, UserTest)  # for type checking
             if codename == "input":
                 digests["input"] = latest_submission.input
             else:
@@ -114,7 +115,13 @@ class StorageFailed(Exception):
     pass
 
 
-def store_local_copy(path: str, participation: Participation, task: Task, timestamp: datetime, files: dict[str, bytes]):
+def store_local_copy(
+    path: str,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    files: dict[str, bytes],
+):
     """Write the files plus some metadata to a local backup
 
     Add a new file to the local backup storage (rooted in the given

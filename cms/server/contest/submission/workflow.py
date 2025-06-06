@@ -35,7 +35,16 @@ if typing.TYPE_CHECKING:
     from tornado.httputil import HTTPFile
 
 from cms import config
-from cms.db import Submission, File, UserTestManager, UserTestFile, UserTest, Task, Participation, Session
+from cms.db import (
+    Submission,
+    File,
+    UserTestManager,
+    UserTestFile,
+    UserTest,
+    Task,
+    Participation,
+    Session,
+)
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
 from .check import check_max_number, check_min_interval
@@ -54,6 +63,7 @@ def N_(msgid):
 
 
 class UnacceptableSubmission(Exception):
+
     def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
@@ -67,8 +77,16 @@ class UnacceptableSubmission(Exception):
         return self.text % self.text_params
 
 
-def accept_submission(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
-                      tornado_files: dict[str, list["HTTPFile"]], language_name: str | None, official: bool) -> Submission:
+def accept_submission(
+    sql_session: Session,
+    file_cacher: FileCacher,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    tornado_files: dict[str, list["HTTPFile"]],
+    language_name: str | None,
+    official: bool,
+) -> Submission:
     """Process a contestant's request to submit a submission.
 
     Parse and validate the data that a contestant sent for a submission
@@ -224,6 +242,7 @@ class TestingNotAllowed(Exception):
 
 
 class UnacceptableUserTest(Exception):
+
     def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
@@ -237,8 +256,15 @@ class UnacceptableUserTest(Exception):
         return self.text % self.text_params
 
 
-def accept_user_test(sql_session: Session, file_cacher: FileCacher, participation: Participation, task: Task, timestamp: datetime,
-                     tornado_files: dict[str, list["HTTPFile"]], language_name: str | None) -> UserTest:
+def accept_user_test(
+    sql_session: Session,
+    file_cacher: FileCacher,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    tornado_files: dict[str, list["HTTPFile"]],
+    language_name: str | None,
+) -> UserTest:
     """Process a contestant's request to submit a user test.
 
     sql_session: the DB session to use to fetch and add data.

@@ -81,10 +81,13 @@ class ScoreType(metaclass=ABCMeta):
         self.template: Template = GLOBAL_ENVIRONMENT.from_string(self.TEMPLATE)
 
     @staticmethod
-    def format_score(score: float, max_score: float,
-                     unused_score_details: object,
-                     score_precision: int,
-                     translation: Translation = DEFAULT_TRANSLATION) -> str:
+    def format_score(
+        score: float,
+        max_score: float,
+        unused_score_details: object,
+        score_precision: int,
+        translation: Translation = DEFAULT_TRANSLATION,
+    ) -> str:
         """Produce the string of the score that is shown in CWS.
 
         In the submission table in the task page of CWS the global
@@ -108,9 +111,12 @@ class ScoreType(metaclass=ABCMeta):
             translation.format_decimal(round(score, score_precision)),
             translation.format_decimal(round(max_score, score_precision)))
 
-    def get_html_details(self, score_details: object,
-                         feedback_level: str = FEEDBACK_LEVEL_RESTRICTED,
-                         translation: Translation = DEFAULT_TRANSLATION) -> str:
+    def get_html_details(
+        self,
+        score_details: object,
+        feedback_level: str = FEEDBACK_LEVEL_RESTRICTED,
+        translation: Translation = DEFAULT_TRANSLATION,
+    ) -> str:
         """Return an HTML string representing the score details of a
         submission.
 
@@ -156,7 +162,9 @@ class ScoreType(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_score(self, submission_result: SubmissionResult) -> tuple[float, object, float, object, list[str]]:
+    def compute_score(
+        self, submission_result: SubmissionResult
+    ) -> tuple[float, object, float, object, list[str]]:
         """Computes a score of a single submission.
 
         submission_result: the submission

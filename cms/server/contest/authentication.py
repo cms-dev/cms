@@ -64,12 +64,14 @@ def get_password(participation: Participation) -> str:
         return participation.password
 
 
-def validate_login(sql_session: Session,
-                   contest: Contest,
-                   timestamp: datetime,
-                   username: str,
-                   password: str,
-                   ip_address: AnyIPAddress) -> tuple[Participation | None, bytes | None]:
+def validate_login(
+    sql_session: Session,
+    contest: Contest,
+    timestamp: datetime,
+    username: str,
+    password: str,
+    ip_address: AnyIPAddress,
+) -> tuple[Participation | None, bytes | None]:
     """Authenticate a user logging in, with username and password.
 
     Given the information the user provided (the username and the
@@ -105,12 +107,14 @@ def validate_login(sql_session: Session,
         log_failed_attempt("password authentication not allowed")
         return None, None
 
-    participation: Participation | None = sql_session.query(Participation) \
-        .join(Participation.user) \
-        .options(contains_eager(Participation.user)) \
-        .filter(Participation.contest == contest)\
-        .filter(User.username == username)\
+    participation: Participation | None = (
+        sql_session.query(Participation)
+        .join(Participation.user)
+        .options(contains_eager(Participation.user))
+        .filter(Participation.contest == contest)
+        .filter(User.username == username)
         .first()
+    )
 
     if participation is None:
         log_failed_attempt("user not registered to contest")
@@ -155,11 +159,13 @@ class AmbiguousIPAddress(Exception):
     pass
 
 
-def authenticate_request(sql_session: Session,
-                         contest: Contest,
-                         timestamp: datetime,
-                         cookie: bytes | None,
-                         ip_address: AnyIPAddress) -> tuple[Participation | None, bytes | None]:
+def authenticate_request(
+    sql_session: Session,
+    contest: Contest,
+    timestamp: datetime,
+    cookie: bytes | None,
+    ip_address: AnyIPAddress,
+) -> tuple[Participation | None, bytes | None]:
     """Authenticate a user returning to the site, with a cookie.
 
     Given the information the user's browser provided (the cookie) and
@@ -239,7 +245,9 @@ def authenticate_request(sql_session: Session,
     return participation, cookie
 
 
-def _authenticate_request_by_ip_address(sql_session: Session, contest: Contest, ip_address: AnyIPAddress) -> Participation | None:
+def _authenticate_request_by_ip_address(
+    sql_session: Session, contest: Contest, ip_address: AnyIPAddress
+) -> Participation | None:
     """Return the current participation based on the IP address.
 
     sql_session: the SQLAlchemy database session used to
@@ -259,15 +267,18 @@ def _authenticate_request_by_ip_address(sql_session: Session, contest: Contest, 
     # since we're comparing it for equality with other networks.
     ip_network = ipaddress.ip_network((ip_address, ip_address.max_prefixlen))
 
-    participations_query = sql_session.query(Participation) \
-        .options(joinedload(Participation.user)) \
-        .filter(Participation.contest == contest) \
+    participations_query = (
+        sql_session.query(Participation)
+        .options(joinedload(Participation.user))
+        .filter(Participation.contest == contest)
         .filter(Participation.ip.any(ip_network))
+    )
 
     # If hidden users are blocked we ignore them completely.
     if contest.block_hidden_participations:
-        participations_query = participations_query \
-            .filter(Participation.hidden.is_(False))
+        participations_query = participations_query.filter(
+            Participation.hidden.is_(False)
+        )
 
     participations: list[Participation] = participations_query.all()
 
@@ -294,7 +305,9 @@ def _authenticate_request_by_ip_address(sql_session: Session, contest: Contest, 
     return participation
 
 
-def _authenticate_request_from_cookie(sql_session: Session, contest: Contest, timestamp: datetime, cookie: bytes | None) -> tuple[Participation | None, bytes | None]:
+def _authenticate_request_from_cookie(
+    sql_session: Session, contest: Contest, timestamp: datetime, cookie: bytes | None
+) -> tuple[Participation | None, bytes | None]:
     """Return the current participation based on the cookie.
 
     If a participation can be extracted, the cookie is refreshed.
@@ -339,12 +352,14 @@ def _authenticate_request_from_cookie(sql_session: Session, contest: Contest, ti
         return None, None
 
     # Load participation from DB and make sure it exists.
-    participation: Participation | None = sql_session.query(Participation) \
-        .join(Participation.user) \
-        .options(contains_eager(Participation.user)) \
-        .filter(Participation.contest == contest) \
-        .filter(User.username == username) \
+    participation: Participation | None = (
+        sql_session.query(Participation)
+        .join(Participation.user)
+        .options(contains_eager(Participation.user))
+        .filter(Participation.contest == contest)
+        .filter(User.username == username)
         .first()
+    )
     if participation is None:
         log_failed_attempt("user not registered to contest")
         return None, None

@@ -105,10 +105,12 @@ class RemoveParticipationHandler(BaseHandler):
     def get(self, contest_id, user_id):
         self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
-        participation: Participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation: Participation = (
+            self.sql_session.query(Participation)
+            .filter(Participation.contest_id == contest_id)
+            .filter(Participation.user_id == user_id)
+            .first()
+        )
         # Check that the participation is valid.
         if participation is None:
             raise tornado_web.HTTPError(404)
@@ -126,10 +128,12 @@ class RemoveParticipationHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
         user = self.safe_get_item(User, user_id)
 
-        participation: Participation = self.sql_session.query(Participation)\
-            .filter(Participation.user == user)\
-            .filter(Participation.contest == self.contest)\
+        participation: Participation = (
+            self.sql_session.query(Participation)
+            .filter(Participation.user == user)
+            .filter(Participation.contest == self.contest)
             .first()
+        )
 
         # Unassign the user from the contest.
         self.sql_session.delete(participation)
@@ -180,10 +184,12 @@ class ParticipationHandler(BaseHandler):
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, contest_id, user_id):
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation: Participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation: Participation = (
+            self.sql_session.query(Participation)
+            .filter(Participation.contest_id == contest_id)
+            .filter(Participation.user_id == user_id)
+            .first()
+        )
 
         # Check that the participation is valid.
         if participation is None:
@@ -205,10 +211,12 @@ class ParticipationHandler(BaseHandler):
             self.url("contest", contest_id, "user", user_id, "edit")
 
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation: Participation = self.sql_session.query(Participation)\
-                            .filter(Participation.contest_id == contest_id)\
-                            .filter(Participation.user_id == user_id)\
-                            .first()
+        participation: Participation = (
+            self.sql_session.query(Participation)
+            .filter(Participation.contest_id == contest_id)
+            .filter(Participation.user_id == user_id)
+            .first()
+        )
 
         # Check that the participation is valid.
         if participation is None:
@@ -231,9 +239,9 @@ class ParticipationHandler(BaseHandler):
 
             # Update the team
             self.get_string(attrs, "team")
-            team: Team | None = self.sql_session.query(Team)\
-                       .filter(Team.code == attrs["team"])\
-                       .first()
+            team: Team | None = (
+                self.sql_session.query(Team).filter(Team.code == attrs["team"]).first()
+            )
             participation.team = team
 
         except Exception as error:
@@ -257,10 +265,12 @@ class MessageHandler(BaseHandler):
     def post(self, contest_id, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = self.safe_get_item(Contest, contest_id)
-        participation: Participation | None = self.sql_session.query(Participation)\
-            .filter(Participation.contest == self.contest)\
-            .filter(Participation.user == user)\
+        participation: Participation | None = (
+            self.sql_session.query(Participation)
+            .filter(Participation.contest == self.contest)
+            .filter(Participation.user == user)
             .first()
+        )
 
         # check that the participation is valid
         if participation is None:

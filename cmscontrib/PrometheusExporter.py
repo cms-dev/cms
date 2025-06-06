@@ -49,6 +49,7 @@ from cms.server.admin.server import AdminWebServer
 
 logger = logging.getLogger(__name__)
 
+
 class PrometheusExporter(Service, Collector):
     def __init__(self, args):
         super().__init__()

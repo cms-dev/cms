@@ -57,9 +57,9 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
 
         username: str = self.get_argument("username", "")
         password: str = self.get_argument("password", "")
-        admin: Admin | None = self.sql_session.query(Admin)\
-            .filter(Admin.username == username)\
-            .first()
+        admin: Admin | None = (
+            self.sql_session.query(Admin).filter(Admin.username == username).first()
+        )
 
         if admin is None:
             logger.warning("Nonexistent admin account: %s", username)
@@ -142,10 +142,12 @@ class NotificationsHandler(BaseHandler):
         last_notification = make_datetime(
             float(self.get_argument("last_notification", "0")))
 
-        questions: list[Question] = self.sql_session.query(Question)\
-            .filter(Question.reply_timestamp.is_(None))\
-            .filter(Question.question_timestamp > last_notification)\
+        questions: list[Question] = (
+            self.sql_session.query(Question)
+            .filter(Question.reply_timestamp.is_(None))
+            .filter(Question.question_timestamp > last_notification)
             .all()
+        )
 
         for question in questions:
             res.append({
