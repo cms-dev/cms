@@ -97,17 +97,20 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
         actual_start = None
         actual_stop = None
 
-        if contest_start <= timestamp <= contest_stop:
+        adjusted_start = contest_start + delay_time
+        adjusted_stop = contest_stop + delay_time + extra_time
+
+        if adjusted_start <= timestamp <= adjusted_stop:
             actual_phase = -1
-            current_phase_begin = contest_start
-            current_phase_end = contest_stop
-        elif timestamp < contest_start:
+            current_phase_begin = adjusted_start
+            current_phase_end = adjusted_stop
+        elif timestamp < adjusted_start:
             actual_phase = -2
             current_phase_begin = None
-            current_phase_end = contest_start
-        elif contest_stop < timestamp:
+            current_phase_end = adjusted_start
+        elif adjusted_stop < timestamp:
             actual_phase = +2
-            current_phase_begin = contest_stop
+            current_phase_begin = adjusted_stop
             current_phase_end = None
         else:
             raise RuntimeError("Logic doesn't seem to be working...")
@@ -117,18 +120,26 @@ def compute_actual_phase(timestamp, contest_start, contest_stop,
             # "Traditional" contest.
             intended_start = contest_start
             intended_stop = contest_stop
+
+            # delay time shifts the window, extra time shifts just the endpoint
+            actual_start = intended_start + delay_time
+            actual_stop = intended_stop + delay_time + extra_time
         else:
             # "USACO-like" contest, and we already know when the user
             # started/will start.
             # Both values are lower- and upper-bounded to prevent the
             # ridiculous situations of starting_time being set by the
             # admin way before contest_start or after contest_stop.
-            intended_start = min(max(starting_time,
-                                     contest_start), contest_stop)
-            intended_stop = min(max(starting_time + per_user_time,
-                                    contest_start), contest_stop)
-        actual_start = intended_start + delay_time
-        actual_stop = intended_stop + delay_time + extra_time
+
+            # delay time shifts the contest_start / contest_end, but it doesn't shift the starting_time (i.e. the time that they press the button)
+            intended_start = min(max(starting_time, contest_start + delay_time),
+                                 contest_stop + delay_time)
+            intended_stop = min(max(starting_time + per_user_time, contest_start + delay_time),
+                                contest_stop + delay_time)
+
+            actual_start = intended_start
+            actual_stop = intended_stop + extra_time
+
 
         assert contest_start <= actual_start <= actual_stop
 
