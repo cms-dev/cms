@@ -43,30 +43,34 @@ VAR_ROOT = os.path.join("/", "var", "local")
 
 # Do not prompt the user for interactive yes-or-no confirmations:
 # always assume yes! This is useful for programmatic use.
-ALWAYS_YES = False
+ALWAYS_YES: bool = False
 # Allow to do operations that should normally be performed as an
 # unprivileged user (e.g., building) as root.
-AS_ROOT = False
+AS_ROOT: bool = False
 # Do not even try to install configuration files (i.e., copying the
 # samples) when installing.
-NO_CONF = False
+NO_CONF: bool = False
 # The user and group that CMS will be run as: will be created and will
 # receive the correct permissions to access isolate, the configuration
 # file and the system directories.
-CMSUSER = "cmsuser"
+CMSUSER: str = "cmsuser"
 
 
-def copyfile(src, dest, owner, perm, group=None):
+def copyfile(
+    src: str,
+    dest: str,
+    owner: pwd.struct_passwd,
+    perm: int,
+    group: grp.struct_group | None = None,
+):
     """Copy the file src to dest, and assign owner and permissions.
 
-    src (string): the complete path of the source file.
-    dest (string): the complete path of the destination file (i.e.,
-                   not the destination directory).
-    owner (as given by pwd.getpwnam): the owner we want for dest.
-    perm (integer): the permission for dest (example: 0o660).
-    group (as given by grp.getgrnam): the group we want for dest; if
-                                      not specified, use owner's
-                                      group.
+    src: the complete path of the source file.
+    dest: the complete path of the destination file (i.e., not the
+    destination directory).
+    owner: the owner we want for dest.
+    perm: the permission for dest (example: 0o660).
+    group: the group we want for dest; if not specified, use owner's group.
 
     """
     shutil.copy(src, dest)
@@ -79,7 +83,7 @@ def copyfile(src, dest, owner, perm, group=None):
     os.chmod(dest, perm)
 
 
-def try_delete(path):
+def try_delete(path: str):
     """Try to delete a given path, failing gracefully.
 
     """
@@ -95,12 +99,14 @@ def try_delete(path):
             print("[Warning] File not found: ", path)
 
 
-def makedir(dir_path, owner=None, perm=None):
+def makedir(
+    dir_path: str, owner: pwd.struct_passwd | None = None, perm: int | None = None
+):
     """Create a directory with given owner and permission.
 
-    dir_path (string): the new directory to create.
-    owner (as given by pwd.getpwnam): the owner we want for dest.
-    perm (integer): the permission for dest (example: 0o660).
+    dir_path: the new directory to create.
+    owner: the owner we want for dest.
+    perm: the permission for dest (example: 0o660).
 
     """
     if not os.path.exists(dir_path):
@@ -111,15 +117,21 @@ def makedir(dir_path, owner=None, perm=None):
         os.chown(dir_path, owner.pw_uid, owner.pw_gid)
 
 
-def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
+def copytree(
+    src_path: str,
+    dest_path: str,
+    owner: pwd.struct_passwd,
+    perm_files: int,
+    perm_dirs: int,
+):
     """Copy the *content* of src_path in dest_path, assigning the
     given owner and permissions.
 
-    src_path (string): the root of the subtree to copy.
-    dest_path (string): the destination path.
-    owner (as given by pwd.getpwnam): the owner we want for dest.
-    perm_files (integer): the permission for copied not-directories.
-    perm_dirs (integer): the permission for copied directories.
+    src_path: the root of the subtree to copy.
+    dest_path: the destination path.
+    owner: the owner we want for dest.
+    perm_files: the permission for copied not-directories.
+    perm_dirs: the permission for copied directories.
 
     """
     for path in glob(os.path.join(src_path, "*")):
@@ -133,7 +145,7 @@ def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
             print("Error: unexpected filetype for file %s. Not copied" % path)
 
 
-def ask(message):
+def ask(message: str):
     """Ask the user and return True if and only if one of the following holds:
     - the users responds "Y" or "y"
     - the "-y" flag was set as a CLI argument

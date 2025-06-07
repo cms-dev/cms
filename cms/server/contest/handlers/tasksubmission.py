@@ -33,6 +33,10 @@ import logging
 import re
 
 import collections
+
+from cms.db.task import Task
+from cms.db.user import Participation
+
 try:
     collections.MutableMapping
 except:
@@ -120,18 +124,20 @@ class TaskSubmissionsHandler(ContestHandler):
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name):
-        participation = self.current_user
+        participation: Participation = self.current_user
 
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submissions = self.sql_session.query(Submission)\
-            .filter(Submission.participation == participation)\
-            .filter(Submission.task == task)\
-            .options(joinedload(Submission.token))\
-            .options(joinedload(Submission.results))\
+        submissions: list[Submission] = (
+            self.sql_session.query(Submission)
+            .filter(Submission.participation == participation)
+            .filter(Submission.task == task)
+            .options(joinedload(Submission.token))
+            .options(joinedload(Submission.results))
             .all()
+        )
 
         public_score, is_public_score_partial = task_score(
             participation, task, public=True, rounded=True)
@@ -191,12 +197,12 @@ class SubmissionStatusHandler(ContestHandler):
 
     refresh_cookie = False
 
-    def add_task_score(self, participation, task, data):
+    def add_task_score(self, participation: Participation, task: Task, data: dict):
         """Add the task score information to the dict to be returned.
 
-        participation (Participation): user for which we want the score.
-        task (Task): task for which we want the score.
-        data (dict): where to put the data; all fields will start with "task",
+        participation: user for which we want the score.
+        task: task for which we want the score.
+        data: where to put the data; all fields will start with "task",
             followed by "public" if referring to the public scores, or
             "tokened" if referring to the total score (always limited to
             tokened submissions); for both public and tokened, the fields are:

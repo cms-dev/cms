@@ -41,11 +41,11 @@ class TestException(Exception):
     pass
 
 
-def sh(cmdline, ignore_failure=False):
+def sh(cmdline: list[str], ignore_failure: bool = False):
     """Execute a simple command.
 
-    cmd ([str]): the (unescaped) command to execute.
-    ignore_failure (bool): whether to suppress failures.
+    cmd: the (unescaped) command to execute.
+    ignore_failure: whether to suppress failures.
 
     raise (TestException): if the command failed and ignore_failure was False.
 

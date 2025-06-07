@@ -37,6 +37,7 @@
 
 """
 
+from datetime import datetime
 import logging
 
 from werkzeug.middleware.shared_data import SharedDataMiddleware
@@ -61,7 +62,7 @@ class ContestWebServer(WebService):
     """Service that runs the web server serving the contestants.
 
     """
-    def __init__(self, shard, contest_id=None):
+    def __init__(self, shard: int, contest_id: int | None = None):
         parameters = {
             "static_files": [("cms.server", "static"),
                              ("cms.server.contest", "static")],
@@ -110,8 +111,8 @@ class ContestWebServer(WebService):
         # notification. Things like "Yay, your submission went
         # through.", not things like "Your question has been replied",
         # that are handled by the db. Each username points to a list
-        # of tuples (timestamp, subject, text).
-        self.notifications = {}
+        # of tuples (timestamp, subject, text, level).
+        self.notifications: dict[str, list[tuple[datetime, str, str, str]]] = {}
 
         # Retrieve the available translations.
         self.translations = get_translations()
@@ -131,15 +132,17 @@ class ContestWebServer(WebService):
             ServiceCoord("PrintingService", 0),
             must_be_present=printing_enabled)
 
-    def add_notification(self, username, timestamp, subject, text, level):
+    def add_notification(
+        self, username: str, timestamp: datetime, subject: str, text: str, level: str
+    ):
         """Store a new notification to send to a user at the first
         opportunity (i.e., at the first request fot db notifications).
 
-        username (string): the user to notify.
-        timestamp (datetime): the time of the notification.
-        subject (string): subject of the notification.
-        text (string): body of the notification.
-        level (string): one of NOTIFICATION_* (defined above)
+        username: the user to notify.
+        timestamp: the time of the notification.
+        subject: subject of the notification.
+        text: body of the notification.
+        level: one of NOTIFICATION_* (defined above)
 
         """
         if username not in self.notifications:

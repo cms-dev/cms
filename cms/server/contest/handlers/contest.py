@@ -33,6 +33,10 @@ import ipaddress
 import logging
 
 import collections
+
+from cms.db.user import Participation
+from cms.server.util import Url
+
 try:
     collections.MutableMapping
 except:
@@ -71,7 +75,8 @@ class ContestHandler(BaseHandler):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.contest_url = None
+        self.contest_url: Url = None
+        self.contest: Contest
 
     def prepare(self):
         self.choose_contest()
@@ -124,7 +129,7 @@ class ContestHandler(BaseHandler):
             self.contest = Contest.get_from_id(
                 self.service.contest_id, self.sql_session)
 
-    def get_current_user(self):
+    def get_current_user(self) -> Participation | None:
         """Return the currently logged in participation.
 
         The name is get_current_user because tornado requires that
@@ -144,7 +149,7 @@ class ContestHandler(BaseHandler):
         In case of any error, or of a login by other sources, the
         cookie is deleted.
 
-        return (Participation|None): the participation object for the
+        return: the participation object for the
             user logged in for the running contest.
 
         """
@@ -224,12 +229,12 @@ class ContestHandler(BaseHandler):
         """
         return self.contest_url()
 
-    def get_task(self, task_name):
+    def get_task(self, task_name: str) -> Task | None:
         """Return the task in the contest with the given name.
 
-        task_name (str): the name of the task we are interested in.
+        task_name: the name of the task we are interested in.
 
-        return (Task|None): the corresponding task object, if found.
+        return: the corresponding task object, if found.
 
         """
         return self.sql_session.query(Task) \
@@ -237,13 +242,13 @@ class ContestHandler(BaseHandler):
             .filter(Task.name == task_name) \
             .one_or_none()
 
-    def get_submission(self, task, submission_num):
+    def get_submission(self, task: Task, submission_num: str) -> Submission | None:
         """Return the num-th contestant's submission on the given task.
 
-        task (Task): a task for the contest that is being served.
-        submission_num (str): a positive number, in decimal encoding.
+        task: a task for the contest that is being served.
+        submission_num: a positive number, in decimal encoding.
 
-        return (Submission|None): the submission_num-th submission
+        return: the submission_num-th submission
             (1-based), in chronological order, that was sent by the
             currently logged in contestant on the given task (None if
             not found).
@@ -256,13 +261,13 @@ class ContestHandler(BaseHandler):
             .offset(int(submission_num) - 1) \
             .first()
 
-    def get_user_test(self, task, user_test_num):
+    def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
         """Return the num-th contestant's test on the given task.
 
-        task (Task): a task for the contest that is being served.
-        user_test_num (str): a positive number, in decimal encoding.
+        task: a task for the contest that is being served.
+        user_test_num: a positive number, in decimal encoding.
 
-        return (UserTest|None): the user_test_num-th user test, in
+        return: the user_test_num-th user test, in
             chronological order, that was sent by the currently logged
             in contestant on the given task (None if not found).
 
@@ -274,7 +279,9 @@ class ContestHandler(BaseHandler):
             .offset(int(user_test_num) - 1) \
             .first()
 
-    def add_notification(self, subject, text, level, text_params=None):
+    def add_notification(
+        self, subject: str, text: str, level: str, text_params: object | None = None
+    ):
         subject = self._(subject)
         text = self._(text)
         if text_params is not None:
@@ -282,13 +289,17 @@ class ContestHandler(BaseHandler):
         self.service.add_notification(self.current_user.user.username,
                                       self.timestamp, subject, text, level)
 
-    def notify_success(self, subject, text, text_params=None):
+    def notify_success(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_SUCCESS, text_params)
 
-    def notify_warning(self, subject, text, text_params=None):
+    def notify_warning(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_WARNING, text_params)
 
-    def notify_error(self, subject, text, text_params=None):
+    def notify_error(self, subject: str, text: str, text_params: object | None = None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
 
 

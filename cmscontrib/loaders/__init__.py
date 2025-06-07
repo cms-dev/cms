@@ -15,21 +15,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
+import typing
+
+from .base_loader import BaseLoader
 from .italy_yaml import YamlLoader
 from .polygon import PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader
 from .tps import TpsTaskLoader
 
 
-LOADERS = dict(
-    (loader_class.short_name, loader_class) for loader_class in [
+LOADERS: dict[str, type[BaseLoader]] = dict(
+    (loader_class.short_name, loader_class)
+    for loader_class in [
         YamlLoader,
-        PolygonTaskLoader, PolygonUserLoader, PolygonContestLoader,
-        TpsTaskLoader
+        PolygonTaskLoader,
+        PolygonUserLoader,
+        PolygonContestLoader,
+        TpsTaskLoader,
     ]
 )
 
 
-def choose_loader(arg, path, error_callback):
+def choose_loader(
+    arg: str | None, path: str, error_callback: Callable[[str], typing.NoReturn]
+) -> type[BaseLoader]:
     """Decide which loader to use.
 
     The choice depends upon the specified argument and possibly
@@ -40,13 +49,13 @@ def choose_loader(arg, path, error_callback):
     more than one return True, then the autodetection is considered
     failed and None is returned.
 
-    arg (string): the argument, possibly None, passed to the program
-                  as loader specification.
-    path (string): the path passed to the program from which to
-                   perform the loading.
-    error_callback (method): a method to call to report errors.
+    arg: the argument, possibly None, passed to the program
+        as loader specification.
+    path: the path passed to the program from which to
+        perform the loading.
+    error_callback: a method to call to report errors.
 
-    return (type): the chosen loader class.
+    return: the chosen loader class.
 
     """
     if arg is not None:

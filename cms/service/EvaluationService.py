@@ -32,7 +32,7 @@ the current ranking.
 
 import logging
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import wraps
 
 import gevent.lock
@@ -40,11 +40,13 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from cms import ServiceCoord, get_service_shards
+from cms.db.session import Session
+from cms.io.priorityqueue import QueueEntry, QueueEntryDict, QueueItem
 from cmscommon.datetime import make_timestamp
 from cms.db import SessionGen, Digest, Dataset, Evaluation, Submission, \
     SubmissionResult, Testcase, UserTest, UserTestResult, get_submissions, \
     get_submission_results, get_datasets_to_judge
-from cms.grading.Job import JobGroup
+from cms.grading.Job import Job, JobGroup
 from cms.io import Executor, TriggeredService, rpc_method
 from .esoperations import ESOperation, get_relevant_operations, \
     get_submissions_operations, get_user_tests_operations, \
@@ -57,12 +59,12 @@ from .workerpool import WorkerPool
 logger = logging.getLogger(__name__)
 
 
-class EvaluationExecutor(Executor):
+class EvaluationExecutor(Executor[ESOperation]):
 
     # Real maximum number of operations to be sent to a worker.
     MAX_OPERATIONS_PER_BATCH = 25
 
-    def __init__(self, evaluation_service):
+    def __init__(self, evaluation_service: "EvaluationService"):
         """Create the single executor for ES.
 
         The executor just delegates work to the worker pool.
@@ -75,7 +77,7 @@ class EvaluationExecutor(Executor):
 
         # List of QueueItem (ESOperation) we have extracted from the
         # queue, but not yet finished to execute.
-        self._currently_executing = []
+        self._currently_executing: list[ESOperation] = []
 
         # Lock used to guard the currently executing operations
         self._current_execution_lock = gevent.lock.RLock()
@@ -85,18 +87,18 @@ class EvaluationExecutor(Executor):
         # operation of each (type, object_id, dataset_id, priority) tuple.
         # This dictionary maps any such tuple to a "queue entry" (lacking
         # the testcase codename) and keeps track of multiplicity.
-        self.queue_status_cumulative = dict()
+        self.queue_status_cumulative: dict[tuple, QueueEntryDict] = dict()
 
         for i in range(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
 
-    def __contains__(self, item):
+    def __contains__(self, item: QueueItem) -> bool:
         """Return whether the item is in execution.
 
-        item (QueueItem): an item to search.
+        item: an item to search.
 
-        return (bool): True if item is in the queue, or if it is the
+        return: True if item is in the queue, or if it is the
             item already extracted but not given to the workers yet,
             or if it is being executed by a worker.
 
@@ -105,7 +107,7 @@ class EvaluationExecutor(Executor):
                 or item in self._currently_executing
                 or item in self.pool)
 
-    def max_operations_per_batch(self):
+    def max_operations_per_batch(self) -> int:
         """Return the maximum number of operations per batch.
 
         We derive the number from the length of the queue divided by
@@ -120,13 +122,13 @@ class EvaluationExecutor(Executor):
                     ratio, ret)
         return ret
 
-    def execute(self, entries):
+    def execute(self, entries: list[QueueEntry[ESOperation]]):
         """Execute a batch of operations in the queue.
 
         The operations might not be executed immediately because of
         lack of workers.
 
-        entries ([QueueEntry]): entries containing the operations to
+        entries: entries containing the operations to
             perform.
 
         """
@@ -161,17 +163,19 @@ class EvaluationExecutor(Executor):
                 item_entry = item.to_dict()
                 del item_entry["testcase_codename"]
                 item_entry["multiplicity"] = 1
-                entry = {"item": item_entry, "priority": priority, "timestamp": make_timestamp(timestamp)}
+                entry: QueueEntryDict = {
+                    "item": item_entry,
+                    "priority": priority,
+                    "timestamp": make_timestamp(timestamp),
+                }
                 self.queue_status_cumulative[key] = entry
         return success
 
-    def dequeue(self, operation):
+    def dequeue(self, operation: ESOperation):
         """Remove an item from the queue.
 
         We need to override dequeue because the operation to dequeue
         might have already been extracted, but not yet executed.
-
-        operation (ESOperation)
 
         """
         try:
@@ -190,7 +194,7 @@ class EvaluationExecutor(Executor):
         self._remove_from_cumulative_status(queue_entry)
         return queue_entry
 
-    def _remove_from_cumulative_status(self, queue_entry):
+    def _remove_from_cumulative_status(self, queue_entry: QueueEntry[ESOperation]):
         # Remove the item from the cumulative status dictionary.
         key = queue_entry.item.short_key() + (queue_entry.priority,)
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
@@ -218,12 +222,12 @@ class Result:
 
     """
 
-    def __init__(self, job, job_success):
+    def __init__(self, job: Job, job_success: bool):
         self.job = job
         self.job_success = job_success
 
 
-class EvaluationService(TriggeredService):
+class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
     """Evaluation service.
 
     """
@@ -248,7 +252,7 @@ class EvaluationService(TriggeredService):
     # The maximum time since the last result before processing.
     MAX_FLUSHING_TIME_SECONDS = 2
 
-    def __init__(self, shard, contest_id=None):
+    def __init__(self, shard: int, contest_id: int | None = None):
         super().__init__(shard)
 
         self.contest_id = contest_id
@@ -298,12 +302,12 @@ class EvaluationService(TriggeredService):
                          .total_seconds(),
                          immediately=False)
 
-    def submission_enqueue_operations(self, submission):
+    def submission_enqueue_operations(self, submission: Submission) -> int:
         """Push in queue the operations required by a submission.
 
-        submission (Submission): a submission.
+        submission: a submission.
 
-        return (int): the number of actually enqueued operations.
+        return: the number of actually enqueued operations.
 
         """
         new_operations = 0
@@ -329,12 +333,12 @@ class EvaluationService(TriggeredService):
 
         return new_operations
 
-    def user_test_enqueue_operations(self, user_test):
+    def user_test_enqueue_operations(self, user_test: UserTest) -> int:
         """Push in queue the operations required by a user test.
 
-        user_test (UserTest): a user test.
+        user_test: a user test.
 
-        return (int): the number of actually enqueued operations.
+        return: the number of actually enqueued operations.
 
         """
         new_operations = 0
@@ -347,7 +351,7 @@ class EvaluationService(TriggeredService):
         return new_operations
 
     @with_post_finish_lock
-    def _missing_operations(self):
+    def _missing_operations(self) -> int:
         """Look in the database for submissions that have not been compiled or
         evaluated for no good reasons. Put the missing operation in
         the queue.
@@ -369,12 +373,12 @@ class EvaluationService(TriggeredService):
         return counter
 
     @rpc_method
-    def workers_status(self):
+    def workers_status(self) -> dict:
         """Returns a dictionary (indexed by shard number) whose values
         are the information about the corresponding worker. See
         WorkerPool.get_status for more details.
 
-        returns (dict): the dict with the workers information.
+        returns: the dict with the workers information.
 
         """
         return self.get_executor().pool.get_status()
@@ -406,17 +410,19 @@ class EvaluationService(TriggeredService):
         return True
 
     @with_post_finish_lock
-    def enqueue(self, operation, priority, timestamp):
+    def enqueue(
+        self, operation: ESOperation, priority: int, timestamp: datetime
+    ) -> bool:
         """Push an operation in the queue.
 
         Push an operation in the operation queue if the submission is
         not already in the queue or assigned to a worker.
 
-        operation (ESOperation): the operation to put in the queue.
-        priority (int): the priority of the operation.
-        timestamp (datetime): the time of the submission.
+        operation: the operation to put in the queue.
+        priority: the priority of the operation.
+        timestamp: the time of the submission.
 
-        return (bool): True if pushed, False if not.
+        return: True if pushed, False if not.
 
         """
         if operation in self.get_executor() or operation in self.result_cache:
@@ -426,12 +432,12 @@ class EvaluationService(TriggeredService):
         return super().enqueue(operation, priority, timestamp) > 0
 
     @with_post_finish_lock
-    def action_finished(self, data, shard, error=None):
+    def action_finished(self, data: dict, shard: int, error=None):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (dict): the JobGroup, exported to dict.
-        shard (int): the shard finishing the action.
+        data: the JobGroup, exported to dict.
+        shard: the shard finishing the action.
 
         """
         # We notify the pool that the worker is available again for
@@ -477,7 +483,7 @@ class EvaluationService(TriggeredService):
                     self.result_cache.add(operation, Result(job, job.success))
 
     @with_post_finish_lock
-    def write_results(self, items):
+    def write_results(self, items: list[tuple[ESOperation, Result]]):
         """Receive worker results from the cache and writes them to the DB.
 
         Grouping results together by object (i.e., submission result
@@ -486,8 +492,7 @@ class EvaluationService(TriggeredService):
         retrieving datasets and submission results only once instead
         of once for every result.
 
-        items ([(operation, Result)]): the results received by ES but
-            not yet written to the db.
+        items: the results received by ES but not yet written to the db.
 
         """
         logger.info("Starting commit process...")
@@ -495,6 +500,9 @@ class EvaluationService(TriggeredService):
         # Reorganize the results by submission/usertest result and
         # operation type (i.e., group together the testcase
         # evaluations for the same submission and dataset).
+        by_object_and_type: defaultdict[
+            tuple[str, int, int], list[tuple[ESOperation, Result]]
+        ]
         by_object_and_type = defaultdict(list)
         for operation, result in items:
             t = (operation.type_, operation.object_id, operation.dataset_id)
@@ -575,15 +583,18 @@ class EvaluationService(TriggeredService):
         logger.info("Done")
 
     def write_results_one_object_and_type(
-            self, session, object_result, operation_results):
+        self,
+        session: Session,
+        object_result: SubmissionResult | UserTestResult,
+        operation_results: list[tuple[ESOperation, Result]],
+    ):
         """Write to the DB the results for one object and type.
 
-        session (Session): the DB session to use.
-        object_result (SubmissionResult|UserTestResult): the DB object
-            for the result referred to all the ESOperations.
-        operation_results ([(ESOperation, WorkerResult)]): all the
-            operations and corresponding worker results we have
-            received for the given object_result
+        session: the DB session to use.
+        object_result: the DB object for the result referred to all the
+            ESOperations.
+        operation_results: all the operations and corresponding worker
+            results we have received for the given object_result
 
         """
         for operation, result in operation_results:
@@ -605,14 +616,19 @@ class EvaluationService(TriggeredService):
                     "Unexpected exception while inserting worker result.",
                     exc_info=True)
 
-    def write_results_one_row(self, session, object_result, operation, result):
+    def write_results_one_row(
+        self,
+        session: Session,
+        object_result: SubmissionResult | UserTestResult,
+        operation: ESOperation,
+        result: Result,
+    ):
         """Write to the DB a single result.
 
-        session (Session): the DB session to use.
-        object_result (SubmissionResult|UserTestResult): the DB object
-            for the operation (and for the result).
-        operation (ESOperation): the operation for which we have the result.
-        result (WorkerResult): the result from the worker.
+        session: the DB session to use.
+        object_result: the DB object for the operation (and for the result).
+        operation: the operation for which we have the result.
+        result: the result from the worker.
 
         """
         if operation.type_ == ESOperation.COMPILATION:
@@ -658,14 +674,14 @@ class EvaluationService(TriggeredService):
         else:
             logger.error("Invalid operation type %r.", operation.type_)
 
-    def compilation_ended(self, submission_result):
+    def compilation_ended(self, submission_result: SubmissionResult):
         """Actions to be performed when we have a submission that has
         ended compilation. In particular: we queue evaluation if
         compilation was ok, we inform ScoringService if the
         compilation failed for an error in the submission, or we
         requeue the compilation if there was an error in CMS.
 
-        submission_result (SubmissionResult): the submission result.
+        submission_result: the submission result.
 
         """
         submission = submission_result.submission
@@ -708,12 +724,12 @@ class EvaluationService(TriggeredService):
         # Enqueue next steps to be done
         self.submission_enqueue_operations(submission)
 
-    def evaluation_ended(self, submission_result):
+    def evaluation_ended(self, submission_result: SubmissionResult):
         """Actions to be performed when we have a submission that has
         been evaluated. In particular: we inform ScoringService on
         success, we requeue on failure.
 
-        submission_result (SubmissionResult): the submission result.
+        submission_result: the submission result.
 
         """
         submission = submission_result.submission
@@ -746,12 +762,12 @@ class EvaluationService(TriggeredService):
         # Enqueue next steps to be done (e.g., if evaluation failed).
         self.submission_enqueue_operations(submission)
 
-    def user_test_compilation_ended(self, user_test_result):
+    def user_test_compilation_ended(self, user_test_result: UserTestResult):
         """Actions to be performed when we have a user test that has
         ended compilation. In particular: we queue evaluation if
         compilation was ok; we requeue compilation if it failed.
 
-        user_test_result (UserTestResult): the user test result.
+        user_test_result: the user test result.
 
         """
         user_test = user_test_result.user_test
@@ -789,12 +805,12 @@ class EvaluationService(TriggeredService):
         # Enqueue next steps to be done
         self.user_test_enqueue_operations(user_test)
 
-    def user_test_evaluation_ended(self, user_test_result):
+    def user_test_evaluation_ended(self, user_test_result: UserTestResult):
         """Actions to be performed when we have a user test that has
         been evaluated. In particular: we do nothing on success, we
         requeue on failure.
 
-        user_test_result (UserTestResult): the user test result.
+        user_test_result: the user test result.
 
         """
         user_test = user_test_result.user_test
@@ -822,12 +838,12 @@ class EvaluationService(TriggeredService):
         self.user_test_enqueue_operations(user_test)
 
     @rpc_method
-    def new_submission(self, submission_id):
+    def new_submission(self, submission_id: int):
         """This RPC prompts ES of the existence of a new
         submission. ES takes the right countermeasures, i.e., it
         schedules it for compilation.
 
-        submission_id (int): the id of the new submission.
+        submission_id: the id of the new submission.
 
         """
         with SessionGen() as session:
@@ -842,14 +858,12 @@ class EvaluationService(TriggeredService):
             session.commit()
 
     @rpc_method
-    def new_user_test(self, user_test_id):
+    def new_user_test(self, user_test_id: int):
         """This RPC prompts ES of the existence of a new user test. ES
         takes takes the right countermeasures, i.e., it schedules it
         for compilation.
 
-        user_test_id (int): the id of the new user test.
-
-        returns (bool): True if everything went well.
+        user_test_id: the id of the new user test.
 
         """
         with SessionGen() as session:
@@ -865,13 +879,15 @@ class EvaluationService(TriggeredService):
 
     @rpc_method
     @with_post_finish_lock
-    def invalidate_submission(self,
-                              contest_id=None,
-                              submission_id=None,
-                              dataset_id=None,
-                              participation_id=None,
-                              task_id=None,
-                              level="compilation"):
+    def invalidate_submission(
+        self,
+        contest_id: int | None = None,
+        submission_id: int | None = None,
+        dataset_id: int | None = None,
+        participation_id: int | None = None,
+        task_id: int | None = None,
+        level: str = "compilation",
+    ):
         """Request to invalidate some computed data.
 
         Invalidate the compilation and/or evaluation data of the
@@ -889,14 +905,11 @@ class EvaluationService(TriggeredService):
         the workers are ignored. New appropriate operations are
         enqueued.
 
-        submission_id (int|None): id of the submission to invalidate,
-            or None.
-        dataset_id (int|None): id of the dataset to invalidate, or
-            None.
-        participation_id (int|None): id of the participation to
-            invalidate, or None.
-        task_id (int|None): id of the task to invalidate, or None.
-        level (string): 'compilation' or 'evaluation'
+        submission_id: id of the submission to invalidate, or None.
+        dataset_id: id of the dataset to invalidate, or None.
+        participation_id: id of the participation to invalidate, or None.
+        task_id: id of the task to invalidate, or None.
+        level: 'compilation' or 'evaluation'
 
         """
         logger.info("Invalidation request received.")
@@ -918,13 +931,18 @@ class EvaluationService(TriggeredService):
                     and submission_id is None:
                 task_id = Dataset.get_from_id(dataset_id, session).task_id
             # First we load all involved submissions.
-            submissions = get_submissions(
+            submissions: list[Submission] = get_submissions(
                 session,
                 # Give contest_id only if all others are None.
-                contest_id
-                if {participation_id, task_id, submission_id} == {None}
-                else None,
-                participation_id, task_id, submission_id).all()
+                (
+                    contest_id
+                    if {participation_id, task_id, submission_id} == {None}
+                    else None
+                ),
+                participation_id,
+                task_id,
+                submission_id,
+            ).all()
 
             # Then we get all relevant operations, and we remove them
             # both from the queue and from the pool (i.e., we ignore
@@ -943,20 +961,21 @@ class EvaluationService(TriggeredService):
 
             # Then we find all existing results in the database, and
             # we remove them.
-            submission_results = get_submission_results(
+            submission_results: list[SubmissionResult] = get_submission_results(
                 session,
                 # Give contest_id only if all others are None.
-                contest_id
-                if {participation_id,
-                    task_id,
-                    submission_id,
-                    dataset_id} == {None}
-                else None,
+                (
+                    contest_id
+                    if {participation_id, task_id, submission_id, dataset_id} == {None}
+                    else None
+                ),
                 participation_id,
                 # Provide the task_id only if the entire task has to be
                 # reevaluated and not only a specific dataset.
                 task_id if dataset_id is None else None,
-                submission_id, dataset_id).all()
+                submission_id,
+                dataset_id,
+            ).all()
             logger.info("Submission results to invalidate %s for: %d.",
                         level, len(submission_results))
             for submission_result in submission_results:
@@ -976,12 +995,12 @@ class EvaluationService(TriggeredService):
         logger.info("Invalidate successfully completed.")
 
     @rpc_method
-    def disable_worker(self, shard):
+    def disable_worker(self, shard: int) -> bool:
         """Disable a specific worker (recovering its assigned operations).
 
-        shard (int): the shard of the worker.
+        shard: the shard of the worker.
 
-        returns (bool): True if everything went well.
+        returns: True if everything went well.
 
         """
         logger.info("Received request to disable worker %s.", shard)
@@ -1000,12 +1019,12 @@ class EvaluationService(TriggeredService):
         return True
 
     @rpc_method
-    def enable_worker(self, shard):
+    def enable_worker(self, shard: int) -> bool:
         """Enable a specific worker.
 
-        shard (int): the shard of the worker.
+        shard: the shard of the worker.
 
-        returns (bool): True if everything went well.
+        returns: True if everything went well.
 
         """
         logger.info("Received request to enable worker %s.", shard)
@@ -1017,7 +1036,7 @@ class EvaluationService(TriggeredService):
         return True
 
     @rpc_method
-    def queue_status(self):
+    def queue_status(self) -> list[QueueEntryDict]:
         """Return the status of the queue.
 
         Parent method returns list of queues of each executor, but in
@@ -1033,7 +1052,7 @@ class EvaluationService(TriggeredService):
         The entries are then ordered by priority and timestamp (the
         same criteria used to look at what to complete next).
 
-        return ([QueueEntry]): the list with the queued elements.
+        return: the list with the queued elements.
 
         """
         return sorted(

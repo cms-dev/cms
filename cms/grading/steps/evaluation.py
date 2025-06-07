@@ -26,18 +26,19 @@
 """High level functions to perform standardized evaluations."""
 
 import logging
+import subprocess
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
 from .messages import HumanMessage, MessageCollection
-from .stats import execution_stats
+from .stats import StatsDict, execution_stats
 
 
 logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable strings.
-def N_(message):
+def N_(message: str):
     return message
 
 
@@ -82,11 +83,17 @@ EVALUATION_MESSAGES = MessageCollection([
 ])
 
 
-def evaluation_step(sandbox, commands,
-                    time_limit=None, memory_limit=None,
-                    dirs_map=None, writable_files=None,
-                    stdin_redirect=None, stdout_redirect=None,
-                    multiprocess=False):
+def evaluation_step(
+    sandbox: Sandbox,
+    commands: list[list[str]],
+    time_limit: float | None = None,
+    memory_limit: int | None = None,
+    dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
+    writable_files: list[str] | None = None,
+    stdin_redirect: str | None = None,
+    stdout_redirect: str | None = None,
+    multiprocess: bool = False,
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Execute some evaluation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after
@@ -95,30 +102,30 @@ def evaluation_step(sandbox, commands,
 
     Terminate early after a command if the sandbox fails.
 
-    sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): evaluation commands to execute.
-    time_limit (float|None): time limit in seconds (applied to each command);
+    sandbox: the sandbox we consider, already created.
+    commands: evaluation commands to execute.
+    time_limit: time limit in seconds (applied to each command);
         if None, no time limit is enforced.
-    memory_limit (int|None): memory limit in bytes (applied to each command);
+    memory_limit: memory limit in bytes (applied to each command);
         if None, no memory limit is enforced.
-    dirs_map ({str: (str|None, str|None)}|None): if not None, a dict
+    dirs_map: if not None, a dict
         from external directories to a pair of strings: the first is the path
         they should be mapped to inside the sandbox, the second, is
         isolate's options for the mapping.
-    writable_files ([str]|None): a list of inner file names (relative to
+    writable_files: a list of inner file names (relative to
         the inner path) on which the command is allow to write, or None to
         indicate that all files are read-only; if applicable, redirected
         output and the standard error are implicitly added to the files
         allowed.
-    stdin_redirect (str|None): the name of the file that will be redirected
+    stdin_redirect: the name of the file that will be redirected
         to the standard input of each command; if None, nothing will be
         provided to stdin.
-    stdout_redirect (str|None): the name of the file that the standard output
+    stdout_redirect: the name of the file that the standard output
         of each command will be redirected to; if None, "stdout.txt" will be
         used.
-    multiprocess (bool): whether to allow multiple thread/processes or not.
+    multiprocess: whether to allow multiple thread/processes or not.
 
-    return ((bool, bool|None, dict|None)): a tuple with three items:
+    return: a tuple with three items:
         * success: True if the sandbox did not fail, in any command;
         * evaluation_success: True if the solution ran correctly and the output
             can be evaluated, False if it terminated with an error or was
@@ -145,20 +152,27 @@ def evaluation_step(sandbox, commands,
     return success, evaluation_success, stats
 
 
-def evaluation_step_before_run(sandbox, command,
-                               time_limit=None, memory_limit=None,
-                               dirs_map=None, writable_files=None,
-                               stdin_redirect=None, stdout_redirect=None,
-                               multiprocess=False, wait=False):
+def evaluation_step_before_run(
+    sandbox: Sandbox,
+    command: list[str],
+    time_limit: float | None = None,
+    memory_limit: int | None = None,
+    dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
+    writable_files: list[str] | None = None,
+    stdin_redirect: str | None = None,
+    stdout_redirect: str | None = None,
+    multiprocess: bool = False,
+    wait: bool = False,
+) -> bool | subprocess.Popen:
     """First part of an evaluation step, up to the execution, included.
 
     See evaluation_step for the meaning of the common arguments. This version
     only accepts one command, and in addition the argument "wait" to decide
     whether to make the run blocking or not.
 
-    wait (bool): if True, block until the command terminates.
+    wait: if True, block until the command terminates.
 
-    return (bool|Popen): sandbox success if wait is True, the process if not.
+    return: sandbox success if wait is True, the process if not.
 
     """
     # Ensure parameters are appropriate.
@@ -210,7 +224,9 @@ def evaluation_step_before_run(sandbox, command,
     return sandbox.execute_without_std(command, wait=wait)
 
 
-def evaluation_step_after_run(sandbox):
+def evaluation_step_after_run(
+    sandbox: Sandbox,
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Final part of an evaluation step, collecting the results after the run.
 
     See evaluation_step for the meaning of the argument and the return value.
@@ -246,7 +262,7 @@ def evaluation_step_after_run(sandbox):
         return False, None, None
 
 
-def human_evaluation_message(stats):
+def human_evaluation_message(stats: StatsDict) -> list[str]:
     """Return a human-readable message from the given execution stats.
 
     Return a message for errors in the command ran in the evaluation, that can
@@ -254,9 +270,9 @@ def human_evaluation_message(stats):
     (as the message will be computed elsewhere) or for sandbox error (since the
     submission will still be "evaluating..." for contestants).
 
-    stats (dict): execution statistics for an evaluation step.
+    stats: execution statistics for an evaluation step.
 
-    return ([str]): a list of strings composing the message (where
+    return: a list of strings composing the message (where
         strings from the second to the last are formatting arguments for the
         first); or an empty list if no message should be passed to
         contestants.

@@ -42,10 +42,12 @@ import os
 import sys
 
 from cms import utf8_decoder
+from cms.db.session import Session
 from cms.db import SessionGen, User, Team, Participation, Task, Contest
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, update_contest, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
+from cmscontrib.loaders.base_loader import BaseLoader, ContestLoader
 
 
 logger = logging.getLogger(__name__)
@@ -58,9 +60,18 @@ class ContestImporter:
 
     """
 
-    def __init__(self, path, yes, zero_time, import_tasks,
-                 update_contest, update_tasks, no_statements,
-                 delete_stale_participations, loader_class):
+    def __init__(
+        self,
+        path: str,
+        yes: bool,
+        zero_time: bool,
+        import_tasks: bool,
+        update_contest: bool,
+        update_tasks: bool,
+        no_statements: bool,
+        delete_stale_participations: bool,
+        loader_class: type[ContestLoader],
+    ):
         self.yes = yes
         self.zero_time = zero_time
         self.import_tasks = import_tasks
@@ -127,22 +138,25 @@ class ContestImporter:
         logger.info("Import finished (new contest id: %s).", contest_id)
         return True
 
-    def _contest_to_db(self, session, new_contest, contest_has_changed):
+    def _contest_to_db(
+        self, session: Session, new_contest: Contest, contest_has_changed: bool
+    ) -> Contest:
         """Add the new contest to the DB
 
-        session (Session): session to use.
-        new_contest (Contest): contest that has to end up in the DB.
-        contest_has_changed (bool): whether the loader thinks new_contest has
+        session: session to use.
+        new_contest: contest that has to end up in the DB.
+        contest_has_changed: whether the loader thinks new_contest has
             changed since the last time it was imported.
 
-        return (Contest): the contest in the DB.
+        return: the contest in the DB.
 
         raise (ImportDataError): if the contest already exists on the DB and
             the user did not ask to update any data.
 
         """
-        contest = session.query(Contest)\
-            .filter(Contest.name == new_contest.name).first()
+        contest: Contest | None = (
+            session.query(Contest).filter(Contest.name == new_contest.name).first()
+        )
 
         if contest is None:
             # Contest not present, we import it.
@@ -170,15 +184,17 @@ class ContestImporter:
 
         return contest
 
-    def _task_to_db(self, session, contest, tasknum, taskname):
+    def _task_to_db(
+        self, session: Session, contest: Contest, tasknum: int, taskname: str
+    ) -> Task:
         """Add the task to the DB and attach it to the contest
 
-        session (Session): session to use.
-        contest (Contest): the contest in the DB.
-        tasknum (int): num the task should have in the contest.
-        taskname (string): name of the task.
+        session: session to use.
+        contest: the contest in the DB.
+        tasknum: num the task should have in the contest.
+        taskname: name of the task.
 
-        return (Task): the task in the DB.
+        return: the task in the DB.
 
         raise (ImportDataError): in case of one of these errors:
             - if the task is not in the DB and user did not ask to import it;
@@ -187,7 +203,7 @@ class ContestImporter:
 
         """
         task_loader = self.loader.get_task_loader(taskname)
-        task = session.query(Task).filter(Task.name == taskname).first()
+        task: Task | None = session.query(Task).filter(Task.name == taskname).first()
 
         if task is None:
             # Task is not in the DB; if the user asked us to import it, we do
@@ -238,31 +254,35 @@ class ContestImporter:
         return task
 
     @staticmethod
-    def _participation_to_db(session, contest, new_p):
+    def _participation_to_db(
+        session: Session, contest: Contest, new_p: dict
+    ) -> Participation:
         """Add the new participation to the DB and attach it to the contest
 
-        session (Session): session to use.
-        contest (Contest): the contest in the DB.
-        new_p (dict): dictionary with the participation data, including at
+        session: session to use.
+        contest: the contest in the DB.
+        new_p: dictionary with the participation data, including at
             least "username"; may contain "team", "hidden", "ip", "password".
 
-        return (Participation): the participation in the DB.
+        return: the participation in the DB.
 
         raise (ImportDataError): in case of one of these errors:
             - the user for this participation does not already exist in the DB;
             - the team for this participation does not already exist in the DB.
 
         """
-        user = session.query(User)\
-            .filter(User.username == new_p["username"]).first()
+        user: User | None = (
+            session.query(User).filter(User.username == new_p["username"]).first()
+        )
         if user is None:
             # FIXME: it would be nice to automatically try to import.
             raise ImportDataError("User \"%s\" not found in database. "
                                   "Use cmsImportUser to import it." %
                                   new_p["username"])
 
-        team = session.query(Team)\
-            .filter(Team.code == new_p.get("team")).first()
+        team: Team | None = (
+            session.query(Team).filter(Team.code == new_p.get("team")).first()
+        )
         if team is None and new_p.get("team") is not None:
             # FIXME: it would be nice to automatically try to import.
             raise ImportDataError("Team \"%s\" not found in database. "
@@ -270,10 +290,12 @@ class ContestImporter:
                                   % new_p.get("team"))
 
         # Check that the participation is not already defined.
-        p = session.query(Participation)\
-            .filter(Participation.user_id == user.id)\
-            .filter(Participation.contest_id == contest.id)\
+        p: Participation | None = (
+            session.query(Participation)
+            .filter(Participation.user_id == user.id)
+            .filter(Participation.contest_id == contest.id)
             .first()
+        )
         # FIXME: detect if some details of the participation have been updated
         # and thus the existing participation needs to be changed.
         if p is not None:
@@ -299,16 +321,17 @@ class ContestImporter:
         session.add(new_p)
         return new_p
 
-    def _delete_stale_participations(self, session, contest,
-                                     usernames_to_keep):
+    def _delete_stale_participations(
+        self, session: Session, contest: Contest, usernames_to_keep: set[str]
+    ):
         """Delete the stale participations.
 
         Stale participations are those in the contest, with a username not in
         usernames_to_keep.
 
-        session (Session): SQL session to use.
-        contest (Contest): the contest to examine.
-        usernames_to_keep ({str}): usernames of non-stale participations.
+        session: SQL session to use.
+        contest: the contest to examine.
+        usernames_to_keep: usernames of non-stale participations.
 
         """
         participations = [p for p in contest.participations

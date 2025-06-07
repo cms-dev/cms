@@ -27,9 +27,12 @@
 
 """
 
+from datetime import datetime
 import logging
 
 from cms.db import Question, Announcement, Message
+from cms.db.session import Session
+from cms.db.user import Participation
 from cmscommon.datetime import make_timestamp
 
 
@@ -50,27 +53,33 @@ class QuestionsNotAllowed(Exception):
 class UnacceptableQuestion(Exception):
     """Raised when a question can't be accepted."""
 
-    def __init__(self, subject, text, text_params=None):
+    def __init__(self, subject: str, text: str, text_params: dict | None = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
         self.text_params = text_params
 
 
-def accept_question(sql_session, participation, timestamp, subject, text):
+def accept_question(
+    sql_session: Session,
+    participation: Participation,
+    timestamp: datetime,
+    subject: str,
+    text: str,
+) -> Question:
     """Add a contestant-submitted question to the database.
 
     Validate and add a question received from a contestant (usually
     through CWS) to the database.
 
-    sql_session (Session): the SQLAlchemy database session to use.
-    participation (Participation): the participation of the user who
+    sql_session: the SQLAlchemy database session to use.
+    participation: the participation of the user who
         posed the question.
-    timestamp (datetime): when the question was asked.
-    subject (str): the subject of the question.
-    text (str): the body of the question.
+    timestamp: when the question was asked.
+    subject: the subject of the question.
+    text: the body of the question.
 
-    return (Question): the question that was added to the database.
+    return: the question that was added to the database.
 
     raise (QuestionsNotAllowed): if the contest doesn't allow
         contestants to ask questions.
@@ -103,7 +112,12 @@ def accept_question(sql_session, participation, timestamp, subject, text):
     return question
 
 
-def get_communications(sql_session, participation, timestamp, after=None):
+def get_communications(
+    sql_session: Session,
+    participation: Participation,
+    timestamp: datetime,
+    after: datetime | None = None,
+) -> list[dict]:
     """Retrieve some contestant's communications at some given time.
 
     Return the list of admin-to-contestant communications (that is,
@@ -113,17 +127,17 @@ def get_communications(sql_session, participation, timestamp, after=None):
     given time. The result will be returned in a JSON-compatible format
     (that is, a tree of numbers, strings, lists and dicts).
 
-    sql_session (Session): the SQLAlchemy database session to use.
-    participation (Participation): the participation of the user whose
+    sql_session: the SQLAlchemy database session to use.
+    participation: the participation of the user whose
         communications are to be returned.
-    timestamp (datetime): the moment in time at which the "snapshot" of
+    timestamp: the moment in time at which the "snapshot" of
         the communications is to be taken (i.e., communications that
         will occur after this moment, but are already in the database,
         are to be ignored).
-    after (datetime|None): if not none, ignore also the communications
+    after: if not none, ignore also the communications
         that were received at or before this moment in time.
 
-    return ([dict]): for each communication a dictionary with 4 fields:
+    return: for each communication a dictionary with 4 keys:
         type (either "announcement", "message" or "question"), subject,
         text and timestamp (the number of seconds since the UNIX epoch,
         as a float).
@@ -139,6 +153,7 @@ def get_communications(sql_session, participation, timestamp, after=None):
     if after is not None:
         query = query.filter(Announcement.timestamp > after)
     for announcement in query.all():
+        announcement: Announcement
         res.append({"type": "announcement",
                     "timestamp": make_timestamp(announcement.timestamp),
                     "subject": announcement.subject,
@@ -151,6 +166,7 @@ def get_communications(sql_session, participation, timestamp, after=None):
     if after is not None:
         query = query.filter(Message.timestamp > after)
     for message in query.all():
+        message: Message
         res.append({"type": "message",
                     "timestamp": make_timestamp(message.timestamp),
                     "subject": message.subject,
@@ -164,6 +180,7 @@ def get_communications(sql_session, participation, timestamp, after=None):
     if after is not None:
         query = query.filter(Question.reply_timestamp > after)
     for question in query.all():
+        question: Question
         subject = question.reply_subject
         text = question.reply_text
         if text is None:

@@ -35,7 +35,9 @@ etc.) and try to match them against the desired format for a submission.
 
 import os.path
 
+from cms.grading.language import Language
 from cms.grading.languagemanager import get_language, LANGUAGES
+from cms.server.contest.submission.file_retrieval import ReceivedFile
 
 
 class InvalidFiles(Exception):
@@ -44,18 +46,18 @@ class InvalidFiles(Exception):
     pass
 
 
-def _match_filename(filename, language, element):
+def _match_filename(filename: str, language: Language | None, element: str) -> bool:
     """Ensure the filename is entirely compatible with the element.
 
     Return whether the filename matches the element, including having an
     appropriate value for the language-specific extension (if present)
     for the given language.
 
-    filename (str): the filename.
-    language (Language|None): the language.
-    element (str): the element of the submission format.
+    filename: the filename.
+    language: the language.
+    element: the element of the submission format.
 
-    return (bool): whether there's a match.
+    return: whether there's a match.
 
     """
     if not element.endswith(".%l"):
@@ -66,17 +68,19 @@ def _match_filename(filename, language, element):
     return any(filename == base + ext for ext in language.source_extensions)
 
 
-def _match_extension(filename, language, element):
+def _match_extension(
+    filename: str | None, language: Language | None, element: str
+) -> bool:
     """Ensure filename is compatible with element w.r.t. the extension.
 
     Return whether the filename (if given) matches the language-specific
     extension of the element (if present) for the given language.
 
-    filename (str|None): the filename.
-    language (Language|None): the language.
-    element (str): the element of the submission format.
+    filename: the filename.
+    language: the language.
+    element: the element of the submission format.
 
-    return (bool): whether there's a match.
+    return: whether there's a match.
 
     """
     if filename is None or not element.endswith(".%l"):
@@ -86,7 +90,12 @@ def _match_extension(filename, language, element):
     return any(filename.endswith(ext) for ext in language.source_extensions)
 
 
-def _match_file(codename, filename, language, submission_format):
+def _match_file(
+    codename: str | None,
+    filename: str | None,
+    language: Language | None,
+    submission_format: set[str],
+) -> str:
     """Figure out what element of the submission format a file is for.
 
     Return our best guess for which element of the submission format
@@ -97,14 +106,12 @@ def _match_file(codename, filename, language, submission_format):
     - the codename matches exactly and if it ends in ".%l" the filename
       (if given) ends in any of the extensions of the language.
 
-    codename (str|None): the filename-with-%l, if provided.
-    filename (str|None): the name the contestant gave to the file, if
-        provided.
-    language (Language|None): the language to match against.
-    submission_format ({str}): the task's submission format.
+    codename: the filename-with-%l, if provided.
+    filename: the name the contestant gave to the file, if provided.
+    language: the language to match against.
+    submission_format: the task's submission format.
 
-    return (str): the element of the submission format matched by the
-        file.
+    return: the element of the submission format matched by the file.
 
     raise (InvalidFiles): if there's the slightest uncertainty or
         ambiguity.
@@ -135,19 +142,22 @@ def _match_file(codename, filename, language, submission_format):
         % (codename, filename))
 
 
-def _match_files(given_files, language, submission_format):
+def _match_files(
+    given_files: list[ReceivedFile],
+    language: Language | None,
+    submission_format: set[str],
+) -> dict[str, bytes]:
     """Fit the given files into the given submission format.
 
     Figure out, for all of the given files, which element of the
     submission format they are for.
 
-    given_files ([ReceivedFile]): the files, as received from the user.
-    language (Language|None): the language to match against.
-    submission_format ({str}): the set of filenames-with-%l that the
+    given_files: the files, as received from the user.
+    language: the language to match against.
+    submission_format: the set of filenames-with-%l that the
         contestants are required to submit.
 
-    return ({str: bytes}): the mapping from filenames-with-%l to
-        contents.
+    return: the mapping from filenames-with-%l to contents.
 
     raise (InvalidFiles): if there's the slightest uncertainty or
         ambiguity.
@@ -172,8 +182,12 @@ class InvalidFilesOrLanguage(Exception):
     pass
 
 
-def match_files_and_language(given_files, given_language_name,
-                             submission_format, allowed_language_names):
+def match_files_and_language(
+    given_files: list[ReceivedFile],
+    given_language_name: str | None,
+    submission_format: set[str],
+    allowed_language_names: list[str] | None,
+) -> tuple[dict[str, bytes], Language | None]:
     """Figure out what the given files are and which language they're in.
 
     Take a set of files and a set of languages that these files are
@@ -196,16 +210,16 @@ def match_files_and_language(given_files, given_language_name,
     (the rest of the arguments still needs to make sense though).
     Matching a language is done using the match_files function.
 
-    given_files ([ReceivedFile]): the submitted files.
-    given_language_name (str|None): the language, usually provided by
+    given_files: the submitted files.
+    given_language_name: the language, usually provided by
         the contestant, which the submitted files are in (None means
         this information isn't available and we should guess it).
-    submission_format ({str}): the codenames that the submitted files
+    submission_format: the codenames that the submitted files
         should be matched to.
-    allowed_language_names ([str]|None): the languages that the result
+    allowed_language_names: the languages that the result
         is allowed to have (None means no limitation).
 
-    return ({str: bytes}, Language|None): the mapping from codenames to
+    return: the mapping from codenames to
         content, and the language of the submission (with None meaning
         that no language is needed as the format was language-agnostic).
 
@@ -216,6 +230,7 @@ def match_files_and_language(given_files, given_language_name,
     if len(given_files) == 0:
         raise InvalidFilesOrLanguage("no files given")
 
+    candidate_languages: set[Language | None]
     # If the submission format is language-agnostic the only "language"
     # that makes sense is None, and if the caller thought differently we
     # let them know.

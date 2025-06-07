@@ -23,11 +23,11 @@ class Subchange(Entity):
     """The entity representing a change in the status of a submission.
 
     It consists of the following properties:
-    - submission (unicode): the key of the affected submission
-    - time (int): the time the change takes effect
-    - score (float): optional, the new score
-    - token (bool): optional, the new token status
-    - extra ([unicode]): optional, the new details
+    - submission: the key of the affected submission
+    - time: the time the change takes effect
+    - score: optional, the new score
+    - token: optional, the new token status
+    - extra: optional, the new details
 
     """
     def __init__(self):
@@ -35,11 +35,11 @@ class Subchange(Entity):
 
         """
         Entity.__init__(self)
-        self.submission = None
-        self.time = None
-        self.score = None
-        self.token = None
-        self.extra = None
+        self.submission: str = None
+        self.time: int = None
+        self.score: float | None = None
+        self.token: bool | None = None
+        self.extra: list[str] | None = None
 
     @staticmethod
     def validate(data):

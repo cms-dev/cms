@@ -195,10 +195,11 @@ setup(
     },
     keywords="ioi programming contest grader management system",
     license_expression="AGPL-3.0-or-later",
+    python_requires=">=3.11",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.11",
     ],
 )

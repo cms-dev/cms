@@ -29,11 +29,11 @@ REPLACEMENTS = {"&": r"\&{}",
                 "\\": r"\textbackslash{}"}
 
 
-def escape_tex_normal(string):
+def escape_tex_normal(string: str) -> str:
     """Escape a string for use inside latex.
 
-    string (unicode): string to escape
-    return (unicode): escaped string
+    string: string to escape
+    return: escaped string
 
     """
     def repc(c):
@@ -44,11 +44,11 @@ def escape_tex_normal(string):
     return "".join(repc(c) for c in string)
 
 
-def escape_tex_tt(string):
+def escape_tex_tt(string: str) -> str:
     """Escape a string for use inside latex with \texttt.
 
-    string (unicode): string to escape
-    return (unicode): escaped string
+    string: string to escape
+    return: escaped string
 
     """
     def repc(c):

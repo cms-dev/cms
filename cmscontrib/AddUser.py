@@ -41,8 +41,17 @@ from cmscommon.crypto import generate_random_password, build_password, \
 logger = logging.getLogger(__name__)
 
 
-def add_user(first_name, last_name, username, password, method, is_hashed,
-             email, timezone, preferred_languages):
+def add_user(
+    first_name: str,
+    last_name: str,
+    username: str,
+    password: str | None,
+    method: str,
+    is_hashed: bool,
+    email: str | None,
+    timezone: str | None,
+    preferred_languages: str | None,
+):
     logger.info("Creating the user in the database.")
     pwd_generated = False
     if password is None:
@@ -55,18 +64,20 @@ def add_user(first_name, last_name, username, password, method, is_hashed,
         stored_password = hash_password(password, method)
 
     if preferred_languages is None:
-        preferred_languages = []
+        preferred_languages_l = []
     else:
-        preferred_languages = list(
-            lang.strip() for lang in preferred_languages.split(",") if
-            lang.strip())
-    user = User(first_name=first_name,
-                last_name=last_name,
-                username=username,
-                password=stored_password,
-                email=email,
-                timezone=timezone,
-                preferred_languages=preferred_languages)
+        preferred_languages_l = list(
+            lang.strip() for lang in preferred_languages.split(",") if lang.strip()
+        )
+    user = User(
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+        password=stored_password,
+        email=email,
+        timezone=timezone,
+        preferred_languages=preferred_languages_l,
+    )
     try:
         with SessionGen() as session:
             session.add(user)

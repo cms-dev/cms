@@ -54,8 +54,14 @@ class WebService(Service):
 
     """
 
-    def __init__(self, listen_port, handlers, parameters, shard=0,
-                 listen_address=""):
+    def __init__(
+        self,
+        listen_port: int,
+        handlers: list,
+        parameters: dict,
+        shard: int = 0,
+        listen_address: str = "",
+    ):
         super().__init__(shard)
 
         static_files = parameters.pop('static_files', [])

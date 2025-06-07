@@ -41,16 +41,43 @@ import os
 import sys
 from datetime import datetime, timedelta
 
-from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
+from sqlalchemy.types import (
+    Boolean,
+    Integer,
+    Float,
+    String,
+    Unicode,
+    DateTime,
+    Interval,
+    Enum,
+    TypeEngine,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
 import cms.db as class_hook
 from cms import utf8_decoder
-from cms.db import version as model_version, Codename, Filename, \
-    FilenameSchema, FilenameSchemaArray, Digest, SessionGen, Contest, \
-    Submission, SubmissionResult, User, Participation, UserTest, \
-    UserTestResult, PrintJob, Announcement, init_db, drop_db, enumerate_files
+from cms.db import (
+    version as model_version,
+    Codename,
+    Filename,
+    FilenameSchema,
+    FilenameSchemaArray,
+    Digest,
+    SessionGen,
+    Contest,
+    Submission,
+    SubmissionResult,
+    User,
+    Participation,
+    UserTest,
+    UserTestResult,
+    PrintJob,
+    Announcement,
+    Base,
+    init_db,
+    drop_db,
+    enumerate_files,
+)
 from cms.db.filecacher import FileCacher
 from cmscommon.archive import Archive
 from cmscommon.datetime import make_datetime
@@ -60,16 +87,15 @@ from cmscommon.digest import path_digest
 logger = logging.getLogger(__name__)
 
 
-def find_root_of_archive(file_names):
+def find_root_of_archive(file_names: list[str]) -> str | None:
     """Given a list of file names (the content of an archive) find the
     name of the root directory, i.e., the only file that would be
     created in a directory if we extract there the archive.
 
-    file_names (list of strings): the list of file names in the
-                                  archive
+    file_names: the list of file names in the archive
 
-    return (string): the root directory, or None if unable to find
-                     (for example if there is more than one).
+    return: the root directory, or None if unable to find
+        (for example if there is more than one).
 
     """
 
@@ -83,15 +109,15 @@ def find_root_of_archive(file_names):
     return current_root
 
 
-def decode_value(type_, value):
+def decode_value(type_: TypeEngine, value: object) -> object:
     """Decode a given value in a JSON-compatible form to a given type.
 
-    type_ (sqlalchemy.types.TypeEngine): the SQLAlchemy type of the
+    type_: the SQLAlchemy type of the
         column that will hold the value.
-    value (object): the value, encoded as bool, int, float, string,
+    value: the value, encoded as bool, int, float, string,
         list, dict or any other JSON-compatible format.
 
-    return (object): the value, decoded.
+    return: the value, decoded.
 
     """
     if value is None:
@@ -126,9 +152,18 @@ class DumpImporter:
 
     """
 
-    def __init__(self, drop, import_source,
-                 load_files, load_model, skip_generated,
-                 skip_submissions, skip_user_tests, skip_users, skip_print_jobs):
+    def __init__(
+        self,
+        drop: bool,
+        import_source: str,
+        load_files: bool,
+        load_model: bool,
+        skip_generated: bool,
+        skip_submissions: bool,
+        skip_user_tests: bool,
+        skip_users: bool,
+        skip_print_jobs: bool,
+    ):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
@@ -352,7 +387,7 @@ class DumpImporter:
 
         return True
 
-    def import_object(self, data):
+    def import_object(self, data: dict):
 
         """Import objects from the given data (without relationships).
 
@@ -392,7 +427,7 @@ class DumpImporter:
 
         return cls(**args)
 
-    def add_relationships(self, data, obj):
+    def add_relationships(self, data: dict, obj: Base):
 
         """Add the relationships to the given object, using the given data.
 
@@ -429,15 +464,14 @@ class DumpImporter:
                 raise RuntimeError(
                     "Unknown RelationshipProperty value: %s" % type(val))
 
-    def safe_put_file(self, path, descr_path):
-
+    def safe_put_file(self, path: str, descr_path: str) -> bool:
         """Put a file to FileCacher signaling every error (including
         digest mismatch).
 
-        path (string): the path from which to load the file.
-        descr_path (string): same for description.
+        path: the path from which to load the file.
+        descr_path: same for description.
 
-        return (bool): True if all ok, False if something wrong.
+        return: True if all ok, False if something wrong.
 
         """
 

@@ -40,10 +40,13 @@ import os
 import sys
 
 from cms import utf8_decoder
+from cms.db.contest import Contest
+from cms.db.session import Session
 from cms.db import SessionGen, Task
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, contest_from_db, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
+from cmscontrib.loaders.base_loader import TaskLoader
 
 
 logger = logging.getLogger(__name__)
@@ -55,16 +58,24 @@ class TaskImporter:
 
     """
 
-    def __init__(self, path, prefix, override_name, update, no_statement,
-                 contest_id, loader_class):
+    def __init__(
+        self,
+        path: str,
+        prefix: str | None,
+        override_name: str | None,
+        update: bool,
+        no_statement: bool,
+        contest_id: int | None,
+        loader_class: type[TaskLoader],
+    ):
         """Create the importer object for a task.
 
-        path (string): the path to the file or directory to import.
-        prefix (string|None): an optional prefix added to the task name.
-        override_name (string|None): an optional new name for the task.
-        update (bool): if the task already exists, try to update it.
-        no_statement (bool): do not try to import the task statement.
-        contest_id (int|None): if set, the new task will be tied to this
+        path: the path to the file or directory to import.
+        prefix: an optional prefix added to the task name.
+        override_name: an optional new name for the task.
+        update: if the task already exists, try to update it.
+        no_statement: do not try to import the task statement.
+        contest_id: if set, the new task will be tied to this
             contest; if not set, the task will not be tied to any contest, or
             if this was an update, will remain tied to the previous contest.
 
@@ -118,7 +129,9 @@ class TaskImporter:
         logger.info("Import finished (new task id: %s).", task_id)
         return True
 
-    def _task_to_db(self, session, contest, new_task, task_has_changed):
+    def _task_to_db(
+        self, session: Session, contest: Contest, new_task: Task, task_has_changed: bool
+    ):
         """Add the task to the DB
 
         Return the task, or raise in case of one of these errors:
@@ -126,7 +139,9 @@ class TaskImporter:
         - if the task is already in the DB and attached to another contest.
 
         """
-        task = session.query(Task).filter(Task.name == new_task.name).first()
+        task: Task | None = (
+            session.query(Task).filter(Task.name == new_task.name).first()
+        )
         if task is None:
             if contest is not None:
                 logger.info("Attaching task to contest (id %s.)",

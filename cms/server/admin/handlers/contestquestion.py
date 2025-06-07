@@ -86,8 +86,7 @@ class QuestionReplyHandler(BaseHandler):
         if self.contest is not question.participation.contest:
             raise tornado_web.HTTPError(404)
 
-        reply_subject_code = self.get_argument("reply_question_quick_answer",
-                                               "")
+        reply_subject_code: str = self.get_argument("reply_question_quick_answer", "")
         question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers

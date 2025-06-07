@@ -20,12 +20,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Iterable
 import logging
 import os
 
 from cms.db import Executable
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
+from cms.grading.language import Language
 from cms.grading.languagemanager import LANGUAGES, get_language
 from cms.grading.steps import compilation_step, evaluation_step, \
     human_evaluation_message
@@ -121,6 +123,10 @@ class Batch(TaskType):
         super().__init__(parameters)
 
         # Data in the parameters.
+        self.compilation: str
+        self.input_filename: str
+        self.output_filename: str
+        self.output_eval: str
         self.compilation = self.parameters[0]
         self.input_filename, self.output_filename = self.parameters[1]
         self.output_eval = self.parameters[2]
@@ -164,21 +170,21 @@ class Batch(TaskType):
         """See TaskType.get_auto_managers."""
         return []
 
-    def _uses_grader(self):
+    def _uses_grader(self) -> bool:
         return self.compilation == self.COMPILATION_GRADER
 
-    def _uses_checker(self):
+    def _uses_checker(self) -> bool:
         return self.output_eval == self.OUTPUT_EVAL_CHECKER
 
     @staticmethod
-    def _executable_filename(codenames, language):
+    def _executable_filename(codenames: Iterable[str], language: Language) -> str:
         """Return the chosen executable name computed from the codenames.
 
-        codenames ([str]): submission format or codename of submitted files,
+        codenames: submission format or codename of submitted files,
             may contain %l.
-        language (Language): the programming language of the submission.
+        language: the programming language of the submission.
 
-        return (str): a deterministic executable name.
+        return: a deterministic executable name.
 
         """
         name =  "_".join(sorted(codename.replace(".%l", "")

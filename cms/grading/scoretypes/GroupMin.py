@@ -34,7 +34,7 @@ class GroupMin(ScoreTypeGroup):
 
     """
 
-    def get_public_outcome(self, outcome, unused_parameter):
+    def get_public_outcome(self, outcome, parameter):
         """See ScoreTypeGroup."""
         if outcome <= 0.0:
             return N_("Not correct")
@@ -43,6 +43,6 @@ class GroupMin(ScoreTypeGroup):
         else:
             return N_("Partially correct")
 
-    def reduce(self, outcomes, unused_parameter):
+    def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""
         return min(outcomes)

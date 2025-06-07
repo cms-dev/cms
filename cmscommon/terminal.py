@@ -19,6 +19,7 @@
 
 import curses
 import sys
+import typing
 
 
 class colors:
@@ -39,17 +40,17 @@ class directions:
     RIGHT = 4
 
 
-def has_color_support(stream):
+def has_color_support(stream: typing.IO) -> bool:
     """Try to determine if the given stream supports colored output.
 
     Return True only if the stream declares to be a TTY, if it has a
     file descriptor on which ncurses can initialize a terminal and if
     that terminal's entry in terminfo declares support for colors.
 
-    stream (fileobj): a file-like object (that adheres to the API
+    stream: a file-like object (that adheres to the API
         declared in the `io' package).
 
-    return (bool): True if we're sure that colors are supported, False
+    return: True if we're sure that colors are supported, False
         if they aren't or if we can't tell.
 
     """
@@ -65,23 +66,28 @@ def has_color_support(stream):
     return False
 
 
-def add_color_to_string(string, color, stream=sys.stdout, bold=False,
-                        force=False):
+def add_color_to_string(
+    string: str,
+    color: int,
+    stream: typing.IO = sys.stdout,
+    bold: bool = False,
+    force: bool = False,
+) -> str:
     """Format the string to be printed with the given color.
 
     Insert formatting characters that, when printed on a terminal, will
     make the given string appear with the given foreground color if the
     stream passed has color support. Else return the string as it is.
 
-    string (string): the string to color.
-    color (int): the color as a colors constant, like colors.BLACK.
-    stream (fileobj): a file-like object (that adheres to the API
+    string: the string to color.
+    color: the color as a colors constant, like colors.BLACK.
+    stream: a file-like object (that adheres to the API
         declared in the `io' package). Defaults to sys.stdout.
-    bold (bool): True if the string should be bold.
-    force (bool): True if the string should be formatted even if the
+    bold: True if the string should be bold.
+    force: True if the string should be formatted even if the
         given stream has no color support.
 
-    return (string): the formatted string.
+    return: the formatted string.
 
     """
     if force or has_color_support(stream):
@@ -97,17 +103,19 @@ def add_color_to_string(string, color, stream=sys.stdout, bold=False,
         return string
 
 
-def move_cursor(direction, amount=1, stream=sys.stdout, erase=False):
+def move_cursor(
+    direction: int, amount: int = 1, stream: typing.IO = sys.stdout, erase: bool = False
+):
     """Move the cursor.
 
     If the stream is a TTY, print characters that will move the cursor
     in the given direction and optionally erase the line. Else do nothing.
 
-    direction (int): the direction as a directions constant, like
+    direction: the direction as a directions constant, like
         directions.UP.
-    stream (fileobj): a file-like object (that adheres to the API
+    stream: a file-like object (that adheres to the API
         declared in the `io' package). Defaults to sys.stdout.
-    erase (bool): True if the line the cursor ends on should be erased.
+    erase: True if the line the cursor ends on should be erased.
 
     """
     if stream.isatty():

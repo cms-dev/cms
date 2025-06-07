@@ -26,22 +26,34 @@
 """Computing and merging statistics about command executions in the sandbox."""
 
 from cms.grading.Sandbox import Sandbox
+import typing
 
 
 # TODO: stats grew enough to justify having a proper object representing them.
 
 
-def execution_stats(sandbox, collect_output=False):
+# is this a proper enough object? :)
+class StatsDict(typing.TypedDict):
+    execution_time: float | None
+    execution_wall_clock_time: float | None
+    execution_memory: int | None
+    exit_status: str
+    signal: typing.NotRequired[int]
+    stdout: typing.NotRequired[str]
+    stderr: typing.NotRequired[str]
+
+
+def execution_stats(sandbox: Sandbox, collect_output: bool = False) -> StatsDict:
     """Extract statistics from a sandbox about the last ran command.
 
-    sandbox (Sandbox): the sandbox to inspect.
-    collect_output (bool): whether to collect output from the sandbox
+    sandbox: the sandbox to inspect.
+    collect_output: whether to collect output from the sandbox
         stdout_file and stderr_file.
 
-    return (dict): a dictionary with statistics.
+    return: a dictionary with statistics.
 
     """
-    stats = {
+    stats: StatsDict = {
         "execution_time": sandbox.get_execution_time(),
         "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
         "execution_memory": sandbox.get_memory_used(),
@@ -59,21 +71,23 @@ def execution_stats(sandbox, collect_output=False):
     return stats
 
 
-def merge_execution_stats(first_stats, second_stats, concurrent=True):
+def merge_execution_stats(
+    first_stats: StatsDict | None, second_stats: StatsDict, concurrent: bool = True
+) -> StatsDict:
     """Merge two execution statistics dictionary.
 
     The first input stats can be None, in which case the second stats is copied
     to the output (useful to treat the first merge of a sequence in the same
     way as the others).
 
-    first_stats (dict|None): statistics about the first execution; contains
+    first_stats: statistics about the first execution; contains
         execution_time, execution_wall_clock_time, execution_memory,
         exit_status, and possibly signal.
-    second_stats (dict): same for the second execution.
-    concurrent (bool): whether to merge using assuming the executions were
+    second_stats: same for the second execution.
+    concurrent: whether to merge using assuming the executions were
         concurrent or not (see return value).
 
-    return (dict): the merged statistics, using the following algorithm:
+    return: the merged statistics, using the following algorithm:
         * execution times are added;
         * memory usages are added (if concurrent) or max'd (if not);
         * wall clock times are max'd (if concurrent) or added (if not);

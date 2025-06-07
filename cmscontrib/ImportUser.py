@@ -38,12 +38,15 @@ import argparse
 import logging
 import os
 import sys
+from collections.abc import Callable
 
 from cms import utf8_decoder
+from cms.db.session import Session
 from cms.db import Participation, SessionGen, User
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, contest_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
+from cmscontrib.loaders.base_loader import UserLoader
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +58,7 @@ class UserImporter:
 
     """
 
-    def __init__(self, path, contest_id, loader_class):
+    def __init__(self, path: str, contest_id: int, loader_class: type[UserLoader]):
         self.file_cacher = FileCacher()
         self.contest_id = contest_id
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
@@ -90,7 +93,9 @@ class UserImporter:
         logger.info("Import finished (new user id: %s).", user_id)
         return True
 
-    def do_import_all(self, base_path, get_loader):
+    def do_import_all(
+        self, base_path: str, get_loader: Callable[[str], type[UserLoader]]
+    ):
         """Get the participation list from the ContestLoader and then
         try to import the corresponding users.
 
@@ -108,15 +113,16 @@ class UserImporter:
         return True
 
     @staticmethod
-    def _user_to_db(session, user):
+    def _user_to_db(session: Session, user: User) -> User:
         """Add the user to the DB
 
         Return the user again, or raise in case a user with the same username
         was already present in the DB.
 
         """
-        old_user = session.query(User)\
-            .filter(User.username == user.username).first()
+        old_user: User | None = (
+            session.query(User).filter(User.username == user.username).first()
+        )
         if old_user is not None:
             raise ImportDataError(
                 "User \"%s\" already exists." % user.username)

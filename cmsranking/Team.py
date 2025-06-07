@@ -23,7 +23,7 @@ class Team(Entity):
     """The entity representing a team.
 
     It consists of the following properties:
-    - name (unicode): the human-readable name of the team
+    - name: the human-readable name of the team
 
     """
     def __init__(self):
@@ -31,7 +31,7 @@ class Team(Entity):
 
         """
         Entity.__init__(self)
-        self.name = None
+        self.name: str = None
 
     @staticmethod
     def validate(data):

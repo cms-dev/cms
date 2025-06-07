@@ -44,7 +44,7 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
     """
     def post(self):
         error_args = {"login_error": "true"}
-        next_page = self.get_argument("next", None)
+        next_page: str = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
             if next_page != "/":
@@ -55,11 +55,11 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
             next_page = self.url()
         error_page = self.url("login", **error_args)
 
-        username = self.get_argument("username", "")
-        password = self.get_argument("password", "")
-        admin = self.sql_session.query(Admin)\
-            .filter(Admin.username == username)\
-            .first()
+        username: str = self.get_argument("username", "")
+        password: str = self.get_argument("password", "")
+        admin: Admin | None = (
+            self.sql_session.query(Admin).filter(Admin.username == username).first()
+        )
 
         if admin is None:
             logger.warning("Nonexistent admin account: %s", username)
@@ -142,12 +142,12 @@ class NotificationsHandler(BaseHandler):
         last_notification = make_datetime(
             float(self.get_argument("last_notification", "0")))
 
-        # Keep "== None" in filter arguments. SQLAlchemy does not
-        # understand "is None".
-        questions = self.sql_session.query(Question)\
-            .filter(Question.reply_timestamp.is_(None))\
-            .filter(Question.question_timestamp > last_notification)\
+        questions: list[Question] = (
+            self.sql_session.query(Question)
+            .filter(Question.reply_timestamp.is_(None))
+            .filter(Question.question_timestamp > last_notification)
             .all()
+        )
 
         for question in questions:
             res.append({

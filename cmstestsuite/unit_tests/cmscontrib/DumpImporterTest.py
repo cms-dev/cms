@@ -155,11 +155,10 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         with open(destination, "wt", encoding="utf-8") as f:
             json.dump(dump, f, indent=4, sort_keys=True)
 
-    def write_files(self, data):
+    def write_files(self, data: dict[str, tuple[str, bytes]]):
         """Write files and descriptions on the filesystem.
 
-        data ({str: (str, bytes)}): dictionary mapping digest to description
-            and content.
+        data: dictionary mapping digest to description and content.
 
         """
         f_path = self.makedirs("files")
@@ -303,7 +302,6 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertUserNotInDb("username")
         self.assertFileNotInDb(TestDumpImporter.GENERATED_FILE_DIGEST)
         self.assertFileNotInDb(TestDumpImporter.NON_GENERATED_FILE_DIGEST)
-
 
     def test_import_old(self):
         """Test importing an old dump.

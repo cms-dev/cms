@@ -72,7 +72,7 @@ class AddContestHandler(
 
 class ContestHandler(SimpleContestHandler("contest.html")):
     @require_permission(BaseHandler.PERMISSION_ALL)
-    def post(self, contest_id):
+    def post(self, contest_id: str):
         contest = self.safe_get_item(Contest, contest_id)
 
         try:
@@ -83,8 +83,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
 
             assert attrs.get("name") is not None, "No contest name specified."
 
-            allowed_localizations = \
-                self.get_argument("allowed_localizations", "")
+            allowed_localizations: str = self.get_argument("allowed_localizations", "")
             if allowed_localizations:
                 attrs["allowed_localizations"] = \
                     [x.strip() for x in allowed_localizations.split(",")
@@ -147,7 +146,7 @@ class OverviewHandler(BaseHandler):
 
     """
     @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, contest_id=None):
+    def get(self, contest_id: str | None = None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -157,7 +156,7 @@ class OverviewHandler(BaseHandler):
 
 class ResourcesListHandler(BaseHandler):
     @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, contest_id=None):
+    def get(self, contest_id: str | None = None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
 

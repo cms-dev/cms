@@ -28,26 +28,31 @@
 import logging
 
 from cms.grading.Sandbox import Sandbox
-from .stats import execution_stats, merge_execution_stats
+from .stats import execution_stats, merge_execution_stats, StatsDict
 
 
 logger = logging.getLogger(__name__)
 
 
-def _generic_execution(sandbox, command, exec_num, step_name,
-                       collect_output=False):
+def _generic_execution(
+    sandbox: Sandbox,
+    command: list[str],
+    exec_num: int,
+    step_name: str,
+    collect_output: bool = False,
+) -> StatsDict | None:
     """A single command execution of a multi-command step.
 
-    sandbox (Sandbox): the sandbox to use, already created and configured.
-    command ([str]): command to execute.
-    exec_num (int): 0-based index of the execution, to be used not to
+    sandbox: the sandbox to use, already created and configured.
+    command: command to execute.
+    exec_num: 0-based index of the execution, to be used not to
         overwrite the output files.
-    step_name (str): name of the step, also used as a prefix for the stdout
+    step_name: name of the step, also used as a prefix for the stdout
         and stderr files.
-    collect_output (bool): if True, stats will contain stdout and stderr of the
+    collect_output: if True, stats will contain stdout and stderr of the
         command (regardless, they are redirected to file inside the sandbox).
 
-    return (dict|None): execution statistics, including standard output and
+    return: execution statistics, including standard output and
         error, or None in case of an unexpected sandbox error.
 
     """
@@ -64,7 +69,12 @@ def _generic_execution(sandbox, command, exec_num, step_name,
     return execution_stats(sandbox, collect_output=collect_output)
 
 
-def generic_step(sandbox, commands, step_name, collect_output=False):
+def generic_step(
+    sandbox: Sandbox,
+    commands: list[list[str]],
+    step_name: str,
+    collect_output: bool = False,
+) -> StatsDict | None:
     """Execute some commands in the sandbox.
 
     Execute the commands sequentially in the (already created and configured)
@@ -73,13 +83,13 @@ def generic_step(sandbox, commands, step_name, collect_output=False):
     Terminate early after a command if the sandbox fails, or the command does
     not terminate normally and with exit code 0.
 
-    sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): compilation commands to execute.
-    step_name (str): used for logging and as a prefix to the output files
-    collect_output (bool): if True, stats will contain stdout and stderr of the
+    sandbox: the sandbox we consider, already created.
+    commands: compilation commands to execute.
+    step_name: used for logging and as a prefix to the output files
+    collect_output: if True, stats will contain stdout and stderr of the
         commands (regardless, they are redirected to file inside the sandbox).
 
-    return (dict|None): execution statistics, including standard output and
+    return: execution statistics, including standard output and
         error, or None in case of an unexpected sandbox error.
 
     """

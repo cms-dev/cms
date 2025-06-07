@@ -35,16 +35,20 @@ import sys
 
 from cms import utf8_decoder
 from cms.db import Dataset, SessionGen
+from cms.db.session import Session
+from cms.db.task import Task
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, task_from_db
 from cmscontrib.loaders import choose_loader, build_epilog
+from cmscontrib.loaders.base_loader import TaskLoader
 
 
 logger = logging.getLogger(__name__)
 
 
 class DatasetImporter:
-    def __init__(self, path, description, loader_class):
+
+    def __init__(self, path: str, description: str, loader_class: type[TaskLoader]):
         self.file_cacher = FileCacher()
         self.description = description
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
@@ -85,7 +89,7 @@ class DatasetImporter:
         return True
 
     @staticmethod
-    def _dataset_to_db(session, dataset, task):
+    def _dataset_to_db(session: Session, dataset: Dataset, task: Task):
         old_dataset = session.query(Dataset)\
             .filter(Dataset.task_id == task.id)\
             .filter(Dataset.description == dataset.description).first()

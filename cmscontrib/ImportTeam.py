@@ -34,11 +34,14 @@ import argparse
 import logging
 import os
 import sys
+from collections.abc import Callable
 
 from cms import utf8_decoder
 from cms.db import SessionGen, Team
+from cms.db.session import Session
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError
+from cmscontrib.loaders.base_loader import BaseLoader, ContestLoader, TeamLoader
 from cmscontrib.loaders import choose_loader, build_epilog
 
 
@@ -48,7 +51,7 @@ logger = logging.getLogger(__name__)
 class TeamImporter:
     """Script to create a team in the database."""
 
-    def __init__(self, path, loader_class):
+    def __init__(self, path: str, loader_class: type[TeamLoader]):
         self.file_cacher = FileCacher()
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
@@ -75,7 +78,9 @@ class TeamImporter:
         logger.info("Import finished (new team id: %s).", team_id)
         return True
 
-    def do_import_all(self, base_path, get_loader):
+    def do_import_all(
+        self, base_path: str, get_loader: Callable[[str], type[TeamLoader]]
+    ):
         """Get the participation list from the ContestLoader and then
         try to import the needed teams.
 
@@ -98,8 +103,10 @@ class TeamImporter:
         return True
 
     @staticmethod
-    def _team_to_db(session, team):
-        old_team = session.query(Team).filter(Team.code == team.code).first()
+    def _team_to_db(session: Session, team: Team):
+        old_team: Team | None = (
+            session.query(Team).filter(Team.code == team.code).first()
+        )
         if old_team is not None:
             raise ImportDataError("Team \"%s\" already exists." % team.code)
         session.add(team)
@@ -137,7 +144,7 @@ def main():
 
     args = parser.parse_args()
 
-    def get_loader(path):
+    def get_loader(path: str) -> type[TeamLoader]:
         return choose_loader(args.loader, path, parser.error)
 
     importer = TeamImporter(

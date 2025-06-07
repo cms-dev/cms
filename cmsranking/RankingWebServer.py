@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
 
 class CustomUnauthorized(Unauthorized):
 
-    def __init__(self, realm_name):
+    def __init__(self, realm_name: str):
         super().__init__()
         self.realm_name = realm_name
 
@@ -72,7 +72,7 @@ class CustomUnauthorized(Unauthorized):
 
 class StoreHandler:
 
-    def __init__(self, store, username, password, realm_name):
+    def __init__(self, store: Store, username: str, password: str, realm_name: str):
         self.store = store
         self.username = username
         self.password = password
@@ -123,13 +123,13 @@ class StoreHandler:
 
         return response
 
-    def authorized(self, request):
+    def authorized(self, request: Request):
         return request.authorization is not None and \
             request.authorization.type == "basic" and \
             request.authorization.username == self.username and \
             request.authorization.password == self.password
 
-    def get(self, request, response, key):
+    def get(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
         if re.match("^[A-Za-z0-9_]+$", key) is None:
             return NotFound()
@@ -141,13 +141,13 @@ class StoreHandler:
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve(key))
 
-    def get_list(self, request, response):
+    def get_list(self, request: Request, response: Response):
         response.status_code = 200
         response.headers['Timestamp'] = "%0.6f" % time.time()
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve_list())
 
-    def put(self, request, response, key):
+    def put(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
         if re.match("^[A-Za-z0-9_]+$", key) is None:
             return Forbidden()
@@ -182,7 +182,7 @@ class StoreHandler:
 
         response.status_code = 204
 
-    def put_list(self, request, response):
+    def put_list(self, request: Request, response: Response):
         if not self.authorized(request):
             logger.info("Unauthorized request.",
                         extra={'location': request.url,
@@ -211,7 +211,7 @@ class StoreHandler:
 
         response.status_code = 204
 
-    def delete(self, request, response, key):
+    def delete(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
         if re.match("^[A-Za-z0-9_]+$", key) is None:
             return NotFound()
@@ -227,7 +227,7 @@ class StoreHandler:
 
         response.status_code = 204
 
-    def delete_list(self, request, response):
+    def delete_list(self, request: Request, response: Response):
         if not self.authorized(request):
             logger.info("Unauthorized request.",
                         extra={'location': request.url,
@@ -242,7 +242,7 @@ class StoreHandler:
 class DataWatcher(EventSource):
     """Receive the messages from the entities store and redirect them."""
 
-    def __init__(self, stores, buffer_size):
+    def __init__(self, stores: dict[str, Store], buffer_size: int):
         self._CACHE_SIZE = buffer_size
         EventSource.__init__(self)
 
@@ -276,19 +276,19 @@ class DataWatcher(EventSource):
 
         stores["scoring"].add_score_callback(self.score_callback)
 
-    def callback(self, entity, event, key, *args):
+    def callback(self, entity: str, event: str, key: str, *args):
         self.send(entity, "%s %s" % (event, key))
 
-    def score_callback(self, user, task, score):
+    def score_callback(self, user: str, task: str, score: float):
         # FIXME Use score_precision.
         self.send("score", "%s %s %0.2f" % (user, task, score))
 
 
 class SubListHandler:
 
-    def __init__(self, stores):
-        self.task_store = stores["task"]
-        self.scoring_store = stores["scoring"]
+    def __init__(self, stores: dict[str, Store]):
+        self.task_store: Store[Task] = stores["task"]
+        self.scoring_store: ScoringStore = stores["scoring"]
 
         self.router = Map([
             Rule("/<user_id>", methods=["GET"], endpoint="sublist"),
@@ -312,7 +312,7 @@ class SubListHandler:
         if request.accept_mimetypes.quality("application/json") <= 0:
             raise NotAcceptable()
 
-        result = list()
+        result: list[Submission] = list()
         for task_id in self.task_store._store.keys():
             result.extend(
                 self.scoring_store.get_submissions(
@@ -332,8 +332,8 @@ class SubListHandler:
 
 class HistoryHandler:
 
-    def __init__(self, stores):
-        self.scoring_store = stores["scoring"]
+    def __init__(self, stores: dict[str, Store]):
+        self.scoring_store: ScoringStore = stores["scoring"]
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -357,8 +357,8 @@ class HistoryHandler:
 
 class ScoreHandler:
 
-    def __init__(self, stores):
-        self.scoring_store = stores["scoring"]
+    def __init__(self, stores: dict[str, Store]):
+        self.scoring_store: ScoringStore = stores["scoring"]
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -370,7 +370,7 @@ class ScoreHandler:
         if request.accept_mimetypes.quality("application/json") <= 0:
             raise NotAcceptable()
 
-        result = dict()
+        result: dict[str, dict[str, float]] = dict()
         for u_id, tasks in self.scoring_store._scores.items():
             for t_id, score in tasks.items():
                 if score.get_score() > 0.0:
@@ -395,7 +395,7 @@ class ImageHandler:
 
     MIME_TO_EXT = dict((v, k) for k, v in EXT_TO_MIME.items())
 
-    def __init__(self, location, fallback):
+    def __init__(self, location: str, fallback: str):
         self.location = location
         self.fallback = fallback
 
@@ -421,7 +421,7 @@ class ImageHandler:
 
         response = Response()
 
-        available = list()
+        available: list[str] = list()
         for extension, mimetype in self.EXT_TO_MIME.items():
             if os.path.isfile(location + '.' + extension):
                 available.append(mimetype)
@@ -448,7 +448,7 @@ class ImageHandler:
 
 class RootHandler:
 
-    def __init__(self, location):
+    def __init__(self, location: str):
         self.path = os.path.join(location, "Ranking.html")
 
     def __call__(self, environ, start_response):
@@ -474,8 +474,14 @@ class RootHandler:
 
 class RoutingHandler:
 
-    def __init__(self, root_handler, event_handler, logo_handler,
-                 score_handler, history_handler):
+    def __init__(
+        self,
+        root_handler: RootHandler,
+        event_handler: DataWatcher,
+        logo_handler: ImageHandler,
+        score_handler: ScoreHandler,
+        history_handler: HistoryHandler,
+    ):
         self.router = Map([
             Rule("/", methods=["GET"], endpoint="root"),
             Rule("/history", methods=["GET"], endpoint="history"),
@@ -512,10 +518,10 @@ class RoutingHandler:
             return self.history_handler(environ, start_response)
 
 
-def main():
+def main() -> int:
     """Entry point for RWS.
 
-    return (int): exit code (0 on success, 1 on error)
+    return: exit code (0 on success, 1 on error)
 
     """
     parser = argparse.ArgumentParser(
@@ -544,7 +550,7 @@ def main():
             print("Not removing directory %s." % config.lib_dir)
         return 0
 
-    stores = dict()
+    stores: dict[str, Store] = dict()
 
     stores["subchange"] = Store(
         Subchange, os.path.join(config.lib_dir, 'subchanges'), stores)
@@ -612,7 +618,7 @@ def main():
             '/sublist': SubListHandler(stores),
         }), {'/': config.web_dir})
 
-    servers = list()
+    servers: list[WSGIServer] = list()
     if config.http_port is not None:
         http_server = WSGIServer(
             (config.bind_address, config.http_port), wsgi_app)

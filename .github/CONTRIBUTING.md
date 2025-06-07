@@ -31,34 +31,36 @@ For Python code, we generally follow [PEP 8](https://www.python.org/dev/peps/pep
 We get around Python flexible type system in several ways:
 * we try to avoid "magic" (e.g., generating or changing classes on the fly);
 * we are fairly verbose with naming, trying to help the reader with following the types;
-* we follow our type annotation system for method and function docstrings
-  (planning to switch to [PEP 484](https://www.python.org/dev/peps/pep-0484/));
-  see later for the format.
+* We use [PEP 484](https://www.python.org/dev/peps/pep-0484/) type annotations.
 
-We support Python 3 only, requiring at least version 3.9.
+We support Python 3 only. See the Installation documentation for the current
+minimum supported Python version.
 
-# Docstring type annotation format
+# Docstring format
 
-We use a custom format for type annotation in method and function docstrings. Here's an example taken from the code:
+Our docstring format is simple, if a little nonstandard.
+Here's an example taken from the code:
 
 ```
 class Cls(object):
     [...]
-    def example(self, a, b, c=None):
+    def example(
+        self, a: int, b: list[dict[str, int]], c: Submission | None = None
+    ) -> tuple[int, str]:
         """Perform an example action, described here in one line.
 
         This is a longer description of what the method does and can
         occupy more than one line, each shorter than 80 characters.
 
-        a (int): a is a required integer.
-        b ([{str: int}]): b is a list of dictionaries mapping strings to
-             integers, and note how the docstring wraps with indent.
-        c (Submission|None): c is either a Submission (not required to
-            fully specify, but it could be helpful for symbols that are
-            not imported) or None.
+        a: a is a required integer.
+        b: b is a list of dictionaries mapping strings to integers, and
+            note how the docstring wraps with indent.
+        c: c is either a Submission (not required to fully specify, but
+            it could be helpful for symbols that are not imported) or
+            None.
 
-        return ((int, str)): this method returns a tuple containing an
-            integer and a string.
+        return: this method returns a tuple containing an integer and a
+            string.
 
         raise (ValueError): if a is negative.
         raise (LookupError): if we could not find something.

@@ -29,6 +29,7 @@ import logging
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
+from cms.grading.steps.stats import StatsDict
 from .messages import HumanMessage, MessageCollection
 from .utils import generic_step
 
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable strings.
-def N_(message):
+def N_(message: str):
     return message
 
 
@@ -64,7 +65,9 @@ COMPILATION_MESSAGES = MessageCollection([
 ])
 
 
-def compilation_step(sandbox, commands):
+def compilation_step(
+    sandbox: Sandbox, commands: list[list[str]]
+) -> tuple[bool, bool | None, list[str] | None, StatsDict | None]:
     """Execute some compilation commands in the sandbox.
 
     Execute the commands sequentially in the (already created) sandbox, after
@@ -74,10 +77,10 @@ def compilation_step(sandbox, commands):
     Terminate early after a command if the sandbox fails, or the command does
     not terminate normally and with exit code 0.
 
-    sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): compilation commands to execute.
+    sandbox: the sandbox we consider, already created.
+    commands: compilation commands to execute.
 
-    return ((bool, bool|None, [str]|None, dict|None)): a tuple with four items:
+    return: a tuple with four items:
         * success: True if the sandbox did not fail, in any command;
         * compilation success: True if the compilation resulted in an
             executable, False if not, None if success is False;

@@ -119,14 +119,14 @@ configure_mappers()
 # The following is a method of Dataset that cannot be put in the right
 # file because of circular dependencies.
 
-def get_submission_results_for_dataset(self, dataset):
+def get_submission_results_for_dataset(self, dataset) -> list[SubmissionResult]:
     """Return a list of all submission results against the specified
     dataset.
 
     Also preloads the executable and evaluation objects relative to
     the submission results.
 
-    returns ([SubmissionResult]): list of submission results.
+    returns: list of submission results.
 
     """
     # We issue this query manually to optimize it: we load all

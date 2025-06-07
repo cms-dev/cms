@@ -19,6 +19,7 @@
 """Provide utilities to work with programming language classes."""
 
 from cms import plugin_list
+from cms.grading.language import Language
 
 
 __all__ = [
@@ -28,18 +29,18 @@ __all__ = [
 ]
 
 
-LANGUAGES = list()
-_BY_NAME = dict()
-HEADER_EXTS = set()
-OBJECT_EXTS = set()
-SOURCE_EXTS = set()
+LANGUAGES: list[Language] = list()
+_BY_NAME: dict[str, Language] = dict()
+HEADER_EXTS: set[str] = set()
+OBJECT_EXTS: set[str] = set()
+SOURCE_EXTS: set[str] = set()
 
 
-def get_language(name):
+def get_language(name: str) -> Language:
     """Return the language object corresponding to the given name.
 
-    name (unicode): name of the requested language.
-    return (Language): language object.
+    name: name of the requested language.
+    return: language object.
 
     raise (KeyError): if the name does not correspond to a language.
 
@@ -49,14 +50,13 @@ def get_language(name):
     return _BY_NAME[name]
 
 
-def filename_to_language(filename):
+def filename_to_language(filename: str) -> Language | None:
     """Return one of the languages inferred from the given filename.
 
-    filename (string): the file to test.
+    filename: the file to test.
 
-    return (Language|None): one (arbitrary, but deterministic)
-        language matching the given filename, or None if none
-        match.
+    return: one (arbitrary, but deterministic) language
+    matching the given filename, or None if none match.
 
     """
     ext_index = filename.rfind(".")

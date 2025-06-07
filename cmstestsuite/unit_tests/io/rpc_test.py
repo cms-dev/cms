@@ -75,7 +75,7 @@ class TestRPC(unittest.TestCase):
         self.clients = list()
         self.spawn_listener()
 
-    def spawn_listener(self, host="127.0.0.1", port=0):
+    def spawn_listener(self, host: str = "127.0.0.1", port: int = 0):
         """Start listening on the given host and port.
 
         Each incoming connection will cause a RemoteServiceServer to be
@@ -83,8 +83,8 @@ class TestRPC(unittest.TestCase):
         inserted in self.servers. The listening host and port will also
         be stored as self.host and self.port.
 
-        host (string): the hostname or IP address
-        port (int): the port (0 causes any available port to be chosen)
+        host: the hostname or IP address
+        port: the port (0 causes any available port to be chosen)
 
         """
         self._server = StreamServer((host, port), self.handle_new_connection)
@@ -103,7 +103,7 @@ class TestRPC(unittest.TestCase):
             del self._server
         # We leave self.host and self.port.
 
-    def handle_new_connection(self, socket_, address):
+    def handle_new_connection(self, socket_: socket.socket, address: tuple[str, int]):
         """Create a new RemoteServiceServer to handle a new connection.
 
         Instantiate a RemoteServiceServer, add it to self.servers and
@@ -111,27 +111,29 @@ class TestRPC(unittest.TestCase):
         opened by a remote host from the given address). This method
         will block until the socket gets closed.
 
-        socket_ (socket): the socket to use
-        address (tuple): the (ip address, port) of the remote part
+        socket_: the socket to use
+        address: the (ip address, port) of the remote part
 
         """
         server = RemoteServiceServer(self.service, address)
         self.servers.append(server)
         server.handle(socket_)
 
-    def get_client(self, coord, block=True, auto_retry=None):
+    def get_client(
+        self, coord: ServiceCoord, block: bool = True, auto_retry: float | None = None
+    ) -> RemoteServiceClient:
         """Obtain a new RemoteServiceClient to connect to a server.
 
         Instantiate a RemoteServiceClient, spawn its greenlet and add
         it to self.clients. It will try to connect to the service at
         the given coordinates.
 
-        coord (ServiceCoord): the (name, shard) of the service
-        block (bool): whether to wait for the connection to be
+        coord: the (name, shard) of the service
+        block: whether to wait for the connection to be
             established before returning
-        auto_retry (float|None): how long to wait after a disconnection
+        auto_retry: how long to wait after a disconnection
             before trying to reconnect
-        return (RemoteServiceClient): a client
+        return: a client
 
         """
         client = RemoteServiceClient(coord, auto_retry)

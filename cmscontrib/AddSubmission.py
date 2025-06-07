@@ -28,6 +28,7 @@ from cms import utf8_decoder, ServiceCoord
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
+from cms.grading.language import Language
 from cms.grading.languagemanager import filename_to_language
 from cms.io import RemoteServiceClient
 from cmscommon.datetime import make_datetime
@@ -36,7 +37,7 @@ from cmscommon.datetime import make_datetime
 logger = logging.getLogger(__name__)
 
 
-def maybe_send_notification(submission_id):
+def maybe_send_notification(submission_id: int):
     """Non-blocking attempt to notify a running ES of the submission"""
     rs = RemoteServiceClient(ServiceCoord("EvaluationService", 0))
     rs.connect()
@@ -44,13 +45,13 @@ def maybe_send_notification(submission_id):
     rs.disconnect()
 
 
-def language_from_submitted_files(files):
+def language_from_submitted_files(files: dict[str, str]) -> Language | None:
     """Return the language inferred from the submitted files.
 
-    files ({str: str}): dictionary mapping the expected filename to a path in
+    files: dictionary mapping the expected filename to a path in
         the file system.
 
-    return (Language|None): the language inferred from the files.
+    return: the language inferred from the files.
 
     raise (ValueError): if different files point to different languages, or if
         it is impossible to extract the language from a file when it should be.
@@ -71,23 +72,33 @@ def language_from_submitted_files(files):
     return language
 
 
-def add_submission(contest_id, username, task_name, timestamp, files):
+def add_submission(
+    contest_id: int,
+    username: str,
+    task_name: str,
+    timestamp: float,
+    files: dict[str, str],
+):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
-        participation = session.query(Participation)\
-            .join(Participation.user)\
-            .filter(Participation.contest_id == contest_id)\
-            .filter(User.username == username)\
+        participation: Participation | None = (
+            session.query(Participation)
+            .join(Participation.user)
+            .filter(Participation.contest_id == contest_id)
+            .filter(User.username == username)
             .first()
+        )
         if participation is None:
             logging.critical("User `%s' does not exists or "
                              "does not participate in the contest.", username)
             return False
-        task = session.query(Task)\
-            .filter(Task.contest_id == contest_id)\
-            .filter(Task.name == task_name)\
+        task: Task | None = (
+            session.query(Task)
+            .filter(Task.contest_id == contest_id)
+            .filter(Task.name == task_name)
             .first()
+        )
         if task is None:
             logging.critical("Unable to find task `%s'.", task_name)
             return False
@@ -121,7 +132,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         language_name = None if language is None else language.name
 
         # Store all files from the arguments, and obtain their digests..
-        file_digests = {}
+        file_digests: dict[str, str] = {}
         try:
             for file_ in files:
                 digest = file_cacher.put_file_from_path(
@@ -145,10 +156,10 @@ def add_submission(contest_id, username, task_name, timestamp, files):
     return True
 
 
-def main():
+def main() -> int:
     """Parse arguments and launch process.
 
-    return (int): exit code of the program.
+    return: exit code of the program.
 
     """
     parser = argparse.ArgumentParser(
@@ -177,12 +188,12 @@ def main():
         import time
         args.timestamp = time.time()
 
-    split_files = [file_.split(":", 1) for file_ in args.file]
+    split_files: list[tuple[str, str]] = [file_.split(":", 1) for file_ in args.file]
     if any(len(file_) != 2 for file_ in split_files):
         parser.error("Invalid value for the file argument: format is "
                      "<name>:<file>.")
         return 1
-    files = {}
+    files: dict[str, str] = {}
     for name, filename in split_files:
         if name in files:
             parser.error("Duplicate assignment for file `%s'." % name)

@@ -23,9 +23,9 @@ class User(Entity):
     """The entity representing a user.
 
     It consists of the following properties:
-    - f_name (unicode): the first name of the user
-    - l_name (unicode): the last name of the user
-    - team (unicode): the id of the team the user belongs to
+    - f_name: the first name of the user
+    - l_name: the last name of the user
+    - team: the id of the team the user belongs to
 
     """
     def __init__(self):
@@ -33,9 +33,9 @@ class User(Entity):
 
         """
         Entity.__init__(self)
-        self.f_name = None
-        self.l_name = None
-        self.team = None
+        self.f_name: str = None
+        self.l_name: str = None
+        self.team: str = None
 
     @staticmethod
     def validate(data):

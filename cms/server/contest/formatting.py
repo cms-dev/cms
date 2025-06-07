@@ -23,20 +23,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
-from cms.locale import DEFAULT_TRANSLATION
+from cms.locale import Translation, DEFAULT_TRANSLATION
 
 
-def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
+def format_token_rules(
+    tokens: dict,
+    t_type: str | None = None,
+    translation: Translation = DEFAULT_TRANSLATION,
+) -> str:
     """Return a human-readable string describing the given token rules
 
-    tokens (dict): all the token rules (as seen in Task or Contest),
+    tokens: all the token rules (as seen in Task or Contest),
         without the "token_" prefix.
-    t_type (string|None): the type of tokens the string should refer to
+    t_type: the type of tokens the string should refer to
         (can be "contest" to mean contest-tokens, "task" to mean
         task-tokens, any other value to mean normal tokens).
-    translation (Translation): the translation to use.
+    translation: the translation to use.
 
-    return (unicode): localized string describing the rules.
+    return: localized string describing the rules.
 
     """
     _ = translation.gettext
@@ -126,13 +130,13 @@ def format_token_rules(tokens, t_type=None, translation=DEFAULT_TRANSLATION):
     return result
 
 
-def get_score_class(score, max_score, score_precision):
+def get_score_class(score: float, max_score: float, score_precision: int) -> str:
     """Return a CSS class to visually represent the score/max_score
 
-    score (float): the score of the submission.
-    max_score (float): maximum score.
+    score: the score of the submission.
+    max_score: maximum score.
 
-    return (unicode): class name
+    return: class name
 
     """
     score = round(score, score_precision)

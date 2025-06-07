@@ -27,11 +27,11 @@ from datetime import datetime, timedelta
 from cms.server.contest.phase_management import compute_actual_phase
 
 
-def parse_datetime(value):
+def parse_datetime(value: str | None) -> datetime | None:
     """Convert a string "HH[:MM[:SS]]" into a datetime of 2000-01-01.
 
-    value (string|None): a formatted time, or None.
-    return (datetime|None): the datetime, or None if value was None.
+    value: a formatted time, or None.
+    return: the datetime, or None if value was None.
 
     """
     if value is None:
@@ -39,11 +39,11 @@ def parse_datetime(value):
     return datetime(2000, 1, 1, *[int(v, 10) for v in value.split(":")])
 
 
-def parse_timedelta(value):
+def parse_timedelta(value: str | None) -> timedelta | None:
     """Convert a string "HH[:MM[:SS]]" into a timedelta.
 
-    value (string|None): a formatted time, or None.
-    return (timedelta|None): the timedelta, or None if value was None.
+    value: a formatted time, or None.
+    return: the timedelta, or None if value was None.
 
     """
     if value is None:
@@ -58,8 +58,17 @@ TEST_STEPS = \
     [timedelta(hours=t) for t in (1, 3, 6, 12, 24)]
 
 
-def test(contest_start, contest_stop, analysis_start, analysis_end,
-         per_user_time, starting_time, delay_time, extra_time, intervals):
+def test(
+    contest_start: str,
+    contest_stop: str,
+    analysis_start: str,
+    analysis_end: str,
+    per_user_time: str | None,
+    starting_time: str | None,
+    delay_time: str,
+    extra_time: str,
+    intervals: tuple,
+):
     """Helper to test compute_actual_phase.
 
     It takes all the parameters accepted by compute_actual_phase (with
@@ -79,18 +88,18 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
     (more "dense" near the boundaries), calls compute_actual_phase on
     each of them and checks that the label of the interval is returned.
 
-    contest_start (string): the contest's start.
-    contest_stop (string): the contest's stop.
-    analysis_start (string): the analysis mode's start.
-    analysis_stop (string): the analysis mode's stop.
-    per_user_time (string|None): the amount of time allocated to each
+    contest_start: the contest's start.
+    contest_stop: the contest's stop.
+    analysis_start: the analysis mode's start.
+    analysis_stop: the analysis mode's stop.
+    per_user_time: the amount of time allocated to each
         user; contest is USACO-like if given and traditional if not.
-    starting_time (string|None): when the user started their time
+    starting_time: when the user started their time
         frame.
-    delay_time (string): how much the user's start is delayed.
-    extra_time (string): how much extra time is given to the user at
+    delay_time: how much the user's start is delayed.
+    extra_time: how much extra time is given to the user at
         the end.
-    intervals (tuple): see above.
+    intervals: see above.
 
     raise (Exception): if compute_actual_phase doesn't behave as
         expected, or if some arguments weren't properly formatted.
@@ -162,6 +171,7 @@ def test(contest_start, contest_stop, analysis_start, analysis_end,
                     "Check on %s returned %s instead of %s" % (
                         end - step, res, (status, begin, end,
                                           valid_begin, valid_end))
+
 
 # Tell pytest not to collect the "test" function as test
 test.__test__ = False

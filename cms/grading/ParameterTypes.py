@@ -29,7 +29,11 @@ represented by JSON objects.
 
 from abc import ABCMeta, abstractmethod
 
-from jinja2 import Markup
+from jinja2 import Markup, Template
+import typing
+
+if typing.TYPE_CHECKING:
+    from tornado.web import RequestHandler
 
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 
@@ -37,16 +41,14 @@ from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 class ParameterType(metaclass=ABCMeta):
     """Base class for parameter types."""
 
-    TEMPLATE = None
+    TEMPLATE: Template = None
 
-    def __init__(self, name, short_name, description):
+    def __init__(self, name: str, short_name: str, description: str):
         """Initialization.
 
-        name (str): name of the parameter.
-        short_name (str): short name without spaces, used for HTML
-            element ids.
-        description (str): describes the usage and effect of this
-            parameter.
+        name: name of the parameter.
+        short_name: short name without spaces, used for HTML element ids.
+        description: describes the usage and effect of this parameter.
 
         """
         self.name = name
@@ -54,10 +56,10 @@ class ParameterType(metaclass=ABCMeta):
         self.description = description
 
     @abstractmethod
-    def validate(self, value):
+    def validate(self, value: object) -> None:
         """Validate that the passed value is syntactically appropriate.
 
-        value (object): the value to test
+        value: the value to test
 
         raise (ValueError): if the value is malformed for this parameter.
 
@@ -65,12 +67,12 @@ class ParameterType(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def parse_string(self, value):
+    def parse_string(self, value: str) -> object:
         """Parse the specified string and returns the parsed value.
 
-        value (str): the string value to parse.
+        value: the string value to parse.
 
-        return (object): the parsed value, of the type appropriate for the
+        return: the parsed value, of the type appropriate for the
             parameter type.
 
         raise (ValueError): if parsing fails.
@@ -78,16 +80,16 @@ class ParameterType(metaclass=ABCMeta):
         """
         pass
 
-    def parse_handler(self, handler, prefix):
+    def parse_handler(self, handler: "RequestHandler", prefix: str) -> object:
         """Parse relevant parameters in the handler.
 
         Attempts to parse any relevant parameters in the specified handler.
 
-        handler (tornado.web.RequestHandler): a handler containing
+        handler: a handler containing
             the required parameters as arguments.
-        prefix (str): the prefix of the relevant arguments in the handler.
+        prefix: the prefix of the relevant arguments in the handler.
 
-        return (object): the parsed value, of the type appropriate for the
+        return: the parsed value, of the type appropriate for the
             parameter type.
 
         raise (ValueError): if parsing fails.
@@ -98,14 +100,14 @@ class ParameterType(metaclass=ABCMeta):
         return self.parse_string(handler.get_argument(
             prefix + self.short_name))
 
-    def render(self, prefix, previous_value=None):
+    def render(self, prefix: str, previous_value: object | None = None) -> str:
         """Generate a form snippet for this parameter type.
 
-        prefix (str): prefix to add to the fields names in the form.
-        previous_value (object|None): if not None, display this value as
+        prefix: prefix to add to the fields names in the form.
+        previous_value: if not None, display this value as
             default.
 
-        return (str): HTML form for the parameter type.
+        return: HTML form for the parameter type.
 
         """
         # Markup avoids escaping when other templates include this.
@@ -162,10 +164,10 @@ class ParameterTypeChoice(ParameterType):
 </select>
 """)
 
-    def __init__(self, name, short_name, description, values):
+    def __init__(self, name, short_name, description, values: dict):
         """Initialization.
 
-        values (dict): dictionary mapping each choice to a short description.
+        values: dictionary mapping each choice to a short description.
 
         """
         super().__init__(name, short_name, description)
@@ -202,10 +204,12 @@ class ParameterTypeCollection(ParameterType):
 </table>
 """)
 
-    def __init__(self, name, short_name, description, subparameters):
+    def __init__(
+        self, name, short_name, description, subparameters: list[ParameterType]
+    ):
         """Initialization.
 
-        subparameters ([ParameterType]): list of types of each sub-parameter.
+        subparameters: list of types of each sub-parameter.
 
         """
         super().__init__(name, short_name, description)

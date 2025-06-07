@@ -25,6 +25,7 @@
 
 """
 
+from datetime import datetime
 import logging
 
 from sqlalchemy import func, not_, literal_column
@@ -47,7 +48,7 @@ class AdminWebServer(WebService):
     """Service that runs the web server serving the managers.
 
     """
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         parameters = {
             "static_files": [("cms.server", "static"),
                              ("cms.server.admin", "static")],
@@ -65,11 +66,12 @@ class AdminWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=config.admin_listen_address)
+        self.auth_handler: AWSAuthMiddleware
 
         self.jinja2_environment = AWS_ENVIRONMENT
 
         # A list of pending notifications.
-        self.notifications = []
+        self.notifications: list[tuple[datetime, str, str]] = []
 
         self.admin_web_server = self.connect_to(
             ServiceCoord("AdminWebServer", 0))
@@ -89,24 +91,24 @@ class AdminWebServer(WebService):
                 ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
-    def is_rpc_authorized(self, service, shard, method):
+    def is_rpc_authorized(self, service: str, shard: int, method: str):
         return rpc_authorization_checker(self.auth_handler.admin_id,
                                          service, shard, method)
 
-    def add_notification(self, timestamp, subject, text):
+    def add_notification(self, timestamp: datetime, subject: str, text: str):
         """Store a new notification to send at the first
         opportunity (i.e., at the first request for db notifications).
 
-        timestamp (datetime): the time of the notification.
-        subject (string): subject of the notification.
-        text (string): body of the notification.
+        timestamp: the time of the notification.
+        subject: subject of the notification.
+        text: body of the notification.
 
         """
         self.notifications.append((timestamp, subject, text))
 
     @staticmethod
     @rpc_method
-    def submissions_status(contest_id):
+    def submissions_status(contest_id: int | None) -> dict:
         """Returns a dictionary of statistics about the number of
         submissions on a specific status in the given contest.
 
@@ -118,10 +120,10 @@ class AdminWebServer(WebService):
         The status of a submission is checked on its result for the
         active dataset of its task.
 
-        contest_id (int|None): counts are restricted to this contest,
+        contest_id: counts are restricted to this contest,
             or None for no restrictions.
 
-        return (dict): statistics on the submissions.
+        return: statistics on the submissions.
 
         """
         # TODO: at the moment this counts all submission results for
