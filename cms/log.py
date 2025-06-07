@@ -393,16 +393,16 @@ root_logger.setLevel(logging.DEBUG)
 
 
 # Install a shell handler.
-shell_handler = StreamHandler(sys.stdout)
+shell_handler = StreamHandler(sys.stderr)
 shell_handler.setLevel(logging.INFO)
-shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
+shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stderr)))
 root_logger.addHandler(shell_handler)
 
 
 def set_detailed_logs(detailed: bool):
     """Set or unset the shell logs to detailed."""
     global shell_handler
-    color = has_color_support(sys.stdout)
+    color = has_color_support(sys.stderr)
     formatter = DetailedFormatter(color) \
         if detailed else CustomFormatter(color)
     shell_handler.setFormatter(formatter)
