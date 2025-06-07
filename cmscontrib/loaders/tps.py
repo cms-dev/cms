@@ -25,7 +25,9 @@ import re
 import subprocess
 from datetime import timedelta
 
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
+from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 from .base_loader import TaskLoader
 
 
@@ -97,7 +99,7 @@ class TpsTaskLoader(TaskLoader):
             par_processes = '%s_num_processes' % par_prefix
             if par_processes not in task_type_parameters:
                 task_type_parameters[par_processes] = 1
-            return [task_type_parameters[par_processes], "stub", "fifo_io"]
+            return [task_type_parameters[par_processes], "stub", "std_io"]
 
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
             return [evaluation_param]
@@ -123,6 +125,15 @@ class TpsTaskLoader(TaskLoader):
 
         args["name"] = name
         args["title"] = data['name']
+        args["score_mode"] = SCORE_MODE_MAX_SUBTASK
+
+        feedback_level = data.get("feedback_level", None)
+        if feedback_level:
+            if feedback_level not in (FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED):
+                logger.critical(f"invalid feedback_level: {feedback_level}")
+                return None
+
+            args["feedback_level"] = feedback_level
 
         # Statements
         if get_statement:
@@ -229,7 +240,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-std=gnu++14", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++17", "-O2", "-static",
                 "-o", checker_exe, checker_src
             ])
             if ret != 0:
@@ -287,7 +298,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Manager found, compiling")
             manager_exe = os.path.join(graders_dir, "manager")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++17", "-O2", "-static",
                 "-o", manager_exe, manager_src
             ])
             if ret != 0:

@@ -36,7 +36,7 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum, BigInteger
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
@@ -199,6 +199,7 @@ class Task(Base):
     # reverse engineer task data.
     feedback_level: str = Column(
         Enum(FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED,
+             FEEDBACK_LEVEL_OI_RESTRICTED,
              name="feedback_level"),
         nullable=False,
         default=FEEDBACK_LEVEL_RESTRICTED)

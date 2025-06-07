@@ -1,1 +1,3 @@
-managed-correct.cpp
+int userfunc(int x) {
+    return x;
+}
