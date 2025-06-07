@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: ko\n"
@@ -500,13 +500,13 @@ msgid "Printing"
 msgstr "프린트"
 
 msgid "Contest Management System"
-msgstr "Contest Management System"
+msgstr "콘테스트 관리 시스템"
 
 msgid "is released under the"
-msgstr "is released under the"
+msgstr "아래에 출시됩니다"
 
 msgid "GNU Affero General Public License"
-msgstr "GNU Affero General Public License"
+msgstr "나는 GNU General Public License를 가져옵니다"
 
 msgid "Choose a contest"
 msgstr "대회 선택"
@@ -736,11 +736,26 @@ msgstr "비밀번호가 일치하지 않습니다!"
 msgid "This username is already taken, please choose a different one."
 msgstr "해당 ID가 이미 있습니다. 다른 ID를 선택해주세요."
 
+msgid "This user is already registered in the contest."
+msgstr "이 사용자는 이미 대회에 등록되어 있습니다."
+
+msgid "No such user."
+msgstr "해당 사용자가 없습니다."
+
+msgid "The password is not correct."
+msgstr "비밀번호가 맞지 않습니다."
+
+msgid "Registration"
+msgstr "등록"
+
 msgid "Please fill in the fields to register"
 msgstr "아래 내용들을 정확하게 입력해주세요."
 
 msgid "New user"
 msgstr "사용자ID 등록하기"
+
+msgid "Join contest"
+msgstr "콘테스트 참가"
 
 msgid "First name"
 msgstr "이름"
@@ -749,7 +764,7 @@ msgid "Last name"
 msgstr "성"
 
 msgid "E-mail"
-msgstr "E-mail"
+msgstr "이메일"
 
 msgid "Representing"
 msgstr "자기소개"
@@ -762,8 +777,14 @@ msgstr[0] ""
 msgid "Confirm password"
 msgstr "비밀번호 확인"
 
+msgid "Registered in the contest successfully!"
+msgstr "대회에 성공적으로 등록되었습니다!"
+
 msgid "Your username is:"
 msgstr "사용자ID:"
+
+msgid "Your password is stored securely."
+msgstr "귀하의 비밀번호는 안전하게 저장됩니다."
 
 msgid "Back to login"
 msgstr "로그인하기"

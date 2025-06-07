@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: lv_LV\n"
@@ -754,11 +754,26 @@ msgstr "Paroles nesakrīt!"
 msgid "This username is already taken, please choose a different one."
 msgstr "Šis lietotājvārds jau ir aizņemts; lūdzu, izvēlieties citu."
 
+msgid "This user is already registered in the contest."
+msgstr "Šis lietotājs jau ir reģistrēts konkursā."
+
+msgid "No such user."
+msgstr "Nav tāda lietotāja."
+
+msgid "The password is not correct."
+msgstr "Parole nav pareiza."
+
+msgid "Registration"
+msgstr "Reģistrācija"
+
 msgid "Please fill in the fields to register"
 msgstr "Lai reģistrētos, lūdzu, aizpildiet laukus"
 
 msgid "New user"
 msgstr "Jauns lietotājs"
+
+msgid "Join contest"
+msgstr "Pievienojies konkursam"
 
 msgid "First name"
 msgstr "Vārds"
@@ -782,8 +797,14 @@ msgstr[2] "Jābūt vismaz %(min_length)s simbolu."
 msgid "Confirm password"
 msgstr "Apstipriniet paroli"
 
+msgid "Registered in the contest successfully!"
+msgstr "Veiksmīgi reģistrējies konkursam!"
+
 msgid "Your username is:"
 msgstr "Jūsu lietotājvārds ir:"
+
+msgid "Your password is stored securely."
+msgstr "Jūsu parole tiek droši glabāta."
 
 msgid "Back to login"
 msgstr "Atpakaļ uz pieteikšanos"

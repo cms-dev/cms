@@ -32,7 +32,7 @@ import os
 import re
 
 from setuptools import setup, find_packages
-from setuptools.command.build_py import build_py
+from setuptools.command.build import build
 
 
 PACKAGE_DATA = {
@@ -102,11 +102,11 @@ def find_version():
     raise RuntimeError("Unable to find version string.")
 
 
-# We piggyback the translation catalogs compilation onto build_py since
+# We piggyback the translation catalogs compilation onto build since
 # the po and mofiles will be part of the package data for cms.locale,
 # which is collected at this stage.
-class build_py_and_l10n(build_py):
-    sub_commands = [('compile_catalog', None)] + build_py.sub_commands
+class build_with_l10n(build):
+    sub_commands = [('compile_catalog', None)] + build.sub_commands
 
 
 setup(
@@ -118,7 +118,7 @@ setup(
     description="A contest management system and grader for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
-    cmdclass={"build_py": build_py_and_l10n},
+    cmdclass={"build": build_with_l10n},
     scripts=[
         "scripts/cmsLogService",
         "scripts/cmsScoringService",

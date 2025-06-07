@@ -1,0 +1,533 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+msgid "N/A"
+msgstr "لا يوجد"
+
+msgid "Correct"
+msgstr "صحيح"
+
+msgid "Not correct"
+msgstr "غير صحيح"
+
+msgid "Partially correct"
+msgstr "صحيح جزئيًا"
+
+msgid "Outcome"
+msgstr "نتيجة"
+
+msgid "#"
+msgstr "#"
+
+msgid "Details"
+msgstr "التفاصيل"
+
+msgid "Execution time"
+msgstr "الوقت المستغرق للتنفيذ"
+
+msgid "Memory used"
+msgstr "الذاكرة المستعملة"
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "المسألة الفرعية رقم %(index)s"
+
+msgid "Compilation succeeded"
+msgstr "نجح التحويل"
+
+msgid "Compilation failed"
+msgstr "فشل التحويل"
+
+msgid "Compilation timed out"
+msgstr "التحويل تجاوز حد الوقت"
+
+msgid "Output is correct"
+msgstr "المخرجات صحيحة"
+
+msgid "Output is partially correct"
+msgstr "المخرجات صحيحة جزئيًا"
+
+msgid "Output isn't correct"
+msgstr "المخرجات غير صحيحة"
+
+msgid "Execution timed out"
+msgstr "التنفيذ تجاوز حد الوقت"
+
+msgid "Your submission used too much CPU time."
+msgstr "تسليمك استغرق من وقت المعالج أكثر من الحد"
+
+msgid "Execution killed (could be triggered by violating memory limits)"
+msgstr "أوقف التنفيذ (قد يكون بسبب الوصول لذاكرة غير مصرح بها)"
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "فشل التنفيذ لأن كود الخروج لم يساوي صفر"
+
+msgid "Question too long!"
+msgstr "السؤال طويل جدًا!"
+
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] ""
+msgstr[1] "كل دقيقة "
+msgstr[2] "كل دقيقتين "
+msgstr[3] "كل %(gen_interval)g دقائق "
+msgstr[4] ""
+msgstr[5] "كل %(gen_interval)g دقيقة "
+
+msgid "File too big!"
+msgstr "ملف ضخم جدًا!"
+
+msgid "Please try again."
+msgstr "فضلًا جرب مرة أخرى."
+
+msgid "Question received"
+msgstr "استقبلت سؤالًا"
+
+msgid "Submission received"
+msgstr "التسليم استقبل"
+
+msgid "details"
+msgstr "التفاصيل"
+
+msgid "Executed"
+msgstr "نُفّذ"
+
+msgid "Too many submissions!"
+msgstr "كثرت تسليمات!"
+
+msgid "Submissions too frequent!"
+msgstr "تسليماتك كثيرة في وقت قليل"
+
+msgid "Submission too big!"
+msgstr "تسليم جدًا ضخم!"
+
+msgid "Communication"
+msgstr "التواصل"
+
+msgid "Announcements"
+msgstr "المنشورات"
+
+msgid "(no subject)"
+msgstr "(دون موضوع)"
+
+msgid "Questions"
+msgstr "الأسئلة"
+
+msgid "Subject"
+msgstr "الموضوع"
+
+msgid "Text"
+msgstr "النص"
+
+msgid "Ask question"
+msgstr "اسأل سؤالًا"
+
+msgid "Reset"
+msgstr "إعادة ضبط"
+
+msgid "no answer yet"
+msgstr "لا إجابة بعد"
+
+msgid "Messages"
+msgstr "الرسائل"
+
+msgid "Logout"
+msgstr "تسجيل خروج"
+
+#, python-format
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "سجلت الدخول باسم <strong>%(first_name)s%(last_name)s</strong><em>%(username)s</em>"
+
+msgid "Failed to log in."
+msgstr "فشل تسجيل الدخول."
+
+msgid "Welcome"
+msgstr "مرحبًا"
+
+msgid "Please log in"
+msgstr "فضلًا سجل الدخول"
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Login"
+msgstr "تسجيل دخول"
+
+msgid "Don't have an account?"
+msgstr "هل عندك حساب؟"
+
+msgid "Register"
+msgstr "تسجيل"
+
+msgid "New message"
+msgstr "رسالة جديدة"
+
+msgid "New announcement"
+msgstr "منشور جديد"
+
+msgid "New answer"
+msgstr "إجابة جديدة"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d غير مقروءة"
+
+msgid "Until contest starts:"
+msgstr "حتى بداية المسابقة:"
+
+msgid "Until analysis starts:"
+msgstr "حتى بداية المراجعة:"
+
+msgid "Until contest ends:"
+msgstr "حتى نهاية المسابقة:"
+
+msgid "Until analysis ends:"
+msgstr "حتى نهاية المراجعة:"
+
+msgid "Time left:"
+msgstr "الوقت المتبقي:"
+
+msgid "Server time:"
+msgstr "وقت السيرفر:"
+
+msgid "Overview"
+msgstr "نظرة عامة"
+
+msgid "Statement"
+msgstr "نص المسألة"
+
+msgid "Submissions"
+msgstr "التسليمات"
+
+msgid "Documentation"
+msgstr "دليل الاستخدام"
+
+msgid "Printing"
+msgstr "طباعة"
+
+msgid "Contest Management System"
+msgstr "نظام إدارة المسابقات"
+
+msgid "GNU Affero General Public License"
+msgstr "رخصة جنو أفيرو العامة"
+
+msgid "Choose a contest"
+msgstr "اختر مسابقة"
+
+msgid "Programming languages and libraries"
+msgstr "اللغات البرمجية والمكتبات"
+
+msgid "Standard Template Library"
+msgstr "المكتبة الأساسية"
+
+msgid "The main Java class of the solution should have exactly the same name as the task."
+msgstr "اسم الكلاس في Java يجب أن يطابق اسم المسألة"
+
+msgid "Submission details for compilation"
+msgstr "تفاصيل التسليم للكومبايل"
+
+msgid "Message"
+msgstr "رسالة"
+
+msgid "Explanation"
+msgstr "شرح"
+
+msgid "Submission details for evaluation"
+msgstr "تفاصيل التسليم للتنفيذ"
+
+#, python-format
+msgid "Error %(status_code)s"
+msgstr "خطأ %(status_code)s"
+
+msgid "An error occured while the server was handling your request."
+msgstr "حصل خطأ من النظام حين معالجة طلبك"
+
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "إذا واجهت هذه المشكلة أثناء الاستخدام الطبيعي، فضلًا أبلغ المسؤولين عن المسابقة."
+
+msgid "General information"
+msgstr "معلومات عامة"
+
+msgid "The contest hasn't started yet."
+msgstr "المسابقة لم تبدأ بعد"
+
+msgid "The contest is currently running."
+msgstr "المسابقة حية الآن."
+
+msgid "The contest has already ended."
+msgstr "المسابقة قد انتهت."
+
+msgid "You have an infinite number of tokens."
+msgstr "لديك عدد لا نهائي من الtokens"
+
+#, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr "يمكنك تسليم %(submissions)s حلول بحد أقصى أثناء المسابقة"
+
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr "حينما تبدأ المسابقة بإمكانك اختيار الإطار الزمني للبدء"
+
+msgid "By clicking on the button below you can start your time frame."
+msgstr "بمجرد ضغطك للزر في الأسفل سيبدأ الإطار الزمني الخاص بك وسيبدأ الوقت."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "لقد بدأت إطارك الزمني في %(start_time)s"
+
+msgid "There's nothing you can do now."
+msgstr "لا يمكنك فعل شيء."
+
+msgid "Start!"
+msgstr "ابدأ!"
+
+msgid "Task overview"
+msgstr "نظرة عامة عن المسألة"
+
+msgid "Task"
+msgstr "مسألة"
+
+msgid "Name"
+msgstr "اسم"
+
+msgid "Time limit"
+msgstr "حد الوقت"
+
+msgid "Memory limit"
+msgstr "حد الذاكرة"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Files"
+msgstr "الملفات"
+
+msgid "Yes"
+msgstr "نعم"
+
+msgid "No"
+msgstr "لا"
+
+msgid "Print"
+msgstr "اطبع"
+
+#, python-format
+msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
+msgstr "يمكنك طباعة %(remaining_jobs)s ملفات نصية أو PDF زيادة، وكل منها لا يتجاوز %(max_pages)s صفحات."
+
+msgid "File (text or PDF)"
+msgstr "ملف (نصي أو PDF)"
+
+msgid "File (text)"
+msgstr "ملف (نصي)"
+
+msgid "Submit"
+msgstr "تسليم"
+
+msgid "Date and time"
+msgstr "التاريخ والوقت"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "File name"
+msgstr "اسم الملف"
+
+msgid "Status"
+msgstr "الحالة"
+
+msgid "Preparing..."
+msgstr "يجهز..."
+
+msgid "The passwords do not match!"
+msgstr "كلمتي المرور غير متطابقة!"
+
+msgid "This user is already registered in the contest."
+msgstr "المستخدم قد سجل للمسابقة من قبل."
+
+msgid "No such user."
+msgstr "لا يوجد مستخدم هكذا."
+
+msgid "The password is not correct."
+msgstr "كلمة المرور غير صحيحة."
+
+msgid "Registration"
+msgstr "التسجيل"
+
+msgid "Please fill in the fields to register"
+msgstr "فضلًا املأ الحقول للتسجيل"
+
+msgid "New user"
+msgstr "مستخدم جديد"
+
+msgid "Join contest"
+msgstr "ادخل المسابقة"
+
+msgid "First name"
+msgstr "الاسم الأول"
+
+msgid "Last name"
+msgstr "الاسم الأخير"
+
+msgid "E-mail"
+msgstr "البريد الإلكتروني"
+
+msgid "Confirm password"
+msgstr "تأكيد كلمة المرور"
+
+msgid "Registered in the contest successfully!"
+msgstr "سجلت في المسابقة بنجاح!"
+
+msgid "Your username is:"
+msgstr "اسم المستخدم:"
+
+msgid "Your password is stored securely."
+msgstr "كلمة مرورك خزنت بأمان."
+
+msgid "Back to login"
+msgstr "العودة لتسجيل الدخول"
+
+msgid "Compilation output"
+msgstr "مخرجات التحويل"
+
+msgid "Compilation outcome:"
+msgstr "نتيجة التحويل:"
+
+msgid "Compilation time:"
+msgstr "الوقت المستغرق للتحويل"
+
+msgid "Memory used:"
+msgstr "الذاكرة المستعملة:"
+
+msgid "Standard output"
+msgstr "نظام المخرجات الأساسي"
+
+msgid "Standard error"
+msgstr "نظام مخرجات الأخطاء الأساسي"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>الوصف</small>"
+
+msgid "no statement available"
+msgstr "لا يوجد نص للمسألة"
+
+msgid "Download task statement"
+msgstr "تحميل نص المسألة"
+
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "نص المسألة متوفر بعدة نسخ للغات مختلفة."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "يمكنك رؤيتها (وتنزيلها) كلها من القائمة على اليمين."
+
+#, python-format
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "المسألة بلغة <b>%(lang)s</b>"
+
+#, python-format
+msgid "Statement in %(lang)s"
+msgstr "نص المسألة بلغة %(lang)s"
+
+#, python-format
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
+
+#, python-format
+msgid "%(lang)s"
+msgstr "%(lang)s"
+
+msgid "Some details"
+msgstr "بعض التفاصيل"
+
+msgid "Compilation commands"
+msgstr "أوامر التحويل"
+
+msgid "Attachments"
+msgstr "المرفقات"
+
+msgid "unknown"
+msgstr "غير معروف"
+
+msgid "loading..."
+msgstr "يحمل..."
+
+msgid "Score:"
+msgstr "الدرجة:"
+
+msgid "Public score:"
+msgstr "الدرجة الظاهرة:"
+
+msgid "Total score:"
+msgstr "الدرجة الكلية:"
+
+msgid "Submit a solution"
+msgstr "سلم حلًّا"
+
+msgid "You may submit any subset of outputs in a single submission."
+msgstr "يمكنك أن تسلم أي جزء من المخرجات في التسليم الواحد"
+
+msgid "submission.zip"
+msgstr "submission.zip"
+
+msgid "Previous submissions"
+msgstr "التسليمات السابقة"
+
+msgid "Unofficial submissions"
+msgstr "التسليمات غير الرسمية"
+
+msgid "Official submissions"
+msgstr "التسليمات الرسمية"
+
+msgid "Submission details"
+msgstr "تفاصيل التسليم"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Download"
+msgstr "تنزيل"
+
+msgid "input"
+msgstr "المدخلات"
+
+msgid "Input"
+msgstr "المدخلات"
+
+msgid "Output"
+msgstr "المخرجات"
+
+msgid "Wait..."
+msgstr "انتظر..."
+
+msgid "None"
+msgstr "لا شيء"
+
+msgid "Public score"
+msgstr "الدرجة الظاهرة"
+
+msgid "Total score"
+msgstr "الدرجة الكلية"
+
+msgid "Score"
+msgstr "الدرجة"
+
+msgid "no submissions"
+msgstr "لا تسليمات"
+
+msgid "Invalid file"
+msgstr "ملف غير صالح"
+
