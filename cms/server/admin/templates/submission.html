@@ -105,22 +105,22 @@
         <td>Status</td>
         <td id="submission_status">
           {% if status == SubmissionResult.COMPILING %}
-          Compiling...
+            Compiling...
           {% elif status == SubmissionResult.COMPILATION_FAILED %}
-          Compilation failed
+            Compilation failed
           {% elif status == SubmissionResult.EVALUATING %}
-          Evaluating...
+            Evaluating...
           {% elif status == SubmissionResult.SCORING %}
-          Scoring...
+            Scoring...
           {% elif status == SubmissionResult.SCORED %}
             {% if st is defined %}
               {% set max_score = st.max_score %}
             {% else %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% endif %}
-          Scored ({{ sr.score }} / {{ max_score }})
+            Scored ({{ sr.score }} / {{ max_score }})
           {% else %}
-          N/A
+            N/A
           {% endif %}
         </td>
       </tr>
@@ -136,7 +136,13 @@
         </td>
       </tr>
       {% endif %}
-      {% if sr is not none %}
+      {% if sr is not none and sr.scored_at is not none %}
+      <tr>
+        <td>Latency as seen by user</td>
+        <td>
+          {{ (sr.scored_at - s.timestamp).total_seconds()|round|int }} s
+        </td>
+      </tr>
       <tr>
         <td>Failures during compilation</td>
         <td>{{ sr.compilation_tries }}</td>

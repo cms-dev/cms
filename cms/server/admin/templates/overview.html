@@ -107,6 +107,7 @@ function update_workers_status(response)
     }
 
     var strings = [];
+    let connected_count = 0;
     for (var i in response['data'])
     {
         var job = "";
@@ -119,9 +120,11 @@ function update_workers_status(response)
             job = utils.repr_job(response['data'][i]['operations']);
         }
         var start_time = utils.repr_time_ago(response['data'][i]['start_time']);
-        var connected = "Yes";
-        if (response['data'][i]['connected'] == false)
-            connected = "No";
+        var connected = "No";
+        if (response['data'][i]['connected'] == true) {
+            connected = "Yes";
+            connected_count += 1;
+        }
         strings.push('<tr><td style="text-align: center;">' + i + '</td>');
         strings.push('<td style="text-align: center;">' + connected + '</td>');
         strings.push('<td>' + job + '</td>');
@@ -142,6 +145,7 @@ function update_workers_status(response)
         strings.push('</tr>');
     }
 
+    $("#title_workers_status").text(`Workers status (${connected_count}/${Object.keys(response.data).length})`);
     table.html(strings.join(""));
 };
 
