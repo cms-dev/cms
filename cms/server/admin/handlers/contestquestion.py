@@ -71,9 +71,8 @@ class QuestionReplyHandler(BaseHandler):
     QUICK_ANSWERS = {
         "yes": "Yes",
         "no": "No",
-        "answered": "Answered in task description",
-        "invalid": "Invalid question",
-        "nocomment": "No comment",
+        "invalid": "Invalid Question (not a Yes/No Question)",
+        "nocomment": "No Comment/Please refer to task statement",
     }
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
@@ -86,7 +85,8 @@ class QuestionReplyHandler(BaseHandler):
         if self.contest is not question.participation.contest:
             raise tornado_web.HTTPError(404)
 
-        reply_subject_code: str = self.get_argument("reply_question_quick_answer", "")
+        reply_subject_code: str = self.get_argument(
+            "reply_question_quick_answer", "")
         question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers

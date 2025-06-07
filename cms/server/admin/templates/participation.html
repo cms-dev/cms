@@ -171,9 +171,8 @@ function update_additional_answer(element, invoker)
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
               <option value="yes">Yes</option>
               <option value="no">No</option>
-              <option value="answered">Answered in task description</option>
-              <option value="invalid">Invalid question</option>
-              <option value="nocomment">No comment</option>
+              <option value="invalid">Invalid Question (not a Yes/No Question)</option>
+              <option value="nocomment">No Comment/Please refer to task statement</option>
               <option selected value="other">Other</option>
             </select>
             <br/>
