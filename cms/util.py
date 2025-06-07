@@ -302,8 +302,7 @@ def _get_shard_from_addresses(service: str, addrs: list[tuple[int, str]]) -> int
     specified addresses.
 
     service: the name of the service.
-    addrs: a list like the one returned by
-        find_local_addresses().
+    addrs: a list like the one returned by find_local_addresses().
 
     returns: the found shard, or None in case it doesn't exist.
 

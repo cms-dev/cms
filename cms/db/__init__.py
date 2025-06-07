@@ -45,7 +45,6 @@ __all__ = [
     "version", "engine",
     # session
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
-    "Session",
     # types
     "CastingArray", "Codename", "Filename", "FilenameSchema",
     "FilenameSchemaArray", "Digest",
@@ -89,7 +88,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 
 metadata = MetaData(engine)
 
-from .session import Session, Session, ScopedSession, SessionGen, \
+from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
 from .types import CastingArray, Codename, Filename, FilenameSchema, \

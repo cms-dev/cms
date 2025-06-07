@@ -111,8 +111,7 @@ def extract_files_from_tornado(
     files look like they consist of just a compressed archive, extract
     it and return its contents instead.
 
-    tornado_files: a bunch of
-        files, in Tornado's format.
+    tornado_files: a bunch of files, in Tornado's format.
 
     return: the same bunch of files, in our format
         (except if it was an archive: then it's the archive's contents).
