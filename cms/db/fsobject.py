@@ -37,7 +37,7 @@ from sqlalchemy.types import String, Unicode
 from . import Base, custom_psycopg2_connection, Session
 
 
-class LargeObject(io.RawIOBase):
+class LargeObject(io.RawIOBase, typing.BinaryIO):
 
     """Present a PostgreSQL large object as a Python file-object.
 
@@ -119,7 +119,13 @@ class LargeObject(io.RawIOBase):
         cursor.close()
 
     # cursor is typed as typing.Any because psycopg2 doesn't have good type hints.
-    def _execute(self, operation: str, parameters: dict[str, typing.Any], message: str, cursor: typing.Any | None = None) -> typing.Any:
+    def _execute(
+        self,
+        operation: str,
+        parameters: dict[str, typing.Any],
+        message: str,
+        cursor: typing.Any | None = None
+    ) -> typing.Any:
         """Run the given query making many success checks.
 
         Execute the given SQL statement, instantiated with the given
@@ -403,7 +409,7 @@ class FSObject(Base):
         self.sa_session.delete(self)
 
     @classmethod
-    def get_from_digest(cls, digest: str, session: Session) -> Self:
+    def get_from_digest(cls, digest: str, session: Session) -> Self | None:
         """Return the FSObject with the specified digest, using the
         specified session.
 

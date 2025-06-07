@@ -90,7 +90,7 @@ class FileCacherBackend(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def get_file(self, digest: str) -> typing.BinaryIO:
+    def get_file(self, digest: str) -> typing.IO[bytes]:
         """Retrieve a file from the storage.
 
         digest: the digest of the file to retrieve.
@@ -104,7 +104,7 @@ class FileCacherBackend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create_file(self, digest: str) -> typing.BinaryIO | None:
+    def create_file(self, digest: str) -> typing.IO[bytes] | None:
         """Create an empty file that will live in the storage.
 
         Once the caller has written the contents to the file, the commit_file()
@@ -120,7 +120,7 @@ class FileCacherBackend(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def commit_file(self, fobj: typing.BinaryIO, digest: str, desc: str = "") -> bool:
+    def commit_file(self, fobj: typing.IO[bytes], digest: str, desc: str = "") -> bool:
         """Commit a file created by create_file() to be stored.
 
         Given a file object returned by create_file(), this function populates
@@ -238,7 +238,6 @@ class FSBackend(FileCacherBackend):
             return None
 
         # Create a temporary file in the same directory
-        temp_file: typing.BinaryIO
         temp_file = tempfile.NamedTemporaryFile('wb', delete=False,
                                                 prefix=".tmp.",
                                                 suffix=digest,
@@ -305,11 +304,6 @@ class FSBackend(FileCacherBackend):
         return list((x, "") for x in os.listdir(self.path))
 
 
-# this class has type-checking errors because our LargeObject type is not
-# compatible with typing.BinaryIO, despite being a valid IO object in practice.
-# This is mostly due to Python's IO types being difficult to handle statically.
-# Anyways, it should be fine to pretend that the values returned here are
-# typing.BinaryIO.
 class DBBackend(FileCacherBackend):
     """This class implements an actual backend for FileCacher that
     stores the files as lobjects (encapsuled in a FSObject) into a
@@ -589,7 +583,7 @@ class FileCacher:
             if not returned:
                 fobj.close()
 
-    def _load(self, digest: str, cache_only: bool) -> typing.BinaryIO | None:
+    def _load(self, digest: str, cache_only: bool) -> typing.IO[bytes] | None:
         """Load a file into the cache and open it for reading.
 
         cache_only: don't open the file for reading.
@@ -657,7 +651,7 @@ class FileCacher:
 
         self._load(digest, True)
 
-    def get_file(self, digest: str) -> typing.BinaryIO:
+    def get_file(self, digest: str) -> typing.IO[bytes]:
         """Retrieve a file from the storage.
 
         If it's available in the cache use that copy, without querying
@@ -703,7 +697,7 @@ class FileCacher:
         with self.get_file(digest) as src:
             return src.read()
 
-    def get_file_to_fobj(self, digest: str, dst: typing.BinaryIO):
+    def get_file_to_fobj(self, digest: str, dst: typing.IO[bytes]):
         """Retrieve a file from the storage.
 
         See `get_file'. This method will write the content of the file
@@ -741,7 +735,7 @@ class FileCacher:
             with open(dst_path, 'wb') as dst:
                 copyfileobj(src, dst, self.CHUNK_SIZE)
 
-    def put_file_from_fobj(self, src: typing.BinaryIO, desc: str = "") -> str:
+    def put_file_from_fobj(self, src: typing.IO[bytes], desc: str = "") -> str:
         """Store a file in the storage.
 
         If it's already (for some reason...) in the cache send that

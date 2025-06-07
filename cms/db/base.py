@@ -74,7 +74,7 @@ class Base:
         return object_mapper(self)
 
     @property
-    def sa_session(self):
+    def sa_session(self) -> Session:
         return object_session(self)
 
     @property
