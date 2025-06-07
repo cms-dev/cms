@@ -1919,6 +1919,8 @@ struct InStream
     std::vector<int> readIntegers(int size, int minv, int maxv, const std::string& variablesName = "", int indexBase = 1);
     /* Reads space-separated sequence of integers. */
     std::vector<int> readInts(int size, int minv, int maxv, const std::string& variablesName = "", int indexBase = 1);
+    /* Reads space-separated sequence of integers. */
+    std::vector<int> readInts(int size, int indexBase = 1);
 
     /* 
      * Reads new double. Ignores white-spaces into the non-strict mode 
@@ -2018,6 +2020,13 @@ struct InStream
      * input/answer streams replace any result to FAIL.
      */
     NORETURN void quitf(TResult result, const char* msg, ...);
+
+    /*
+     * Quit-functions aborts program with <result> and <message>:
+     * input/answer streams replace any result to FAIL.
+     */
+    void quitif(bool condition, TResult result, const char *msg, ...);
+
     /* 
      * Quit-functions aborts program with <result> and <message>:
      * input/answer streams replace any result to FAIL.
@@ -2636,6 +2645,16 @@ NORETURN void InStream::quitf(TResult result, const char* msg, ...)
 {
     FMT_TO_RESULT(msg, msg, message);
     InStream::quit(result, message.c_str());
+}
+
+#ifdef __GNUC__
+__attribute__ ((format (printf, 4, 5)))
+#endif
+void InStream::quitif(bool condition, TResult result, const char *msg, ...) {
+    if (condition) {
+        FMT_TO_RESULT(msg, msg, message);
+        InStream::quit(result, message.c_str());
+    }
 }
 
 NORETURN void InStream::quits(TResult result, std::string msg)
@@ -3402,6 +3421,10 @@ int InStream::readInteger(int minv, int maxv, const std::string& variableName)
 std::vector<int> InStream::readInts(int size, int minv, int maxv, const std::string& variablesName, int indexBase)
 {
     __testlib_readMany(readInts, readInt(minv, maxv, variablesName), int, true)
+}
+
+std::vector<int> InStream::readInts(int size, int indexBase) {
+    __testlib_readMany(readInts, readInt(), int, true)
 }
 
 std::vector<int> InStream::readIntegers(int size, int minv, int maxv, const std::string& variablesName, int indexBase)
