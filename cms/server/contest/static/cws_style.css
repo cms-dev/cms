@@ -1008,7 +1008,7 @@ td.token_rules p:last-child {
 }
 
 #lang {
-    width: 100px;
+    width: auto;
 }
 
 /** Printing interface */
