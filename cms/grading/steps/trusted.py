@@ -36,6 +36,7 @@ can be translated by writing "translate:x" where x is "success", "partial" or
 """
 
 import logging
+import re
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
@@ -55,24 +56,25 @@ CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
 CHECKER_FILENAME = "checker"
 
 
-def _filter_ansi_escape(string: str) -> str:
-    """Filter out ANSI commands from the given string.
+def _sanitize_message(string: str) -> str:
+    """Sanitize a message read from manager output.
+
+    Percent signs are escaped (so they are not treated as formatting specifiers
+    later). Control characters are rejected.
 
     string: string to process.
 
-    return: string with ANSI commands stripped.
+    return: sanitized string.
+
+    raise (ValueError): if invalid characters were found.
 
     """
-    ansi_mode = False
-    res = ''
-    for char in string:
-        if char == u'\033':
-            ansi_mode = True
-        if not ansi_mode:
-            res += char
-        if char == u'm':
-            ansi_mode = False
-    return res
+    match = re.search('[\x00-\x08\x0a-\x1f\x7f-\xbf]', string)
+    if match:
+        ch = ord(match[0])
+        raise ValueError(f'Invalid character in outcome: 0x{ch:02x}')
+
+    return string.replace('%', '%%')
 
 
 def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
@@ -98,10 +100,13 @@ def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
 
     with sandbox.get_file_text(sandbox.stderr_file) as stderr_file:
         try:
-            text = _filter_ansi_escape(stderr_file.readline().strip())
+            text = _sanitize_message(stderr_file.readline().strip())
         except UnicodeDecodeError as error:
             logger.error("Manager stderr (text) is not valid UTF-8. %r", error)
             raise ValueError("Cannot decode the text.")
+        except ValueError as error:
+            logger.error("Manager stderr (text) is malformed. %r", error)
+            raise error
 
     try:
         outcome = float(outcome)
