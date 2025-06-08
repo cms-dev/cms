@@ -248,6 +248,16 @@ class ArchiveBase(metaclass=ABCMeta):
         with self.open_file(handle) as f:
             return f.read()
 
+    @abstractmethod
+    def write_dir(self, path: str):
+        """Create directory inside the archive, at path."""
+        pass
+
+    @abstractmethod
+    def write_file(self, path: str, size: int, data: typing.IO[bytes]):
+        """Only when opened for writing."""
+        pass
+
 class ArchiveZipfile(ArchiveBase):
     def __init__(self, inner: zipfile.ZipFile):
         self.inner = inner
@@ -262,6 +272,13 @@ class ArchiveZipfile(ArchiveBase):
     def open_file(self, handle: object) -> typing.IO[bytes]:
         assert isinstance(handle, zipfile.ZipInfo)
         return self.inner.open(handle, 'r')
+
+    def write_dir(self, path: str):
+        self.inner.mkdir(path)
+
+    def write_file(self, path: str, size: int, data: typing.IO[bytes]):
+        with self.inner.open(path, 'w') as f:
+            shutil.copyfileobj(data, f, size)
 
 class ArchiveTarfile(ArchiveBase):
     def __init__(self, inner: tarfile.TarFile):
@@ -279,7 +296,45 @@ class ArchiveTarfile(ArchiveBase):
             raise ValueError("not a regular file")
         return fobj
 
+    def write_dir(self, path: str):
+        tarinfo = tarfile.TarInfo(path)
+        tarinfo.type = tarfile.DIRTYPE
+        self.inner.addfile(tarinfo)
+
+    def write_file(self, path: str, size: int, data: typing.IO[bytes]):
+        tarinfo = tarfile.TarInfo(path)
+        tarinfo.size = size
+        tarinfo.mode = 0o644
+        self.inner.addfile(tarinfo, data)
+
+class ArchiveFolder(ArchiveBase):
+    """Archive implementation that pretends a directory on disk is an archive"""
+    def __init__(self, root: str):
+        self.root = root
+
+    def iter_regular_files(self) -> Iterable[tuple[str, int, str]]:
+        for (path, dirs, files) in os.walk(self.root):
+            relpath = os.path.relpath(path, self.root)
+            for file in files:
+                filepath_abs = os.path.join(path, file)
+                filepath_rel = os.path.join(relpath, file)
+                if not os.path.islink(path) and os.path.isfile(filepath_abs):
+                    size = os.path.getsize(filepath_abs)
+                    yield (filepath_rel, size, filepath_abs)
+
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        assert isinstance(handle, str)
+        return open(handle, 'rb')
+
+    def write_dir(self, path: str):
+        os.mkdir(os.path.join(self.root, path))
+
+    def write_file(self, path: str, size: int, data: typing.IO[bytes]):
+        with open(os.path.join(self.root, path), 'wb') as f:
+            shutil.copyfileobj(data, f, size)
+
 def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
+    """Reads an archive from an opened file-like object."""
     # Order is not entirely arbitrary here: is_zipfile is a very lenient check
     # that will also return True when the file is an uncompressed tar file that
     # happens to contain a zip file inside it. So check is_tarfile first (which
@@ -290,3 +345,19 @@ def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
         return ArchiveZipfile(zipfile.ZipFile(input))
     else:
         raise ValueError("not a known archive format")
+
+def create_archive_on_disk(name: str) -> ArchiveBase:
+    """Opens an archive for writing. Chooses archive type based on filename."""
+    if name.endswith(".tar"):
+        return ArchiveTarfile(tarfile.open(name, "w:"))
+    elif name.endswith(".tar.gz"):
+        return ArchiveTarfile(tarfile.open(name, "w:gz"))
+    elif name.endswith(".tar.bz2"):
+        return ArchiveTarfile(tarfile.open(name, "w:bz2"))
+    elif name.endswith(".tar.xz"):
+        return ArchiveTarfile(tarfile.open(name, "w:xz"))
+    elif name.endswith(".zip"):
+        return ArchiveZipfile(zipfile.ZipFile(name, "w"))
+    else:
+        os.mkdir(name)
+        return ArchiveFolder(name)

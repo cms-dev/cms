@@ -18,6 +18,7 @@
 
 import hashlib
 import io
+import typing
 
 from cmscommon.binary import bin_to_hex
 
@@ -58,6 +59,20 @@ def bytes_digest(b: bytes) -> str:
     return d.digest()
 
 
+def fobj_digest(fobj: typing.IO[bytes]) -> str:
+    """Return the digest of the content of a file-like object.
+
+    fobj: file-like object (readable, in binary mode) to compute the digest of.
+
+    return: the digest.
+    """
+    d = Digester()
+    buf = fobj.read(io.DEFAULT_BUFFER_SIZE)
+    while len(buf) > 0:
+        d.update(buf)
+        buf = fobj.read(io.DEFAULT_BUFFER_SIZE)
+    return d.digest()
+
 def path_digest(path: str) -> str:
     """Return the digest of the content of a file, given by its path.
 
@@ -67,9 +82,4 @@ def path_digest(path: str) -> str:
 
     """
     with open(path, 'rb') as fin:
-        d = Digester()
-        buf = fin.read(io.DEFAULT_BUFFER_SIZE)
-        while len(buf) > 0:
-            d.update(buf)
-            buf = fin.read(io.DEFAULT_BUFFER_SIZE)
-        return d.digest()
+        return fobj_digest(fin)
