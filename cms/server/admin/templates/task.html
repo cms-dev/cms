@@ -137,6 +137,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </td>
         <td>
           <select name="feedback_level">
+            <option value={{ FEEDBACK_LEVEL_OI_RESTRICTED }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_OI_RESTRICTED else "" }}>OI Restricted</option>
             <option value={{ FEEDBACK_LEVEL_RESTRICTED }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_RESTRICTED else "" }}>Restricted</option>
             <option value={{ FEEDBACK_LEVEL_FULL }} {{ "selected" if task.feedback_level == FEEDBACK_LEVEL_FULL else "" }}>Full</option>
           </select>

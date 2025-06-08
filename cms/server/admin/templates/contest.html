@@ -81,6 +81,15 @@
       </td>
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Allow contestant to make unofficial submission before analysis mode"></span>
+        Allow unofficial submission before analysis mode
+      </td>
+      <td>
+        <input type="checkbox" id="allow_unofficial_submission_before_analysis_mode" name="allow_unofficial_submission_before_analysis_mode" {{ "checked" if contest.allow_unofficial_submission_before_analysis_mode else "" }}/>
+      </td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>
