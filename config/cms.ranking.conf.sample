@@ -2,8 +2,10 @@
     "_help": "There is no way to put comments in a JSON file; the",
     "_help": "fields starting with '_' are meant to be comments.",
 
-    "_help": "Listening address for RankingWebServer.",
-    "bind_address": "127.0.0.1",
+    "_help": "Listening address for RankingWebServer. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
+    "bind_address": "",
 
     "_help": "Listening port for RankingWebServer.",
     "http_port": 8890,
