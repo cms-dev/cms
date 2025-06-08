@@ -913,43 +913,31 @@ abbr {
     min-height: 242px;
 }
 
-#UserDetail_f_name,
-#UserDetail_l_name,
-#UserDetail_team,
-#UserDetail_flag {
-    position: absolute;
-    right: 470px;
+#UserDetail_summary {
+    display: flex;
+    flex-direction: column;
     font-size: 2em;
     line-height: 1.5em;
-    max-width: 63px;
+    text-align: center;
 }
 
-#UserDetail_f_name {
-    top: 0;
-}
-
-#UserDetail_l_name {
-    top: 1.5em;
-}
-
-#UserDetail_team {
-    bottom: 100px;
+#UserDetail_spacer {
+    flex-grow: 1;
+    min-height: 2em;
 }
 
 #UserDetail_flag {
-    bottom: 0;
+    max-width: 144px;
+    max-height: 96px;
+    object-fit: contain;
+    align-self: center;
 }
 
 #UserDetail_face {
-    position: absolute;
-    top: 0;
-    left: 0;
     max-width: 160px;
     max-height: 240px;
-}
-
-#UserDetail_flag {
-    margin: -1px;
+    object-fit: contain;
+    align-self: center;
 }
 
 #UserDetail_flag.hidden {
@@ -958,7 +946,6 @@ abbr {
 
 #UserDetail_navigator {
     width: 450px;
-    margin-left: 470px;
 }
 
 #UserDetail_navigator table {
