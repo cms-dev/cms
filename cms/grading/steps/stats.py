@@ -103,19 +103,40 @@ def merge_execution_stats(
     if first_stats is None:
         return second_stats.copy()
 
+    Stat = typing.TypeVar('Stat', int, float)
+
+    def safe_sum(x: Stat | None, y: Stat | None) -> Stat | None:
+        if x is None:
+            return y
+        elif y is None:
+            return x
+        else:
+            return x + y
+
+    def safe_max(x: Stat | None, y: Stat | None) -> Stat | None:
+        if x is None:
+            return y
+        elif y is None:
+            return x
+        else:
+            return max(x, y)
+
     ret = first_stats.copy()
-    ret["execution_time"] += second_stats["execution_time"]
+    ret["execution_time"] = safe_sum(ret["execution_time"],
+                                     second_stats["execution_time"])
 
     if concurrent:
-        ret["execution_wall_clock_time"] = max(
+        ret["execution_wall_clock_time"] = safe_max(
             ret["execution_wall_clock_time"],
             second_stats["execution_wall_clock_time"])
-        ret["execution_memory"] += second_stats["execution_memory"]
+        ret["execution_memory"] = safe_sum(ret["execution_memory"],
+                                           second_stats["execution_memory"])
     else:
-        ret["execution_wall_clock_time"] += \
-            second_stats["execution_wall_clock_time"]
-        ret["execution_memory"] = max(ret["execution_memory"],
-                                      second_stats["execution_memory"])
+        ret["execution_wall_clock_time"] = safe_sum(
+            ret["execution_wall_clock_time"],
+            second_stats["execution_wall_clock_time"])
+        ret["execution_memory"] = safe_max(ret["execution_memory"],
+                                           second_stats["execution_memory"])
 
     if first_stats["exit_status"] == Sandbox.EXIT_OK:
         ret["exit_status"] = second_stats["exit_status"]
