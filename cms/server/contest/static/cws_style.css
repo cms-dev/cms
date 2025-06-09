@@ -92,6 +92,11 @@ div.question_list div.answer div.body,
 div.message_list div.message div.body {
     padding-top: 5px;
     clear: both;
+}
+
+/* admin-sent messages have markdown formatting and thus don't need
+ * mucking with whitespace, but user questions are plaintext */
+div.question_list div.question div.body {
     white-space: pre-line;
 }
 

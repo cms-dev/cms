@@ -28,6 +28,8 @@ from datetime import datetime, timedelta, tzinfo
 from jinja2 import Environment, StrictUndefined, contextfilter, \
     contextfunction, environmentfunction
 from jinja2.runtime import Context
+import markdown_it
+import markupsafe
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, \
@@ -138,6 +140,19 @@ def today(ctx: Context, dt: datetime) -> bool:
         == now.replace(tzinfo=utc).astimezone(timezone).date()
 
 
+def markdown_filter(text: str) -> markupsafe.Markup:
+    """Renders text as markdown and returns a Markup object
+    corresponding to it.
+
+    text: The markdown text to render.
+
+    return: rendered HTML wrapped in the Markup class.
+    """
+    md = markdown_it.MarkdownIt('js-default')
+    html = md.render(text)
+    return markupsafe.Markup(html)
+
+
 def instrument_generic_toolbox(env: Environment):
     env.globals["iter"] = iter
     env.globals["next"] = next
@@ -163,6 +178,7 @@ def instrument_generic_toolbox(env: Environment):
     env.filters["any"] = any_
     env.filters["dictselect"] = dictselect
     env.filters["make_timestamp"] = make_timestamp
+    env.filters["markdown"] = markdown_filter
 
     env.tests["contains"] = lambda s, p: p in s
     env.tests["endswith"] = lambda s, p: s.endswith(p)
