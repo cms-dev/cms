@@ -2,7 +2,10 @@
     "_help": "There is no way to put comments in a JSON file; the",
     "_help": "fields starting with '_' are meant to be comments.",
 
-    "_help": "Listening address for RankingWebServer.",
+    "_help": "Listening address for RankingWebServer. By default only",
+    "_help": "listens on localhost, meaning you need a separate reverse proxy",
+    "_help": "to access it from the web. Set to empty string to allow",
+    "_help": "connecting from anywhere.",
     "bind_address": "127.0.0.1",
 
     "_help": "Listening port for RankingWebServer.",
