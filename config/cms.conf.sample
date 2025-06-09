@@ -102,10 +102,10 @@
     "_section": "ContestWebServer",
 
     "_help": "Listening HTTP addresses and ports for the CWSs listed above",
-    "_help": "in core_services. If you access them through a proxy (acting",
-    "_help": "as a load balancer) running on the same host you could put",
-    "_help": "127.0.0.1 here for additional security.",
-    "contest_listen_address": [""],
+    "_help": "in core_services. By default only listens on localhost, meaning",
+    "_help": "you need a separate reverse proxy to access it from the web.",
+    "_help": "Set to empty string to allow connecting from anywhere.",
+    "contest_listen_address": ["127.0.0.1"],
     "contest_listen_port":    [8888],
 
     "_help": "Login cookie duration in seconds. The duration is refreshed",
@@ -139,10 +139,11 @@
 
     "_section": "AdminWebServer",
 
-    "_help": "Listening HTTP address and port for the AWS. If you access",
-    "_help": "it through a proxy running on the same host you could put",
-    "_help": "127.0.0.1 here for additional security.",
-    "admin_listen_address": "0.0.0.0",
+    "_help": "Listening HTTP address and port for the AWS. By default only",
+    "_help": "listens on localhost, meaning you need a separate reverse proxy",
+    "_help": "to access it from the web. Set to empty string to allow",
+    "_help": "connecting from anywhere.",
+    "admin_listen_address": "127.0.0.1",
     "admin_listen_port":    8889,
 
     "_help": "Login cookie duration for admins in seconds.",
