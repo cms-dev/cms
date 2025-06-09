@@ -621,15 +621,12 @@ class DownloadTestcasesHandler(BaseHandler):
         temp_file = io.BytesIO()
         with zipfile.ZipFile(temp_file, "w") as zip_file:
             for testcase in dataset.testcases.values():
-                # Get input, output file path
-                with self.service.file_cacher.get_file(testcase.input) as f:
-                    input_path = f.name
-                with self.service.file_cacher.get_file(testcase.output) as f:
-                    output_path = f.name
-                zip_file.write(
-                    input_path, input_template % testcase.codename)
-                zip_file.write(
-                    output_path, output_template % testcase.codename)
+                # Copy input file
+                with zip_file.open(input_template % testcase.codename, 'w') as fout:
+                    self.service.file_cacher.get_file_to_fobj(testcase.input, fout)
+                # Copy output file
+                with zip_file.open(output_template % testcase.codename, 'w') as fout:
+                    self.service.file_cacher.get_file_to_fobj(testcase.output, fout)
 
         self.set_header("Content-Type", "application/zip")
         self.set_header("Content-Disposition",
