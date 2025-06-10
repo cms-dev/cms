@@ -25,6 +25,7 @@
 
 """
 
+from abc import ABCMeta, abstractmethod
 import logging
 
 import collections
@@ -65,10 +66,11 @@ class QuestionsHandler(BaseHandler):
 
 
 
-class QuestionActionHandler(BaseHandler):
+class QuestionActionHandler(BaseHandler, metaclass=ABCMeta):
     """Base class for handlers for actions on questions."""
 
-    def do(self, question: Question):
+    @abstractmethod
+    def process_question(self, question: Question):
         """Called on POST requests. Perform the appropriate action on the
         question."""
         pass
@@ -88,7 +90,7 @@ class QuestionActionHandler(BaseHandler):
         if self.contest is not question.participation.contest:
             raise tornado_web.HTTPError(404)
 
-        self.do(question)
+        self.process_question(question)
         self.redirect(ref)
 
 class QuestionReplyHandler(QuestionActionHandler):
@@ -96,7 +98,7 @@ class QuestionReplyHandler(QuestionActionHandler):
 
     """
 
-    def do(self, question):
+    def process_question(self, question):
         reply_subject_code: str = self.get_argument(
             "reply_question_quick_answer", "")
         question.reply_text = self.get_argument("reply_question_text", "")
@@ -125,7 +127,7 @@ class QuestionIgnoreHandler(QuestionActionHandler):
     question.
 
     """
-    def do(self, question):
+    def process_question(self, question):
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
         # Commit the change.
@@ -143,7 +145,7 @@ class QuestionIgnoreHandler(QuestionActionHandler):
 class QuestionClaimHandler(QuestionActionHandler):
     """Called when the manager chooses to claim or unclaim a question."""
 
-    def do(self, question):
+    def process_question(self, question):
         # Can claim/unclaim only a question not ignored or answered.
         if question.ignored or question.reply_timestamp is not None:
             raise tornado_web.HTTPError(405)
