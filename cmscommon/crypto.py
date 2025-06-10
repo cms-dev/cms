@@ -48,6 +48,9 @@ __all__ = [
 
 _RANDOM = Random.new()
 
+# bcrypt difficulty parameter. This is here so that it can be set to a lower
+# value when running unit tests. It seems that the lowest accepted value is 4.
+BCRYPT_ROUNDS = 12
 
 def get_random_key() -> bytes:
     """Generate 16 random bytes, safe to be used as AES key.
@@ -226,7 +229,8 @@ def hash_password(password: str, method: str = "bcrypt") -> str:
     """
     if method == "bcrypt":
         password_bytes = password.encode("utf-8")
-        payload = bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("ascii")
+        salt = bcrypt.gensalt(BCRYPT_ROUNDS)
+        payload = bcrypt.hashpw(password_bytes, salt).decode("ascii")
     elif method == "plaintext":
         payload = password
     else:
