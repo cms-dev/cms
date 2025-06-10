@@ -7,8 +7,9 @@
 Render one question by a participant.
 
 msg (Question): the question object.
-user_id (int|None): if we are rendering a single user's questions, this is the
-    user's id. if we are rendering all questions of the contest, then None.
+user_id (int|None): if we are rendering one of the questions on a single user's
+    page, this is the user's id. if we are rendering one of the questions on
+    the contest questions page, then None.
 #}
 <div class="notification communication {{ ("answered" if msg.reply_timestamp is not none else ("ignored" if msg.ignored else "")) }}">
   <div class="notification_msg">
