@@ -38,8 +38,7 @@ TESTFILE_LEN = FileCacher.CHUNK_SIZE + 128
 class TestFileByDigestMiddleware(unittest.TestCase):
 
     def setUp(self):
-        self.content = \
-            bytes(random.getrandbits(8) for _ in range(TESTFILE_LEN))
+        self.content = random.randbytes(TESTFILE_LEN)
         self.digest = bytes_digest(self.content)
 
         self.filename = "foobar.pdf"
