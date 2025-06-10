@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import 'macro/markdown_input.html' as macro_markdown %}
 
 {% block core %}
 <div class="core_title">
@@ -23,12 +24,12 @@
             </datalist>
           </div>
           <div class="notification_text">
-            <label for="new_text">Text</label>
-            <textarea name="text" id="new_text" style="width: 100%" ></textarea><br/>
-            You can use Markdown here. URLs are not automatically linked, surround them with &lt;&gt; like &lt;http://example.org&gt;.
+            <label for="text">Text</label>
+            {{ macro_markdown.markdown_input("text") }}
           </div>
           <input type="submit"
                  value="Add announcement" />
+          {{ macro_markdown.markdown_preview() }}
         </form>
       </div>
     </div>
