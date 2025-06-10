@@ -68,16 +68,14 @@ class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
 
     """
-    QUICK_ANSWERS = {
-        "yes": "Yes",
-        "no": "No",
-        "invalid": "Invalid Question (not a Yes/No Question)",
-        "nocomment": "No Comment/Please refer to task statement",
-    }
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
+        userid = self.get_argument("user_id", None)
+        if userid is not None:
+            ref = self.url("contest", contest_id, "user", userid, "edit")
+        else:
+            ref = self.url("contest", contest_id, "questions")
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -90,12 +88,12 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers
-        if reply_subject_code not in QuestionReplyHandler.QUICK_ANSWERS:
+        if reply_subject_code not in Question.QUICK_ANSWERS:
             question.reply_subject = ""
         else:
             # Quick answer given, ignore long answer.
             question.reply_subject = \
-                QuestionReplyHandler.QUICK_ANSWERS[reply_subject_code]
+                Question.QUICK_ANSWERS[reply_subject_code]
             question.reply_text = ""
 
         question.reply_timestamp = make_datetime()
@@ -118,7 +116,11 @@ class QuestionIgnoreHandler(BaseHandler):
     """
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
+        userid = self.get_argument("user_id", None)
+        if userid is not None:
+            ref = self.url("contest", contest_id, "user", userid, "edit")
+        else:
+            ref = self.url("contest", contest_id, "questions")
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -147,7 +149,11 @@ class QuestionClaimHandler(BaseHandler):
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
+        userid = self.get_argument("user_id", None)
+        if userid is not None:
+            ref = self.url("contest", contest_id, "user", userid, "edit")
+        else:
+            ref = self.url("contest", contest_id, "questions")
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
