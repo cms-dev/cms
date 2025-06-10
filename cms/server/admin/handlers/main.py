@@ -30,6 +30,7 @@ import logging
 
 from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Admin, Contest, Question
+from cms.server.jinja2_toolbox import markdown_filter
 from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -167,3 +168,13 @@ class NotificationsHandler(BaseHandler):
         self.service.notifications = []
 
         self.write(json.dumps(res))
+
+class MarkdownRenderHandler(BaseHandler):
+    """Renders Markdown for AWS message previews."""
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        data = self.get_argument("input")
+        rendered = markdown_filter(data)
+        self.write(rendered)
+

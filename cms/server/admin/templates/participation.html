@@ -3,6 +3,7 @@
 {% extends "base.html" %}
 {% import 'macro/submission.html' as macro_submission %}
 {% import 'macro/question.html' as macro_question with context %}
+{% import 'macro/markdown_input.html' as macro_markdown %}
 
 {% block core %}
 <h1>
@@ -148,10 +149,10 @@
             </div>
             <div class="notification_text">
               Text:
-              <textarea name="message_text" style="width: 100%" ></textarea><br/>
-              You can use Markdown here. URLs are not automatically linked, surround them with &lt;&gt; like &lt;http://example.org&gt;.
+              {{ macro_markdown.markdown_input("message_text") }}
             </div>
           <input type="submit" value="Send"/>
+          {{ macro_markdown.markdown_preview() }}
           </div>
         </form>
       </div>

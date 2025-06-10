@@ -849,10 +849,29 @@ CMS.AWSUtils.prototype.question_reply_toggle = function(event, invoker) {
  * Updates visibility of answer box when choosing quick answers.
  */
 CMS.AWSUtils.prototype.update_additional_answer = function(event, invoker) {
-    var obj = invoker.parentElement.querySelector(".alternative_answer");
+    var obj = $(invoker).parent().find(".alternative_answer");
     if (invoker.value == "other") {
-        obj.style.display = "block";
+        obj.css("display", "");
     } else {
-        obj.style.display = "none";
+        obj.css("display", "none");
     }
+}
+
+/**
+ * Used by templates/macro/markdown_input.html.
+ * Asks the server to render the markdown input and displays it.
+ */
+CMS.AWSUtils.prototype.render_markdown_preview = function(target) {
+    var form_element = $(target).closest("form");
+    var md_text = form_element.find(".markdown_input").val();
+    $.ajax({
+        type: "POST",
+        url: this.url("render_markdown"),
+        data: {input: md_text},
+        dataType: "text",
+        headers: {"X-XSRFToken": get_cookie("_xsrf")},
+        success: function(response) {
+            form_element.find(".markdown_preview").html(response);
+        },
+    });
 }

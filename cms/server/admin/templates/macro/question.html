@@ -1,5 +1,7 @@
 {# This macro should be imported "with context". #}
 
+{% import 'macro/markdown_input.html' as macro_markdown %}
+
 {% macro question(msg, user_id) %}
 {#
 Render one question by a participant.
@@ -96,10 +98,12 @@ user_id (int|None): if we are rendering a single user's questions, this is the
         <br/>
         <div class="alternative_answer">
           Alternative answer:<br/>
-          <textarea name="reply_question_text"></textarea><br/>
-          You can use Markdown here. URLs are not automatically linked, surround them with &lt;&gt; like &lt;http://example.org&gt;.
+          {{ macro_markdown.markdown_input("reply_question_text") }}
         </div>
         <input type="submit" value="Send"/>
+        <span class="alternative_answer">
+          {{ macro_markdown.markdown_preview() }}
+        </span>
       </form>
     </div>
 {% endif %}

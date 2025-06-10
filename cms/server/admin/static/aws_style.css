@@ -52,6 +52,10 @@ strong, .bold {
     font-weight: bold;
 }
 
+em {
+    font-style: italic;
+}
+
 .login_error {
     color: #F31313;
 }
@@ -420,7 +424,7 @@ th .column-sort {
   text-decoration: underline;
 }
 
-.reply_question textarea {
+.markdown_input {
     width: 100%;
 }
 
