@@ -336,6 +336,12 @@ class Question(Base):
 
     MAX_SUBJECT_LENGTH = 50
     MAX_TEXT_LENGTH = 2000
+    QUICK_ANSWERS = {
+        "yes": "Yes",
+        "no": "No",
+        "invalid": "Invalid Question (not a Yes/No Question)",
+        "nocomment": "No Comment/Please refer to task statement",
+    }
 
     # Auto increment primary key.
     id: int = Column(

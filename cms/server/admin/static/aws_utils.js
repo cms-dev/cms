@@ -826,3 +826,33 @@ CMS.AWSUtils.ajax_delete = function(url) {
 CMS.AWSUtils.ajax_post = function(url) {
     CMS.AWSUtils.ajax_edit_request("POST", url);
 };
+
+
+/**
+ * Used by templates/macro/question.html.
+ * Toggles visibility of the question reply box.
+ */
+CMS.AWSUtils.prototype.question_reply_toggle = function(event, invoker) {
+    var obj = invoker.parentElement.parentElement.querySelector(".reply_question");
+    if (obj.style.display != "block") {
+        obj.style.display = "block";
+        invoker.innerHTML = "Hide reply";
+    } else {
+        obj.style.display = "none";
+        invoker.innerHTML = "Reply";
+    }
+    event.preventDefault();
+}
+
+/**
+ * Used by templates/macro/question.html.
+ * Updates visibility of answer box when choosing quick answers.
+ */
+CMS.AWSUtils.prototype.update_additional_answer = function(event, invoker) {
+    var obj = invoker.parentElement.querySelector(".alternative_answer");
+    if (invoker.value == "other") {
+        obj.style.display = "block";
+    } else {
+        obj.style.display = "none";
+    }
+}

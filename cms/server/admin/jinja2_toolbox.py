@@ -25,6 +25,7 @@ useful specifically to the use that AWS makes of it.
 
 from jinja2 import Environment, PackageLoader
 
+from cms.db.user import Question
 from cms.grading.languagemanager import LANGUAGES
 from cms.grading.scoretypes import SCORE_TYPES
 from cms.grading.tasktypes import TASK_TYPES
@@ -47,6 +48,7 @@ def instrument_cms_toolbox(env: Environment):
     env.globals["LANGUAGES"] = LANGUAGES
     env.globals["get_hex_random_key"] = get_hex_random_key
     env.globals["parse_authentication"] = safe_parse_authentication
+    env.globals["question_quick_answers"] = Question.QUICK_ANSWERS
 
 
 def instrument_formatting_toolbox(env: Environment):
