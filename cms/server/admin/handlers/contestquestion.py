@@ -64,18 +64,23 @@ class QuestionsHandler(BaseHandler):
         self.render("questions.html", **self.r_params)
 
 
-class QuestionReplyHandler(BaseHandler):
-    """Called when the manager replies to a question made by a user.
 
-    """
+class QuestionActionHandler(BaseHandler):
+    """Base class for handlers for actions on questions."""
+
+    def do(self, question: Question):
+        """Called on POST requests. Perform the appropriate action on the
+        question."""
+        pass
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        userid = self.get_argument("user_id", None)
-        if userid is not None:
-            ref = self.url("contest", contest_id, "user", userid, "edit")
+        user_id = self.get_argument("user_id", None)
+        if user_id is not None:
+            ref = self.url("contest", contest_id, "user", user_id, "edit")
         else:
             ref = self.url("contest", contest_id, "questions")
+
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -83,6 +88,15 @@ class QuestionReplyHandler(BaseHandler):
         if self.contest is not question.participation.contest:
             raise tornado_web.HTTPError(404)
 
+        self.do(question)
+        self.redirect(ref)
+
+class QuestionReplyHandler(QuestionActionHandler):
+    """Called when the manager replies to a question made by a user.
+
+    """
+
+    def do(self, question):
         reply_subject_code: str = self.get_argument(
             "reply_question_quick_answer", "")
         question.reply_text = self.get_argument("reply_question_text", "")
@@ -104,30 +118,14 @@ class QuestionReplyHandler(BaseHandler):
                         "question with id %s.",
                         question.participation.user.username,
                         question.participation.contest.name,
-                        question_id)
+                        question.id)
 
-        self.redirect(ref)
-
-
-class QuestionIgnoreHandler(BaseHandler):
+class QuestionIgnoreHandler(QuestionActionHandler):
     """Called when the manager chooses to ignore or stop ignoring a
     question.
 
     """
-    @require_permission(BaseHandler.PERMISSION_MESSAGING)
-    def post(self, contest_id, question_id):
-        userid = self.get_argument("user_id", None)
-        if userid is not None:
-            ref = self.url("contest", contest_id, "user", userid, "edit")
-        else:
-            ref = self.url("contest", contest_id, "questions")
-        question = self.safe_get_item(Question, question_id)
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        # Protect against URLs providing incompatible parameters.
-        if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
-
+    def do(self, question):
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
         # Commit the change.
@@ -141,26 +139,11 @@ class QuestionIgnoreHandler(BaseHandler):
                         question.participation.contest.name,
                         "ignored" if should_ignore else "unignored")
 
-        self.redirect(ref)
 
-
-class QuestionClaimHandler(BaseHandler):
+class QuestionClaimHandler(QuestionActionHandler):
     """Called when the manager chooses to claim or unclaim a question."""
 
-    @require_permission(BaseHandler.PERMISSION_MESSAGING)
-    def post(self, contest_id, question_id):
-        userid = self.get_argument("user_id", None)
-        if userid is not None:
-            ref = self.url("contest", contest_id, "user", userid, "edit")
-        else:
-            ref = self.url("contest", contest_id, "questions")
-        question = self.safe_get_item(Question, question_id)
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        # Protect against URLs providing incompatible parameters.
-        if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
-
+    def do(self, question):
         # Can claim/unclaim only a question not ignored or answered.
         if question.ignored or question.reply_timestamp is not None:
             raise tornado_web.HTTPError(405)
@@ -180,5 +163,3 @@ class QuestionClaimHandler(BaseHandler):
                         question.participation.contest.name,
                         "claimed" if should_claim else "unclaimed",
                         self.current_user.name)
-
-        self.redirect(ref)
