@@ -22,7 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-import json
+import tomllib
 import logging
 import os
 import sys
@@ -81,7 +81,7 @@ async_config = AsyncConfig()
 class Config:
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
-    default with some sane data. See cms.conf.sample in the config
+    default with some sane data. See cms.sample.toml in the config
     directory for information on the meaning of the fields.
 
     """
@@ -166,13 +166,21 @@ class Config:
         self.max_jobs_per_user = 10
         self.pdf_printing_allowed = False
 
+        # PrometheusExporter
+        self.prometheus_listen_address = "127.0.0.1"
+        self.prometheus_listen_port = 8811
+
+        # TelegramBot
+        self.telegram_bot_token = None
+        self.telegram_bot_chat_id = None
+
         self.log_dir = os.path.join("/", "var", "local", "log", "cms")
         self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
         self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
         self.run_dir = os.path.join("/", "var", "local", "run", "cms")
         paths = [
-            os.path.join("/", "usr", "local", "etc", "cms.conf"),
-            os.path.join("/", "etc", "cms.conf"),
+            os.path.join("/", "usr", "local", "etc", "cms.toml"),
+            os.path.join("/", "etc", "cms.toml"),
         ]
 
         # Allow user to override config file path using environment
@@ -202,23 +210,21 @@ class Config:
 
     def _load_unique(self, path: str):
         """Populate the Config class with everything that sits inside
-        the JSON file path (usually something like /etc/cms.conf). The
+        the TOML file path (usually something like /etc/cms.toml). The
         only pieces of data treated differently are the elements of
         core_services and other_services that are sent to async
         config.
 
-        Services whose name begins with an underscore are ignored, so
-        they can be commented out in the configuration file.
-
-        path: the path of the JSON config file.
+        path: the path of the TOML config file.
 
         """
         # Load config file.
         try:
-            with open(path, 'rt', encoding='utf-8') as f:
-                data = json.load(f)
+            with open(path, 'rb') as f:
+                data = tomllib.load(f)
         except FileNotFoundError:
-            logger.debug("Couldn't find config file %s.", path)
+            logger.debug("Couldn't find config file %s (maybe you need to "
+                         "convert it from cms.conf to cms.toml?).", path)
             return False
         except OSError as error:
             logger.warning("I/O error while opening file %s: [%s] %s",
@@ -257,6 +263,8 @@ class Config:
 
         # Put everything else in self.
         for key, value in data.items():
+            if not hasattr(self, key):
+                logger.warning("Unrecognized key %s in config!", key)
             setattr(self, key, value)
 
         return True

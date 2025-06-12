@@ -1,0 +1,12 @@
+# Listening address for RankingWebServer. By default only
+# listens on localhost, meaning you need a separate reverse proxy
+# to access it from the web. Set to empty string to allow
+# connecting from anywhere.
+bind_address = "127.0.0.1"
+
+# Listening port for RankingWebServer.
+http_port = 8890
+
+# Login information for adding and editing data.
+username = "usern4me"
+password = "passw0rd"

@@ -85,7 +85,7 @@ $(document).ready(init);
         </div>
         {% if config.secret_key == config.secret_key_default %}
         <div class="secret_notice">
-          Change secret_key in cms.conf!<br/>
+          Change secret_key in cms.toml!<br/>
           For example,<br/>
           {{ get_hex_random_key() }}
         </div>
