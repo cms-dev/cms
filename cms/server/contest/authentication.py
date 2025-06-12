@@ -164,6 +164,7 @@ def authenticate_request(
     contest: Contest,
     timestamp: datetime,
     cookie: bytes | None,
+    authorization_header: bytes | None,
     ip_address: AnyIPAddress,
 ) -> tuple[Participation | None, bytes | None]:
     """Authenticate a user returning to the site, with a cookie.
@@ -180,6 +181,9 @@ def authenticate_request(
     - if IP autologin is enabled, we look for a participation whose IP
       address matches the remote IP address; if a match is found, the
       user is authenticated as that participation;
+    - if username/password authentication is enabled, and a
+      "X-CMS-Authorization" header is present and valid, the
+      corresponding participation is returned.
     - if username/password authentication is enabled, and the cookie
       is valid, the corresponding participation is returned, together
       with a refreshed cookie.
@@ -219,8 +223,8 @@ def authenticate_request(
 
     if participation is None \
             and contest.allow_password_authentication:
-        participation, cookie = _authenticate_request_from_cookie(
-            sql_session, contest, timestamp, cookie)
+        participation, cookie = _authenticate_request_from_cookie_or_authorization_header(
+            sql_session, contest, timestamp, authorization_header if authorization_header is not None else cookie)
 
     if participation is None:
         return None, None
@@ -305,7 +309,7 @@ def _authenticate_request_by_ip_address(
     return participation
 
 
-def _authenticate_request_from_cookie(
+def _authenticate_request_from_cookie_or_authorization_header(
     sql_session: Session, contest: Contest, timestamp: datetime, cookie: bytes | None
 ) -> tuple[Participation | None, bytes | None]:
     """Return the current participation based on the cookie.
@@ -316,8 +320,8 @@ def _authenticate_request_from_cookie(
         execute queries.
     contest: the contest the user is trying to access.
     timestamp: the date and the time of the request.
-    cookie: the cookie the user's browser provided in the
-        request (if any).
+    cookie: the contents of the cookie (or authorization header)
+        provided in the request (if any).
 
     return: the participation
         extracted from the cookie and the cookie to set/refresh, or
