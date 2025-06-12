@@ -49,7 +49,7 @@ except ImportError:
     import tornado.web as tornado_web
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest
+from cms.db import Contest, Submission, Task, UserTest, contest
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -73,6 +73,7 @@ class ContestHandler(BaseHandler):
     child of this class.
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.contest_url: Url = None
@@ -139,6 +140,9 @@ class ContestHandler(BaseHandler):
         - if IP autologin is enabled, the remote IP address is matched
           with the participation IP address; if a match is found, that
           participation is returned; in case of errors, None is returned;
+        - if username/password authentication is enabled, and a
+          "X-CMS-Authorization" header is present and valid, the
+          corresponding participation is returned.
         - if username/password authentication is enabled, and the cookie
           is valid, the corresponding participation is returned, and the
           cookie is refreshed.
@@ -164,12 +168,16 @@ class ContestHandler(BaseHandler):
             return None
 
         participation, cookie = authenticate_request(
-            self.sql_session, self.contest, self.timestamp, cookie, ip_address)
+            self.sql_session, self.contest,
+            self.timestamp, cookie,
+            self.request.headers.get("X-CMS-Authorization", None),
+            ip_address)
 
         if cookie is None:
             self.clear_cookie(cookie_name)
         elif self.refresh_cookie:
-            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
+            self.set_secure_cookie(
+                cookie_name, cookie, expires_days=None, max_age=config.cookie_duration)
 
         return participation
 

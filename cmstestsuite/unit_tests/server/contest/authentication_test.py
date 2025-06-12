@@ -175,6 +175,7 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
             self.session, self.contest,
             kwargs.get("timestamp", self.timestamp),
             kwargs.get("cookie", self.cookie),
+            kwargs.get("authorization", None),
             ipaddress.ip_address(kwargs.get("ip_address", "10.0.0.1")))
 
     def assertSuccess(self, **kwargs):
@@ -326,6 +327,11 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.contest.allow_password_authentication = True
         self.assertFailure(cookie=None)
         self.assertFailure(cookie="not a valid cookie")
+
+    def test_authorization_header(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = True
+        self.assertSuccess(cookie=None, authorization=self.cookie)
 
     def test_no_user(self):
         self.session.delete(self.user)

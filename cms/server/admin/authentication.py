@@ -144,7 +144,8 @@ class AWSAuthMiddleware:
             """
             response = Response(status=status, headers=headers)
             self._cookie.save_cookie(
-                response, AWSAuthMiddleware.COOKIE, httponly=True)
+                response, AWSAuthMiddleware.COOKIE, httponly=True,
+                max_age=config.admin_cookie_duration)
             return start_response(
                 status, response.headers.to_wsgi_list(), exc_info)
 
