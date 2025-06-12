@@ -97,7 +97,7 @@ class Service:
             address = get_service_address(self._my_coord)
         except KeyError:
             raise ConfigError("Unable to find address for service %r. "
-                              "Is it specified in core_services in cms.conf?" %
+                              "Is it specified in core_services in cms.toml?" %
                               (self._my_coord,))
 
         self.rpc_server = StreamServer(address, self._connection_handler)
@@ -197,7 +197,7 @@ class Service:
                 # the service was optional.
                 if must_be_present:
                     raise ConfigError("Missing address and port for %s "
-                                      "in cms.conf." % (coord, ))
+                                      "in cms.toml." % (coord, ))
                 else:
                     service = FakeRemoteServiceClient(coord, None)
             service.connect()

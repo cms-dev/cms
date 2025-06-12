@@ -9,7 +9,7 @@ services:
     depends_on:
       - "testdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-testdb.conf
+      CMS_CONFIG: /usr/local/etc/cms-testdb.toml
       # Could be removed in the future, see:
       # - https://github.com/pytest-dev/pytest/issues/7443
       # - https://github.com/actions/runner/issues/241
@@ -25,7 +25,7 @@ services:
     depends_on:
       - "testdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-testdb.conf
+      CMS_CONFIG: /usr/local/etc/cms-testdb.toml
     privileged: true
     cgroup: host
     command: wait-for-it testdb:5432 -- ./_cms-stresstest-internal.sh
