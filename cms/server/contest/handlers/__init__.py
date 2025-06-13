@@ -69,7 +69,7 @@ HANDLERS = [
     # Tasks
 
     (r"/tasks/(.*)/description", TaskDescriptionHandler),
-    (r"/tasks/(.*)/statements/(.*)", TaskStatementViewHandler),
+    (r"/tasks/(.*)/statements/([^/]*)(?:/.*)?", TaskStatementViewHandler),
     (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
 
     # Task submissions
