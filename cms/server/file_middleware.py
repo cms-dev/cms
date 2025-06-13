@@ -46,6 +46,7 @@ class FileServerMiddleware:
 
     DIGEST_HEADER = "X-CMS-File-Digest"
     FILENAME_HEADER = "X-CMS-File-Filename"
+    DISPOSITION_HEADER = "X-CMS-File-Disposition"
 
     def __init__(self, file_cacher: FileCacher, app: Callable):
         """Create an instance.
@@ -84,6 +85,7 @@ class FileServerMiddleware:
 
         digest = original_response.headers.pop(self.DIGEST_HEADER)
         filename = original_response.headers.pop(self.FILENAME_HEADER, None)
+        disposition = original_response.headers.pop(self.DISPOSITION_HEADER, "attachment")
         mimetype = original_response.mimetype
 
         try:
@@ -102,7 +104,7 @@ class FileServerMiddleware:
         response.mimetype = mimetype
         if filename is not None:
             response.headers.add(
-                "Content-Disposition", "attachment", filename=filename)
+                "Content-Disposition", disposition, filename=filename)
         response.set_etag(digest)
         response.cache_control.no_cache = True
         response.cache_control.private = True
