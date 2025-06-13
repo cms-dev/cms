@@ -42,22 +42,46 @@
  */
 
 /*
- * Artem Iglikov
- * Alexander Kernozhitsky
- * Andrey Vihrov
+ * Kian Mirjalali:
  *
- * Modifications for Contest Management System (CMS) support:
- *   - Write checker outcome to stdout and message to stderr
- *   - Use special localizable message strings by default
- *   - Adjust checker exit code
- *   - Adjust checker argument order (except in help and comments)
- *   - Add the "CMS" conditional macro for CMS checker format
- *   - Add the "CMS_VERBOSE_FEEDBACK" conditional macro to enable
- *     testlib-style messages
- *   - Interactors are not supported
+ * Modified to be compatible with CMS & requirements for preparing IOI tasks
  *
- * Backports:
- *   - 1bcfacc3a97667b38a3aef9d95b97edc6a9db688 (MikeMirzayanov/testlib#79)
+ * * defined FOR_LINUX in order to force linux-based line endings in validators.
+ *
+ * * Changed the ordering of checker arguments
+ *    from <input-file> <output-file> <answer-file>
+ *    to <input-file> <answer-file> <output-file>
+ *
+ * * Added "Security Violation" & "Protocol Violation" as new result types.
+ *
+ * * Changed checker quit behaviors to make it compliant with CMS.
+ *
+ * * The checker exit codes should always be 0 in CMS.
+ *
+ * * For partial scoring, forced quitp() functions to accept only scores in the range [0,1].
+ *   If the partial score is less than 1e-5, it becomes 1e-5, because 0 grades are considered wrong in CMS.
+ *   Grades in range [1e-5, 0.0001) are printed exactly (to prevent rounding to zero).
+ *   Grades in [0.0001, 1] are printed with 4 digits after decimal point.
+ *
+ * * Added the following utility types/variables/functions/methods:
+ *     type HaltListener (as a function with no parameters or return values)
+ *     vector<HaltListener> __haltListeners
+ *     void registerHaltListener(HaltListener haltListener)
+ *     void callHaltListeners()  (which is called in quit)
+ *     void closeOnHalt(FILE* file)
+ *     void closeOnHalt(F& f) (template using f.close())
+ *     void InStream::readSecret(string secret, TResult mismatchResult, string mismatchMessage)
+ *     void InStream::readGraderResult()
+ *         +supporting conversion of graderResult to CMS result
+ *     void quitp(double), quitp(int)
+ *     void registerChecker(string probName, argc, argv)
+ *     void readBothSecrets(string secret)
+ *     void readBothGraderResults()
+ *     void quit(TResult)
+ *     bool compareTokens(string a, string b, char separator=' ')
+ *     void compareRemainingLines(int lineNo=1)
+ *     void skip_ok()
+ *
  */
 
 /* NOTE: This file contains testlib library for C++.
@@ -82,7 +106,6 @@
  */
 
 const char* latestFeatures[] = {
-                          "Fixed issue #79: fixed missed guard against repeated header include",
                           "Fixed stringstream repeated usage issue",
                           "Fixed compilation in g++ (for std=c++03)",
                           "Batch of println functions (support collections, iterator ranges)",
@@ -154,6 +177,8 @@ const char* latestFeatures[] = {
                           "Added compatibility with Contester (compile with CONTESTER directive)"
                          };
 
+#define FOR_LINUX
+
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_WARNINGS
@@ -168,6 +193,7 @@ const char* latestFeatures[] = {
 #include <algorithm>
 #undef random
 
+#include <functional>
 #include <cstdio>
 #include <cctype>
 #include <string>
@@ -275,6 +301,14 @@ const char* latestFeatures[] = {
 #   define UNEXPECTED_EOF_EXIT_CODE 8
 #endif
 
+#ifndef SV_EXIT_CODE
+#   define SV_EXIT_CODE 20
+#endif
+
+#ifndef PV_EXIT_CODE
+#   define PV_EXIT_CODE 21
+#endif
+
 #ifndef PC_BASE_EXIT_CODE
 #   ifdef TESTSYS
 #       define PC_BASE_EXIT_CODE 50
@@ -304,7 +338,40 @@ const char* latestFeatures[] = {
 #else
 #   define NORETURN
 #endif
-                   
+
+/**************** HaltListener material ****************/
+#if __cplusplus > 199711L || defined(_MSC_VER)
+typedef std::function<void()> HaltListener;
+#else
+typedef void (*HaltListener)();
+#endif
+
+std::vector<HaltListener> __haltListeners;
+
+inline void registerHaltListener(HaltListener haltListener) {
+    __haltListeners.push_back(haltListener);
+}
+
+inline void callHaltListeners() {
+    // Removing and calling haltListeners in reverse order.
+    while (!__haltListeners.empty()) {
+        HaltListener haltListener = __haltListeners.back();
+        __haltListeners.pop_back();
+        haltListener();
+    }
+}
+
+#if __cplusplus > 199711L || defined(_MSC_VER)
+inline void closeOnHalt(FILE* file) {
+    registerHaltListener([file] { fclose(file); });
+}
+template<typename F>
+inline void closeOnHalt(F& f) {
+    registerHaltListener([&f] { f.close(); });
+}
+#endif
+/*******************************************************/
+
 static char __testlib_format_buffer[16777216];
 static int __testlib_format_buffer_usage_count = 0;
 
@@ -1422,6 +1489,8 @@ enum TResult
     _dirt = 4,
     _points = 5,
     _unexpected_eof = 8,
+    _sv = 10,
+    _pv = 11,
     _partially = 16
 };
 
@@ -1448,8 +1517,8 @@ const std::string outcomes[] = {
     "reserved",
     "unexpected-eof",
     "reserved",
-    "reserved",
-    "reserved",
+    "security-violation",
+    "protocol-violation",
     "reserved",
     "reserved",
     "reserved",
@@ -2052,15 +2121,20 @@ struct InStream
     const static WORD LightCyan = 0x0b;    
     const static WORD LightGreen = 0x0a;    
     const static WORD LightYellow = 0x0e;    
+    const static WORD LightMagenta = 0x0d;    
 
     static void textColor(WORD color);
     static void quitscr(WORD color, const char* msg);
     static void quitscrS(WORD color, std::string msg);
     void xmlSafeWrite(std::FILE * file, const char* msg);
 
+    void readSecret(std::string secret, TResult mismatchResult=_pv, std::string mismatchMessage="Secret mismatch");
+    void readGraderResult();
+
 private:
     InStream(const InStream&);
     InStream& operator =(const InStream&);
+    void quitByGraderResult(TResult result, std::string defaultMessage);
 };
 
 InStream inf;
@@ -2382,6 +2456,8 @@ __attribute__((const))
 #endif
 int resultExitCode(TResult r)
 {
+    if (testlibMode == _checker)
+        return 0;//CMS Checkers should always finish with zero exit code.
     if (r == _ok)
         return OK_EXIT_CODE;
     if (r == _wa)
@@ -2400,6 +2476,10 @@ int resultExitCode(TResult r)
 #else
         return PE_EXIT_CODE;
 #endif
+    if (r == _sv)
+        return SV_EXIT_CODE;
+    if (r == _pv)
+        return PV_EXIT_CODE;
     if (r >= _partially)
         return PC_BASE_EXIT_CODE + (r - _partially);
     return FAIL_EXIT_CODE;
@@ -2433,6 +2513,9 @@ void InStream::textColor(
         case LightYellow:
             fprintf(stderr, "\033[1;33m");
             break;
+        case LightMagenta:
+            fprintf(stderr, "\033[1;35m");
+            break;
         case LightGray:
         default:
             fprintf(stderr, "\033[0m");
@@ -2443,6 +2526,7 @@ void InStream::textColor(
 
 NORETURN void halt(int exitCode)
 {
+    callHaltListeners();
 #ifdef FOOTER
     InStream::textColor(InStream::LightGray);
     std::fprintf(stderr, "Checker: \"%s\"\n", checkerName.c_str());
@@ -2456,6 +2540,14 @@ static bool __testlib_shouldCheckDirt(TResult result)
 {
     return result == _ok || result == _points || result >= _partially;
 }
+
+
+std::string RESULT_MESSAGE_CORRECT = "Output is correct";
+std::string RESULT_MESSAGE_PARTIALLY_CORRECT = "Output is partially correct";
+std::string RESULT_MESSAGE_WRONG = "Output isn't correct";
+std::string RESULT_MESSAGE_SECURITY_VIOLATION = "Security Violation";
+std::string RESULT_MESSAGE_PROTOCOL_VIOLATION = "Protocol Violation";
+std::string RESULT_MESSAGE_FAIL = "Judge Failure; Contact staff!";
 
 NORETURN void InStream::quit(TResult result, const char* msg)
 {
@@ -2497,97 +2589,96 @@ NORETURN void InStream::quit(TResult result, const char* msg)
     int pctype = result - _partially;
     bool isPartial = false;
 
-#ifdef CMS
-    inf.close();
-    ouf.close();
-    ans.close();
-    if (tout.is_open())
-        tout.close();
-
-#  define CMS_SUCCESS "success"
-#  define CMS_PARTIAL "partial"
-#  define CMS_WRONG   "wrong"
-#  ifndef CMS_VERBOSE_FEEDBACK
-#    define CMS_MSG(code, text) "translate:" code "\n"
-#  else
-#    define CMS_MSG(code, text) text " %s\n", msg
-#  endif
-
-    if (result == _ok) {
-        std::fprintf(stdout, "1.0\n");
-        std::fprintf(stderr, CMS_MSG(CMS_SUCCESS, "OK"));
-    } else if (result == _wa) {
-        std::fprintf(stdout, "0.0\n");
-        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Answer"));
-    } else if (result == _pe) {
-        std::fprintf(stdout, "0.0\n");
-        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Presentation Error"));
-    } else if (result == _dirt) {
-        std::fprintf(stdout, "0.0\n");
-        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Output Format"));
-    } else if (result == _points) {
-        std::string stringPoints(removeDoubleTrailingZeroes(
-            format("%.10f", __testlib_points)));
-        std::fprintf(stdout, "%s\n", stringPoints.c_str());
-        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
-    } else if (result == _unexpected_eof) {
-        std::fprintf(stdout, "0.0\n");
-        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Unexpected EOF"));
-    } else if (result >= _partially) {
-        double score = (double)pctype / 200.0;
-        std::fprintf(stdout, "%.3f\n", score);
-        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
-    } else if (result == _fail) {
-        std::fprintf(stderr, "FAIL %s\n", msg);
-        halt(1);
-    } else {
-        std::fprintf(stderr, "FAIL unknown result %d\n", (int)result);
-        halt(1);
-    }
-
-    halt(0);
-#endif
-
-    switch (result)
-    {
-    case _ok:
-        errorName = "ok ";
-        quitscrS(LightGreen, errorName);
-        break;
-    case _wa:
-        errorName = "wrong answer ";
-        quitscrS(LightRed, errorName);
-        break;
-    case _pe:
-        errorName = "wrong output format ";
-        quitscrS(LightRed, errorName);
-        break;
-    case _fail:
-        errorName = "FAIL ";
-        quitscrS(LightRed, errorName);
-        break;
-    case _dirt:
-        errorName = "wrong output format ";
-        quitscrS(LightCyan, errorName);
-        result = _pe;
-        break;
-    case _points:
-        errorName = "points ";
-        quitscrS(LightYellow, errorName);
-        break;
-    case _unexpected_eof:
-        errorName = "unexpected eof ";
-        quitscrS(LightCyan, errorName);
-        break;
-    default:
-        if (result >= _partially)
+    if (testlibMode == _checker) {
+        WORD color;
+        std::string pointsStr = "0";
+        switch (result)
         {
-            errorName = format("partially correct (%d) ", pctype);
-            isPartial = true;
+        case _ok:
+            pointsStr = format("%d", 1);
+            color = LightGreen;
+            errorName = RESULT_MESSAGE_CORRECT;
+            break;
+        case _wa:
+        case _pe:
+        case _dirt:
+        case _unexpected_eof:
+            color = LightRed;
+            errorName = RESULT_MESSAGE_WRONG;
+            break;
+        case _fail:
+            color = LightMagenta;
+            errorName = RESULT_MESSAGE_FAIL;
+            break;
+        case _sv:
+            color = LightMagenta;
+            errorName = RESULT_MESSAGE_SECURITY_VIOLATION;
+            break;
+        case _pv:
+            color = LightMagenta;
+            errorName = RESULT_MESSAGE_PROTOCOL_VIOLATION;
+            break;
+        case _points:
+            if (__testlib_points < 1e-5)
+                pointsStr = "0.00001"; // Prevent zero scores in CMS as zero is considered wrong
+            else if (__testlib_points < 0.0001)
+                pointsStr = format("%lf", __testlib_points); // Prevent rounding the numbers below 0.0001
+            else
+                pointsStr = format("%.4lf", __testlib_points);
+            color = LightYellow;
+            errorName = RESULT_MESSAGE_PARTIALLY_CORRECT;
+            break;
+        default:
+            if (result >= _partially)
+                quit(_fail, "testlib partially mode not supported");
+            else
+                quit(_fail, "What is the code ??? ");
+        }    
+        std::fprintf(stdout, "%s\n", pointsStr.c_str());
+        quitscrS(color, errorName);
+        std::fprintf(stderr, "\n");
+    } else {
+        switch (result)
+        {
+        case _ok:
+            errorName = "ok ";
+            quitscrS(LightGreen, errorName);
+            break;
+        case _wa:
+            errorName = "wrong answer ";
+            quitscrS(LightRed, errorName);
+            break;
+        case _pe:
+            errorName = "wrong output format ";
+            quitscrS(LightRed, errorName);
+            break;
+        case _fail:
+            errorName = "FAIL ";
+            quitscrS(LightRed, errorName);
+            break;
+        case _dirt:
+            errorName = "wrong output format ";
+            quitscrS(LightCyan, errorName);
+            result = _pe;
+            break;
+        case _points:
+            errorName = "points ";
             quitscrS(LightYellow, errorName);
+            break;
+        case _unexpected_eof:
+            errorName = "unexpected eof ";
+            quitscrS(LightCyan, errorName);
+            break;
+        default:
+            if (result >= _partially)
+            {
+                errorName = format("partially correct (%d) ", pctype);
+                isPartial = true;
+                quitscrS(LightYellow, errorName);
+            }
+            else
+                quit(_fail, "What is the code ??? ");
         }
-        else
-            quit(_fail, "What is the code ??? ");
     }
 
     if (resultName != "")
@@ -2647,7 +2738,7 @@ NORETURN void InStream::quitf(TResult result, const char* msg, ...)
     InStream::quit(result, message.c_str());
 }
 
-#ifdef __GNUC__
+#ifdef __GNUC__Add
 __attribute__ ((format (printf, 4, 5)))
 #endif
 void InStream::quitif(bool condition, TResult result, const char *msg, ...) {
@@ -3847,8 +3938,15 @@ NORETURN void quit(TResult result, const char* msg)
     ouf.quit(result, msg);
 }
 
+#ifdef __GNUC__
+__attribute__ ((format (printf, 2, 3)))
+#endif
+NORETURN void quitf(TResult result, const char* format, ...);
+
 NORETURN void __testlib_quitp(double points, const char* message)
 {
+    if (points<0 || points>1)
+        quitf(_fail, "wrong points: %lf, it must be in [0,1]", points);
     __testlib_points = points;
     std::string stringPoints = removeDoubleTrailingZeroes(format("%.10f", points));
 
@@ -3856,13 +3954,15 @@ NORETURN void __testlib_quitp(double points, const char* message)
     if (NULL == message || 0 == strlen(message))
         quitMessage = stringPoints;
     else
-        quitMessage = stringPoints + " " + message;
+        quitMessage = message;
 
     quit(_points, quitMessage.c_str());
 }
 
 NORETURN void __testlib_quitp(int points, const char* message)
 {
+    if (points<0 || points>1)
+        quitf(_fail, "wrong points: %d, it must be in [0,1]", points);
     __testlib_points = points;
     std::string stringPoints = format("%d", points);
 
@@ -3870,7 +3970,7 @@ NORETURN void __testlib_quitp(int points, const char* message)
     if (NULL == message || 0 == strlen(message))
         quitMessage = stringPoints;
     else
-        quitMessage = stringPoints + " " + message;
+        quitMessage = message;
 
     quit(_points, quitMessage.c_str());
 }
@@ -3904,6 +4004,13 @@ NORETURN void quitp(F points, const char* format, ...)
     FMT_TO_RESULT(format, format, message);
     quitp(points, message);
 }
+
+template<typename F>
+NORETURN void quitp(F points)
+{
+    __testlib_quitp(points, std::string(""));
+}
+
 
 #ifdef __GNUC__
 __attribute__ ((format (printf, 2, 3)))
@@ -3943,7 +4050,7 @@ NORETURN void __testlib_help()
     std::fprintf(stderr, "\n");
 
     std::fprintf(stderr, "Program must be run with the following arguments: \n");
-    std::fprintf(stderr, "    <input-file> <output-file> <answer-file> [<report-file> [<-appes>]]\n\n");
+    std::fprintf(stderr, "    <input-file> <answer-file> <output-file> [<report-file> [<-appes>]]\n\n");
 
     std::exit(FAIL_EXIT_CODE);
 }
@@ -4016,10 +4123,6 @@ void registerGen(int argc, char* argv[])
 
 void registerInteraction(int argc, char* argv[])
 {
-#ifdef CMS
-    quit(_fail, "Interactors are not supported");
-#endif
-
     __testlib_ensuresPreconditions();
 
     testlibMode = _interactor;
@@ -4148,7 +4251,7 @@ void registerTestlibCmd(int argc, char* argv[])
     if (argc < 4 || argc > 6)
     {
         quit(_fail, std::string("Program must be run with the following arguments: ") +
-            std::string("<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]") + 
+            std::string("<input-file> <answer-file> <output-file> [<report-file> [<-appes>]]") + 
             "\nUse \"--help\" to get help information");
     }
 
@@ -4169,7 +4272,7 @@ void registerTestlibCmd(int argc, char* argv[])
         if (strcmp("-APPES", argv[5]) && strcmp("-appes", argv[5]))
         {
             quit(_fail, std::string("Program must be run with the following arguments: ") +
-                        "<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]");
+                        "<input-file> <answer-file> <output-file> [<report-file> [<-appes>]]");
         }
         else
         {
@@ -4179,20 +4282,15 @@ void registerTestlibCmd(int argc, char* argv[])
     }
 
     inf.init(argv[1], _input);
-#ifdef CMS
-    ouf.init(argv[3], _output);
     ans.init(argv[2], _answer);
-#else
-    ouf.init(argv[2], _output);
-    ans.init(argv[3], _answer);
-#endif
+    ouf.init(argv[3], _output);
 }
 
 void registerTestlib(int argc, ...)
 {
     if (argc  < 3 || argc > 5)
         quit(_fail, std::string("Program must be run with the following arguments: ") +
-            "<input-file> <output-file> <answer-file> [<report-file> [<-appes>]]");
+            "<input-file> <answer-file> <output-file> [<report-file> [<-appes>]]");
 
     char** argv = new char*[argc + 1];
     
@@ -4591,6 +4689,8 @@ NORETURN void expectedButFound<long double>(TResult result, long double expected
     __testlib_expectedButFound(result, double(expected), double(found), prepend.c_str());
 }
 
+#endif
+
 #if __cplusplus > 199711L || defined(_MSC_VER)
 template <typename T>
 struct is_iterable
@@ -4780,4 +4880,124 @@ void println(const A& a, const B& b, const C& c, const D& d, const E& e, const F
     std::cout << std::endl;
 }
 #endif
-#endif
+
+
+
+void registerChecker(std::string probName, int argc, char* argv[])
+{
+    setName("checker for problem %s", probName.c_str());
+    registerTestlibCmd(argc, argv);
+}
+
+
+
+const std::string _grader_OK = "OK";
+const std::string _grader_SV = "SV";
+const std::string _grader_PV = "PV";
+const std::string _grader_WA = "WA";
+const std::string _grader_FAIL = "FAIL";
+
+
+void InStream::readSecret(std::string secret, TResult mismatchResult, std::string mismatchMessage)
+{
+    if (readWord() != secret)
+        quits(mismatchResult, mismatchMessage);
+    eoln();
+}
+
+void readBothSecrets(std::string secret)
+{
+    ans.readSecret(secret, _fail, "Secret mismatch in the (correct) answer file");
+    ouf.readSecret(secret, _pv, "Possible tampering with the output");
+}
+
+
+void InStream::quitByGraderResult(TResult result, std::string defaultMessage)
+{
+    std::string msg = "";
+    if (!eof())
+        msg = readLine();
+    if (msg.empty())
+        quits(result, defaultMessage);
+    quits(result, msg);
+}
+
+void InStream::readGraderResult()
+{
+    std::string result = readWord();
+    eoln();
+    if (result == _grader_OK)
+        return;
+    if (result == _grader_SV)
+        quitByGraderResult(_sv, "Security violation detected in grader");
+    if (result == _grader_PV)
+        quitByGraderResult(_pv, "Protocol violation detected in grader");
+    if (result == _grader_WA)
+        quitByGraderResult(_wa, "Wrong answer detected in grader");
+    if (result == _grader_FAIL)
+        quitByGraderResult(_fail, "Failure in grader");
+    quitf(_fail, "Unknown grader result");
+}
+
+void readBothGraderResults()
+{
+    ans.readGraderResult();
+    ouf.readGraderResult();
+}
+
+
+NORETURN void quit(TResult result)
+{
+    ouf.quit(result, "");
+}
+
+/// Used in validators: skips the rest of input, assuming it to be correct
+NORETURN void skip_ok()
+{
+    if (testlibMode != _validator)
+        quitf(_fail, "skip_ok() only works in validators");
+    testlibFinalizeGuard.quitCount++;
+    halt(0);
+}
+
+/// 1 -> 1st, 2 -> 2nd, 3 -> 3rd, 4 -> 4th, ...
+std::string englishTh(int x)
+{
+    char c[100];
+    sprintf(c, "%d%s", x, englishEnding(x).c_str());
+    return c;
+}
+
+/// Compares the tokens of two lines
+void compareTokens(int lineNo, std::string a, std::string b, char separator=' ')
+{
+    std::vector<std::string> toka = tokenize(a, separator);
+    std::vector<std::string> tokb = tokenize(b, separator);
+    if (toka == tokb)
+        return;
+    std::string dif = format("%s lines differ - ", englishTh(lineNo).c_str());
+    if (toka.size() != tokb.size())
+        quitf(_wa, "%sexpected: %d tokens, found %d tokens", dif.c_str(), int(toka.size()), int(tokb.size()));
+    for (int i=0; i<int(toka.size()); i++)
+        if (toka[i] != tokb[i])
+            quitf(_wa, "%son the %s token, expected: '%s', found: '%s'", dif.c_str(), englishTh(i+1).c_str(), compress(toka[i]).c_str(), compress(tokb[i]).c_str());
+    quitf(_fail, "%sbut I don't know why!", dif.c_str());
+}
+
+/// Compares the tokens of the remaining lines
+NORETURN void compareRemainingLines(int lineNo=1)
+{
+    for (; !ans.eof(); lineNo++) 
+    {
+        std::string j = ans.readString();
+
+        if (j == "" && ans.eof())
+          break;
+        
+        std::string p = ouf.readString();
+
+        compareTokens(lineNo, j, p);
+    }
+    quit(_ok);
+}
+
