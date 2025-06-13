@@ -11,12 +11,9 @@
     <script src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
     <script src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
     <script src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
-    <script src="{{ url("static", "sh", "shCore.js") }}"></script>
-    <script src="{{ url("static", "sh", "shBrushCpp.js") }}"></script>
-    <script src="{{ url("static", "sh", "shBrushDelphi.js") }}"></script>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "jq", "jquery.jqplot.min.css") }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shCore.css") }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shThemeDefault.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "prism.css") }}">
+    <script src="{{ url("static", "prism.js") }}" data-manual></script>
 
     {% if contest is none %}
     <title>Admin</title>
@@ -251,11 +248,10 @@ $(document).ready(init);
       <div id="border"></div>
       <div id="core">
         <div id="notifications" class="notifications"></div>
-        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
-          <div id="subpage_border"></div>
-          <div id="subpage_background"></div>
+        <dialog id="subpage_popup">
+          <button id="subpage_close">x</button>
           <div id="subpage_content"></div>
-        </div>
+        </dialog>
         {% block core %}{% endblock core %}
       </div>
 
