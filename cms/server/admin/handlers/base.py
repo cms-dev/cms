@@ -31,7 +31,6 @@ from collections.abc import Callable
 import ipaddress
 import json
 import logging
-import re
 import traceback
 from datetime import datetime, timedelta
 from functools import wraps
