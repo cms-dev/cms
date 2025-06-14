@@ -356,7 +356,7 @@ class BaseHandler(CommonRequestHandler):
         # TODO: use a better sorting method.
         params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
         params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
-        params["contest_list"] = self.sql_session.query(User).order_by(User.username).all()
+        params["user_list"] = self.sql_session.query(User).order_by(User.username).all()
         params["team_list"] = self.sql_session.query(Team).order_by(Team.name).all()
         return params
 
