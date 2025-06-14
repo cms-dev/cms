@@ -69,14 +69,14 @@ if typing.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-
+"""
+#TODO improve and implement this function
 def natural_sort_key(text):
     #Generate a natural sorting key for alphanumeric strings.
     def convert(part):
         return int(part) if part.isdigit() else part.lower()
     return [convert(c) for c in re.split("([0-9]+)", str(text))]
-
-
+"""
 def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
     """Return an helper method for reading and parsing form values.
 
@@ -353,16 +353,11 @@ class BaseHandler(CommonRequestHandler):
                 .filter(Question.ignored.is_(False))\
                 .count()
         # TODO: not all pages require all these data.
+        # TODO: use a better sorting method.
         params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
-        params["task_list"] = sorted(
-            self.sql_session.query(Task).all(),
-            key=lambda task: natural_sort_key(task.name),
-        )   
-        params["user_list"] = sorted(
-            self.sql_session.query(User).all(),
-            key=lambda user: natural_sort_key(user.username),
-        )
-        params["team_list"] = self.sql_session.query(Team).all()
+        params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
+        params["contest_list"] = self.sql_session.query(User).order_by(User.username).all()
+        params["team_list"] = self.sql_session.query(Team).order_by(Team.name).all()
         return params
 
     def write_error(self, status_code, **kwargs):
