@@ -69,14 +69,6 @@ if typing.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-"""
-#TODO improve and implement this function
-def natural_sort_key(text):
-    #Generate a natural sorting key for alphanumeric strings.
-    def convert(part):
-        return int(part) if part.isdigit() else part.lower()
-    return [convert(c) for c in re.split("([0-9]+)", str(text))]
-"""
 def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
     """Return an helper method for reading and parsing form values.
 
