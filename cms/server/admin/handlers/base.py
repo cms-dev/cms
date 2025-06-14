@@ -345,8 +345,8 @@ class BaseHandler(CommonRequestHandler):
                 .filter(Question.ignored.is_(False))\
                 .count()
         # TODO: not all pages require all these data.
-        params["contest_list"] = self.sql_session.query(Contest).all()
-        params["task_list"] = self.sql_session.query(Task).all()
+        params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
+        params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
         params["user_list"] = self.sql_session.query(User).all()
         params["team_list"] = self.sql_session.query(Team).all()
         return params
