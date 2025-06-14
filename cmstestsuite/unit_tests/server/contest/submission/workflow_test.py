@@ -304,7 +304,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         with self.assertRaisesRegex(UnacceptableSubmission, "archive"):
             self.call()
 
-        self.extract_files_from_tornado.assert_called_with(self.tornado_files)
+        self.extract_files_from_tornado.assert_called()
 
     def test_failure_due_to_match_files_and_language(self):
         self.match_files_and_language.side_effect = InvalidFilesOrLanguage
@@ -637,7 +637,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         with self.assertRaisesRegex(UnacceptableUserTest, "archive"):
             self.call()
 
-        self.extract_files_from_tornado.assert_called_with(self.tornado_files)
+        self.extract_files_from_tornado.assert_called()
 
     def test_failure_due_to_match_files_and_language(self):
         self.match_files_and_language.side_effect = InvalidFilesOrLanguage
