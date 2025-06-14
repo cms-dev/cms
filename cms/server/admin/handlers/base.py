@@ -31,6 +31,7 @@ from collections.abc import Callable
 import ipaddress
 import json
 import logging
+import re
 import traceback
 from datetime import datetime, timedelta
 from functools import wraps
@@ -67,6 +68,13 @@ if typing.TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+
+def natural_sort_key(text):
+    #Generate a natural sorting key for alphanumeric strings.
+    def convert(part):
+        return int(part) if part.isdigit() else part.lower()
+    return [convert(c) for c in re.split("([0-9]+)", str(text))]
 
 
 def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
@@ -346,8 +354,14 @@ class BaseHandler(CommonRequestHandler):
                 .count()
         # TODO: not all pages require all these data.
         params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
-        params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
-        params["user_list"] = self.sql_session.query(User).all()
+        params["task_list"] = sorted(
+            self.sql_session.query(Task).all(),
+            key=lambda task: natural_sort_key(task.name),
+        )   
+        params["user_list"] = sorted(
+            self.sql_session.query(User).all(),
+            key=lambda user: natural_sort_key(user.username),
+        )
         params["team_list"] = self.sql_session.query(Team).all()
         return params
 
