@@ -23,7 +23,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Base class for all handlers in AWS, and some utility functions."""
+"""Base class for all handlers in AWS, and some utility functions.
+
+"""
 
 from collections.abc import Callable
 import ipaddress
@@ -52,25 +54,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, subqueryload
 
 from cms import __version__, config
-from cms.db import (
-    Admin,
-    Contest,
-    Participation,
-    Question,
-    Submission,
-    SubmissionResult,
-    Task,
-    Team,
-    User,
-    UserTest,
-)
+from cms.db import Admin, Contest, Participation, Question, Submission, \
+    SubmissionResult, Task, Team, User, UserTest
 import cms.db
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, FileHandlerMixin
 from cmscommon.crypto import hash_password, parse_authentication
 from cmscommon.datetime import make_datetime
-
 if typing.TYPE_CHECKING:
     from cms.server.admin import AdminWebServer
 
@@ -142,7 +133,7 @@ def parse_timedelta_min(value: str) -> timedelta:
 
 def parse_datetime(value: str) -> datetime:
     """Parse and validate a datetime (in pseudo-ISO8601)."""
-    if "." not in value:
+    if '.' not in value:
         value += ".0"
     try:
         return datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
@@ -187,11 +178,9 @@ def require_permission(permission: str = "authenticated", self_allowed: bool = F
        permission.
 
     """
-    if permission not in [
-        BaseHandler.PERMISSION_ALL,
-        BaseHandler.PERMISSION_MESSAGING,
-        BaseHandler.AUTHENTICATED,
-    ]:
+    if permission not in [BaseHandler.PERMISSION_ALL,
+                          BaseHandler.PERMISSION_MESSAGING,
+                          BaseHandler.AUTHENTICATED]:
         raise ValueError("Invalid permission level %s." % permission)
 
     _P = typing.ParamSpec("_P")
@@ -201,12 +190,15 @@ def require_permission(permission: str = "authenticated", self_allowed: bool = F
     def decorator(
         func: Callable[typing.Concatenate[_T, _P], _R],
     ) -> Callable[typing.Concatenate[_T, _P], _R]:
-        """Decorator for requiring a permission level"""
+        """Decorator for requiring a permission level
 
+        """
         @wraps(func)
         @tornado_web.authenticated
         def newfunc(self: _T, *args: _P.args, **kwargs: _P.kwargs):
-            """Check if the permission is present before calling the function."""
+            """Check if the permission is present before calling the function.
+
+            """
             if permission == BaseHandler.AUTHENTICATED:
                 return func(self, *args, **kwargs)
 
@@ -235,7 +227,6 @@ class BaseHandler(CommonRequestHandler):
     child of this class.
 
     """
-
     PERMISSION_ALL = "all"
     PERMISSION_MESSAGING = "messaging"
     AUTHENTICATED = "authenticated"
@@ -254,11 +245,13 @@ class BaseHandler(CommonRequestHandler):
             self.sql_session.commit()
         except IntegrityError as error:
             self.service.add_notification(
-                make_datetime(), "Operation failed.", "%s" % error
-            )
+                make_datetime(),
+                "Operation failed.", "%s" % error)
             return False
         else:
-            self.service.add_notification(make_datetime(), "Operation successful.", "")
+            self.service.add_notification(
+                make_datetime(),
+                "Operation successful.", "")
             return True
 
     def get_current_user(self) -> Admin | None:
@@ -273,12 +266,10 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Load admin.
-        admin = (
-            self.sql_session.query(Admin)
-            .filter(Admin.id == admin_id)
-            .filter(Admin.enabled.is_(True))
+        admin = self.sql_session.query(Admin)\
+            .filter(Admin.id == admin_id)\
+            .filter(Admin.enabled.is_(True))\
             .first()
-        )
         if admin is None:
             self.service.auth_handler.clear()
             return None
@@ -315,7 +306,9 @@ class BaseHandler(CommonRequestHandler):
         return entity
 
     def prepare(self):
-        """This method is executed at the beginning of each request."""
+        """This method is executed at the beginning of each request.
+
+        """
         super().prepare()
         self.contest = None
 
@@ -331,9 +324,8 @@ class BaseHandler(CommonRequestHandler):
 
         """
         params = {}
-        params["rtd_version"] = (
-            "latest" if "dev" in __version__ else "v" + __version__[:3]
-        )
+        params["rtd_version"] = "latest" if "dev" in __version__ \
+                                else "v" + __version__[:3]
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url"] = self.url
@@ -346,32 +338,27 @@ class BaseHandler(CommonRequestHandler):
             params["admin"] = self.current_user
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
-            params["unanswered"] = (
-                self.sql_session.query(Question)
-                .join(Participation)
-                .filter(Participation.contest_id == self.contest.id)
-                .filter(Question.reply_timestamp.is_(None))
-                .filter(Question.ignored.is_(False))
+            params["unanswered"] = self.sql_session.query(Question)\
+                .join(Participation)\
+                .filter(Participation.contest_id == self.contest.id)\
+                .filter(Question.reply_timestamp.is_(None))\
+                .filter(Question.ignored.is_(False))\
                 .count()
-            )
         # TODO: not all pages require all these data.
         # TODO: use a better sorting method.
-        params["contest_list"] = (
-            self.sql_session.query(Contest).order_by(Contest.name).all()
-        )
+        params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
         params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
         params["user_list"] = self.sql_session.query(User).order_by(User.username).all()
         params["team_list"] = self.sql_session.query(Team).order_by(Team.name).all()
         return params
 
     def write_error(self, status_code, **kwargs):
-        if "exc_info" in kwargs and kwargs["exc_info"][0] != tornado_web.HTTPError:
+        if "exc_info" in kwargs and \
+                kwargs["exc_info"][0] != tornado_web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
                 "Uncaught exception (%r) while processing a request: %s",
-                exc_info[1],
-                "".join(traceback.format_exception(*exc_info)),
-            )
+                exc_info[1], ''.join(traceback.format_exception(*exc_info)))
 
         # Most of the handlers raise a 404 HTTP error before r_params
         # is defined. If r_params is not defined we try to define it
@@ -583,11 +570,8 @@ class BaseHandler(CommonRequestHandler):
         # If the password was set and was hashed, and the admin kept
         # the method unchanged and didn't specify anything, they must
         # have meant to keep the old password unchanged.
-        elif (
-            old_method is not None
-            and old_method != "plaintext"
-            and method == old_method
-        ):
+        elif old_method is not None and old_method != "plaintext" \
+                and method == old_method:
             # Since the content of dest overwrites the current values
             # of the participation, by not adding anything to dest we
             # cause the current values to be kept.
@@ -610,18 +594,14 @@ class BaseHandler(CommonRequestHandler):
         page_size: the number of submissions per page.
 
         """
-        query = (
-            query.options(subqueryload(Submission.task))
-            .options(subqueryload(Submission.participation))
-            .options(subqueryload(Submission.files))
-            .options(subqueryload(Submission.token))
-            .options(
-                subqueryload(Submission.results).subqueryload(
-                    SubmissionResult.evaluations
-                )
-            )
+        query = query\
+            .options(subqueryload(Submission.task))\
+            .options(subqueryload(Submission.participation))\
+            .options(subqueryload(Submission.files))\
+            .options(subqueryload(Submission.token))\
+            .options(subqueryload(Submission.results)
+                     .subqueryload(SubmissionResult.evaluations))\
             .order_by(Submission.timestamp.desc())
-        )
 
         offset = page * page_size
         count = query.count()
@@ -634,9 +614,11 @@ class BaseHandler(CommonRequestHandler):
         # display in this page, index of the current page, total
         # number of pages.
         self.r_params["submission_count"] = count
-        self.r_params["submissions"] = query.slice(offset, offset + page_size).all()
+        self.r_params["submissions"] = \
+            query.slice(offset, offset + page_size).all()
         self.r_params["submission_page"] = page
-        self.r_params["submission_pages"] = (count + page_size - 1) // page_size
+        self.r_params["submission_pages"] = \
+            (count + page_size - 1) // page_size
 
     def render_params_for_user_tests(
         self, query: Query, page: int, page_size: int = 50
@@ -648,13 +630,12 @@ class BaseHandler(CommonRequestHandler):
         page_size: the number of submissions per page.
 
         """
-        query = (
-            query.options(subqueryload(UserTest.task))
-            .options(subqueryload(UserTest.participation))
-            .options(subqueryload(UserTest.files))
-            .options(subqueryload(UserTest.results))
+        query = query\
+            .options(subqueryload(UserTest.task))\
+            .options(subqueryload(UserTest.participation))\
+            .options(subqueryload(UserTest.files))\
+            .options(subqueryload(UserTest.results))\
             .order_by(UserTest.timestamp.desc())
-        )
 
         offset = page * page_size
         count = query.count()
@@ -663,9 +644,11 @@ class BaseHandler(CommonRequestHandler):
             self.r_params = self.render_params()
 
         self.r_params["user_test_count"] = count
-        self.r_params["user_tests"] = query.slice(offset, offset + page_size).all()
+        self.r_params["user_tests"] = \
+            query.slice(offset, offset + page_size).all()
         self.r_params["user_test_page"] = page
-        self.r_params["user_test_pages"] = (count + page_size - 1) // page_size
+        self.r_params["user_test_pages"] = \
+            (count + page_size - 1) // page_size
 
     def render_params_for_remove_confirmation(self, query):
         count = query.count()
@@ -675,7 +658,9 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_count"] = count
 
     def get_login_url(self) -> str:
-        """Return the URL unauthenticated users are redirected to."""
+        """Return the URL unauthenticated users are redirected to.
+
+        """
         return self.url("login")
 
 
@@ -685,7 +670,6 @@ class FileHandler(BaseHandler, FileHandlerMixin):
 
 class FileFromDigestHandler(FileHandler):
     """Return the file, using the given name, and as plain text."""
-
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, digest, filename):
         # TODO: Accept a MIME type
@@ -695,26 +679,22 @@ class FileFromDigestHandler(FileHandler):
 
 def SimpleHandler(page, authenticated=True, permission_all=False) -> type[BaseHandler]:
     if permission_all:
-
         class Cls(BaseHandler):
             @require_permission(BaseHandler.PERMISSION_ALL)
             def get(self):
                 self.r_params = self.render_params()
                 self.render(page, **self.r_params)
     elif authenticated:
-
         class Cls(BaseHandler):
             @require_permission(BaseHandler.AUTHENTICATED)
             def get(self):
                 self.r_params = self.render_params()
                 self.render(page, **self.r_params)
     else:
-
         class Cls(BaseHandler):
             def get(self):
                 self.r_params = self.render_params()
                 self.render(page, **self.r_params)
-
     return Cls
 
 
