@@ -6,16 +6,10 @@
   <h1>Teams list</h1>
 </div>
 
-<form action="{{ url("teams") }}" method="POST">
+<form action="{{ url(" teams") }}" method="POST">
   {{ xsrf_form_html|safe }}
   Edit selected team:
-   <input type="submit"
-         name="operation"
-         value="Remove"
-{% if not admin.permission_all %}
-         disabled
-{% endif %}
-         />
+  <input type="submit" name="operation" value="Remove" {% if not admin.permission_all %} disabled {% endif %} />
   <table class="bordered">
     <thead>
       <tr>
@@ -28,9 +22,9 @@
       {% for t in team_list|sort(attribute="code") %}
       <tr>
         <td>
-          <input type="radio" name="team_id" value="{{ t.id }}"/>
+          <input type="radio" name="team_id" value="{{ t.id }}" />
         </td>
-        <td><a href="{{ url("team", t.id) }}">{{ t.code }}</a></td>
+        <td><a href="{{ url(" team", t.id) }}">{{ t.code }}</a></td>
         <td>{{ t.name }}</td>
       </tr>
       {% endfor %}
