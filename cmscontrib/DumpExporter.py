@@ -33,11 +33,12 @@ gevent.monkey.patch_all()  # noqa
 import argparse
 import json
 import logging
+import io
 import os
 import sys
-import tarfile
 import tempfile
 from datetime import date
+from cmscommon.archive import ArchiveBase, create_archive_on_disk
 
 from sqlalchemy.types import (
     Boolean,
@@ -52,7 +53,7 @@ from sqlalchemy.types import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB
 
-from cms import rmtree, utf8_decoder
+from cms import utf8_decoder
 from cms.db import (
     version as model_version,
     Codename,
@@ -76,52 +77,10 @@ from cms.db import (
 )
 from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
-from cmscommon.digest import path_digest
+from cmscommon.digest import fobj_digest, path_digest
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_archive_info(file_name: str) -> dict:
-    """Return information about the archive name.
-
-    file_name: the file name of the archive to analyze.
-
-    return: dictionary containing the following keys:
-        "basename", "extension", "write_mode"
-
-    """
-
-    # TODO - This method doesn't seem to be a masterpiece in terms of
-    # cleanness...
-    ret = {"basename": "",
-           "extension": "",
-           "write_mode": "",
-           }
-    if not (file_name.endswith(".tar.gz")
-            or file_name.endswith(".tar.bz2")
-            or file_name.endswith(".tar")
-            or file_name.endswith(".zip")):
-        return ret
-
-    if file_name.endswith(".tar"):
-        ret["basename"] = os.path.basename(file_name[:-4])
-        ret["extension"] = "tar"
-        ret["write_mode"] = "w:"
-    elif file_name.endswith(".tar.gz"):
-        ret["basename"] = os.path.basename(file_name[:-7])
-        ret["extension"] = "tar.gz"
-        ret["write_mode"] = "w:gz"
-    elif file_name.endswith(".tar.bz2"):
-        ret["basename"] = os.path.basename(file_name[:-8])
-        ret["extension"] = "tar.bz2"
-        ret["write_mode"] = "w:bz2"
-    elif file_name.endswith(".zip"):
-        ret["basename"] = os.path.basename(file_name[:-4])
-        ret["extension"] = "zip"
-        ret["write_mode"] = ""
-
-    return ret
 
 
 def encode_value(type_: TypeEngine, value: object) -> object:
@@ -212,30 +171,14 @@ class DumpExporter:
         """Run the actual export code."""
         logger.info("Starting export.")
 
-        export_dir = self.export_target
-        archive_info = get_archive_info(self.export_target)
-
-        if archive_info["write_mode"] != "":
-            # We are able to write to this archive.
-            if os.path.exists(self.export_target):
-                logger.critical("The specified file already exists, "
-                                "I won't overwrite it.")
-                return False
-            export_dir = os.path.join(tempfile.mkdtemp(),
-                                      archive_info["basename"])
-
-        logger.info("Creating dir structure.")
-        try:
-            os.mkdir(export_dir)
-        except OSError:
-            logger.critical("The specified directory already exists, "
+        if os.path.exists(self.export_target):
+            logger.critical("The specified file already exists, "
                             "I won't overwrite it.")
             return False
+        archive_file = create_archive_on_disk(self.export_target)
 
-        files_dir = os.path.join(export_dir, "files")
-        descr_dir = os.path.join(export_dir, "descriptions")
-        os.mkdir(files_dir)
-        os.mkdir(descr_dir)
+        archive_file.write_dir("files")
+        archive_file.write_dir("descriptions")
 
         with SessionGen() as session:
             # Export files.
@@ -251,11 +194,7 @@ class DumpExporter:
                         skip_print_jobs=self.skip_print_jobs,
                         skip_generated=self.skip_generated)
                     for file_ in files:
-                        if not self.safe_get_file(file_,
-                                                  os.path.join(files_dir,
-                                                               file_),
-                                                  os.path.join(descr_dir,
-                                                               file_)):
+                        if not self.safe_get_file(file_, archive_file):
                             return False
 
             # Export data in JSON format.
@@ -287,16 +226,17 @@ class DumpExporter:
 
                 data["_version"] = model_version
 
-                destination = os.path.join(export_dir, "contest.json")
-                with open(destination, "wt", encoding="utf-8") as fout:
-                    json.dump(data, fout, indent=4, sort_keys=True)
-
-        # If the admin requested export to file, we do that.
-        if archive_info["write_mode"] != "":
-            with tarfile.open(self.export_target,
-                              archive_info["write_mode"]) as archive:
-                archive.add(export_dir, arcname=archive_info["basename"])
-            rmtree(export_dir)
+                # Write the json model into the archive. json.dump writes into
+                # a text-mode stream, but archive.write_file takes binary mode,
+                # so we use a temporary file and reopen it with the right mode.
+                # (We need a temporary file anyways, as the archive needs to
+                # know the size of the file upfront.)
+                with tempfile.NamedTemporaryFile("w+") as temp_file:
+                    json.dump(data, temp_file, indent=4, sort_keys=True)
+                    size = temp_file.tell()
+                    temp_file.flush()
+                    with open(temp_file.name, "rb") as newf:
+                        archive_file.write_file("contest.json", size, newf)
 
         logger.info("Export finished.")
 
@@ -394,15 +334,12 @@ class DumpExporter:
 
         return data
 
-    def safe_get_file(
-        self, digest: str, path: str, descr_path: str | None = None
-    ) -> bool:
+    def safe_get_file(self, digest: str, archive: ArchiveBase) -> bool:
         """Get file from FileCacher ensuring that the digest is
         correct.
 
         digest: the digest of the file to retrieve.
-        path: the path where to save the file.
-        descr_path: the path where to save the description.
+        archive: archive to write the file into.
 
         return: True if all ok, False if something wrong.
 
@@ -412,23 +349,31 @@ class DumpExporter:
 
         # First get the file
         try:
-            self.file_cacher.get_file_to_path(digest, path)
+            fobj = self.file_cacher.get_file(digest)
         except Exception:
             logger.error("File %s could not retrieved from file server.",
                          digest, exc_info=True)
             return False
 
         # Then check the digest
-        calc_digest = path_digest(path)
+        calc_digest = fobj_digest(fobj)
         if digest != calc_digest:
             logger.critical("File %s has wrong hash %s.",
                             digest, calc_digest)
             return False
 
-        # If applicable, retrieve also the description
-        if descr_path is not None:
-            with open(descr_path, 'wt', encoding='utf-8') as fout:
-                fout.write(self.file_cacher.describe(digest))
+        # Write the file to the archive
+        filesize = fobj.seek(0, os.SEEK_END)
+        fobj.seek(0)
+        archive.write_file("files/" + digest, filesize, fobj)
+
+        # And finally also write the description
+        description = self.file_cacher.describe(digest).encode()
+        descr_io = io.BytesIO(description)
+        archive.write_file("descriptions/" + digest, len(description), descr_io)
+
+        # Delete the file from local cache, it won't be needed again.
+        self.file_cacher.drop(digest)
 
         return True
 
