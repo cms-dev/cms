@@ -28,7 +28,7 @@ import os
 import subprocess
 import tempfile
 
-from PyPDF2 import PdfFileReader, PdfFileMerger
+from pypdf import PdfReader, PdfMerger
 from jinja2 import PackageLoader
 
 from cms import config, rmtree
@@ -156,8 +156,8 @@ class PrintingExecutor(Executor[PrintingOperation]):
 
             # Find out number of pages
             with open(source_pdf, "rb") as file_:
-                pdfreader = PdfFileReader(file_)
-                page_count = pdfreader.getNumPages()
+                pdfreader = PdfReader(file_)
+                page_count = len(pdfreader.pages)
 
             logger.info("Preparing %d page(s) (plus the title page)",
                         page_count)
@@ -188,7 +188,7 @@ class PrintingExecutor(Executor[PrintingOperation]):
             except subprocess.CalledProcessError as e:
                 raise Exception("Failed to create title page") from e
 
-            with contextlib.closing(PdfFileMerger()) as pdfmerger:
+            with contextlib.closing(PdfMerger()) as pdfmerger:
                 pdfmerger.append(title_pdf)
                 pdfmerger.append(source_pdf)
                 result = os.path.join(directory, "document.pdf")
