@@ -235,7 +235,9 @@ class ParticipationHandler(BaseHandler):
             self.get_bool(attrs, "unrestricted")
 
             # Update the participation.
-            participation.set_attrs(attrs)  # Update the team
+            participation.set_attrs(attrs)
+
+            # Update the team
             self.get_string(attrs, "team")
             team_code = attrs.get("team", "")
             if isinstance(team_code, str):
