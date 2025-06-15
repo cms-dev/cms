@@ -90,15 +90,18 @@ from .task import \
     AttachmentHandler, \
     TaskListHandler, \
     RemoveTaskHandler
-from .user import \
-    AddUserHandler, \
-    UserHandler, \
-    UserListHandler, \
-    RemoveUserHandler, \
-    AddParticipationHandler, \
-    EditParticipationHandler, \
-    AddTeamHandler, \
-    TeamHandler
+from .user import (
+    AddUserHandler,
+    UserHandler,
+    UserListHandler,
+    RemoveUserHandler,
+    AddParticipationHandler,
+    EditParticipationHandler,
+    AddTeamHandler,
+    TeamHandler,
+    TeamListHandler,
+    RemoveTeamHandler,
+)
 from .usertest import \
     UserTestHandler, \
     UserTestFileHandler
@@ -115,55 +118,38 @@ HANDLERS = [
     (r"/notifications", NotificationsHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
     (r"/render_markdown", MarkdownRenderHandler),
-
     # Contest
-
     (r"/contests", ContestListHandler),
     (r"/contests/([0-9]+)/remove", RemoveContestHandler),
     (r"/contests/add", AddContestHandler),
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/contest/([0-9]+)/overview", OverviewHandler),
     (r"/contest/([0-9]+)/resourceslist", ResourcesListHandler),
-
     # Contest's users
-
     (r"/contest/([0-9]+)/users", ContestUsersHandler),
     (r"/contest/([0-9]+)/users/add", AddContestUserHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/remove", RemoveParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/edit", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
-
     # Contest's tasks
-
     (r"/contest/([0-9]+)/tasks", ContestTasksHandler),
     (r"/contest/([0-9]+)/tasks/add", AddContestTaskHandler),
-
     # Contest's submissions / user tests
-
     (r"/contest/([0-9]+)/submissions", ContestSubmissionsHandler),
     (r"/contest/([0-9]+)/user_tests", ContestUserTestsHandler),
-
     # Contest's announcements
-
-    (r"/contest/([0-9]+)/announcements",
-     SimpleContestHandler("announcements.html")),
+    (r"/contest/([0-9]+)/announcements", SimpleContestHandler("announcements.html")),
     (r"/contest/([0-9]+)/announcements/add", AddAnnouncementHandler),
     (r"/contest/([0-9]+)/announcement/([0-9]+)", AnnouncementHandler),
-
     # Contest's questions
-
     (r"/contest/([0-9]+)/questions", QuestionsHandler),
     (r"/contest/([0-9]+)/question/([0-9]+)/reply", QuestionReplyHandler),
     (r"/contest/([0-9]+)/question/([0-9]+)/ignore", QuestionIgnoreHandler),
     (r"/contest/([0-9]+)/question/([0-9]+)/claim", QuestionClaimHandler),
-
     # Contest's ranking
-
     (r"/contest/([0-9]+)/ranking", RankingHandler),
     (r"/contest/([0-9]+)/ranking/([a-z]+)", RankingHandler),
-
     # Tasks
-
     (r"/tasks", TaskListHandler),
     (r"/tasks/([0-9]+)/remove", RemoveTaskHandler),
     (r"/tasks/add", AddTaskHandler),
@@ -173,9 +159,7 @@ HANDLERS = [
     (r"/task/([0-9]+)/statement/([0-9]+)", StatementHandler),
     (r"/task/([0-9]+)/attachments/add", AddAttachmentHandler),
     (r"/task/([0-9]+)/attachment/([0-9]+)", AttachmentHandler),
-
     # Datasets
-
     (r"/dataset/([0-9]+)", DatasetSubmissionsHandler),
     (r"/dataset/([0-9]+)/clone", CloneDatasetHandler),
     (r"/dataset/([0-9]+)/rename", RenameDatasetHandler),
@@ -188,38 +172,29 @@ HANDLERS = [
     (r"/dataset/([0-9]+)/testcases/add_multiple", AddTestcasesHandler),
     (r"/dataset/([0-9]+)/testcase/([0-9]+)/delete", DeleteTestcaseHandler),
     (r"/dataset/([0-9]+)/testcases/download", DownloadTestcasesHandler),
-
     # Users/Teams
-
     (r"/users", UserListHandler),
     (r"/users/([0-9]+)/remove", RemoveUserHandler),
-    (r"/teams", SimpleHandler("teams.html")),
+    (r"/teams", TeamListHandler),
+    (r"/teams/([0-9]+)/remove", RemoveTeamHandler),
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),
     (r"/user/([0-9]+)", UserHandler),
     (r"/team/([0-9]+)", TeamHandler),
     (r"/user/([0-9]+)/add_participation", AddParticipationHandler),
     (r"/user/([0-9]+)/edit_participation", EditParticipationHandler),
-
     # Admins
-
     (r"/admins", AdminsHandler),
     (r"/admins/add", AddAdminHandler),
     (r"/admin/([0-9]+)", AdminHandler),
-
     # Submissions
-
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
-    (r"/submission/([0-9]+)(?:/([0-9]+))?/official",
-     SubmissionOfficialStatusHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/official", SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
-
     # User tests
-
     (r"/user_test/([0-9]+)(?:/([0-9]+))?", UserTestHandler),
     (r"/user_test_file/([0-9]+)", UserTestFileHandler),
-
     # The following prefixes are handled by WSGI middlewares:
     # * /rpc, defined in cms/io/web_service.py
     # * /static, defined in cms/io/web_service.py

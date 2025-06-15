@@ -113,6 +113,30 @@ class UserListHandler(SimpleHandler("users.html")):
             self.redirect(self.url("contests"))
 
 
+class TeamListHandler(SimpleHandler("teams.html")):
+    """Get returns the list of all teams, post perform operations on
+    a specific team (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        team_id: str = self.get_argument("team_id")
+        operation: str = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = self.url("teams", team_id, "remove")
+            # Open asking for remove page
+            self.redirect(asking_page)
+        else:
+            self.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, ""
+            )
+            self.redirect(self.url("contests"))
+
+
 class RemoveUserHandler(BaseHandler):
     """Get returns a page asking for confirmation, delete actually removes
     the user from CMS.
@@ -143,6 +167,41 @@ class RemoveUserHandler(BaseHandler):
 
         # Maybe they'll want to do this again (for another user)
         self.write("../../users")
+
+
+class RemoveTeamHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the team from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, team_id):
+        team = self.safe_get_item(Team, team_id)
+        participation_query = self.sql_session.query(Participation).filter(
+            Participation.team == team
+        )
+
+        self.r_params = self.render_params()
+        self.r_params["team"] = team
+        self.r_params["participation_count"] = participation_query.count()
+        self.render("team_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, team_id):
+        team = self.safe_get_item(Team, team_id)
+
+        try:
+            self.sql_session.delete(team)
+            if self.try_commit():
+                self.service.proxy_service.reinitialize()
+        except Exception as error:
+            self.service.add_notification(
+                make_datetime(), "Error removing team", repr(error)
+            )
+
+        # Maybe they'll want to do this again (for another team)
+        self.write("../../teams")
 
 
 class TeamHandler(BaseHandler):
