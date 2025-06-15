@@ -188,35 +188,27 @@ class RemoveTeamHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def delete(self, team_id):
         team = self.safe_get_item(Team, team_id)
-
         try:
-            # ondelete="SET NULL"
+            team = self.safe_get_item(Team, team_id)
+            # remove team association
+            participations = (
+                self.sql_session.query(Participation)
+                .filter(Participation.team == team)
+                .all()
+            )
+
+            for participation in participations:
+                participation.team = None
+                participation.team_id = None
+
+            # delete the team
             self.sql_session.delete(team)
             if self.try_commit():
                 self.service.proxy_service.reinitialize()
-        except Exception as error:
-            # fall back to manual approach
-            self.sql_session.rollback()
-            try:
-                # Manually remove team association
-                participations = (
-                    self.sql_session.query(Participation)
-                    .filter(Participation.team == team)
-                    .all()
-                )
-
-                for participation in participations:
-                    participation.team = None
-                    participation.team_id = None
-
-                # Now delete the team
-                self.sql_session.delete(team)
-                if self.try_commit():
-                    self.service.proxy_service.reinitialize()
-            except Exception as fallback_error:
-                self.service.add_notification(
-                    make_datetime(), "Error removing team", repr(fallback_error)
-                )
+        except Exception as fallback_error:
+            self.service.add_notification(
+                make_datetime(), "Error removing team", repr(fallback_error)
+            )
 
         # Maybe they'll want to do this again (for another team)
         self.write("../../teams")
