@@ -7,9 +7,13 @@
 
 {% if admin.permission_all %}
 <p>
-  Are you sure you want to remove team {{ team.code }} ({{ team.name }}), including all related data?
+  Are you sure you want to remove team {{ team.code }} ({{ team.name }})?
   <br>
-  This will remove {{ participation_count }} participation(s).
+  {% if participation_count > 0 %}
+  This will remove the team association from {{ participation_count }} participation(s). The participations will remain but will no longer be associated with this team.
+  {% else %}
+  This team has no associated participations.
+  {% endif %}
   <br>
   This operation cannot be undone.
 </p>

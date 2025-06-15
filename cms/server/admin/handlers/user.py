@@ -192,6 +192,19 @@ class RemoveTeamHandler(BaseHandler):
         team = self.safe_get_item(Team, team_id)
 
         try:
+            # First, we need to remove the team association from all participations
+            # rather than deleting the participations themselves
+            participations = (
+                self.sql_session.query(Participation)
+                .filter(Participation.team == team)
+                .all()
+            )
+
+            for participation in participations:
+                participation.team = None
+                participation.team_id = None
+
+            # Now we can safely delete the team
             self.sql_session.delete(team)
             if self.try_commit():
                 self.service.proxy_service.reinitialize()
