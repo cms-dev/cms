@@ -235,14 +235,23 @@ class ParticipationHandler(BaseHandler):
             self.get_bool(attrs, "unrestricted")
 
             # Update the participation.
-            participation.set_attrs(attrs)
-
-            # Update the team
+            participation.set_attrs(attrs)  # Update the team
             self.get_string(attrs, "team")
-            team: Team | None = (
-                self.sql_session.query(Team).filter(Team.code == attrs["team"]).first()
-            )
-            participation.team = team
+            team_code = attrs.get("team", "")
+            if isinstance(team_code, str):
+                team_code = team_code.strip()
+            else:
+                team_code = ""
+
+            if team_code:  # If a team code is provided
+                team: Team | None = (
+                    self.sql_session.query(Team).filter(Team.code == team_code).first()
+                )
+                if team is None:
+                    raise ValueError(f"Team with code '{team_code}' does not exist")
+                participation.team = team
+            else:  # If no team code is provided, set to None
+                participation.team = None
 
         except Exception as error:
             self.service.add_notification(
