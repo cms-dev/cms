@@ -19,77 +19,71 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .admin import \
-    AddAdminHandler, \
-    AdminsHandler, \
-    AdminHandler
-from .base import \
-    FileFromDigestHandler, \
-    SimpleHandler, \
-    SimpleContestHandler
-from .contest import \
-    AddContestHandler, \
-    ContestHandler, \
-    OverviewHandler, \
-    ResourcesListHandler, \
-    ContestListHandler, \
-    RemoveContestHandler
-from .contestannouncement import \
-    AddAnnouncementHandler, \
-    AnnouncementHandler
-from .contestquestion import \
-    QuestionsHandler, \
-    QuestionReplyHandler, \
-    QuestionIgnoreHandler, \
-    QuestionClaimHandler
-from .contestranking import \
-    RankingHandler
-from .contestsubmission import \
-    ContestSubmissionsHandler, \
-    ContestUserTestsHandler
-from .contesttask import \
-    ContestTasksHandler, \
-    AddContestTaskHandler
-from .contestuser import \
-    ContestUsersHandler, \
-    RemoveParticipationHandler, \
-    AddContestUserHandler, \
-    ParticipationHandler, \
-    MessageHandler
-from .dataset import \
-    DatasetSubmissionsHandler, \
-    CloneDatasetHandler, \
-    RenameDatasetHandler, \
-    DeleteDatasetHandler, \
-    ActivateDatasetHandler, \
-    ToggleAutojudgeDatasetHandler, \
-    AddManagerHandler, \
-    DeleteManagerHandler, \
-    AddTestcaseHandler, \
-    AddTestcasesHandler, \
-    DeleteTestcaseHandler, \
-    DownloadTestcasesHandler
-from .main import \
-    LoginHandler, \
-    LogoutHandler, \
-    ResourcesHandler, \
-    NotificationsHandler, \
-    MarkdownRenderHandler
-from .submission import \
-    SubmissionHandler, \
-    SubmissionCommentHandler, \
-    SubmissionOfficialStatusHandler, \
-    SubmissionFileHandler
-from .task import \
-    AddTaskHandler, \
-    TaskHandler, \
-    AddDatasetHandler, \
-    AddStatementHandler, \
-    StatementHandler, \
-    AddAttachmentHandler, \
-    AttachmentHandler, \
-    TaskListHandler, \
-    RemoveTaskHandler
+from .admin import AddAdminHandler, AdminsHandler, AdminHandler
+from .base import FileFromDigestHandler, SimpleContestHandler
+from .contest import (
+    AddContestHandler,
+    ContestHandler,
+    OverviewHandler,
+    ResourcesListHandler,
+    ContestListHandler,
+    RemoveContestHandler,
+)
+from .contestannouncement import AddAnnouncementHandler, AnnouncementHandler
+from .contestquestion import (
+    QuestionsHandler,
+    QuestionReplyHandler,
+    QuestionIgnoreHandler,
+    QuestionClaimHandler,
+)
+from .contestranking import RankingHandler
+from .contestsubmission import ContestSubmissionsHandler, ContestUserTestsHandler
+from .contesttask import ContestTasksHandler, AddContestTaskHandler
+from .contestuser import (
+    ContestUsersHandler,
+    RemoveParticipationHandler,
+    AddContestUserHandler,
+    ParticipationHandler,
+    MessageHandler,
+)
+from .dataset import (
+    DatasetSubmissionsHandler,
+    CloneDatasetHandler,
+    RenameDatasetHandler,
+    DeleteDatasetHandler,
+    ActivateDatasetHandler,
+    ToggleAutojudgeDatasetHandler,
+    AddManagerHandler,
+    DeleteManagerHandler,
+    AddTestcaseHandler,
+    AddTestcasesHandler,
+    DeleteTestcaseHandler,
+    DownloadTestcasesHandler,
+)
+from .main import (
+    LoginHandler,
+    LogoutHandler,
+    ResourcesHandler,
+    NotificationsHandler,
+    MarkdownRenderHandler,
+)
+from .submission import (
+    SubmissionHandler,
+    SubmissionCommentHandler,
+    SubmissionOfficialStatusHandler,
+    SubmissionFileHandler,
+)
+from .task import (
+    AddTaskHandler,
+    TaskHandler,
+    AddDatasetHandler,
+    AddStatementHandler,
+    StatementHandler,
+    AddAttachmentHandler,
+    AttachmentHandler,
+    TaskListHandler,
+    RemoveTaskHandler,
+)
 from .user import (
     AddUserHandler,
     UserHandler,
@@ -102,10 +96,7 @@ from .user import (
     TeamListHandler,
     RemoveTeamHandler,
 )
-from .usertest import \
-    UserTestHandler, \
-    UserTestFileHandler
-
+from .usertest import UserTestHandler, UserTestFileHandler
 
 HANDLERS = [
     (r"/", OverviewHandler),

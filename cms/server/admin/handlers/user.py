@@ -127,7 +127,6 @@ class TeamListHandler(SimpleHandler("teams.html")):
 
         if operation == self.REMOVE:
             asking_page = self.url("teams", team_id, "remove")
-            # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.service.add_notification(
