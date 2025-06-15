@@ -18,9 +18,19 @@
         <td>Name</td>
         <td><input type="text" name="name" value="{{ team.name }}"/></td>
       </tr>
-    </table>
-    <input type="submit" value="Update" />
+    </table>    <input type="submit" value="Update" />
     <input type="reset" value="Reset" />
+  </form>
+  <form action="{{ url("teams") }}" method="POST" style="display:inline;">
+      {{ xsrf_form_html|safe }}
+      <input type="hidden" name="team_id" value="{{ team.id }}"/>
+      <input type="submit"
+           name="operation"
+           value="Remove" style="float: right;"
+  {% if not admin.permission_all %}
+           disabled
+  {% endif %}
+           />
   </form>
   <div class="hr"></div>
 </div>

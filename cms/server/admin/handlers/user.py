@@ -105,7 +105,6 @@ class UserListHandler(SimpleHandler("users.html")):
 
         if operation == self.REMOVE:
             asking_page = self.url("users", user_id, "remove")
-            # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.service.add_notification(
