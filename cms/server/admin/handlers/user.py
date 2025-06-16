@@ -191,16 +191,12 @@ class RemoveTeamHandler(BaseHandler):
         try:
 
             # Remove associations
-            participations = (
-                self.sql_session.query(Participation)
-                .filter(Participation.team == team)
-                .all()
+            self.sql_session.execute(
+                "UPDATE participations SET team_id = NULL WHERE team_id = :team_id",
+                {"team_id": team_id},
             )
 
-            for participation in participations:
-                participation.team = None
-
-            # Delete the team
+            # delete the team
             self.sql_session.delete(team)
             if self.try_commit():
                 self.service.proxy_service.reinitialize()
