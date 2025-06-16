@@ -240,10 +240,6 @@ class ParticipationHandler(BaseHandler):
             # Update the team
             self.get_string(attrs, "team")
             team_code = attrs.get("team", "")
-            if isinstance(team_code, str):
-                team_code = team_code.strip()
-            else:
-                team_code = ""
 
             if team_code:  # If a team code is provided
                 team: Team | None = (
