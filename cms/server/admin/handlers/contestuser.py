@@ -239,7 +239,7 @@ class ParticipationHandler(BaseHandler):
 
             # Update the team
             self.get_string(attrs, "team")
-            team_code = attrs.get("team", "")
+            team_code = attrs["team"]
 
             if team_code:  # If a team code is provided
                 team: Team | None = (
