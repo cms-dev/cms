@@ -191,10 +191,9 @@ class RemoveTeamHandler(BaseHandler):
         try:
 
             # Remove associations
-            self.sql_session.execute(
-                "UPDATE participations SET team_id = NULL WHERE team_id = :team_id",
-                {"team_id": team_id},
-            )
+            self.sql_session.query(Participation).filter(
+                Participation.team_id == team_id
+            ).update({Participation.team_id: None})
 
             # delete the team
             self.sql_session.delete(team)
