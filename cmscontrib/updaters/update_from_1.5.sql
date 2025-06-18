@@ -14,4 +14,10 @@ ALTER TABLE public.contests ALTER COLUMN allow_unofficial_submission_before_anal
 -- https://github.com/cms-dev/cms/pull/1393
 ALTER TABLE public.submission_results ADD COLUMN scored_at timestamp without time zone;
 
+-- https://github.com/cms-dev/cms/pull/1419
+ALTER TABLE submissions ADD COLUMN opaque_id BIGINT;
+UPDATE submissions SET opaque_id = id WHERE opaque_id IS NULL;
+ALTER TABLE submissions ADD CONSTRAINT participation_opaque_unique UNIQUE (participation_id, opaque_id);
+ALTER TABLE submissions ALTER COLUMN opaque_id SET NOT NULL;
+
 COMMIT;

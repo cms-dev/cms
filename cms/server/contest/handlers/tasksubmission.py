@@ -242,12 +242,12 @@ class SubmissionStatusHandler(ContestHandler):
     @tornado_web.authenticated
     @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
-    def get(self, task_name, submission_num):
+    def get(self, task_name, opaque_id):
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submission = self.get_submission(task, submission_num)
+        submission = self.get_submission(task, opaque_id)
         if submission is None:
             raise tornado_web.HTTPError(404)
 
@@ -284,7 +284,7 @@ class SubmissionStatusHandler(ContestHandler):
                     round(score_type.max_score, task.score_precision)
                 if data["status"] == SubmissionResult.SCORED \
                         and (submission.token is not None
-                            or self.r_params["actual_phase"] == 3):
+                             or self.r_params["actual_phase"] == 3):
                     data["score"] = \
                         round(sr.score, task.score_precision)
                     data["score_message"] = score_type.format_score(
@@ -302,12 +302,12 @@ class SubmissionDetailsHandler(ContestHandler):
     @tornado_web.authenticated
     @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
-    def get(self, task_name, submission_num):
+    def get(self, task_name, opaque_id):
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submission = self.get_submission(task, submission_num)
+        submission = self.get_submission(task, opaque_id)
         if submission is None:
             raise tornado_web.HTTPError(404)
 
@@ -343,7 +343,7 @@ class SubmissionFileHandler(FileHandler):
     @tornado_web.authenticated
     @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
-    def get(self, task_name, submission_num, filename):
+    def get(self, task_name, opaque_id, filename):
         if not self.contest.submissions_download_allowed:
             raise tornado_web.HTTPError(404)
 
@@ -351,7 +351,7 @@ class SubmissionFileHandler(FileHandler):
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submission = self.get_submission(task, submission_num)
+        submission = self.get_submission(task, opaque_id)
         if submission is None:
             raise tornado_web.HTTPError(404)
 
@@ -389,12 +389,12 @@ class UseTokenHandler(ContestHandler):
     @tornado_web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def post(self, task_name, submission_num):
+    def post(self, task_name, opaque_id):
         task = self.get_task(task_name)
         if task is None:
             raise tornado_web.HTTPError(404)
 
-        submission = self.get_submission(task, submission_num)
+        submission = self.get_submission(task, opaque_id)
         if submission is None:
             raise tornado_web.HTTPError(404)
 

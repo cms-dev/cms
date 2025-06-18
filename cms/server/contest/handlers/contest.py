@@ -250,7 +250,7 @@ class ContestHandler(BaseHandler):
             .filter(Task.name == task_name) \
             .one_or_none()
 
-    def get_submission(self, task: Task, submission_num: str) -> Submission | None:
+    def get_submission(self, task: Task, opaque_id: str | int) -> Submission | None:
         """Return the num-th contestant's submission on the given task.
 
         task: a task for the contest that is being served.
@@ -265,8 +265,7 @@ class ContestHandler(BaseHandler):
         return self.sql_session.query(Submission) \
             .filter(Submission.participation == self.current_user) \
             .filter(Submission.task == task) \
-            .order_by(Submission.timestamp) \
-            .offset(int(submission_num) - 1) \
+            .filter(Submission.opaque_id == int(opaque_id)) \
             .first()
 
     def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
