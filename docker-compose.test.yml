@@ -18,7 +18,7 @@ services:
       - "./codecov:/home/cmsuser/cms/codecov"
     privileged: true
     cgroup: host
-    command: wait-for-it testdb:5432 -- ./_cms-test-internal.sh
+    command: wait-for-it testdb:5432 -- .gh_action_data/run-test.sh
 
   stresstestcms:
     build: .
@@ -28,7 +28,7 @@ services:
       CMS_CONFIG: /usr/local/etc/cms-testdb.toml
     privileged: true
     cgroup: host
-    command: wait-for-it testdb:5432 -- ./_cms-stresstest-internal.sh
+    command: wait-for-it testdb:5432 -- .gh_action_data/run-stresstest.sh
 
   schemadiff:
     build: .
@@ -38,4 +38,4 @@ services:
       CMS_CONFIG: /usr/local/etc/cms-testdb.toml
     privileged: true
     cgroup: host
-    command: wait-for-it testdb:5432 -- ./_cms-schemadiff-internal.sh
+    command: wait-for-it testdb:5432 -- .gh_action_data/run-schemadiff.sh
