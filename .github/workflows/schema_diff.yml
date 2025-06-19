@@ -1,0 +1,22 @@
+name: Check DB schema differences
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Build docker image
+        run: |
+          docker compose -p cms -f docker-compose.test.yml build testcms
+
+      - name: Check schema diff
+        run: |
+          docker compose -p cms -f docker-compose.test.yml run --rm schemadiff

@@ -29,3 +29,13 @@ services:
     privileged: true
     cgroup: host
     command: wait-for-it testdb:5432 -- ./_cms-stresstest-internal.sh
+
+  schemadiff:
+    build: .
+    depends_on:
+      - "testdb"
+    environment:
+      CMS_CONFIG: /usr/local/etc/cms-testdb.toml
+    privileged: true
+    cgroup: host
+    command: wait-for-it testdb:5432 -- ./_cms-schemadiff-internal.sh

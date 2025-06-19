@@ -1,4 +1,4 @@
-name: ci
+name: Run unit and functional tests
 
 on:
   - push
