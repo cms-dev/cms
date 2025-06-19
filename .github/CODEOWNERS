@@ -1,2 +1,0 @@
-# For things like schema changes, where we need to make sure that an updater is provided
-/cms/db     @wil93
