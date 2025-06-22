@@ -159,6 +159,11 @@ class ContestHandler(BaseHandler):
         """
         cookie_name = self.contest.name + "_login"
         cookie = self.get_secure_cookie(cookie_name)
+        authorization_header = self.request.headers.get(
+            "X-CMS-Authorization", None)
+        if authorization_header is not None:
+            authorization_header = tornado_web.decode_signed_value(self.application.settings["cookie_secret"],
+                                                                   cookie_name, authorization_header)
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
@@ -170,7 +175,7 @@ class ContestHandler(BaseHandler):
         participation, cookie = authenticate_request(
             self.sql_session, self.contest,
             self.timestamp, cookie,
-            self.request.headers.get("X-CMS-Authorization", None),
+            authorization_header,
             ip_address)
 
         if cookie is None:
@@ -308,6 +313,14 @@ class ContestHandler(BaseHandler):
 
     def notify_error(self, subject: str, text: str, text_params: object | None = None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
+
+    def check_xsrf_cookie(self):
+        # We don't need to check for xsrf if the request came with a custom
+        # header, as those are not set by the browser.
+        if "X-CMS-Authorization" in self.request.headers:
+            pass
+        else:
+            super().check_xsrf_cookie()
 
 
 class FileHandler(ContestHandler, FileHandlerMixin):
