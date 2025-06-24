@@ -124,7 +124,7 @@ class ApiSubmitHandler(ContestHandler):
                 f'API submission accepted: Submission ID {submission.id}')
             self.service.evaluation_service.new_submission(
                 submission_id=submission.id)
-            self.json({'id': submission.opaque_id})
+            self.json({'id': str(submission.opaque_id)})
 
 
 class ApiSubmissionListHandler(ContestHandler):
@@ -145,4 +145,4 @@ class ApiSubmissionListHandler(ContestHandler):
             .filter(Submission.task == task)
             .all()
         )
-        self.json({'list': [{"id": s.opaque_id} for s in submissions]})
+        self.json({'list': [{"id": str(s.opaque_id)} for s in submissions]})
