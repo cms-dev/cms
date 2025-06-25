@@ -92,6 +92,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         },
         "sub_key": {
             "_class": "Submission",
+            "opaque_id": 458958398291,
             "timestamp": 1_234_567_890.123,
             "participation": "part_key",
             "task": "task_key",
@@ -187,7 +188,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
         self.assertCountEqual([(t.name, t.title) for t in c.tasks],
                               task_names_and_titles)
         self.assertCountEqual([(u.user.username, u.user.last_name)
-                                for u in c.participations],
+                               for u in c.participations],
                               usernames_and_last_names)
 
     def assertContestNotInDb(self, name):

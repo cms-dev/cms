@@ -198,6 +198,7 @@ class DatabaseObjectGeneratorMixin:
         args = {
             "task": task,
             "participation": participation,
+            "opaque_id": unique_long_id(),
             "timestamp": (task.contest.start + timedelta(0, unique_long_id())),
         }
         args.update(kwargs)

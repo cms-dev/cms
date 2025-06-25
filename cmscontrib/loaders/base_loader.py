@@ -60,6 +60,7 @@ LANGUAGE_MAP = {
     'kyrgyz': 'ky',
     'latvian': 'lv',
     'lithuanian': 'lt',
+    'luxembourgish': 'lb',
     'macedonian': 'mk',
     'malay': 'ms',
     'mongolian': 'mn',
