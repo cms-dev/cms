@@ -7,9 +7,6 @@ temp_dir = "/tmp"
 # Whether to have a backdoor (see doc for the risks).
 backdoor = false
 
-# The user/group that CMS will be run as.
-cmsuser = "cmsuser"
-
 ############
 # Database #
 ############
