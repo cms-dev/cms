@@ -1,8 +1,0 @@
-# Only for testing
-beautifulsoup4>=4.8,<4.14
-coverage>=4.5,<7.9
-pytest
-pytest-cov
-
-# Only for building documentation
-Sphinx>=1.8,<1.9
