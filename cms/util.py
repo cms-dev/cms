@@ -35,7 +35,7 @@ import chardet
 import gevent
 import gevent.socket
 
-from cms import ServiceCoord, Address, ConfigError, async_config, config
+from cms import ServiceCoord, Address, ConfigError, async_config
 import typing
 
 if typing.TYPE_CHECKING:
@@ -54,20 +54,11 @@ def mkdir(path: str) -> bool:
     """
     try:
         os.mkdir(path)
+        return True
     except FileExistsError:
         return True
     except OSError:
         return False
-    else:
-        try:
-            os.chmod(path, 0o770)
-            cmsuser_gid = pwd.getpwnam(config.cmsuser).pw_gid
-            os.chown(path, -1, cmsuser_gid)
-        except OSError:
-            os.rmdir(path)
-            return False
-        else:
-            return True
 
 
 # This function uses os.fwalk() to avoid the symlink attack, see:
