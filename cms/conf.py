@@ -94,7 +94,6 @@ class Config:
         self.async_config = async_config
 
         # System-wide
-        self.cmsuser = "cmsuser"
         self.temp_dir = "/tmp"
         self.backdoor = False
         self.file_log_debug = False
