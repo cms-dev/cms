@@ -1,3 +1,23 @@
+[project]
+dynamic = ["version", "entry-points", "scripts"]
+name = "cms"
+license = "AGPL-3.0-or-later"
+maintainers = [ { name = "The CMS development team", email = "contestms@googlegroups.com" } ]
+readme = "README.md"
+description = "A contest management system and grader for IOI-like programming competitions"
+requires-python = ">=3.11"
+keywords = ["ioi", "programming contest", "grader", "management system"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+]
+
+[project.urls]
+Documentation = "https://cms.readthedocs.io/"
+Repository = "https://github.com/cms-dev/cms"
+
 [build-system]
-requires = ["setuptools", "babel == 2.12.1"]
+requires = ["setuptools < 81", "babel == 2.12.1"]
 build-backend = "setuptools.build_meta"
