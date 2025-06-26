@@ -1,0 +1,10 @@
+[Unit]
+Description=Contest Management System (contest %i)
+
+[Service]
+Type=simple
+WorkingDirectory=@CMS_DIR@
+ExecStart=@CMS_DIR@/bin/cmsResourceService -a %i
+
+[Install]
+WantedBy=default.target
