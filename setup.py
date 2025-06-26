@@ -112,10 +112,6 @@ class build_with_l10n(build):
 setup(
     name="cms",
     version=find_version(),
-    author="The CMS development team",
-    author_email="contestms@googlegroups.com",
-    url="https://github.com/cms-dev/cms",
-    description="A contest management system and grader for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
     cmdclass={"build": build_with_l10n},
@@ -193,13 +189,4 @@ setup(
             "Rust=cms.grading.languages.rust:Rust",
         ],
     },
-    keywords="ioi programming contest grader management system",
-    license_expression="AGPL-3.0-or-later",
-    python_requires=">=3.11",
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Natural Language :: English",
-        "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.11",
-    ],
 )
