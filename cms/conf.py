@@ -174,41 +174,30 @@ class Config:
         self.telegram_bot_token = None
         self.telegram_bot_chat_id = None
 
-        self.log_dir = os.path.join("/", "var", "local", "log", "cms")
-        self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-        self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
-        self.run_dir = os.path.join("/", "var", "local", "run", "cms")
-        paths = [
-            os.path.join("/", "usr", "local", "etc", "cms.toml"),
-            os.path.join("/", "etc", "cms.toml"),
-        ]
+        # Try to find CMS installation root from the venv in which we run
+        self.base_dir = sys.prefix
+        if self.base_dir == '/usr':
+            logger.critical('CMS must be run within a Python virtual environment')
+            sys.exit(1)
+        self.log_dir = os.path.join(self.base_dir, 'log')
+        self.cache_dir = os.path.join(self.base_dir, 'cache')
+        self.data_dir = os.path.join(self.base_dir, 'lib')
+        self.run_dir = os.path.join(self.base_dir, 'run')
 
-        # Allow user to override config file path using environment
+        # Default config file path can be overridden using environment
         # variable 'CMS_CONFIG'.
-        CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
-        if CMS_CONFIG_ENV_VAR in os.environ:
-            paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
+        default_config_file = os.path.join(self.base_dir, 'etc/cms.toml')
+        config_file = os.environ.get('CMS_CONFIG', default_config_file)
 
-        # Attempt to load a config file.
-        self._load(paths)
+        if not self._load_config(config_file):
+            logging.critical(f'Cannot load configuration file {config_file}')
+            sys.exit(1)
 
         # If the configuration says to print detailed log on stdout,
         # change the log configuration.
         set_detailed_logs(self.stream_log_detailed)
 
-    def _load(self, paths: list[str]):
-        """Try to load the config files one at a time, until one loads
-        correctly.
-
-        """
-        for conf_file in paths:
-            if self._load_unique(conf_file):
-                break
-        else:
-            logging.warning("No configuration file found: "
-                            "falling back to default values.")
-
-    def _load_unique(self, path: str):
+    def _load_config(self, path: str) -> bool:
         """Populate the Config class with everything that sits inside
         the TOML file path (usually something like /etc/cms.toml). The
         only pieces of data treated differently are the elements of
@@ -216,6 +205,7 @@ class Config:
         config.
 
         path: the path of the TOML config file.
+        returns: whether parsing was successful.
 
         """
         # Load config file.
@@ -234,8 +224,6 @@ class Config:
         except ValueError as error:
             logger.warning("Invalid syntax in file %s: %s", path, error)
             return False
-
-        logger.info("Using configuration file %s.", path)
 
         if "is_proxy_used" in data:
             logger.warning("The 'is_proxy_used' setting is deprecated, please "
@@ -263,9 +251,10 @@ class Config:
 
         # Put everything else in self.
         for key, value in data.items():
-            if not hasattr(self, key):
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
                 logger.warning("Unrecognized key %s in config!", key)
-            setattr(self, key, value)
 
         return True
 

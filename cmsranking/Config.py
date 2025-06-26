@@ -60,18 +60,20 @@ class Config:
         self.buffer_size = 100  # Needs to be strictly positive.
 
         self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
-        self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
-        self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
-        self.conf_paths = [
-            os.path.join("/", "usr", "local", "etc", "cms_ranking.toml"),
-            os.path.join("/", "etc", "cms_ranking.toml"),
-        ]
+
+        # Try to find CMS installation root from the venv in which we run
+        self.base_dir = sys.prefix
+        if self.base_dir == '/usr':
+            logger.critical('CMS must be run within a Python virtual environment')
+            sys.exit(1)
+        self.log_dir = os.path.join(self.base_dir, 'log/ranking')
+        self.lib_dir = os.path.join(self.base_dir, 'lib/ranking')
+        self.conf_paths = [os.path.join(self.base_dir, 'etc/cms_ranking.toml')]
 
         # Allow users to override config file path using environment
         # variable 'CMS_RANKING_CONFIG'.
         if CMS_RANKING_CONFIG_ENV_VAR in os.environ:
-            self.conf_paths = [os.environ[CMS_RANKING_CONFIG_ENV_VAR]] \
-                + self.conf_paths
+            self.conf_paths = [os.environ[CMS_RANKING_CONFIG_ENV_VAR]]
 
     def get(self, key):
         """Get the config value for the given key.
@@ -132,7 +134,9 @@ class Config:
                                 conf_path, errno.errorcode[error.errno],
                                 os.strerror(error.errno))
                 return False
-        logger.warning("No config file found, using hardcoded defaults.")
+        tried = " ".join(conf_paths)
+        logging.warning(f"No configuration file found, tried: {tried}. "
+                        "Falling back to default values.")
         return True
 
     def _load_one(self, conf_fobj: typing.BinaryIO) -> bool:
