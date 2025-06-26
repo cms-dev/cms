@@ -183,7 +183,7 @@ class PolygonTaskLoader(TaskLoader):
                 logger.info("Checker found, compiling")
                 checker_exe = os.path.join(
                     os.path.dirname(checker_src), "checker")
-                testlib_path = "/usr/local/include/cms"
+                testlib_path = os.path.join(config.base_dir, 'include')
                 testlib_include = os.path.join(testlib_path, "testlib.h")
                 code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
                                         "-DCMS", "-I", testlib_path,
