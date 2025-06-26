@@ -14,6 +14,44 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 
+dependencies = [
+    "tornado==4.5.3",         # http://www.tornadoweb.org/en/stable/releases.html
+    "psycopg2==2.9.10",       # http://initd.org/psycopg/articles/tag/release/
+    "sqlalchemy>=1.3,<1.4",   # http://docs.sqlalchemy.org/en/latest/changelog/index.html
+    "netifaces>=0.10,<0.12",  # https://bitbucket.org/al45tair/netifaces/src/
+    "pycryptodomex==3.23.0",  # https://github.com/Legrandin/pycryptodome/blob/master/Changelog.rst
+    "psutil>=5.5,<7.1",       # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
+    "requests==2.32.3",       # https://pypi.python.org/pypi/requests
+    "gevent==25.5.1",         # http://www.gevent.org/changelog.html
+    "greenlet>=3.0rc1",
+    "werkzeug<1.0",           # https://github.com/pallets/werkzeug/blob/master/CHANGES
+    "backports.ssl-match-hostname==3.7.0.1", # required by tornado<5.0
+    "patool>=1.12,<4.1",      # https://github.com/wummel/patool/blob/master/doc/changelog.txt
+    "bcrypt>=3.1,<4.4",       # https://github.com/pyca/bcrypt/
+    "chardet>=3.0,<5.3",      # https://pypi.python.org/pypi/chardet
+    "babel==2.12.1",          # http://babel.pocoo.org/en/latest/changelog.html
+    "pyxdg>=0.26,<0.29",      # https://freedesktop.org/wiki/Software/pyxdg/
+    "Jinja2>=2.10,<2.11",     # http://jinja.pocoo.org/docs/latest/changelog/
+    "markdown-it-py==3.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
+
+    # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
+    # MarkupSafe causes jinja to break
+    "MarkupSafe==2.0.1",
+
+    # Only for some importers:
+    "pyyaml>=5.3,<6.1",       # http://pyyaml.org/wiki/PyYAML
+
+    # Only for printing:
+    "pycups==2.0.4",          # https://pypi.python.org/pypi/pycups
+    "PyPDF2>=1.26,<3.1",      # https://github.com/mstamy2/PyPDF2/blob/master/CHANGELOG
+
+    # Only for cmsPrometheusExporter
+    "prometheus-client>=0.7,<0.22",  # https://pypi.org/project/prometheus-client
+
+    # Only for cmsTelegramBot
+    "python-telegram-bot>=21.9,<21.12", # https://pypi.org/project/python-telegram-bot
+]
+
 [project.urls]
 Documentation = "https://cms.readthedocs.io/"
 Repository = "https://github.com/cms-dev/cms"
