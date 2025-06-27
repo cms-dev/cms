@@ -91,6 +91,9 @@ def create_venv() -> None:
     else:
         progress("Creating Python virtual environment")
         venv.create(str(target_path), symlinks=True, with_pip=True, prompt=target_path.name)
+        subprocess.run(
+            [str(target_path / 'bin/pip'), 'install', 'wheel'],
+            check=True)
 
 
 def install_package() -> None:
