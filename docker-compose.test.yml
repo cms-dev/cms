@@ -15,7 +15,7 @@ services:
       # - https://github.com/actions/runner/issues/241
       PYTEST_ADDOPTS: --color=yes
     volumes:
-      - "./codecov:/home/cmsuser/cms/codecov"
+      - "./codecov:/home/cmsuser/src/codecov"
     privileged: true
     cgroup: host
     command: wait-for-it testdb:5432 -- ./_cms-test-internal.sh
@@ -25,7 +25,7 @@ services:
     depends_on:
       - "testdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-testdb.toml
+      CMS_CONFIG: /home/cmsuser/cms/etc/cms-testdb.toml
     privileged: true
     cgroup: host
     command: wait-for-it testdb:5432 -- ./_cms-stresstest-internal.sh

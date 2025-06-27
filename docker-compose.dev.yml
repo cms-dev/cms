@@ -11,10 +11,10 @@ services:
     depends_on:
       - "devdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-devdb.toml
+      CMS_CONFIG: /home/cmsuser/cms/etc/cms-devdb.toml
     volumes:
       - "./.dev/home:/home/cmsuser"
-      - ".:/home/cmsuser/cms"
+      - ".:/home/cmsuser/src"
     privileged: true
     cgroup: host
     command: >
