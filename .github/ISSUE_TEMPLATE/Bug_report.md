@@ -28,7 +28,7 @@ If instead you have found a possible bug, please go ahead filing the issue using
 
 ### Logs
 
-[Please attach relevant logs of the component(s) that caused the problem; you can find them in /var/local/log/cms/.]
+[Please attach relevant logs of the component(s) that caused the problem; you can find them in ~/cms/log/.]
 
 ### System Information
 
