@@ -110,6 +110,34 @@ CMS will create an admin account with username "name" and a random password that
 
 .. _running-cms_recommended-setup:
 
+
+Starting CMS by systemd
+=======================
+
+If your system runs ``systemd``, you can start parts of CMS as systemd services.
+They are usually managed by the user instance of systemd for the ``cmsuser`` account.
+
+:samp:`./install.py --dir={target} systemd` installs the following services under
+``~/.config/systemd/user/``:
+
+* ``cms-logging.service`` that starts the ``cmsLogService``.
+
+* :samp:`cms@{id}.service` that starts the ``cmsResourceService`` for the contest number *id*
+  (which could be ``ALL`` if you want a common Contest Web Server for all contests).
+  The resource service then manages all other services.
+
+* ``cms-ranking.service`` that starts the ``cmsRankingWebServer``.
+
+You can start a service by ``systemctl --user start cms-logging`` and make it start
+automatically when the system is booted up by ``systemctl --user enable cms-logging``.
+Other useful operations include ``status``, ``stop``, and ``disable``.
+
+Most Linux systems require ``sudo loginctl enable-linger cmsuser`` to allow user
+services running when the user is not logged in. (Beware that the lingering user
+instance of systemd does not automatically gain new privileges when you add the
+to a new group. You might need to ``sudo loginctl terminate-user ...``.)
+
+
 Recommended setup
 =================
 
