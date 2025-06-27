@@ -95,7 +95,7 @@ similar to:
     docker compose -p someprojectname -f docker-compose.dev.yml run --build --rm --service-ports devcms
 
 The command will build a fresh CMS image when necessary, and drop you into a
-bash prompt where the repository is mounted on ``~/cms`` for ease of
+bash prompt where the repository is mounted on ``~/src`` for ease of
 development. You can edit the code from the host (i.e. outside the container)
 and then reinstall CMS (``./install.py cms``) directly from inside the
 container, without having to rebuild the image every time.
