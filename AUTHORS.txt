@@ -6,7 +6,9 @@ MAIN AUTHORS (have push rights on GIT repository)
 Bernard Blackham <bernard@largestprime.net>
 Matteo Boscariol <boscarim@hotmail.com>
 Stefano Maggiolo <s.maggiolo@gmail.com>
+Martin Mareš <mj@ucw.cz>
 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+Luca Versari <veluca93@gmail.com>
 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 
 OTHER CONTRIBUTORS
@@ -31,7 +33,6 @@ William Pettersson <william.pettersson@gmail.com>
 Ludwig Schmidt <ludwigschmidt2@gmail.com>
 Federico Scrinzi (aka volpino) <fox91@anche.no>
 Konstantin Tretyakov <kt@ut.ee>
-Luca Versari <veluca93@gmail.com>
 Hyungsuk Yoon <youhanmir@gmail.com>
 Kenneth Wong <kenneth@wong.pro>
 Minwei Xu (aka vanshady) <faceswilliam@gmail.com>
