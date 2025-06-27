@@ -57,11 +57,10 @@ def find_target_dir(dir: str | None) -> Path:
 INSTALL_DIRS = [
     'etc',
     'log',
-    'cache/fs-cache-shared',    # FIXME: How it is found?
+    'cache/fs-cache-shared',
     'lib',
     'run',
-    'include',  # FIXME
-    'share',    # FIXME
+    'include',
 ]
 
 
