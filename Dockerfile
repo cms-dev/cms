@@ -51,6 +51,7 @@ RUN \
 
 # Set cmsuser as default user
 USER cmsuser
+ENV LANG=C.UTF-8
 
 RUN mkdir /home/cmsuser/src
 COPY --chown=cmsuser:cmsuser install.py constraints.txt /home/cmsuser/src/
@@ -58,10 +59,7 @@ COPY --chown=cmsuser:cmsuser install.py constraints.txt /home/cmsuser/src/
 WORKDIR /home/cmsuser/src
 
 RUN ./install.py venv
-
-RUN \
-    echo >>~/.bash_profile 'source ~/.bashrc' && \
-    echo >>~/.bashrc 'source ~/cms/bin/activate'
+ENV PATH="/home/cmsuser/cms/bin:$PATH"
 
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/src
 
@@ -71,6 +69,4 @@ RUN sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:54
 RUN sed -e 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@devdb:5432/cmsdb"|' -e 's/127.0.0.1/0.0.0.0/' ./config/cms.sample.toml >../cms/etc/cms-devdb.toml
 RUN sed -i 's/127.0.0.1/0.0.0.0/' ../cms/etc/cms_ranking.toml
 
-ENV LANG C.UTF-8
-
-CMD [""]
+CMD ["/bin/bash"]
