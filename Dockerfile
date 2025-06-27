@@ -38,7 +38,8 @@ RUN \
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ bookworm-isolate main" >/etc/apt/sources.list.d/isolate.list && \
     curl https://www.ucw.cz/isolate/debian/signing-key.asc >/etc/apt/keyrings/isolate.asc && \
     apt update && \
-    apt install -y isolate
+    apt install -y isolate && \
+    sed -i 's@^cg_root .*@cg_root = /sys/fs/cgroup@' /etc/isolate
 
 # Create cmsuser user with sudo privileges and access to isolate
 RUN \
