@@ -1,5 +1,5 @@
 [project]
-dynamic = ["version"]
+dynamic = ["version", "entry-points", "scripts"]
 name = "cms"
 license = "AGPL-3.0-or-later"
 maintainers = [ { name = "The CMS development team", email = "contestms@googlegroups.com" } ]
