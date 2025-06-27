@@ -65,7 +65,9 @@ devel = [
     "pytest-cov",
 
     # Only for building documentation
-    "Sphinx>=1.8,<1.9",
+    # XXX: The version of Sphinx needed to build our documentation
+    # is incompatible with the old version of jinja2 we need.
+    # "Sphinx>=1.8,<1.9",
 ]
 
 [build-system]
