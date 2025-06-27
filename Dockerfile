@@ -58,6 +58,10 @@ WORKDIR /home/cmsuser/src
 
 RUN ./install.py venv
 
+RUN \
+    echo >>~/.bash_profile 'source ~/.bashrc' && \
+    echo >>~/.bashrc 'source ~/cms/bin/activate'
+
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/src
 
 RUN ./install.py cms --devel
