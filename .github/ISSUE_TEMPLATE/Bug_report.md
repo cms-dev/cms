@@ -32,7 +32,7 @@ If instead you have found a possible bug, please go ahead filing the issue using
 
 ### System Information
 
-**CMS version:** [master, or a specific version]
+**CMS version:** [main, or a specific version]
 **How was CMS installed:** [virtualenv, docker, ...?]
 **Postgres version:** [if relevant]
 **Distribution and version:** [if relevant]
