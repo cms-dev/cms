@@ -20,3 +20,4 @@ Welcome to CMS's documentation!
    Localization
    Troubleshooting
    Internals
+   API

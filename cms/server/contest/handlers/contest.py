@@ -30,6 +30,7 @@
 """
 
 import ipaddress
+import json
 import logging
 
 import collections
@@ -159,6 +160,11 @@ class ContestHandler(BaseHandler):
         """
         cookie_name = self.contest.name + "_login"
         cookie = self.get_secure_cookie(cookie_name)
+        authorization_header = self.request.headers.get(
+            "X-CMS-Authorization", None)
+        if authorization_header is not None:
+            authorization_header = tornado_web.decode_signed_value(self.application.settings["cookie_secret"],
+                                                                   cookie_name, authorization_header)
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
@@ -170,7 +176,7 @@ class ContestHandler(BaseHandler):
         participation, cookie = authenticate_request(
             self.sql_session, self.contest,
             self.timestamp, cookie,
-            self.request.headers.get("X-CMS-Authorization", None),
+            authorization_header,
             ip_address)
 
         if cookie is None:
@@ -250,7 +256,7 @@ class ContestHandler(BaseHandler):
             .filter(Task.name == task_name) \
             .one_or_none()
 
-    def get_submission(self, task: Task, submission_num: str) -> Submission | None:
+    def get_submission(self, task: Task, opaque_id: str | int) -> Submission | None:
         """Return the num-th contestant's submission on the given task.
 
         task: a task for the contest that is being served.
@@ -265,8 +271,7 @@ class ContestHandler(BaseHandler):
         return self.sql_session.query(Submission) \
             .filter(Submission.participation == self.current_user) \
             .filter(Submission.task == task) \
-            .order_by(Submission.timestamp) \
-            .offset(int(submission_num) - 1) \
+            .filter(Submission.opaque_id == int(opaque_id)) \
             .first()
 
     def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
@@ -309,6 +314,19 @@ class ContestHandler(BaseHandler):
 
     def notify_error(self, subject: str, text: str, text_params: object | None = None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
+
+    def json(self, data, status_code=200):
+        self.set_header("Content-type", "application/json; charset=utf-8")
+        self.set_status(status_code)
+        self.write(json.dumps(data))
+
+    def check_xsrf_cookie(self):
+        # We don't need to check for xsrf if the request came with a custom
+        # header, as those are not set by the browser.
+        if "X-CMS-Authorization" in self.request.headers:
+            pass
+        else:
+            super().check_xsrf_cookie()
 
 
 class FileHandler(ContestHandler, FileHandlerMixin):

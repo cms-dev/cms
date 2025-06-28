@@ -145,8 +145,14 @@ def add_submission(
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp), language_name,
-                                participation=participation, task=task)
+
+        submission = Submission(
+            timestamp=make_datetime(timestamp),
+            language=language_name,
+            participation=participation,
+            task=task,
+            opaque_id=Submission.generate_opaque_id(session, participation.id)
+        )
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))
         session.add(submission)
@@ -188,7 +194,8 @@ def main() -> int:
         import time
         args.timestamp = time.time()
 
-    split_files: list[tuple[str, str]] = [file_.split(":", 1) for file_ in args.file]
+    split_files: list[tuple[str, str]] = [
+        file_.split(":", 1) for file_ in args.file]
     if any(len(file_) != 2 for file_ in split_files):
         parser.error("Invalid value for the file argument: format is "
                      "<name>:<file>.")
