@@ -17,11 +17,11 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker compose -p cms -f docker-compose.test.yml build testcms
+          docker compose -p cms -f docker/docker-compose.test.yml build testcms
 
       - name: Run tests
         run: |
-          docker compose -p cms -f docker-compose.test.yml run --rm testcms
+          docker compose -p cms -f docker/docker-compose.test.yml run --rm testcms
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
