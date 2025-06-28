@@ -7,7 +7,7 @@ services:
       - "../.dev/postgres-data:/var/lib/postgresql/data"
 
   devcms:
-    build: .
+    build: ..
     depends_on:
       - "devdb"
     environment:

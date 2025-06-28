@@ -5,7 +5,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   testcms:
-    build: .
+    build: ..
     depends_on:
       - "testdb"
     environment:
@@ -21,7 +21,7 @@ services:
     command: wait-for-it testdb:5432 -- ./_cms-test-internal.sh
 
   stresstestcms:
-    build: .
+    build: ..
     depends_on:
       - "testdb"
     environment:
