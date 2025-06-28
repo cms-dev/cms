@@ -18,7 +18,7 @@ services:
       - "./codecov:/home/cmsuser/src/codecov"
     privileged: true
     cgroup: host
-    command: wait-for-it testdb:5432 -- ./_cms-test-internal.sh
+    command: wait-for-it testdb:5432 -- docker/_cms-test-internal.sh
 
   stresstestcms:
     build: ..
@@ -28,4 +28,4 @@ services:
       CMS_CONFIG: /home/cmsuser/cms/etc/cms-testdb.toml
     privileged: true
     cgroup: host
-    command: wait-for-it testdb:5432 -- ./_cms-stresstest-internal.sh
+    command: wait-for-it testdb:5432 -- docker/_cms-stresstest-internal.sh
