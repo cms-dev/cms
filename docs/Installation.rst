@@ -135,7 +135,7 @@ Alternatively, if you like living at the bleeding edge, check out the CMS
 The preferred method of installation is using :samp:`./install.py --dir={target} cms`,
 which does the following:
 
-* Creates an *target directory* of the given name. It contains a Python
+* Creates a *target directory* of the given name. It contains a Python
   virtual environment and subdirectories where CMS stores its data, logs, and caches.
   If you omit the ``--dir`` option, CMS is installed to ``~/cms`` (``cms`` in the
   home directory of the current user). Make sure that it is different from the
@@ -146,7 +146,7 @@ which does the following:
 * Checks that Isolate is available.
 
 * Installs the sample configuration files to :samp:`{target}/etc/cms.toml`
-  and :samp:`TARGET/etc/cms_ranking.toml`.
+  and :samp:`{target}/etc/cms_ranking.toml`.
 
 Now you can run CMS commands from the shell directly as :samp:`{target}/bin/{command}`.
 It is usually more convenient to activate the virtual environment, which adds
