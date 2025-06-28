@@ -13,7 +13,6 @@ services:
     environment:
       CMS_CONFIG: /home/cmsuser/cms/etc/cms-devdb.toml
     volumes:
-      - "./.dev/home:/home/cmsuser"
       - "..:/home/cmsuser/src"
     privileged: true
     cgroup: host
