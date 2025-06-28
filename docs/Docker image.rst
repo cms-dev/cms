@@ -98,7 +98,9 @@ The command will build a fresh CMS image when necessary, and drop you into a
 bash prompt where the repository is mounted on ``~/src`` for ease of
 development. You can edit the code from the host (i.e. outside the container)
 and then reinstall CMS (``./install.py cms``) directly from inside the
-container, without having to rebuild the image every time.
+container, without having to rebuild the image every time. Alternatively,
+you can use ``./install.py cms --editable`` to get an editable installation
+symlinked to the source tree.
 
 Upon running ``cms-dev.sh`` for the first time, the database will initially be
 empty. You need to initialize it (notice that the following commands are
