@@ -47,11 +47,15 @@ def verbose(msg: str) -> None:
         print(msg)
 
 
-def find_target_dir(dir: str | None) -> Path:
+def find_target_path(dir: str | None) -> Path:
     if dir:
-        return Path(dir)
+        tp = Path(dir)
     else:
-        return Path.home() / 'cms'
+        tp = Path.home() / 'cms'
+    if (tp / 'cms/server/__init__.py').is_file():
+        error(f'Target directory {tp} seems to contain the CMS source tree.'
+              + (' You probably need to specify --dir=...' if not dir else ""))
+    return tp
 
 
 INSTALL_DIRS = [
@@ -220,6 +224,6 @@ if __name__ == '__main__':
 
     is_verbose = args.verbose
     skip_isolate = args.skip_isolate
-    target_path = find_target_dir(args.dir)
+    target_path = find_target_path(args.dir)
 
     args.func(args)
