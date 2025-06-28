@@ -1,6 +1,7 @@
 .dockerignore
 Dockerfile
 docker/
+!docker/_cms-*
 .vagrant/
 codecov/
 .dev/
