@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
-      - "./.dev/postgres-data:/var/lib/postgresql/data"
+      - "../.dev/postgres-data:/var/lib/postgresql/data"
 
   devcms:
     build: .
@@ -14,7 +14,7 @@ services:
       CMS_CONFIG: /home/cmsuser/cms/etc/cms-devdb.toml
     volumes:
       - "./.dev/home:/home/cmsuser"
-      - ".:/home/cmsuser/src"
+      - "..:/home/cmsuser/src"
     privileged: true
     cgroup: host
     command: >
