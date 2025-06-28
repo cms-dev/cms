@@ -33,7 +33,6 @@ William Pettersson <william.pettersson@gmail.com>
 Ludwig Schmidt <ludwigschmidt2@gmail.com>
 Federico Scrinzi (aka volpino) <fox91@anche.no>
 Konstantin Tretyakov <kt@ut.ee>
-Luca Versari <veluca93@gmail.com>
 Hyungsuk Yoon <youhanmir@gmail.com>
 Kenneth Wong <kenneth@wong.pro>
 Minwei Xu (aka vanshady) <faceswilliam@gmail.com>
