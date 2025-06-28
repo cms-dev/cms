@@ -12,7 +12,7 @@ or write on the **support mailing list**
 
 To help with the troubleshooting, you can upload on some online
 pastebin the relevant **log files**, that you can find in
-`/var/local/log/cms/`.
+`~/cms/log/`.
 
 If you encountered a bug, please file an
 [issue](https://github.com/cms-dev/cms/issues) on **GitHub** following

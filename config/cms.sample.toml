@@ -7,9 +7,6 @@ temp_dir = "/tmp"
 # Whether to have a backdoor (see doc for the risks).
 backdoor = false
 
-# The user/group that CMS will be run as.
-cmsuser = "cmsuser"
-
 ############
 # Database #
 ############
@@ -97,6 +94,7 @@ docs_path = "/usr/share/cms/docs"
 ##################
 # AdminWebServer #
 ##################
+
 # Listening HTTP address and port for the AWS. By default only
 # listens on localhost, meaning you need a separate reverse proxy
 # to access it from the web. Set to empty string to allow
@@ -104,11 +102,9 @@ docs_path = "/usr/share/cms/docs"
 admin_listen_address = "127.0.0.1"
 admin_listen_port =    8889
 
-
 # Login cookie duration for admins in seconds.
 # The duration is refreshed on every manual request.
 admin_cookie_duration = 36000
-
 
 # The number of proxies that will be crossed before AWS gets
 # the request. This is used to determine the request's real

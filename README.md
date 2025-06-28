@@ -4,7 +4,7 @@ Contest Management System
 Homepage: <http://cms-dev.github.io/>
 
 [![Build Status](https://github.com/cms-dev/cms/actions/workflows/main.yml/badge.svg)](https://github.com/cms-dev/cms/actions)
-[![Codecov](https://codecov.io/gh/cms-dev/cms/branch/master/graph/badge.svg)](https://codecov.io/gh/cms-dev/cms)
+[![Codecov](https://codecov.io/gh/cms-dev/cms/branch/main/graph/badge.svg)](https://codecov.io/gh/cms-dev/cms)
 [![Get support on Telegram](https://img.shields.io/badge/Questions%3F-Join%20the%20Telegram%20group!-%2326A5E4?style=flat&logo=telegram)](https://t.me/contestms)
 
 [🌍 Help translate CMS in your language!](https://cms-dev.oneskyapp.com/collaboration/project?id=392655)
@@ -28,19 +28,9 @@ Download
 which can be found already packaged at <http://cms-dev.github.io/>.**
 
 This git repository, which contains the development version in its
-master branch, is intended for developers and everyone interested in
+main branch, is intended for developers and everyone interested in
 contributing or just curious to see how the code works and wanting to
 hack on it.
-
-Please note that since the sandbox is contained in a
-[git submodule](http://git-scm.com/docs/git-submodule) you should append
-`--recursive` to the standard `git clone` command to obtain it. Or, if
-you have already cloned CMS, simply run the following command from
-inside the repository:
-
-```bash
-git submodule update --init
-```
 
 
 Support
