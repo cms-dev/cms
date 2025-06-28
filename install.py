@@ -95,7 +95,8 @@ def create_venv() -> None:
         progress("Creating Python virtual environment")
         venv.create(str(target_path), symlinks=True, with_pip=True, prompt=target_path.name)
         subprocess.run(
-            [str(target_path / 'bin/pip'), 'install', 'wheel'],
+            # setuptools >= 81 deprecate pkg_resources
+            [str(target_path / 'bin/pip'), 'install', '-U', 'pip', 'setuptools <81', 'wheel'],
             check=True)
 
 
