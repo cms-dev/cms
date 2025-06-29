@@ -1,0 +1,25 @@
+#!/usr/bin/python3 -sS
+
+
+import io
+import sys
+
+input_file, solution_file, output_file, ty = sys.argv[1:]
+
+try:
+    f = io.open(output_file, 'rb')
+    print(ty, file=sys.stderr)
+    line = f.readline().strip()
+    # If this is an outputonly-only testcase, output must be 1. Otherwise, it must not be 1.
+    if ty == "outputonly":
+        if line == b"1":
+            print("1.0")
+        else:
+            print("0.0")
+    else:
+        if line != b"1":
+            print("1.0")
+        else:
+            print("0.0")
+except:
+    raise

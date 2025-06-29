@@ -179,6 +179,7 @@ def accept_submission(
                 sql_session, participation, task, language,
                 missing_codenames)
         else:
+            print("???")
             raise UnacceptableSubmission(
                 N_("Invalid submission format!"),
                 N_("Please select the correct files."))
