@@ -41,7 +41,7 @@ import babel.lists
 import babel.numbers
 import babel.support
 import babel.units
-from importlib import resources
+import importlib.resources
 
 from cms import config
 from cmscommon.datetime import utc
@@ -283,7 +283,7 @@ def get_translations() -> dict[str, Translation]:
     result = {DEFAULT_TRANSLATION.identifier: DEFAULT_TRANSLATION}
 
     try:
-        locale_pkg = resources.files("cms.locale")
+        locale_pkg = importlib.resources.files("cms.locale")
         for lang_dir in locale_pkg.iterdir():
             if lang_dir.is_dir():
                 lang_code = lang_dir.name
