@@ -20,6 +20,7 @@ import errno
 import logging
 import os
 import sys
+import tempfile
 import tomllib
 import typing
 
@@ -59,12 +60,8 @@ class Config:
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        try:
-            self.web_dir = str(resources.files("cmsranking") / "static")
-        except AttributeError:
-            # Fallback incase of errors
-            with resources.path("cmsranking", "static") as static_path:
-                self.web_dir = str(static_path)
+        # Extract static files to a persistent temporary directory
+        self.web_dir = self._extract_static_files()
         self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
         self.conf_paths = [
@@ -166,3 +163,64 @@ class Config:
                 return False
             setattr(self, key, value)
         return True
+
+    def _extract_static_files(self) -> str:
+        """Extract static files from package to a persistent temporary directory.
+
+        This is needed because the web server (Werkzeug) requires a filesystem
+        path to serve static files, but importlib.resources may provide files
+        from within ZIP archives or other non-filesystem sources.
+
+        Returns:
+            str: Path to the directory containing extracted static files.
+        """
+        # Create a temporary directory that will persist for the application lifetime
+        temp_dir = tempfile.mkdtemp(prefix="cms_ranking_static_")
+        static_dir = os.path.join(temp_dir, "static")
+
+        try:
+            static_files = resources.files("cmsranking") / "static"
+
+            if static_files.is_dir():
+                # Extract all files from the static directory
+                os.makedirs(static_dir, exist_ok=True)
+                for item in static_files.iterdir():
+                    if item.is_file():
+                        with item.open("rb") as src:
+                            target_path = os.path.join(static_dir, item.name)
+                            with open(target_path, "wb") as dst:
+                                dst.write(src.read())
+                    elif item.is_dir():
+                        # Recursively copy subdirectories
+                        self._copy_resource_dir(
+                            item, os.path.join(static_dir, item.name)
+                        )
+            else:
+                # Fallback: create an empty static directory
+                os.makedirs(static_dir, exist_ok=True)
+                logger.warning("No static files found in cmsranking package")
+
+        except Exception as e:
+            logger.warning("Failed to extract static files: %s", e)
+            # Create empty directory as fallback
+            os.makedirs(static_dir, exist_ok=True)
+
+        return static_dir
+
+    def _copy_resource_dir(self, source_dir, target_dir: str) -> None:
+        """Recursively copy a resource directory to the filesystem.
+
+        Args:
+            source_dir: Source directory from importlib.resources
+            target_dir: Target directory path on filesystem
+        """
+        os.makedirs(target_dir, exist_ok=True)
+
+        for item in source_dir.iterdir():
+            if item.is_file():
+                with item.open("rb") as src:
+                    target_path = os.path.join(target_dir, item.name)
+                    with open(target_path, "wb") as dst:
+                        dst.write(src.read())
+            elif item.is_dir():
+                self._copy_resource_dir(item, os.path.join(target_dir, item.name))
