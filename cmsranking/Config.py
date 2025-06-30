@@ -23,7 +23,7 @@ import sys
 import tomllib
 import typing
 
-import pkg_resources
+from importlib import resources
 
 from cmsranking.Logger import add_file_handler
 
@@ -59,7 +59,12 @@ class Config:
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
+        try:
+            self.web_dir = str(resources.files("cmsranking") / "static")
+        except AttributeError:
+            # Fallback incase of errors
+            with resources.path("cmsranking", "static") as static_path:
+                self.web_dir = str(static_path)
         self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
         self.conf_paths = [
