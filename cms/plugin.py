@@ -52,7 +52,7 @@ def plugin_list(entry_point_group: str) -> list[type]:
     for entry_point in entry_points(group=entry_point_group):
         try:
             classes.append(entry_point.load())
-        except ImportError:
+        except Exception:
             logger.warning(
                 "Failed to load entry point %s for group %s from %s, "
                 "provided by distribution %s.",
