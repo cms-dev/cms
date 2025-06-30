@@ -229,15 +229,15 @@ class Participation(Base):
     user: User = relationship(
         User,
         back_populates="participations")
-    __table_args__ = (UniqueConstraint('contest_id', 'user_id'),)
+    __table_args__ = (UniqueConstraint("contest_id", "user_id"),)
 
     # Team (id and object) that the user is representing with this
     # participation.
     team_id: int | None = Column(
         Integer,
-        ForeignKey(Team.id,
-                   onupdate="CASCADE", ondelete="RESTRICT"),
-        nullable=True)
+        ForeignKey(Team.id, onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+    )
     team: Team | None = relationship(
         Team,
         back_populates="participations")
