@@ -25,6 +25,7 @@
 
 """Computing and merging statistics about command executions in the sandbox."""
 
+import re
 from cms.grading.Sandbox import Sandbox
 import typing
 
@@ -63,10 +64,14 @@ def execution_stats(sandbox: Sandbox, collect_output: bool = False) -> StatsDict
         stats["signal"] = sandbox.get_killing_signal()
 
     if collect_output:
-        stats["stdout"] = sandbox.get_file_to_string(sandbox.stdout_file)\
-            .decode("utf-8", errors="replace").strip()
-        stats["stderr"] = sandbox.get_file_to_string(sandbox.stderr_file)\
-            .decode("utf-8", errors="replace").strip()
+        def safe_get_str(filename: str) -> str:
+            s = sandbox.get_file_to_string(filename)
+            s = s.decode("utf-8", errors="replace")
+            s = re.sub('[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xbf]', '\ufffd', s)
+            s = s.strip()
+            return s
+        stats["stdout"] = safe_get_str(sandbox.stdout_file)
+        stats["stderr"] = safe_get_str(sandbox.stderr_file)
 
     return stats
 
