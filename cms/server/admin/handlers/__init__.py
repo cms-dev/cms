@@ -98,7 +98,9 @@ from .user import \
     AddParticipationHandler, \
     EditParticipationHandler, \
     AddTeamHandler, \
-    TeamHandler
+    TeamHandler, \
+    TeamListHandler, \
+    RemoveTeamHandler
 from .usertest import \
     UserTestHandler, \
     UserTestFileHandler
@@ -145,8 +147,7 @@ HANDLERS = [
 
     # Contest's announcements
 
-    (r"/contest/([0-9]+)/announcements",
-     SimpleContestHandler("announcements.html")),
+    (r"/contest/([0-9]+)/announcements", SimpleContestHandler("announcements.html")),
     (r"/contest/([0-9]+)/announcements/add", AddAnnouncementHandler),
     (r"/contest/([0-9]+)/announcement/([0-9]+)", AnnouncementHandler),
 
@@ -193,7 +194,8 @@ HANDLERS = [
 
     (r"/users", UserListHandler),
     (r"/users/([0-9]+)/remove", RemoveUserHandler),
-    (r"/teams", SimpleHandler("teams.html")),
+    (r"/teams", TeamListHandler),
+    (r"/teams/([0-9]+)/remove", RemoveTeamHandler),
     (r"/users/add", AddUserHandler),
     (r"/teams/add", AddTeamHandler),
     (r"/user/([0-9]+)", UserHandler),
@@ -211,15 +213,14 @@ HANDLERS = [
 
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
-    (r"/submission/([0-9]+)(?:/([0-9]+))?/official",
-     SubmissionOfficialStatusHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?/official", SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
 
     # User tests
 
     (r"/user_test/([0-9]+)(?:/([0-9]+))?", UserTestHandler),
     (r"/user_test_file/([0-9]+)", UserTestFileHandler),
-
+    
     # The following prefixes are handled by WSGI middlewares:
     # * /rpc, defined in cms/io/web_service.py
     # * /static, defined in cms/io/web_service.py
