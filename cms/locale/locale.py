@@ -299,8 +299,8 @@ def get_translations() -> dict[str, Translation]:
                         lang_code,
                         exc_info=True,
                     )
-    except Exception as e:
-        logger.warning("Failed to scan locale directory: %s", e)
+    except Exception:
+        logger.warning("Failed to scan locale directory", exc_info=True)
 
     return result
 
