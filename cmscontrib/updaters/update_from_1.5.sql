@@ -24,5 +24,4 @@ UPDATE submissions SET opaque_id = id WHERE opaque_id IS NULL;
 ALTER TABLE submissions ADD CONSTRAINT participation_opaque_unique UNIQUE (participation_id, opaque_id);
 ALTER TABLE submissions ALTER COLUMN opaque_id SET NOT NULL;
 
-
 COMMIT;
