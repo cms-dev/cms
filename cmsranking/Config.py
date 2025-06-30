@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import atexit
 import errno
 import logging
 import os
@@ -23,7 +24,7 @@ import sys
 import tomllib
 import typing
 
-from importlib import resources
+import importlib.resources
 
 from cmsranking.Logger import add_file_handler
 
@@ -60,8 +61,11 @@ class Config:
         self.buffer_size = 100  # Needs to be strictly positive.
 
         # Keep the static files context manager alive for the application lifetime
-        self._static_files_context = resources.path("cmsranking", "static")
+        self._static_files_context = importlib.resources.path("cmsranking", "static")
         self.web_dir = str(self._static_files_context.__enter__())
+
+        # Register cleanup handler to properly exit the context manager
+        atexit.register(self._static_files_context.__exit__, None, None, None)
         self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
         self.conf_paths = [
@@ -163,5 +167,3 @@ class Config:
                 return False
             setattr(self, key, value)
         return True
-
-    # ...existing code...
