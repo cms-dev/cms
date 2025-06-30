@@ -294,9 +294,11 @@ def get_translations() -> dict[str, Translation]:
                             t = Translation(lang_code, f)
                             logger.info("Found translation %s", t.identifier)
                             result[t.identifier] = t
-                    except Exception as e:
+                    except Exception:
                         logger.warning(
-                            "Failed to load translation for %s: %s", lang_code, e
+                            "Failed to load translation for %s",
+                            lang_code,
+                            exc_info=True,
                         )
     except Exception as e:
         logger.warning("Failed to scan locale directory: %s", e)
