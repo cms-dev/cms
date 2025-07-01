@@ -124,7 +124,7 @@ class Config:
                 data = tomllib.load(f)
         except FileNotFoundError:
             logger.debug("Couldn't find config file %s (maybe you need to "
-                         "convert it from cms_ranking.conf to cms_ranking.toml?).", path)
+                         "convert it from cms.ranking.conf to cms_ranking.toml?).", path)
             return False
         except OSError as error:
             logger.warning("I/O error while opening file %s: [%s] %s",
