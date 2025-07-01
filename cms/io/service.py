@@ -268,11 +268,7 @@ class Service:
                                              socket.SOCK_STREAM)
         backdoor_sock.setblocking(0)
         backdoor_sock.bind(backdoor_path)
-        user = pwd.getpwnam(config.cmsuser)
-        # We would like to also set the user to "cmsuser" but only root
-        # can do that. Therefore we limit ourselves to the group.
-        os.chown(backdoor_path, os.getuid(), user.pw_gid)
-        os.chmod(backdoor_path, 0o770)
+        os.chmod(backdoor_path, 0o700)
         backdoor_sock.listen(backlog)
         self.backdoor = BackdoorServer(backdoor_sock, locals={'service': self})
         self.backdoor.start()

@@ -1,20 +1,19 @@
 services:
   devdb:
-    image: postgres:15
+    image: docker.io/postgres:15
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
-      - "./.dev/postgres-data:/var/lib/postgresql/data"
+      - "../.dev/postgres-data:/var/lib/postgresql/data"
 
   devcms:
-    build: .
+    build: ..
     depends_on:
       - "devdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-devdb.toml
+      CMS_CONFIG: /home/cmsuser/cms/etc/cms-devdb.toml
     volumes:
-      - "./.dev/home:/home/cmsuser"
-      - ".:/home/cmsuser/cms"
+      - "..:/home/cmsuser/src"
     privileged: true
     cgroup: host
     command: >

@@ -526,7 +526,7 @@ def main() -> int:
     """
     parser = argparse.ArgumentParser(
         description="Ranking for CMS.")
-    parser.add_argument("--config", type=argparse.FileType("rb"),
+    parser.add_argument("--config", type=str,
                         help="override config file")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop the data already stored")
