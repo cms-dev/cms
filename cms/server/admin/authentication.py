@@ -92,7 +92,6 @@ class AWSAuthMiddleware:
 
         """
         self._cookie["id"] = admin_id
-        self._cookie["ip"] = self._request.remote_addr
         self.refresh()
 
     def refresh(self):
@@ -161,18 +160,13 @@ class AWSAuthMiddleware:
             return
 
         admin_id = self._cookie.get("id", None)
-        remote_addr = self._cookie.get("ip", None)
         timestamp = self._cookie.get("timestamp", None)
 
-        if admin_id is None or remote_addr is None or timestamp is None:
+        if admin_id is None or timestamp is None:
             self.clear()
             return
 
         if not isinstance(admin_id, int) or not isinstance(timestamp, float):
-            self.clear()
-            return
-
-        if remote_addr != self._request.remote_addr:
             self.clear()
             return
 
