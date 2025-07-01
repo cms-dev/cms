@@ -85,11 +85,11 @@ class TaskStatementViewHandler(FileHandler):
         self.sql_session.close()
 
         if len(lang_code) > 0:
-            filename = "%s (%s).pdf" % (task.name, lang_code)
+            filename = "%s.%s.pdf" % (task.name, lang_code)
         else:
             filename = "%s.pdf" % task.name
 
-        self.fetch(statement, "application/pdf", filename)
+        self.fetch(statement, "application/pdf", filename=filename, disposition="inline")
 
 
 class TaskAttachmentViewHandler(FileHandler):

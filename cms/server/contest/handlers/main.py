@@ -183,7 +183,8 @@ class RegistrationHandler(ContestHandler):
 
         # Find user if it exists
         user: User | None = (
-            self.sql_session.query(User).filter(User.username == username).first()
+            self.sql_session.query(User).filter(
+                User.username == username).first()
         )
         if user is None:
             raise tornado_web.HTTPError(404)
@@ -200,7 +201,8 @@ class RegistrationHandler(ContestHandler):
             try:
                 team_code: str = self.get_argument("team")
                 team: Team | None = (
-                    self.sql_session.query(Team).filter(Team.code == team_code).one()
+                    self.sql_session.query(Team).filter(
+                        Team.code == team_code).one()
                 )
             except (tornado_web.MissingArgumentError, NoResultFound):
                 raise tornado_web.HTTPError(400)
@@ -246,7 +248,8 @@ class LoginHandler(ContestHandler):
         if cookie is None:
             self.clear_cookie(cookie_name)
         else:
-            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
+            self.set_secure_cookie(
+                cookie_name, cookie, expires_days=None, max_age=config.cookie_duration)
 
         if participation is None:
             self.redirect(error_page)
@@ -295,7 +298,8 @@ class NotificationsHandler(ContestHandler):
     def get(self):
         participation: Participation = self.current_user
 
-        last_notification: str | None = self.get_argument("last_notification", None)
+        last_notification: str | None = self.get_argument(
+            "last_notification", None)
         if last_notification is not None:
             last_notification = make_datetime(float(last_notification))
 
@@ -380,7 +384,7 @@ class DocumentationHandler(ContestHandler):
         language_docs = []
         if config.docs_path is not None:
             for language in languages:
-                ext = language.source_extensions[0][1:] # remove dot
+                ext = language.source_extensions[0][1:]  # remove dot
                 path = os.path.join(config.docs_path, ext)
                 if os.path.exists(path):
                     language_docs.append((language.name, ext))

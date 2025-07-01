@@ -17,10 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
-import json
 import logging
 import os
 import sys
+import tomllib
 import typing
 
 import pkg_resources
@@ -63,8 +63,8 @@ class Config:
         self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
         self.conf_paths = [
-            os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
-            os.path.join("/", "etc", "cms.ranking.conf"),
+            os.path.join("/", "usr", "local", "etc", "cms_ranking.toml"),
+            os.path.join("/", "etc", "cms_ranking.toml"),
         ]
 
         # Allow users to override config file path using environment
@@ -121,7 +121,7 @@ class Config:
         """
         for conf_path in conf_paths:
             try:
-                with open(conf_path, "rt", encoding="utf-8") as conf_fobj:
+                with open(conf_path, "rb") as conf_fobj:
                     logger.info("Using config file %s.", conf_path)
                     return self._load_one(conf_fobj)
             except FileNotFoundError:
@@ -135,10 +135,10 @@ class Config:
         logger.warning("No config file found, using hardcoded defaults.")
         return True
 
-    def _load_one(self, conf_fobj: typing.TextIO) -> bool:
+    def _load_one(self, conf_fobj: typing.BinaryIO) -> bool:
         """Populate config parameters from the given file.
 
-        Parse it as JSON and store in self all configuration properties
+        Parse it as TOML and store in self all configuration properties
         it defines. Log critical message and return False if anything
         goes wrong or seems odd.
 
@@ -148,19 +148,16 @@ class Config:
         """
         # Parse config file.
         try:
-            data = json.load(conf_fobj)
+            data = tomllib.load(conf_fobj)
         except ValueError:
-            logger.critical("Config file is invalid JSON.")
+            logger.critical("Config file is invalid TOML.")
             return False
 
         # Store every config property.
         for key, value in data.items():
-            if key.startswith("_"):
-                continue
             if not hasattr(self, key):
                 logger.critical("Invalid field %s in config file, maybe a "
-                                "typo? (use leading underscore to ignore).",
-                                key)
+                                "typo?", key)
                 return False
             setattr(self, key, value)
         return True

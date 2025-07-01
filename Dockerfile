@@ -49,11 +49,11 @@ RUN sudo pip3 install --break-system-packages .
 
 RUN sudo python3 prerequisites.py --yes --cmsuser=cmsuser install
 
-RUN sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:5432/cmsdbfortesting"|' ./config/cms.conf.sample \
-    | sudo tee /usr/local/etc/cms-testdb.conf
-RUN sed -e 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@devdb:5432/cmsdb"|' -e 's/127.0.0.1/0.0.0.0/' ./config/cms.conf.sample \
-    | sudo tee /usr/local/etc/cms-devdb.conf
-RUN sed 's/127.0.0.1/0.0.0.0/' ./config/cms.ranking.conf.sample | sudo tee /usr/local/etc/cms.ranking.conf
+RUN sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:5432/cmsdbfortesting"|' ./config/cms.sample.toml \
+    | sudo tee /usr/local/etc/cms-testdb.toml
+RUN sed -e 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@devdb:5432/cmsdb"|' -e 's/127.0.0.1/0.0.0.0/' ./config/cms.sample.toml \
+    | sudo tee /usr/local/etc/cms-devdb.toml
+RUN sed 's/127.0.0.1/0.0.0.0/' ./config/cms_ranking.sample.toml | sudo tee /usr/local/etc/cms_ranking.toml
 
 ENV LANG C.UTF-8
 

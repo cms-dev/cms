@@ -221,10 +221,12 @@ def accept_submission(
                 participation.user.username)
 
     # Use the filenames of the contestant as a default submission comment
-    received_filenames_joined = ",".join([file.filename for file in received_files])
+    received_filenames_joined = ",".join(
+        [file.filename for file in received_files])
 
     submission = Submission(
         timestamp=timestamp,
+        opaque_id=Submission.generate_opaque_id(sql_session, participation.id),
         language=language.name if language is not None else None,
         task=task,
         participation=participation,

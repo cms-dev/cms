@@ -11,7 +11,7 @@ services:
     depends_on:
       - "devdb"
     environment:
-      CMS_CONFIG: /usr/local/etc/cms-devdb.conf
+      CMS_CONFIG: /usr/local/etc/cms-devdb.toml
     volumes:
       - "./.dev/home:/home/cmsuser"
       - ".:/home/cmsuser/cms"
