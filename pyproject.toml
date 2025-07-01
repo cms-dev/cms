@@ -33,6 +33,7 @@ dependencies = [
     "pyxdg>=0.26,<0.29",      # https://freedesktop.org/wiki/Software/pyxdg/
     "Jinja2>=2.10,<2.11",     # http://jinja.pocoo.org/docs/latest/changelog/
     "markdown-it-py==3.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
+    "setuptools>=80,<81",     # https://setuptools.pypa.io/en/latest/history.html
 
     # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
     # MarkupSafe causes jinja to break
@@ -71,5 +72,5 @@ devel = [
 ]
 
 [build-system]
-requires = ["setuptools < 81", "babel == 2.12.1"]
+requires = ["setuptools>=80,<81", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"
