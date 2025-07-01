@@ -41,7 +41,7 @@ import babel.lists
 import babel.numbers
 import babel.support
 import babel.units
-import pkg_resources
+import importlib.resources
 
 from cms import config
 from cmscommon.datetime import utc
@@ -282,13 +282,25 @@ def get_translations() -> dict[str, Translation]:
     """
     result = {DEFAULT_TRANSLATION.identifier: DEFAULT_TRANSLATION}
 
-    for lang_code in sorted(pkg_resources.resource_listdir("cms.locale", "")):
-        mofile_path = os.path.join(lang_code, "LC_MESSAGES", "cms.mo")
-        if pkg_resources.resource_exists("cms.locale", mofile_path):
-            with pkg_resources.resource_stream("cms.locale", mofile_path) as f:
-                t = Translation(lang_code, f)
-                logger.info("Found translation %s", t.identifier)
-                result[t.identifier] = t
+    try:
+        locale_pkg = importlib.resources.files("cms.locale")
+        for lang_dir in locale_pkg.iterdir():
+            if lang_dir.is_dir():
+                lang_code = lang_dir.name
+                try:
+                    mofile_path = lang_dir / "LC_MESSAGES" / "cms.mo"
+                    with mofile_path.open("rb") as f:
+                        t = Translation(lang_code, f)
+                        logger.info("Found translation %s", t.identifier)
+                        result[t.identifier] = t
+                except Exception:
+                    logger.warning(
+                        "Failed to load translation for %s",
+                        lang_code,
+                        exc_info=True,
+                    )
+    except Exception:
+        logger.warning("Failed to scan locale directory", exc_info=True)
 
     return result
 

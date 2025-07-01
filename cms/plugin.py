@@ -21,7 +21,7 @@
 
 import logging
 
-import pkg_resources
+from importlib.metadata import entry_points
 
 
 logger = logging.getLogger(__name__)
@@ -49,14 +49,17 @@ def plugin_list(entry_point_group: str) -> list[type]:
 
     """
     classes = []
-    for entry_point in pkg_resources.iter_entry_points(entry_point_group):
+    for entry_point in entry_points(group=entry_point_group):
         try:
             classes.append(entry_point.load())
-        except (pkg_resources.UnknownExtra, ImportError):
+        except Exception:
             logger.warning(
-                "Failed to load entry point %s for group %s from %s:%s, "
-                "provided by distribution %s, requiring extras %s.",
-                entry_point.name, entry_point_group, entry_point.module_name,
-                ".".join(entry_point.attrs), entry_point.dist,
-                ", ".join(entry_point.extras), exc_info=True)
+                "Failed to load entry point %s for group %s from %s, "
+                "provided by distribution %s.",
+                entry_point.name,
+                entry_point_group,
+                entry_point.value,
+                entry_point.dist.name if entry_point.dist else "unknown",
+                exc_info=True,
+            )
     return classes

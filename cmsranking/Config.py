@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import atexit
 import errno
 import logging
 import os
@@ -23,7 +24,7 @@ import sys
 import tomllib
 import typing
 
-import pkg_resources
+import importlib.resources
 
 from cmsranking.Logger import add_file_handler
 
@@ -59,7 +60,11 @@ class Config:
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
+        # Keep the static files context manager alive for the application lifetime
+        self._static_files_context = importlib.resources.path("cmsranking", "static")
+        self.web_dir = str(self._static_files_context.__enter__())
+        # Register cleanup handler to properly exit the context manager
+        atexit.register(self._static_files_context.__exit__, None, None, None)
 
         # Try to find CMS installation root from the venv in which we run
         self.base_dir = sys.prefix
