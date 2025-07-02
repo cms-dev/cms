@@ -459,7 +459,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         args["submission_format"] = ["%s.%%l" % name]
 
-        # Import the feedback level when explicitly set to full
+        # Import the feedback level when explicitly set
         # (default behaviour is restricted)
         if conf.get("feedback_level", None) == FEEDBACK_LEVEL_FULL:
             args["feedback_level"] = FEEDBACK_LEVEL_FULL
@@ -756,7 +756,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                 Manager(other_filename, digest)]
                     break
 
-            # Otherwise, the task type is Batch
+            # Otherwise, the task type is Batch or BatchAndOutput
             else:
                 args["task_type"] = "Batch"
                 args["task_type_parameters"] = [
@@ -764,6 +764,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     [infile_param, outfile_param],
                     evaluation_param,
                 ]
+
+                output_only_testcases = load(conf, None, "output_only_testcases",
+                                             conv=lambda x: "" if x is None else x)
+                if len(output_only_testcases) > 0:
+                    args["task_type"] = "BatchAndOutput"
+                    output_codenames = \
+                        ["%03d" % int(x.strip()) for x in output_only_testcases.split(',')]
+                    task.submission_format.extend(["output_%s.txt" % s in output_codenames])
+                    args["task_type_parameters"].append(','.join(output_codenames))
 
         args["testcases"] = []
         for i in range(n_input):
@@ -773,11 +782,18 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             output_digest = self.file_cacher.put_file_from_path(
                 os.path.join(self.path, "output", "output%d.txt" % i),
                 "Output %d for task %s" % (i, task.name))
+            test_codename = "%03d" % i
             args["testcases"] += [
-                Testcase("%03d" % i, False, input_digest, output_digest)]
+                Testcase(test_codename, False, input_digest, output_digest)]
+            add_attachment = False
             if args["task_type"] == "OutputOnly":
                 task.attachments.set(
-                    Attachment("input_%03d.txt" % i, input_digest))
+                    Attachment("input_%s.txt" % test_codename, input_digest))
+            elif args["task_type"] == "BatchAndOutput":
+                if output_codenames is not None and test_codename in output_codenames:
+                    task.attachments.set(
+                        Attachment("input_%s.txt" % test_codename, input_digest))
+
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
         if public_testcases == "all":
