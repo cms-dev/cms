@@ -197,13 +197,21 @@ class TpsTaskLoader(TaskLoader):
                 for filename in os.listdir(testcases_dir)
                 if filename[-3:] == '.in'])
         if data["task_type"] == 'BatchAndOutput':
-            output_only_testcases = {}
+            output_only_testcases = set()
+            output_optional_testcases = set()
             for cur_subtask_data in subtask_data.values():
                 is_output_only = cur_subtask_data.get('output_only', False)
+                is_output_optional = cur_subtask_data.get('output_optional', False)
                 if is_output_only:
                     codenames = cur_subtask_data.get('testcases', list())
                     output_only_testcases.update(codenames)
+                elif is_output_optional:
+                    codenames = cur_subtask_data.get('testcases', list())
+                    output_optional_testcases.update(codenames)
             data["output_only_testcases"] = output_only_testcases
+            output_testcases = \
+                output_optional_testcases | output_only_testcases
+            data["output_testcases"] = output_testcases
         
         # Setting the submission format
         if data["task_type"] == 'OutputOnly':
@@ -214,7 +222,7 @@ class TpsTaskLoader(TaskLoader):
             args["submission_format"] = list()
         elif data["task_type"] == "BatchAndOutput":
             args["submission_format"] = ["%s.%%l" % name]
-            for codename in data["output_only_testcases"]:
+            for codename in sorted(data["output_testcases"]):
                 args["submission_format"].append("output_%s.txt" % codename)
         else:
             args["submission_format"] = ["%s.%%l" % name]

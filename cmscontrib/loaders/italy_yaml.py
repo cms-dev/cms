@@ -767,12 +767,23 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
                 output_only_testcases = load(conf, None, "output_only_testcases",
                                              conv=lambda x: "" if x is None else x)
-                if len(output_only_testcases) > 0:
+                output_optional_testcases = load(conf, None, "output_optional_testcases",
+                                             conv=lambda x: "" if x is None else x)
+                if len(output_only_testcases) > 0 or len(output_optional_testcases) > 0:
                     args["task_type"] = "BatchAndOutput"
-                    output_codenames = \
-                        ["%03d" % int(x.strip()) for x in output_only_testcases.split(',')]
-                    task.submission_format.extend(["output_%s.txt" % s in output_codenames])
-                    args["task_type_parameters"].append(','.join(output_codenames))
+                    output_only_codenames = set()
+                    if len(output_only_testcases) > 0:
+                        output_only_codenames = \
+                            {"%03d" % int(x.strip()) for x in output_only_testcases.split(',')}
+                        args["task_type_parameters"].append(','.join(output_only_codenames))
+                    else:
+                        args["task_type_parameters"].append("")
+                    output_codenames = set()
+                    if len(output_optional_testcases) > 0:
+                        output_codenames = \
+                            {"%03d" % int(x.strip()) for x in output_optional_testcases.split(',')}
+                    output_codenames.update(output_only_codenames)
+                    task.submission_format.extend(["output_%s.txt" % s for s in sorted(output_codenames)])
 
         args["testcases"] = []
         for i in range(n_input):
