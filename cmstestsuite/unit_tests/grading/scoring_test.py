@@ -176,7 +176,8 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
         return {
             "idx": idx,
             "max_score": max_score,
-            "score_fraction": score_fraction
+            "score_fraction": score_fraction,
+            "score": round(max_score * score_fraction, 4) # assume a score_precision of 4 for these tests.
         }
 
     def test_no_submissions(self):
