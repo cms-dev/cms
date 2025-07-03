@@ -2,7 +2,7 @@
 
 sudo chown cmsuser:cmsuser ./codecov
 
-dropdb --host=testdb --username=postgres cmsdbfortesting
+dropdb --if-exists --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
