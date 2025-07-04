@@ -49,6 +49,7 @@ Benjamin Swart <Benjaminswart@email.cz>
 Andrey Vihrov <andrey.vihrov@gmail.com>
 Grace Hawkins <amoomajid99@gmail.com>
 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
+Zsolt Németh <birka0@gmail.com>
 
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
