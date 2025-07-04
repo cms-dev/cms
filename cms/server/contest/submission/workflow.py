@@ -155,12 +155,36 @@ def accept_submission(
 
     required_codenames = set(task.submission_format)
 
+    # To protect against zip bombs, we raise an error if the archive's contents
+    # are too big even before extracting everything. The largest "reasonable"
+    # archive size is with every submission file provided, and every file being
+    # the largest allowed. Since we don't yet know which files from the archive
+    # are used and which are extraneous, this size limit applies to the entire
+    # archive in total.
+    archive_size_limit = config.max_submission_length * len(required_codenames)
+    # Honest users never need to submit more than required_codenames files, but
+    # we are a bit lenient to allow .DS_Store or other hidden files that might
+    # accidentally end up in an archive.
+    archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files)
-    except InvalidArchive:
-        raise UnacceptableSubmission(
-            N_("Invalid archive format!"),
-            N_("The submitted archive could not be opened."))
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
+    except InvalidArchive as e:
+        if e.too_big:
+            raise UnacceptableSubmission(
+                N_("Submission too big!"),
+                N_("Each source file must be at most %d bytes long."),
+                config.max_submission_length)
+        if e.too_many_files:
+            raise UnacceptableSubmission(
+                N_("Submission too big!"),
+                N_("The submission should contain at most %d files."),
+                len(required_codenames))
+        else:
+            raise UnacceptableSubmission(
+                N_("Invalid archive format!"),
+                N_("The submitted archive could not be opened."))
 
     try:
         files, language = match_files_and_language(
@@ -342,8 +366,13 @@ def accept_user_test(
     required_codenames.update(task_type.get_user_managers())
     required_codenames.add("input")
 
+    # See accept_submission() for these variables.
+    archive_size_limit = config.max_submission_length * len(required_codenames)
+    archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files)
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
     except InvalidArchive:
         raise UnacceptableUserTest(
             N_("Invalid archive format!"),

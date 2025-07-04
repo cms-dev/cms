@@ -19,7 +19,7 @@
 import unittest
 from collections import namedtuple
 from datetime import timedelta
-from unittest.mock import MagicMock, PropertyMock, patch, sentinel
+from unittest.mock import MagicMock, PropertyMock, patch, sentinel, ANY
 
 # Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
@@ -304,7 +304,7 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         with self.assertRaisesRegex(UnacceptableSubmission, "archive"):
             self.call()
 
-        self.extract_files_from_tornado.assert_called_with(self.tornado_files)
+        self.extract_files_from_tornado.assert_called_with(self.tornado_files, ANY, ANY)
 
     def test_failure_due_to_match_files_and_language(self):
         self.match_files_and_language.side_effect = InvalidFilesOrLanguage
@@ -637,7 +637,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         with self.assertRaisesRegex(UnacceptableUserTest, "archive"):
             self.call()
 
-        self.extract_files_from_tornado.assert_called_with(self.tornado_files)
+        self.extract_files_from_tornado.assert_called_with(self.tornado_files, ANY, ANY)
 
     def test_failure_due_to_match_files_and_language(self):
         self.match_files_and_language.side_effect = InvalidFilesOrLanguage
