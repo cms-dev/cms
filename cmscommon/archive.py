@@ -231,11 +231,16 @@ class Archive:
                 "call the repack() method.")
 
 class ArchiveBase(metaclass=ABCMeta):
+    """Base class for archive reader implementations."""
+
     @abstractmethod
     def iter_regular_files(self) -> Iterable[tuple[str, int, object]]:
-        """Returns pairs of (filepath, decompressed size, handle), regular files only
+        """Yields tuples of (filepath, decompressed size, handle),
+        regular files only.
 
-        handle can be passed to open_file."""
+        filepath will always be /-separated.
+        handle can be passed to open_file.
+        """
         pass
 
     @abstractmethod
@@ -249,6 +254,8 @@ class ArchiveBase(metaclass=ABCMeta):
             return f.read()
 
 class ArchiveZipfile(ArchiveBase):
+    """Archive reader using `zipfile`, see ArchiveBase for method descriptions."""
+
     def __init__(self, inner: zipfile.ZipFile):
         self.inner = inner
 
@@ -264,6 +271,8 @@ class ArchiveZipfile(ArchiveBase):
         return self.inner.open(handle, 'r')
 
 class ArchiveTarfile(ArchiveBase):
+    """Archive reader using `tarfile`, see ArchiveBase for method descriptions."""
+
     def __init__(self, inner: tarfile.TarFile):
         self.inner = inner
 
@@ -280,6 +289,10 @@ class ArchiveTarfile(ArchiveBase):
         return fobj
 
 def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
+    """Open an archive for reading.
+
+    input: the archive, opened for reading in binary mode.
+    """
     # Order is not entirely arbitrary here: is_zipfile is a very lenient check
     # that will also return True when the file is an uncompressed tar file that
     # happens to contain a zip file inside it. So check is_tarfile first (which

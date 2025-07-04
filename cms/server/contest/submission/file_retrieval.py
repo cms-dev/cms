@@ -34,10 +34,9 @@ format.
 """
 
 import io
-import os.path
+import pathlib
 import typing
 
-from patoolib.util import PatoolError
 if typing.TYPE_CHECKING:
     from tornado.httputil import HTTPFile
 
@@ -75,11 +74,9 @@ def extract_files_from_archive(data: bytes,
                                max_files: int | None = None) -> list[ReceivedFile]:
     """Return the files contained in the given archive.
 
-    Given the binary data of an archive in any of the formats supported
-    by patool, extract its contents and return them in our format. The
-    archive's contents must be a valid directory structure (i.e., its
-    contents cannot have conflicting/duplicated paths) but the structure
-    will be ignored and the files will be returned with their basename.
+    Given the binary data of an archive in a supported format, extract its
+    contents and return them in our format. The directory structure of the
+    archive is ignored; files will be returned with their basename.
 
     data: the raw contents of the archive.
     max_size: maximum decompressed size of the archive.
@@ -104,9 +101,10 @@ def extract_files_from_archive(data: bytes,
             if max_files is not None and len(result) + 1 > max_files:
                 raise InvalidArchive(too_many_files=True)
             filedata = archive.get_file_bytes(handle)
-            # TODO: is os.path.basename correct here? we should be using whatever sep the archive uses
-            # (seems to be '/' always?)
-            result.append(ReceivedFile(None, os.path.basename(filepath), filedata))
+            # archive file paths are always /-separated, so we can use
+            # PosixPath to extract the basename.
+            filename = pathlib.PurePosixPath(filepath).name
+            result.append(ReceivedFile(None, filename, filedata))
     except InvalidArchive:
         raise
     # the Archive class might raise all kinds of exceptions when fed invalid data. Catch them all here.
