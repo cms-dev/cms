@@ -253,6 +253,7 @@ class ArchiveBase(metaclass=ABCMeta):
         with self.open_file(handle) as f:
             return f.read()
 
+
 class ArchiveZipfile(ArchiveBase):
     """Archive reader using `zipfile`, see ArchiveBase for method descriptions."""
 
@@ -268,7 +269,8 @@ class ArchiveZipfile(ArchiveBase):
 
     def open_file(self, handle: object) -> typing.IO[bytes]:
         assert isinstance(handle, zipfile.ZipInfo)
-        return self.inner.open(handle, 'r')
+        return self.inner.open(handle, "r")
+
 
 class ArchiveTarfile(ArchiveBase):
     """Archive reader using `tarfile`, see ArchiveBase for method descriptions."""
@@ -287,6 +289,7 @@ class ArchiveTarfile(ArchiveBase):
         if fobj is None:
             raise ValueError("not a regular file")
         return fobj
+
 
 def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
     """Open an archive for reading.

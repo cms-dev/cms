@@ -167,7 +167,9 @@ def accept_submission(
     # accidentally end up in an archive.
     archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files, archive_size_limit, archive_max_files)
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
     except InvalidArchive as e:
         if e.too_big:
             raise UnacceptableSubmission(
@@ -368,7 +370,9 @@ def accept_user_test(
     archive_size_limit = config.max_submission_length * len(required_codenames)
     archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files, archive_size_limit, archive_max_files)
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
     except InvalidArchive:
         raise UnacceptableUserTest(
             N_("Invalid archive format!"),

@@ -69,9 +69,9 @@ class InvalidArchive(Exception):
         super().__init__()
 
 
-def extract_files_from_archive(data: bytes,
-                               max_size: int | None = None,
-                               max_files: int | None = None) -> list[ReceivedFile]:
+def extract_files_from_archive(
+    data: bytes, max_size: int | None = None, max_files: int | None = None
+) -> list[ReceivedFile]:
     """Return the files contained in the given archive.
 
     Given the binary data of an archive in a supported format, extract its
@@ -114,9 +114,11 @@ def extract_files_from_archive(data: bytes,
     return result
 
 
-def extract_files_from_tornado(tornado_files: dict[str, list["HTTPFile"]],
-                               max_size: int | None = None,
-                               max_files: int | None = None) -> list[ReceivedFile]:
+def extract_files_from_tornado(
+    tornado_files: dict[str, list["HTTPFile"]],
+    max_size: int | None = None,
+    max_files: int | None = None,
+) -> list[ReceivedFile]:
     """Transform some files as received by Tornado into our format.
 
     Given the files as provided by Tornado on the HTTPServerRequest's
@@ -135,9 +137,14 @@ def extract_files_from_tornado(tornado_files: dict[str, list["HTTPFile"]],
     raise (InvalidArchive): if there are issues extracting the archive.
 
     """
-    if len(tornado_files) == 1 and "submission" in tornado_files \
-            and len(tornado_files["submission"]) == 1:
-        return extract_files_from_archive(tornado_files["submission"][0].body, max_size, max_files)
+    if (
+        len(tornado_files) == 1
+        and "submission" in tornado_files
+        and len(tornado_files["submission"]) == 1
+    ):
+        return extract_files_from_archive(
+            tornado_files["submission"][0].body, max_size, max_files
+        )
 
     result = list()
     for codename, files in tornado_files.items():
