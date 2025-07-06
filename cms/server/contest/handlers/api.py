@@ -45,7 +45,22 @@ class ApiLoginHandler(ContestHandler):
     """
     @multi_contest
     def post(self):
+        current_user = self.get_current_user()
+
         username = self.get_argument("username", "")
+
+        if current_user is not None:
+            if username != "" and current_user.user.username != username:
+                self.json(
+                    {"error": f"Logged in as {current_user.user.username} but trying to login as {username}"}, 400)
+            else:
+                cookie_name = self.contest.name + "_login"
+                cookie = self.get_secure_cookie(cookie_name)
+                self.json({"login_data": self.request.headers.get(
+                    "X-CMS-Authorization", cookie if cookie is not None else "Already-Logged-In")})
+
+            return
+
         password = self.get_argument("password", "")
 
         try:
