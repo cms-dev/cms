@@ -190,7 +190,8 @@ def accept_submission(
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
             contest.languages)
-    except InvalidFilesOrLanguage:
+    except InvalidFilesOrLanguage as err:
+        logger.info(f'Submission rejected: {err}')
         raise UnacceptableSubmission(
             N_("Invalid submission format!"),
             N_("Please select the correct files."))
@@ -382,7 +383,8 @@ def accept_user_test(
         files, language = match_files_and_language(
             received_files, language_name, required_codenames,
             contest.languages)
-    except InvalidFilesOrLanguage:
+    except InvalidFilesOrLanguage as err:
+        logger.info(f'Test rejected: {err}')
         raise UnacceptableUserTest(
             N_("Invalid test format!"),
             N_("Please select the correct files."))
