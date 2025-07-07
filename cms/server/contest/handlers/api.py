@@ -127,7 +127,7 @@ class ApiSubmitHandler(ApiContestHandler):
     def post(self, task_name: str):
         task = self.get_task(task_name)
         if task is None:
-            self.json({"error": "Not found"}, 404)
+            self.json({"error": "Task not found"}, 404)
             return
 
         # Only set the official bit when the user can compete and we are not in
