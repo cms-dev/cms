@@ -70,6 +70,7 @@ class BaseHandler(CommonRequestHandler):
     """
     current_user: Participation | None
     service: "ContestWebServer"
+    api_request: bool
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,6 +86,8 @@ class BaseHandler(CommonRequestHandler):
         self.translation = DEFAULT_TRANSLATION
         self._ = self.translation.gettext
         self.n_ = self.translation.ngettext
+        # Is this a request on an API endpoint?
+        self.api_request = False
 
     def render(self, template_name, **params):
         t = self.service.jinja2_environment.get_template(template_name)
@@ -175,6 +178,10 @@ class BaseHandler(CommonRequestHandler):
     def is_multi_contest(self):
         """Return whether CWS serves all contests."""
         return self.service.contest_id is None
+
+    def is_api(self):
+        """Return whether it's an API request."""
+        return self.api_request
 
 
 class ContestListHandler(BaseHandler):
