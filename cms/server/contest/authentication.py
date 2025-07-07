@@ -71,6 +71,7 @@ def validate_login(
     username: str,
     password: str,
     ip_address: AnyIPAddress,
+    admin_token: str = ""
 ) -> tuple[Participation | None, bytes | None]:
     """Authenticate a user logging in, with username and password.
 
@@ -91,6 +92,7 @@ def validate_login(
     username: the username the user provided.
     password: the password the user provided.
     ip_address: the IP address the request came from.
+    admin_token: administrator's token used to impersonate a user
 
     return: if the user couldn't
         be authenticated then return None, otherwise return the
@@ -103,7 +105,7 @@ def validate_login(
                     "%r, on contest %s, at %s: " + msg, ip_address,
                     username, contest.name, timestamp, *args)
 
-    if not contest.allow_password_authentication:
+    if not contest.allow_password_authentication and admin_token == "":
         log_failed_attempt("password authentication not allowed")
         return None, None
 
@@ -119,6 +121,20 @@ def validate_login(
     if participation is None:
         log_failed_attempt("user not registered to contest")
         return None, None
+
+    if admin_token != "":
+        if (config.contest_admin_token is not None
+            and admin_token != config.contest_admin_token):
+            log_failed_attempt("invalid admin token")
+            return None, None
+
+        logger.info("Successful impersonated login from IP address %s, as user %r, on "
+                    "contest %s, at %s", ip_address, username, contest.name,
+                    timestamp)
+
+        return (participation,
+                json.dumps([username, "", make_timestamp(timestamp), True])
+                    .encode("utf-8"))
 
     correct_password = get_password(participation)
 
@@ -151,7 +167,7 @@ def validate_login(
     # If hashing is used, the cookie stores the hashed password so that
     # the expensive bcrypt call doesn't need to be done at every request.
     return (participation,
-            json.dumps([username, correct_password, make_timestamp(timestamp)])
+            json.dumps([username, correct_password, make_timestamp(timestamp), False])
                 .encode("utf-8"))
 
 
@@ -166,7 +182,7 @@ def authenticate_request(
     cookie: bytes | None,
     authorization_header: bytes | None,
     ip_address: AnyIPAddress,
-) -> tuple[Participation | None, bytes | None]:
+) -> tuple[Participation | None, bytes | None, bool]:
     """Authenticate a user returning to the site, with a cookie.
 
     Given the information the user's browser provided (the cookie) and
@@ -200,16 +216,17 @@ def authenticate_request(
     timestamp: the date and the time of the request.
     cookie: the cookie the user's browser provided in the
         request (if any).
+    authorization_header: the value of X-CMS-Authorization header (if any).
     ip_address: the IP address the request
         came from.
 
-    return: if the user
-        couldn't be authenticated then return None, otherwise return
-        the participation that they wanted to authenticate as; if a
-        cookie has to be set return it as well, otherwise return None.
+    return: a tuple consisting of participation (None if authentication failed),
+        a cookie that has to be set (or None), and a boolean flag indicating
+        whether the admin token was used to impersonate a user.
 
     """
     participation: Participation | None = None
+    impersonated = False
 
     if contest.ip_autologin:
         try:
@@ -219,34 +236,37 @@ def authenticate_request(
             if participation is not None:
                 cookie = None
         except AmbiguousIPAddress:
-            return None, None
-
-    if participation is None \
-            and contest.allow_password_authentication:
-        participation, cookie = _authenticate_request_from_cookie_or_authorization_header(
-            sql_session, contest, timestamp, authorization_header if authorization_header is not None else cookie)
+            return None, None, False
 
     if participation is None:
-        return None, None
+        participation, cookie, impersonated = (
+            _authenticate_request_from_cookie_or_authorization_header(
+                sql_session, contest, timestamp,
+                authorization_header if authorization_header is not None else cookie))
+
+    if participation is None:
+        return None, None, False
 
     # Check if user is using the right IP (or is on the right subnet).
-    if contest.ip_restriction and participation.ip is not None \
-            and not any(ip_address in network for network in participation.ip):
+    if (contest.ip_restriction and participation.ip is not None
+            and not impersonated
+            and not any(ip_address in network for network in participation.ip)):
         logger.info(
             "Unsuccessful authentication from IP address %s, on contest %s, "
             "as %s, at %s: unauthorized IP address",
             ip_address, contest.name, participation.user.username, timestamp)
-        return None, None
+        return None, None, False
 
     # Check that the user is not hidden if hidden users are blocked.
-    if contest.block_hidden_participations and participation.hidden:
+    if (contest.block_hidden_participations and participation.hidden
+            and not impersonated):
         logger.info(
             "Unsuccessful authentication from IP address %s, on contest %s, "
             "as %s, at %s: participation is hidden and unauthorized",
             ip_address, contest.name, participation.user.username, timestamp)
-        return None, None
+        return None, None, False
 
-    return participation, cookie
+    return participation, cookie, impersonated
 
 
 def _authenticate_request_by_ip_address(
@@ -311,7 +331,7 @@ def _authenticate_request_by_ip_address(
 
 def _authenticate_request_from_cookie_or_authorization_header(
     sql_session: Session, contest: Contest, timestamp: datetime, cookie: bytes | None
-) -> tuple[Participation | None, bytes | None]:
+) -> tuple[Participation | None, bytes | None, bool]:
     """Return the current participation based on the cookie.
 
     If a participation can be extracted, the cookie is refreshed.
@@ -323,26 +343,31 @@ def _authenticate_request_from_cookie_or_authorization_header(
     cookie: the contents of the cookie (or authorization header)
         provided in the request (if any).
 
-    return: the participation
-        extracted from the cookie and the cookie to set/refresh, or
-        None in case of errors.
+    return: a triple of the participation extracted from the cookie (or None),
+        the cookie to set/refresh (or None), and a boolean flag indicating
+        impersonation of the user by the administrator.
 
     """
     if cookie is None:
         logger.info("Unsuccessful cookie authentication: no cookie provided")
-        return None, None
+        return None, None, False
 
     # Parse cookie.
     try:
-        cookie = json.loads(cookie.decode("utf-8"))
+        cookie: typing.Any = json.loads(cookie.decode("utf-8"))
         username: str = cookie[0]
         password: str = cookie[1]
         last_update = make_datetime(cookie[2])
+        impersonated: bool = cookie[3]
     except Exception as e:
         # Cookies are stored securely and thus cannot be tampered with:
         # this is either a programming or a configuration error.
         logger.warning("Invalid cookie (%s): %s", e, cookie)
-        return None, None
+        return None, None, False
+
+    # Reject if password authentication is disabled and it's not an impersonation cookie/header.
+    if not contest.allow_password_authentication and not impersonated:
+        return None, None, False
 
     def log_failed_attempt(msg, *args):
         logger.info("Unsuccessful cookie authentication as %r, returning from "
@@ -353,7 +378,7 @@ def _authenticate_request_from_cookie_or_authorization_header(
     if timestamp - last_update > timedelta(seconds=config.cookie_duration):
         log_failed_attempt("cookie expired (lasts %d seconds)",
                            config.cookie_duration)
-        return None, None
+        return None, None, False
 
     # Load participation from DB and make sure it exists.
     participation: Participation | None = (
@@ -366,22 +391,28 @@ def _authenticate_request_from_cookie_or_authorization_header(
     )
     if participation is None:
         log_failed_attempt("user not registered to contest")
-        return None, None
+        return None, None, False
 
-    correct_password = get_password(participation)
+    if impersonated:
+        correct_password = ""
+        logger.info("Successful impersonation of user %r, on contest %s, "
+                    "returning from %s, at %s", username, contest.name, last_update,
+                    timestamp)
+    else:
+        # We compare hashed password because it would be too expensive to
+        # re-hash the user-provided plaintext password at every request.
+        correct_password = get_password(participation)
+        if password != correct_password:
+            log_failed_attempt("wrong password")
+            return None, None, False
 
-    # We compare hashed password because it would be too expensive to
-    # re-hash the user-provided plaintext password at every request.
-    if password != correct_password:
-        log_failed_attempt("wrong password")
-        return None, None
-
-    logger.info("Successful cookie authentication as user %r, on contest %s, "
-                "returning from %s, at %s", username, contest.name, last_update,
-                timestamp)
+        logger.info("Successful cookie authentication as user %r, on contest %s, "
+                    "returning from %s, at %s", username, contest.name, last_update,
+                    timestamp)
 
     # We store the hashed password (if hashing is used) so that the
     # expensive bcrypt hashing doesn't need to be done at every request.
     return (participation,
-            json.dumps([username, correct_password, make_timestamp(timestamp)])
-                .encode("utf-8"))
+            json.dumps([username, correct_password, make_timestamp(timestamp), impersonated])
+                .encode("utf-8"),
+            impersonated)
