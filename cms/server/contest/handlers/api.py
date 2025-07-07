@@ -39,7 +39,17 @@ from ..phase_management import actual_phase_required
 logger = logging.getLogger(__name__)
 
 
-class ApiLoginHandler(ContestHandler):
+class ApiContestHandler(ContestHandler):
+    """An extension of ContestHandler marking the request as a part of the API.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.api_request = True
+
+
+class ApiLoginHandler(ApiContestHandler):
     """Login handler.
 
     """
@@ -87,7 +97,7 @@ class ApiLoginHandler(ContestHandler):
         pass
 
 
-class ApiTaskListHandler(ContestHandler):
+class ApiTaskListHandler(ApiContestHandler):
     """Handler to list all tasks and their statements.
 
     """
@@ -107,7 +117,7 @@ class ApiTaskListHandler(ContestHandler):
         self.json({"tasks": tasks})
 
 
-class ApiSubmitHandler(ContestHandler):
+class ApiSubmitHandler(ApiContestHandler):
     """Handles the received submissions.
 
     """
@@ -142,7 +152,7 @@ class ApiSubmitHandler(ContestHandler):
             self.json({'id': str(submission.opaque_id)})
 
 
-class ApiSubmissionListHandler(ContestHandler):
+class ApiSubmissionListHandler(ApiContestHandler):
     """Retrieves the list of submissions on a task.
 
     """
