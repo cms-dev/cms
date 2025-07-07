@@ -77,6 +77,8 @@ class ApiLoginHandler(ApiContestHandler):
         current_user = self.get_current_user()
 
         username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
+        admin_token = self.get_argument("admin_token", "")
 
         if current_user is not None:
             if username != "" and current_user.user.username != username:
@@ -90,8 +92,6 @@ class ApiLoginHandler(ApiContestHandler):
 
             return
 
-        password = self.get_argument("password", "")
-
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
         except ValueError:
@@ -101,7 +101,7 @@ class ApiLoginHandler(ApiContestHandler):
 
         participation, login_data = validate_login(
             self.sql_session, self.contest, self.timestamp, username, password,
-            ip_address)
+            ip_address, admin_token=admin_token)
 
         if participation is None:
             self.json({"error": "Login failed"}, 403)
