@@ -192,13 +192,14 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.session.expire(self.user)
         self.session.expire(self.contest)
 
-        authenticated_participation, cookie = \
+        authenticated_participation, cookie, impersonated = \
             self.attempt_authentication(**kwargs)
 
         self.assertIsNotNone(authenticated_participation)
         self.assertIs(authenticated_participation, self.participation)
         self.assertIs(authenticated_participation.user, self.user)
         self.assertIs(authenticated_participation.contest, self.contest)
+        self.assertIs(impersonated, False)
 
         return cookie
 
@@ -223,10 +224,11 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
     def assertFailure(self, **kwargs):
         # Assert that the authentication fails.
         # The arguments are the same as those of attempt_authentication.
-        authenticated_participation, cookie = \
+        authenticated_participation, cookie, impersonated = \
             self.attempt_authentication(**kwargs)
         self.assertIsNone(authenticated_participation)
         self.assertIsNone(cookie)
+        self.assertIs(impersonated, False)
 
     @patch.object(config, "cookie_duration", 10)
     def test_cookie_contains_timestamp(self):
