@@ -223,8 +223,14 @@ def actual_phase_required(*actual_phases: int):
             if self.r_params["actual_phase"] not in actual_phases and \
                     (self.current_user is None or
                      not self.current_user.unrestricted):
-                # TODO maybe return some error code?
-                self.redirect(self.contest_url())
+                if self.is_api():
+                    if set(actual_phases) <= {0, 3}:
+                        self.json({"error": "The contest is not open"}, 403)
+                    else:
+                        self.json({"error": "Wrong contest phase"}, 403)
+                else:
+                    # TODO maybe return some error code?
+                    self.redirect(self.contest_url())
             else:
                 return func(self, *args, **kwargs)
 
