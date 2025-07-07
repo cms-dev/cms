@@ -20,13 +20,11 @@
 
 """
 
+from collections.abc import Callable
+import functools
 import ipaddress
 import logging
-
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import typing
 
 from cms.db.submission import Submission
 from cms.server import multi_contest
@@ -47,6 +45,27 @@ class ApiContestHandler(ContestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api_request = True
+
+
+_P = typing.ParamSpec("_P")
+_R = typing.TypeVar("_R")
+_Self = typing.TypeVar("_Self", bound="ApiContestHandler")
+
+def api_login_required(
+    func: Callable[typing.Concatenate[_Self, _P], _R],
+) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
+    """A decorator filtering out unauthenticated requests.
+
+    """
+
+    @functools.wraps(func)
+    def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
+        if not self.current_user:
+            self.json({"error": "An authenticated user is required"}, 403)
+        else:
+            return func(self, *args, **kwargs)
+
+    return wrapped
 
 
 class ApiLoginHandler(ApiContestHandler):
@@ -101,7 +120,7 @@ class ApiTaskListHandler(ApiContestHandler):
     """Handler to list all tasks and their statements.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self):
@@ -121,7 +140,7 @@ class ApiSubmitHandler(ApiContestHandler):
     """Handles the received submissions.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def post(self, task_name: str):
@@ -156,7 +175,7 @@ class ApiSubmissionListHandler(ApiContestHandler):
     """Retrieves the list of submissions on a task.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name: str):
