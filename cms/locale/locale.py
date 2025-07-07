@@ -285,7 +285,7 @@ def get_translations() -> dict[str, Translation]:
     try:
         locale_pkg = importlib.resources.files("cms.locale")
         for lang_dir in locale_pkg.iterdir():
-            if lang_dir.is_dir():
+            if lang_dir.is_dir() and not lang_dir.name.startswith('_'):
                 lang_code = lang_dir.name
                 try:
                     mofile_path = lang_dir / "LC_MESSAGES" / "cms.mo"
