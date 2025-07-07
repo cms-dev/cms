@@ -200,9 +200,10 @@ def accept_submission(
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-            digests = fetch_file_digests_from_previous_submission(
-                sql_session, participation, task, language,
-                missing_codenames)
+            if task.active_dataset.task_type_object.REUSE_PREVIOUS_SUBMISSION:
+                digests = fetch_file_digests_from_previous_submission(
+                    sql_session, participation, task, language,
+                    missing_codenames)
         else:
             raise UnacceptableSubmission(
                 N_("Invalid submission format!"),
@@ -393,9 +394,10 @@ def accept_user_test(
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-            digests = fetch_file_digests_from_previous_submission(
-                sql_session, participation, task, language,
-                missing_codenames, cls=UserTest)
+            if task.active_dataset.task_type_object.REUSE_PREVIOUS_SUBMISSION:
+                digests = fetch_file_digests_from_previous_submission(
+                    sql_session, participation, task, language,
+                    missing_codenames, cls=UserTest)
         else:
             raise UnacceptableUserTest(
                 N_("Invalid test format!"),
