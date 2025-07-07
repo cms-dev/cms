@@ -162,7 +162,7 @@ class ApiSubmitHandler(ApiContestHandler):
         except UnacceptableSubmission as e:
             logger.info("API submission rejected: `%s' - `%s'",
                         e.subject, e.formatted_text)
-            self.json({"error": e.subject, "details": e.formatted_text}, 400)
+            self.json({"error": e.subject, "details": e.formatted_text}, 422)
         else:
             logger.info(
                 f'API submission accepted: Submission ID {submission.id}')
