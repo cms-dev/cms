@@ -183,6 +183,20 @@ class BaseHandler(CommonRequestHandler):
         """Return whether it's an API request."""
         return self.api_request
 
+    def get_boolean_argument(self, name: str, default: bool) -> bool:
+        """Parse a Boolean request argument."""
+
+        arg = self.get_argument(name, "")
+        if arg == "":
+            return default
+
+        if arg == '0':
+            return False
+        elif arg == '1':
+            return True
+        else:
+            raise ValueError(f"Cannot parse boolean argument {name}")
+
 
 class ContestListHandler(BaseHandler):
     def get(self):

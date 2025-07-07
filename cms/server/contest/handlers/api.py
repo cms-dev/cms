@@ -153,6 +153,15 @@ class ApiSubmitHandler(ApiContestHandler):
         # analysis mode.
         official = self.r_params["actual_phase"] == 0
 
+        # If the submission is performed by the administrator acting on behalf
+        # of a contestant, allow overriding.
+        if self.impersonated_by_admin:
+            try:
+                official = self.get_boolean_argument('override_official', official)
+            except ValueError as err:
+                self.json({"error": str(err)}, 400)
+                return
+
         try:
             submission = accept_submission(
                 self.sql_session, self.service.file_cacher, self.current_user,
