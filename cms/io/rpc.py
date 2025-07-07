@@ -118,6 +118,16 @@ class RemoteServiceBase:
         """
         return self._connection_event.is_set()
 
+    def wait_for_connection(self, timeout: float | None = None) -> bool:
+        """Wait for a limited time until the connection comes up.
+
+        timeout: maximum waiting time in seconds.
+
+        result: the status of the connection.
+
+        """
+        return self._connection_event.wait(timeout)
+
     # TODO: the types here are not precise
     def add_on_connect_handler(self, handler: Callable[[object], Any]):
         """Register a callback for connection establishment.
