@@ -88,3 +88,35 @@ its field `public_score` will contain the score of this submission, and
 Additional details on the submission's results can be retrieved by making an
 authenticated `GET` request to `/tasks/{taskname}/submissions/{id}/details`.
 The endpoint will return an HTML snippet matching what is seen by contestants.
+
+Impersonation of users
+======================
+
+Administrators may impersonate a user and perform requests on their behalf.
+
+This is accomplished by using the authentication endpoint without `password`
+and with an additional `admin_token` parameter equal to the `contest_admin_token`
+from the CMS configuration. The returned authentication token refers to the
+given user, but it is marked as impersonated.
+
+Requests carrying an impersonated authentication token may bypass certain restrictions:
+
+* IP-based login restrictions do no apply. (But if IP-based autologin is set,
+  it overrides all authentication tokens including impersonated ones.)
+
+* Hidden participation is never blocked.
+
+* Requests can carry special parameters (either in the URL or in `POST` data)
+  that bypasses further restrictions when set to ``1``:
+
+    * `override_phase_check` lets the operation proceed regardless of contest phase
+      (for example, you can submit even though the contest has already ended).
+
+    * `override_official` (in the submit endpoint) makes the submission count as
+      official regardless of contest phase.
+
+    * `override_max_number` (in the submit endpoint) skips all checks for the
+      maximum number of submits.
+
+    * `override_min_interval` (in the submit endpoint) skips all checks for the
+      minimum time interval between submits.
