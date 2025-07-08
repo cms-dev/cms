@@ -21,7 +21,7 @@ return a JSON object with the following structure:
 
 .. sourcecode:: json
 
-  {"login_data": string}
+  {"login_data": "string"}
 
 The content of the returned login data string should be passed to API calls
 that require authentication in a `X-CMS-Authorization` header.
@@ -36,7 +36,7 @@ running, will return the following object:
 
 .. sourcecode:: json
 
-  {"tasks": [{"name": string, "statements": [string], "submission_format": [string] }]}
+  {"tasks": [{"name": "string", "statements": ["string"], "submission_format": ["string"] }]}
 
 
 Tasks are ordered in the same order as in the UI. The `name` of the task is
@@ -57,7 +57,7 @@ The request will return an object with the ID of the new submission:
 
 .. sourcecode:: json
 
-  {"id": string}
+  {"id": "string"}
 
 
 List submissions
@@ -69,7 +69,7 @@ chronological order:
 
 .. sourcecode:: json
 
-  {"list": [{"id": string}]}
+  {"list": [{"id": "string"}]}
 
 Task statement
 ==============
