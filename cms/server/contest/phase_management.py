@@ -220,9 +220,14 @@ def actual_phase_required(*actual_phases: int):
     ) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
         @wraps(func)
         def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
-            if self.r_params["actual_phase"] not in actual_phases and \
-                    (self.current_user is None or
-                     not self.current_user.unrestricted):
+            unrestricted = self.current_user is not None and self.current_user.unrestricted
+            if self.impersonated_by_admin:
+                try:
+                    unrestricted = self.get_boolean_argument("override_phase_check", unrestricted)
+                except ValueError as err:
+                    self.json({"error": str(err)}, 400)
+                    return
+            if self.r_params["actual_phase"] not in actual_phases and not unrestricted:
                 if self.is_api():
                     if set(actual_phases) <= {0, 3}:
                         self.json({"error": "The contest is not open"}, 403)
