@@ -542,21 +542,21 @@ class SandboxBase(metaclass=ABCMeta):
         """
         logger.info("Archiving sandbox in %s.", self.get_root_path())
 
-        # Archive the working directory
-        sandbox_archive_filename = "sandbox.zip"
-        sandbox_archive = self.relative_path(sandbox_archive_filename)
-        content_path = self.get_root_path()
-        with zipfile.ZipFile(sandbox_archive, "w") as zip_file:
-            for root, dirs, files in os.walk(content_path):
-                if sandbox_archive_filename in files:
-                    files.remove(sandbox_archive_filename)
-                zip_file.write(root, os.path.relpath(root, content_path))
-                for f in files:
-                    f_path = os.path.join(root, f)
-                    zip_file.write(f_path, os.path.relpath(f_path, content_path))
+        with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
+            # Archive the working directory
+            content_path = self.get_root_path()
+            with zipfile.ZipFile(sandbox_archive, "w",
+                                 compression=zipfile.ZIP_DEFLATED,
+                                 compresslevel=9) as zip_file:
+                for root, dirs, files in os.walk(content_path):
+                    zip_file.write(root, os.path.relpath(root, content_path))
+                    for f in files:
+                        f_path = os.path.join(root, f)
+                        zip_file.write(f_path, os.path.relpath(f_path, content_path))
 
-        # Put archive to FS
-        return self.get_file_to_storage(sandbox_archive, "Sandbox %s" % self.get_root_path())
+            # Put archive to FS
+            sandbox_archive.seek(0)
+            return self.file_cacher.put_file_from_fobj(sandbox_archive, "Sandbox %s" % self.get_root_path())
 
 
 class StupidSandbox(SandboxBase):
