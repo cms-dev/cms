@@ -59,6 +59,9 @@ PACKAGE_DATA = {
     "cms.locale": [
         "*/LC_MESSAGES/*.*",
     ],
+    "cmscontrib": [
+        "loaders/polygon/testlib.h",
+    ],
     "cmsranking": [
         "static/img/*.*",
         "static/lib/*.*",

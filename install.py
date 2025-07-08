@@ -119,12 +119,6 @@ def install_config() -> None:
             shutil.copyfile(sample, config_path)
 
 
-def install_testlib() -> None:
-    progress("Installing testlib")
-    shutil.copyfile('cmscontrib/loaders/polygon/testlib.h',
-                    target_path / 'include/testlib.h')
-
-
 def check_isolate(args: Namespace) -> None:
     progress('Checking if isolate is available')
     isolate = shutil.which('isolate', mode=os.F_OK)
@@ -144,7 +138,6 @@ def install_cms(args: Namespace) -> None:
     create_venv()
     install_package()
     install_config()
-    install_testlib()
 
 
 def install_venv_with_deps(args: Namespace) -> None:
