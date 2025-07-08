@@ -158,15 +158,23 @@ class ApiSubmitHandler(ApiContestHandler):
         if self.impersonated_by_admin:
             try:
                 official = self.get_boolean_argument('override_official', official)
+                override_max_number = self.get_boolean_argument('override_max_number', False)
+                override_min_interval = self.get_boolean_argument('override_min_interval', False)
             except ValueError as err:
                 self.json({"error": str(err)}, 400)
                 return
+        else:
+            override_max_number = False
+            override_min_interval = False
 
         try:
             submission = accept_submission(
                 self.sql_session, self.service.file_cacher, self.current_user,
                 task, self.timestamp, self.request.files,
-                self.get_argument("language", None), official)
+                self.get_argument("language", None), official,
+                override_max_number=override_max_number,
+                override_min_interval=override_min_interval,
+            )
             self.sql_session.commit()
         except UnacceptableSubmission as e:
             logger.info("API submission rejected: `%s' - `%s'",

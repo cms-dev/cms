@@ -86,6 +86,8 @@ def accept_submission(
     tornado_files: dict[str, list["HTTPFile"]],
     language_name: str | None,
     official: bool,
+    override_max_number: bool = False,
+    override_min_interval: bool = False,
 ) -> Submission:
     """Process a contestant's request to submit a submission.
 
@@ -105,6 +107,8 @@ def accept_submission(
     official: whether the submission was sent in during a regular
         contest phase (and should be counted towards the score/rank) or
         during the analysis mode.
+    override_max_number: skip checks for the maximum number of submissions
+    override_min_interval: skip checks for the minimum interval between submissions
 
     return: the resulting submission, if all went well.
 
@@ -118,23 +122,24 @@ def accept_submission(
 
     # Check whether the contestant is allowed to submit.
 
-    if not check_max_number(sql_session, contest.max_submission_number,
-                            participation, contest=contest):
-        raise UnacceptableSubmission(
-            N_("Too many submissions!"),
-            N_("You have reached the maximum limit of "
-               "at most %d submissions among all tasks."),
-            contest.max_submission_number)
+    if not override_max_number:
+        if not check_max_number(sql_session, contest.max_submission_number,
+                                participation, contest=contest):
+            raise UnacceptableSubmission(
+                N_("Too many submissions!"),
+                N_("You have reached the maximum limit of "
+                   "at most %d submissions among all tasks."),
+                contest.max_submission_number)
 
-    if not check_max_number(sql_session, task.max_submission_number,
-                            participation, task=task):
-        raise UnacceptableSubmission(
-            N_("Too many submissions!"),
-            N_("You have reached the maximum limit of "
-               "at most %d submissions on this task."),
-            task.max_submission_number)
+        if not check_max_number(sql_session, task.max_submission_number,
+                                participation, task=task):
+            raise UnacceptableSubmission(
+                N_("Too many submissions!"),
+                N_("You have reached the maximum limit of "
+                   "at most %d submissions on this task."),
+                task.max_submission_number)
 
-    if not is_last_minutes(timestamp, participation):
+    if not override_min_interval and not is_last_minutes(timestamp, participation):
         if not check_min_interval(sql_session, contest.min_submission_interval,
                                   timestamp, participation, contest=contest):
             raise UnacceptableSubmission(
