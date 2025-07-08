@@ -362,13 +362,12 @@ class SubmissionResult(Base):
     compilation_shard: int | None = Column(
         Integer,
         nullable=True)
-    compilation_sandbox: str | None = Column(
-        Unicode,
+    compilation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
         nullable=True)
-    compilation_sandbox_digests = Column(
+    compilation_sandbox_digests: list[str] | None = Column(
         ARRAY(String),
-        nullable=True
-    )
+        nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful). At any time, this should be equal to
@@ -784,13 +783,12 @@ class Evaluation(Base):
     evaluation_shard: int | None = Column(
         Integer,
         nullable=True)
-    evaluation_sandbox: str | None = Column(
-        Unicode,
+    evaluation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
         nullable=True)
-    evaluation_sandbox_digests = Column(
+    evaluation_sandbox_digests: list[str] | None = Column(
         ARRAY(String),
-        nullable=True
-    )
+        nullable=True)
 
     @property
     def codename(self) -> str:

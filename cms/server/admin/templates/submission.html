@@ -154,15 +154,15 @@
       <tr>
         <td>Compilation sandbox</td>
         <td>
-          {{ sr.compilation_sandbox }}
-
           {% if sr.compilation_sandbox_digests %}
-            ({%- for sandbox_digest in sr.compilation_sandbox_digests -%}
+            {% for sandbox_digest in sr.compilation_sandbox_digests %}
               {%- set filename = "submission_%s_compilation_sandbox_%s.zip"|format(sr.submission_id, loop.index) -%}
-              <a href="{{ url("file", sandbox_digest, filename) }}" style="margin: 0 2px;">
-              {{- loop.index -}}
+              <a href="{{ url("file", sandbox_digest, filename) }}">
+                {{- sr.compilation_sandbox_paths[loop.index0] -}}
               </a>
-            {%- endfor -%})
+            {% endfor %}
+          {% else %}
+            {{ sr.compilation_sandbox_paths|join(" ") }}
           {% endif %}
 
           <button onclick="cmsrpc_request(
@@ -284,15 +284,15 @@
             {% endif %}
           </td>
           <td>
-            {{ ev.evaluation_sandbox }}
-
             {% if ev.evaluation_sandbox_digests %}
-              ({%- for sandbox_digest in ev.evaluation_sandbox_digests -%}
+              {% for sandbox_digest in ev.evaluation_sandbox_digests %}
                 {%- set filename = "submission_%s_testcase_%s_sandbox_%s.zip"|format(sr.submission_id, ev.codename, loop.index) -%}
-                <a href="{{ url("file", sandbox_digest, filename) }}" style="margin: 0 2px;">
-                  {{- loop.index -}}
+                <a href="{{ url("file", sandbox_digest, filename) }}">
+                  {{- ev.evaluation_sandbox_paths[loop.index0] -}}
                 </a>
-              {%- endfor -%})
+              {% endfor %}
+            {% else %}
+              {{ ev.evaluation_sandbox_paths|join(" ") }}
             {% endif %}
 
             <button

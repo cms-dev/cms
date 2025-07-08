@@ -89,7 +89,7 @@ class Job:
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
-        sandbox_digests: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         success: bool | None = None,
         text: list[str] | None = None,
@@ -113,8 +113,8 @@ class Job:
             don't warrant it.
         sandboxes: the paths of the sandboxes used in
             the Worker during the execution of the job.
-        sandbox_digests: the digests of the sandbox
-            archives used to debug user solutions.
+        sandbox_digests: the digests of the sandbox archives used to
+            debug solutions. (map of sandbox path -> archive digest)
         info: a human readable description of the job.
         success: whether the job succeeded.
         text: description of the outcome of the job,
@@ -131,7 +131,7 @@ class Job:
         if sandboxes is None:
             sandboxes = []
         if sandbox_digests is None:
-            sandbox_digests = []
+            sandbox_digests = {}
         if info is None:
             info = ""
         if files is None:
@@ -264,6 +264,26 @@ class Job:
             job = EvaluationJob.from_user_test(operation, object_, dataset)
         return job
 
+    def get_sandbox_digest_list(self) -> list[str] | None:
+        """
+        Convert self.sandbox_digests into a list, where each index matches the
+        corresponding index in self.sandboxes.
+        """
+        if not self.sandbox_digests:
+            return None
+        res: list[str | None] = [None] * len(self.sandboxes)
+        for k,v in self.sandbox_digests.items():
+            if k in self.sandboxes:
+                index = self.sandboxes.index(k)
+                res[index] = v
+            else:
+                logger.warning("Have digest for unknown sandbox %s", k)
+        if None in res:
+            ind = res.index(None)
+            logger.warning("Sandbox %s was not archived", self.sandboxes[ind])
+            return None
+        return res
+
 
 class CompilationJob(Job):
     """Job representing a compilation.
@@ -285,7 +305,7 @@ class CompilationJob(Job):
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
-        sandbox_digests: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         language: str | None = None,
         multithreaded_sandbox: bool = False,
@@ -381,8 +401,8 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         sr.compilation_memory = self.plus.get('execution_memory')
         sr.compilation_shard = self.shard
-        sr.compilation_sandbox = ":".join(self.sandboxes)
-        sr.compilation_sandbox_digests = self.sandbox_digests
+        sr.compilation_sandbox_paths = self.sandboxes
+        sr.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             sr.executables.set(executable)
 
@@ -473,7 +493,8 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.compilation_memory = self.plus.get('execution_memory')
         ur.compilation_shard = self.shard
-        ur.compilation_sandbox = ":".join(self.sandboxes)
+        ur.compilation_sandbox_paths = self.sandboxes
+        ur.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
@@ -501,7 +522,7 @@ class EvaluationJob(Job):
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
-        sandbox_digests: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         language: str | None = None,
         multithreaded_sandbox: bool = False,
@@ -638,8 +659,8 @@ class EvaluationJob(Job):
                 'execution_wall_clock_time'),
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
-            evaluation_sandbox=":".join(self.sandboxes),
-            evaluation_sandbox_digests=self.sandbox_digests,
+            evaluation_sandbox_paths=self.sandboxes,
+            evaluation_sandbox_digests=self.get_sandbox_digest_list(),
             testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
@@ -725,7 +746,8 @@ class EvaluationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.execution_memory = self.plus.get('execution_memory')
         ur.evaluation_shard = self.shard
-        ur.evaluation_sandbox = ":".join(self.sandboxes)
+        ur.evaluation_sandbox_paths = self.sandboxes
+        ur.evaluation_sandbox_digests = self.get_sandbox_digest_list()
         ur.output = self.user_output
 
 
