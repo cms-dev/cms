@@ -27,7 +27,7 @@ import select
 import stat
 import tempfile
 import time
-import zipfile
+import tarfile
 from abc import ABCMeta, abstractmethod
 from functools import wraps, partial
 import typing
@@ -545,14 +545,8 @@ class SandboxBase(metaclass=ABCMeta):
         with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
             # Archive the working directory
             content_path = self.get_root_path()
-            with zipfile.ZipFile(sandbox_archive, "w",
-                                 compression=zipfile.ZIP_DEFLATED,
-                                 compresslevel=9) as zip_file:
-                for root, dirs, files in os.walk(content_path):
-                    zip_file.write(root, os.path.relpath(root, content_path))
-                    for f in files:
-                        f_path = os.path.join(root, f)
-                        zip_file.write(f_path, os.path.relpath(f_path, content_path))
+            with tarfile.open(fileobj=sandbox_archive, mode='w:gz') as tar_file:
+                tar_file.add(content_path, os.path.basename(content_path))
 
             # Put archive to FS
             sandbox_archive.seek(0)

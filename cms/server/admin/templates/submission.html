@@ -156,7 +156,7 @@
         <td>
           {% if sr.compilation_sandbox_digests %}
             {% for sandbox_digest in sr.compilation_sandbox_digests %}
-              {%- set filename = "submission_%s_compilation_sandbox_%s.zip"|format(sr.submission_id, loop.index) -%}
+              {%- set filename = "submission_%s_compilation_sandbox_%s.tar.gz"|format(sr.submission_id, loop.index) -%}
               <a href="{{ url("file", sandbox_digest, filename) }}">
                 {{- sr.compilation_sandbox_paths[loop.index0] -}}
               </a>
@@ -286,7 +286,7 @@
           <td>
             {% if ev.evaluation_sandbox_digests %}
               {% for sandbox_digest in ev.evaluation_sandbox_digests %}
-                {%- set filename = "submission_%s_testcase_%s_sandbox_%s.zip"|format(sr.submission_id, ev.codename, loop.index) -%}
+                {%- set filename = "submission_%s_testcase_%s_sandbox_%s.tar.gz"|format(sr.submission_id, ev.codename, loop.index) -%}
                 <a href="{{ url("file", sandbox_digest, filename) }}">
                   {{- ev.evaluation_sandbox_paths[loop.index0] -}}
                 </a>
