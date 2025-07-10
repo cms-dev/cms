@@ -81,7 +81,7 @@ On Ubuntu 24.04, one will need to run the following script as root to satisfy al
     apt install nginx-full php-cli texlive-latex-base \
         a2ps ghc rustc mono-mcs pypy3
 
-The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
+The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: ``fp-units-base``, ``fp-units-fcl``, ``fp-units-misc``, ``fp-units-math`` and ``fp-units-rtl``.
 
 Arch Linux
 ----------
@@ -179,6 +179,8 @@ We suggest following Isolate's `guidelines <https://www.ucw.cz/isolate/isolate.1
 and running the ``isolate-check-environment`` command which checks your system
 for common issues.
 
+
+.. _installation_updatingcms:
 
 Updating CMS
 ============

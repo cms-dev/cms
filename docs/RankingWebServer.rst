@@ -52,7 +52,7 @@ RWS doesn't use the PostgreSQL database. Instead, it stores its data in :file:`/
 
 The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ProxyService (PS for short). When PS is started for a certain contest, it will send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and teams, and the submissions received so far. Then it will continue to send new submissions as soon as they are scored and it will update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) will not be sent to RWS.
 
-There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. For the former, the script `cmsRWSHelper` can be used to handle the low level communication.
+There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. For the former, the script ``cmsRWSHelper`` can be used to handle the low level communication.
 
 Logo, flags and faces
 ---------------------
