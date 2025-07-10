@@ -24,17 +24,22 @@ Converts the '*_sandbox' columns to '*_sandbox_paths' columns.
 
 """
 
-def convert(val: str | None):
-    if val is None:
-        return None
-    if val == '':
-        return []
-    return val.split(':')
+def convert(obj: dict, key: str):
+    old_val = obj.pop(key, None)
+
+    if old_val is None:
+        new_val = None
+    elif old_val == '':
+        new_val = []
+    else:
+        new_val = old_val.split(':')
+
+    obj[key + '_paths'] = new_val
 
 class Updater:
 
     def __init__(self, data):
-        assert data["_version"] == 44
+        assert data["_version"] == 45
         self.objs = data
 
     def run(self):
@@ -42,16 +47,12 @@ class Updater:
             if k.startswith("_"):
                 continue
             if v["_class"] == "SubmissionResult":
-                v['compilation_sandbox_paths'] = convert(v.get('compilation_sandbox'))
-                del v['compilation_sandbox']
+                convert(v, 'compilation_sandbox')
             elif v["_class"] == "Evaluation":
-                v['evaluation_sandbox_paths'] = convert(v.get('evaluation_sandbox'))
-                del v['evaluation_sandbox']
+                convert(v, 'evaluation_sandbox')
             elif v["_class"] == "UserTestResult":
-                v['compilation_sandbox_paths'] = convert(v.get('compilation_sandbox'))
-                v['evaluation_sandbox_paths'] = convert(v.get('evaluation_sandbox'))
-                del v['compilation_sandbox']
-                del v['evaluation_sandbox']
+                convert(v, 'compilation_sandbox')
+                convert(v, 'evaluation_sandbox')
 
         return self.objs
 
