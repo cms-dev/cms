@@ -77,6 +77,8 @@ class ApiLoginHandler(ApiContestHandler):
         current_user = self.get_current_user()
 
         username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
+        admin_token = self.get_argument("admin_token", "")
 
         if current_user is not None:
             if username != "" and current_user.user.username != username:
@@ -90,8 +92,6 @@ class ApiLoginHandler(ApiContestHandler):
 
             return
 
-        password = self.get_argument("password", "")
-
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
         except ValueError:
@@ -101,7 +101,7 @@ class ApiLoginHandler(ApiContestHandler):
 
         participation, login_data = validate_login(
             self.sql_session, self.contest, self.timestamp, username, password,
-            ip_address)
+            ip_address, admin_token=admin_token)
 
         if participation is None:
             self.json({"error": "Login failed"}, 403)
@@ -153,11 +153,28 @@ class ApiSubmitHandler(ApiContestHandler):
         # analysis mode.
         official = self.r_params["actual_phase"] == 0
 
+        # If the submission is performed by the administrator acting on behalf
+        # of a contestant, allow overriding.
+        if self.impersonated_by_admin:
+            try:
+                official = self.get_boolean_argument('override_official', official)
+                override_max_number = self.get_boolean_argument('override_max_number', False)
+                override_min_interval = self.get_boolean_argument('override_min_interval', False)
+            except ValueError as err:
+                self.json({"error": str(err)}, 400)
+                return
+        else:
+            override_max_number = False
+            override_min_interval = False
+
         try:
             submission = accept_submission(
                 self.sql_session, self.service.file_cacher, self.current_user,
                 task, self.timestamp, self.request.files,
-                self.get_argument("language", None), official)
+                self.get_argument("language", None), official,
+                override_max_number=override_max_number,
+                override_min_interval=override_min_interval,
+            )
             self.sql_session.commit()
         except UnacceptableSubmission as e:
             logger.info("API submission rejected: `%s' - `%s'",

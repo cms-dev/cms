@@ -22,8 +22,12 @@
 
 import logging
 import os
+import shutil
 import subprocess
 import xml.etree.ElementTree as ET
+import importlib.resources
+import importlib.util
+import tempfile
 from datetime import datetime, timedelta
 
 from cms import config
@@ -144,7 +148,6 @@ class PolygonTaskLoader(TaskLoader):
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
             logger.info("Found additional CMS options for task %s.", name)
-            import importlib.util
             spec = importlib.util.spec_from_file_location(
                 'cms_conf', task_cms_conf_path)
             task_cms_conf = importlib.util.module_from_spec(spec)
@@ -181,20 +184,26 @@ class PolygonTaskLoader(TaskLoader):
 
             if os.path.exists(checker_src):
                 logger.info("Checker found, compiling")
-                checker_exe = os.path.join(
-                    os.path.dirname(checker_src), "checker")
-                testlib_path = os.path.join(config.base_dir, 'include')
-                testlib_include = os.path.join(testlib_path, "testlib.h")
-                code = subprocess.call(["g++", "-x", "c++", "-O2", "-static",
-                                        "-DCMS", "-I", testlib_path,
-                                        "-include", testlib_include,
-                                        "-o", checker_exe, checker_src])
-                if code != 0:
-                    logger.critical("Could not compile checker")
-                    return None
-                digest = self.file_cacher.put_file_from_path(
-                    checker_exe,
-                    "Manager for task %s" % name)
+                with tempfile.TemporaryDirectory() as tempdir:
+                    # We need to override the testlib.h from the polygon
+                    # package with our patched version. Since the package
+                    # includes a testlib.h too, the easiest way to achieve this
+                    # is to copy the checker source to a temporary directory.
+                    testlib_res = importlib.resources.files("cmscontrib.loaders").joinpath("polygon/testlib.h")
+                    with testlib_res.open('rb') as src, open(tempdir + "/testlib.h", "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                    new_checker_src = tempdir + '/check.cpp'
+                    output_path = tempdir + '/check'
+                    shutil.copyfile(checker_src, new_checker_src)
+                    code = subprocess.call(["g++", "-x", "c++", "-O2",
+                                            "-static", "-DCMS", "-o",
+                                            output_path, new_checker_src])
+                    if code != 0:
+                        logger.critical("Could not compile checker")
+                        return None
+                    digest = self.file_cacher.put_file_from_path(
+                        output_path,
+                        "Manager for task %s" % name)
                 args["managers"]["checker"] = Manager("checker", digest)
                 evaluation_param = "comparator"
             else:
