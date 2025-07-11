@@ -24,4 +24,22 @@ UPDATE submissions SET opaque_id = id WHERE opaque_id IS NULL;
 ALTER TABLE submissions ADD CONSTRAINT participation_opaque_unique UNIQUE (participation_id, opaque_id);
 ALTER TABLE submissions ALTER COLUMN opaque_id SET NOT NULL;
 
+-- https://github.com/cms-dev/cms/pull/1456
+ALTER TABLE submission_results ADD COLUMN compilation_sandbox_paths VARCHAR[];
+ALTER TABLE submission_results ADD COLUMN compilation_sandbox_digests VARCHAR[];
+UPDATE submission_results SET compilation_sandbox_paths = string_to_array(compilation_sandbox, ':');
+ALTER TABLE submission_results DROP COLUMN compilation_sandbox;
+ALTER TABLE evaluations ADD COLUMN evaluation_sandbox_paths VARCHAR[];
+ALTER TABLE evaluations ADD COLUMN evaluation_sandbox_digests VARCHAR[];
+UPDATE evaluations SET evaluation_sandbox_paths = string_to_array(evaluation_sandbox, ':');
+ALTER TABLE evaluations DROP COLUMN evaluation_sandbox;
+ALTER TABLE user_test_results ADD COLUMN compilation_sandbox_paths VARCHAR[];
+ALTER TABLE user_test_results ADD COLUMN compilation_sandbox_digests VARCHAR[];
+UPDATE user_test_results SET compilation_sandbox_paths = string_to_array(compilation_sandbox, ':');
+ALTER TABLE user_test_results DROP COLUMN compilation_sandbox;
+ALTER TABLE user_test_results ADD COLUMN evaluation_sandbox_paths VARCHAR[];
+ALTER TABLE user_test_results ADD COLUMN evaluation_sandbox_digests VARCHAR[];
+UPDATE user_test_results SET evaluation_sandbox_paths = string_to_array(evaluation_sandbox, ':');
+ALTER TABLE user_test_results DROP COLUMN evaluation_sandbox;
+
 COMMIT;
