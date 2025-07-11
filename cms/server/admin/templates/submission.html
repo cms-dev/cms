@@ -143,6 +143,8 @@
           {{ (sr.scored_at - s.timestamp).total_seconds()|format_duration }}
         </td>
       </tr>
+      {% endif %}
+      {% if sr is not none %}
       <tr>
         <td>Failures during compilation</td>
         <td>{{ sr.compilation_tries }}</td>
