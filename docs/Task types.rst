@@ -83,7 +83,7 @@ In practice, Communication tasks have two processes, running in two different sa
 
 This setup ensures that the contestant's code cannot access forbidden data, even in the case they have full knowledge of the admin code.
 
-The admins must provide an executable manager called ``manager``. It can read the testcase input from stdin, and will also receive as argument the filenames of two FIFOs, from and to the contestant process (in this order). It must write to stdout the outcome and to stderr the message for the contestant (see :ref:`details about the format`<tasktypes_standard_manager_output>`). If the contestant's process fails, the output of the manager is ignored, and the outcome will be 0.0 and the message will explain the reason.
+The admins must provide an executable manager called ``manager``. It can read the testcase input from stdin, and will also receive as argument the filenames of two FIFOs, from and to the contestant process (in this order). It must write to stdout the outcome and to stderr the message for the contestant (see :ref:`details about the format<tasktypes_standard_manager_output>`). If the contestant's process fails, the output of the manager is ignored, and the outcome will be 0.0 and the message will explain the reason.
 
 Admins can also provide a manager called :file:`stub.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. The task type can be set up to compile the stub with the contestant's source. Usually, a stub takes care of the communication with the manager, so that the contestants have to implement only a function. As for Batch, admins can also add header file that will be used when compiling the stub and the contestant's source.
 
@@ -198,4 +198,4 @@ Once that is done, install the distribution by executing
 
 CMS needs to be restarted for it to pick up the new task type.
 
-For additional information see the `general distutils documentation <https://docs.python.org/3/distutils/setupscript.html>`_ and the `section of the setuptools documentation about entry points <https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins>`_.
+For additional information see the `setuptools user guide <https://setuptools.pypa.io/en/latest/userguide/quickstart.html>`_ and specifically the `section about entry points <https://setuptools.pypa.io/en/latest/userguide/entry_point.html>`_.
