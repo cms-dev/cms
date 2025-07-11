@@ -198,4 +198,4 @@ Once that is done, install the distribution by executing
 
 CMS needs to be restarted for it to pick up the new task type.
 
-For additional information see the `general distutils documentation <https://docs.python.org/3/distutils/setupscript.html>`_ and the `section of the setuptools documentation about entry points <https://setuptools.readthedocs.io/en/latest/setuptools.html#dynamic-discovery-of-services-and-plugins>`_.
+For additional information see the `setuptools user guide <https://setuptools.pypa.io/en/latest/userguide/quickstart.html>`_ and specifically the `section about entry points <https://setuptools.pypa.io/en/latest/userguide/entry_point.html>`_.
