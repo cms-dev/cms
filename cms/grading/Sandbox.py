@@ -27,6 +27,7 @@ import select
 import stat
 import tempfile
 import time
+import tarfile
 from abc import ABCMeta, abstractmethod
 from functools import wraps, partial
 import typing
@@ -532,9 +533,31 @@ class SandboxBase(metaclass=ABCMeta):
 
         delete: if True, also delete get_root_path() and everything it
             contains.
-
         """
         pass
+
+    def archive(self) -> str | None:
+        """Archive the directory where the sandbox operated.
+
+        Stores the archived sandbox in the file cacher and returns its digest.
+        Returns None if archiving failed.
+
+        """
+        logger.info("Archiving sandbox in %s.", self.get_root_path())
+
+        with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
+            # Archive the working directory
+            content_path = self.get_root_path()
+            try:
+                with tarfile.open(fileobj=sandbox_archive, mode='w:gz') as tar_file:
+                    tar_file.add(content_path, os.path.basename(content_path))
+            except Exception:
+                logger.warning("Failed to archive sandbox", exc_info=True)
+                return None
+
+            # Put archive to FS
+            sandbox_archive.seek(0)
+            return self.file_cacher.put_file_from_fobj(sandbox_archive, "Sandbox %s" % self.get_root_path())
 
 
 class StupidSandbox(SandboxBase):

@@ -257,7 +257,7 @@ class Batch(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup.
-        delete_sandbox(sandbox, job.success, job.keep_sandbox)
+        delete_sandbox(sandbox, job)
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -380,7 +380,7 @@ class Batch(TaskType):
         job.plus = stats
 
         if sandbox is not None:
-            delete_sandbox(sandbox, job.success, job.keep_sandbox)
+            delete_sandbox(sandbox, job)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
