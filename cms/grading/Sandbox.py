@@ -536,8 +536,11 @@ class SandboxBase(metaclass=ABCMeta):
         """
         pass
 
-    def archive(self):
+    def archive(self) -> str | None:
         """Archive the directory where the sandbox operated.
+
+        Stores the archived sandbox in the file cacher and returns its digest.
+        Returns None if archiving failed.
 
         """
         logger.info("Archiving sandbox in %s.", self.get_root_path())
@@ -545,8 +548,12 @@ class SandboxBase(metaclass=ABCMeta):
         with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
             # Archive the working directory
             content_path = self.get_root_path()
-            with tarfile.open(fileobj=sandbox_archive, mode='w:gz') as tar_file:
-                tar_file.add(content_path, os.path.basename(content_path))
+            try:
+                with tarfile.open(fileobj=sandbox_archive, mode='w:gz') as tar_file:
+                    tar_file.add(content_path, os.path.basename(content_path))
+            except Exception:
+                logger.warning("Failed to archive sandbox", exc_info=True)
+                return None
 
             # Put archive to FS
             sandbox_archive.seek(0)

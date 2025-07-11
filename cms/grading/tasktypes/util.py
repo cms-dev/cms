@@ -84,7 +84,8 @@ def delete_sandbox(sandbox: Sandbox, job: Job, success: bool | None = None):
     # Archive the sandbox if required
     if job.archive_sandbox:
         sandbox_digest = sandbox.archive()
-        job.sandbox_digests[sandbox.get_root_path()] = sandbox_digest
+        if sandbox_digest is not None:
+            job.sandbox_digests[sandbox.get_root_path()] = sandbox_digest
 
     # If the job was not successful, we keep the sandbox around.
     if not success:
