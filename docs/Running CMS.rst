@@ -115,8 +115,8 @@ Starting CMS by systemd
 If your system runs ``systemd``, you can start parts of CMS as systemd services.
 They are usually managed by the user instance of systemd for the ``cmsuser`` account.
 
-:samp:`./install.py --dir={target} systemd` installs the following services under
-``~/.config/systemd/user/``:
+:samp:`./install.py --dir={install_dir} systemd` installs the following
+services under ``~/.config/systemd/user/``:
 
 * ``cms-logging.service`` that starts the ``cmsLogService``.
 

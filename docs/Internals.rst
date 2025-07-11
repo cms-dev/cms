@@ -69,7 +69,7 @@ Setting the ``backdoor`` configuration key to true causes services to
 serve a Python console (accessible with netcat), running in the same
 interpreter instance as the service, allowing to inspect and modify its
 data, live. It will be bound to a local UNIX domain socket, usually at
-:file:`{target}/run/{service}_{shard}`.
+:file:`{install_dir}/run/{service}_{shard}`.
 Although there's no authentication mechanism to prevent unauthorized
 access, the socket is accessible only to the ``cmsuser``, which should
 make it safe to run the backdoor everywhere, even on workers that are
