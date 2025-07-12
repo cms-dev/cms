@@ -50,6 +50,8 @@ function init()
     $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
     $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
 
+    $(".diff-radio").change(utils.update_diff_ids);
+
     {% block js_init %}{% endblock js_init %}
 }
 
