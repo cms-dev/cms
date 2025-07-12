@@ -79,7 +79,8 @@ from .submission import \
     SubmissionHandler, \
     SubmissionCommentHandler, \
     SubmissionOfficialStatusHandler, \
-    SubmissionFileHandler
+    SubmissionFileHandler, \
+    SubmissionDiffHandler
 from .task import \
     AddTaskHandler, \
     TaskHandler, \
@@ -215,12 +216,13 @@ HANDLERS = [
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/official", SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
+    (r"/submission_diff/([0-9]+)/([0-9]+)", SubmissionDiffHandler),
 
     # User tests
 
     (r"/user_test/([0-9]+)(?:/([0-9]+))?", UserTestHandler),
     (r"/user_test_file/([0-9]+)", UserTestFileHandler),
-    
+
     # The following prefixes are handled by WSGI middlewares:
     # * /rpc, defined in cms/io/web_service.py
     # * /static, defined in cms/io/web_service.py
