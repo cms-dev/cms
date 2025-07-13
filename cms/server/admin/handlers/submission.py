@@ -136,20 +136,28 @@ class SubmissionDiffHandler(BaseHandler):
                 real_fname = fname.replace(".%l", ext)
             else:
                 real_fname = fname
-            def get_file(x):
+
+            def get_file(x, which):
+                if fname not in x:
+                    return None, f"File not present in {which} submission"
                 digest = x[fname].digest
                 file_bin = self.service.file_cacher.get_file_content(digest)
-                return file_bin.decode(errors='replace').splitlines()
+                if len(file_bin) > 1000000:
+                    return None, f"{which} file is too big to diff".capitalize()
+                file_lines = file_bin.decode(errors='replace').splitlines()
+                if len(file_lines) > 5000:
+                    return None, f"{which} file has too many lines to diff".capitalize()
+                return file_lines, None
 
-            if fname not in old_files:
-                result_files.append({"fname": real_fname, "status": "Not present in old submission"})
+            old_content, old_status = get_file(old_files, "old")
+            if old_status:
+                result_files.append({"fname": real_fname, "status": old_status})
                 continue
-            if fname not in new_files:
-                result_files.append({"fname": real_fname, "status": "Not present in new submission"})
+            new_content, new_status = get_file(new_files, "new")
+            if new_status:
+                result_files.append({"fname": real_fname, "status": new_status})
                 continue
 
-            old_content = get_file(old_files)
-            new_content = get_file(new_files)
             if old_content == new_content:
                 result_files.append({"fname": real_fname, "status": "No changes"})
             else:
