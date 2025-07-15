@@ -265,6 +265,10 @@ abbr {
     outline: 0;
 }
 
+.teams-hidden #TeamSearch_input {
+    display: none;
+}
+
 #TeamSearch_bg {
     display: none;
     position: absolute;
@@ -402,6 +406,10 @@ abbr {
     width: -webkit-calc(2em + 20px);
     width:    -moz-calc(2em + 20px);
     width:         calc(2em + 20px);
+}
+
+.teams-hidden #Scoreboard .team {
+    display: none;
 }
 
 #Scoreboard_head tr {
