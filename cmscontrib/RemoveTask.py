@@ -47,14 +47,17 @@ def remove_task(task_name: str):
         num = task.num
         contest_id = task.contest_id
         session.delete(task)
+        session.flush()
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
             following_tasks = session.query(Task)\
                 .filter(Task.contest_id == contest_id)\
                 .filter(Task.num > num)\
+                .order_by(Task.num)\
                 .all()
             for task in following_tasks:
                 task.num -= 1
+                session.flush()
         session.commit()
         print("Task `%s' removed." % task_name)
 
