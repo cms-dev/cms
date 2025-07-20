@@ -1,7 +1,12 @@
-import argparse
+import os
+import unittest
 import subprocess
 import difflib
-import sys
+
+from cms.conf import config
+from cms.db.drop import drop_db
+from cms.db.init import init_db
+from cms.db.session import custom_psycopg2_connection
 
 """
 Compare the DB schema obtained from upgrading an older version's database using
@@ -17,10 +22,16 @@ affected object's name) and then diff the paired up statements. (One exception
 to the first line thing is ALTER TABLE ADD CONSTRAINT, in which the constraint
 name is on the second line. So we move the constraint name up to the first
 line.)
+
+To update the files after a new release:
+
+    cmsInitDB
+    pg_dump --schema-only >schema_vX.Y.sql
+
+and replace update_from_vX.Y.sql with a blank file.
 """
 
-
-def split_schemma(schema: str):
+def split_schema(schema: str) -> list[list[str]]:
     statements: list[list[str]] = []
     cur_statement: list[str] = []
     for line in schema.splitlines():
@@ -34,9 +45,10 @@ def split_schemma(schema: str):
     return statements
 
 
-def normalize_stmt(statement: list[str]):
+def normalize_stmt(statement: list[str]) -> list[str]:
     if statement[0].startswith("CREATE TABLE "):
         # normalize order of columns by sorting the arguments to CREATE TABLE.
+
         assert statement[-1] == ");"
         # add missing trailing comma on the last column.
         assert not statement[-2].endswith(",")
@@ -56,12 +68,12 @@ def normalize_stmt(statement: list[str]):
         return statement
 
 
-def is_create_enum(line: str):
+def is_create_enum(line: str) -> bool:
     return line.startswith("CREATE TYPE ") and line.endswith(" AS ENUM (")
 
 
-def compare_schemas(updated_schema: list[list[str]], fresh_schema: list[list[str]]):
-    ok = True
+def compare_schemas(updated_schema: list[list[str]], fresh_schema: list[list[str]]) -> str:
+    errors: list[str] = []
 
     updated_map: dict[str, list[str]] = {}
     for stmt in map(normalize_stmt, updated_schema):
@@ -75,8 +87,7 @@ def compare_schemas(updated_schema: list[list[str]], fresh_schema: list[list[str
 
     for updated_stmt in updated_map.values():
         if updated_stmt[0] not in fresh_map:
-            print("Updated schema contains extra statement:", *updated_stmt, sep="\n")
-            ok = False
+            errors += ["Updated schema contains extra statement:", *updated_stmt]
         else:
             fresh_stmt = fresh_map[updated_stmt[0]]
             if is_create_enum(updated_stmt[0]):
@@ -86,87 +97,64 @@ def compare_schemas(updated_schema: list[list[str]], fresh_schema: list[list[str
                 }
                 fresh_values = {x.removesuffix(",").strip() for x in fresh_stmt[1:-1]}
                 if not fresh_values.issubset(updated_values):
-                    print("Updated schema is missing enum value(s):")
-                    print("Updated:\n    " + "\n    ".join(updated_stmt))
-                    print("Fresh:\n    " + "\n    ".join(fresh_stmt))
+                    errors += ["Updated schema is missing enum value(s):"]
+                    errors += ["Updated:"] + ["    " + x for x in updated_stmt]
+                    errors += ["Fresh:"] + ["    " + x for x in fresh_stmt]
             else:
                 # Other statements must match exactly (in normalized form)
                 if updated_stmt != fresh_stmt:
-                    ok = False
                     differ = difflib.Differ()
                     cmp = differ.compare(
                         [x + "\n" for x in updated_stmt], [x + "\n" for x in fresh_stmt]
                     )
-                    print("Statement differs between updated and fresh schema:")
-                    print("".join(cmp))
+                    errors += ["Statement differs between updated and fresh schema:"]
+                    errors += ["".join(cmp).strip()]
 
     for fresh_stmt in fresh_map.values():
         if fresh_stmt[0] not in updated_map:
-            print("Fresh schema contains extra statement:", *fresh_stmt, sep="\n")
-            ok = False
+            errors += ["Fresh schema contains extra statement:", *fresh_stmt]
         # if it exists, then it was already checked earlier
     # print('\n'.join(updated_map.keys()))
-    return ok
+    return '\n'.join(errors)
 
-
-def get_updated_schema(user, host, name, schema_sql, updater_sql):
-    args = [f"--username={user}", f"--host={host}", name]
-    psql_flags = ["--quiet", "--set=ON_ERROR_STOP=1"]
-    subprocess.run(["dropdb", "--if-exists", *args], check=True)
-    subprocess.run(["createdb", *args], check=True)
-    subprocess.run(
-        ["psql", *args, *psql_flags, f"--file={schema_sql}"],
-        check=True,
-        stdout=subprocess.PIPE,
-    )
-    subprocess.run(
-        ["psql", *args, *psql_flags, f"--file={updater_sql}"],
-        check=True,
-    )
+def run_pg_dump() -> str:
+    db_url = config.database.url
+    db_url = db_url.replace("postgresql+psycopg2://", "postgresql://")
     result = subprocess.run(
-        ["pg_dump", "--schema-only", *args],
+        ["pg_dump", "--schema-only", "--dbname", db_url],
         check=True,
         text=True,
         stdout=subprocess.PIPE,
     )
     return result.stdout
 
+def get_updated_schema(schema_file: str, updater_file: str) -> str:
+    drop_db()
+    schema_sql = open(schema_file).read()
+    updater_sql = open(updater_file).read()
+    # We need to do this in two separate connections, since the schema_sql sets
+    # some connection properties which we don't want.
+    for sql in [schema_sql, updater_sql]:
+        conn = custom_psycopg2_connection()
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.commit()
+        conn.close()
 
-def get_fresh_schema(user, host, name):
-    args = [f"--username={user}", f"--host={host}", name]
-    subprocess.run(["dropdb", "--if-exists", *args], check=True)
-    subprocess.run(["createdb", *args], check=True)
-    subprocess.run(["cmsInitDB"], check=True)
-    result = subprocess.run(
-        ["pg_dump", "--schema-only", *args],
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-    )
-    return result.stdout
+    return run_pg_dump()
 
+def get_fresh_schema():
+    drop_db()
+    init_db()
+    return run_pg_dump()
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--user", required=True)
-    parser.add_argument("--host", required=True)
-    parser.add_argument("--name", required=True)
-    parser.add_argument("--schema_sql", required=True)
-    parser.add_argument("--updater_sql", required=True)
-    args = parser.parse_args()
-    print("Checking schema updater...")
-    updated_schema = split_schemma(
-        get_updated_schema(
-            args.user, args.host, args.name, args.schema_sql, args.updater_sql
-        )
-    )
-    fresh_schema = split_schemma(get_fresh_schema(args.user, args.host, args.name))
-    if compare_schemas(updated_schema, fresh_schema):
-        print("All good, updater works")
-        sys.exit(0)
-    else:
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
+class TestSchemaDiff(unittest.TestCase):
+    def test_schema_diff(self):
+        dirname = os.path.dirname(__file__)
+        schema_file = os.path.join(dirname, "schema_v1.5.sql")
+        updater_file = os.path.join(dirname, "../../cmscontrib/updaters/update_from_1.5.sql")
+        updated_schema = split_schema(get_updated_schema(schema_file, updater_file))
+        fresh_schema = split_schema(get_fresh_schema())
+        errors = compare_schemas(updated_schema, fresh_schema)
+        self.longMessage = False
+        self.assertTrue(errors == "", errors)
