@@ -86,11 +86,15 @@
       </tr>
       <tr>
         <td>Compilation sandbox</td>
-        <td>{{ utr.compilation_sandbox }}</td>
+        <td>{{ utr.compilation_sandbox_paths|join(" ") }}</td>
       </tr>
       <tr>
         <td>Failures during evaluation</td>
         <td>{{ utr.evaluation_tries }}</td>
+      </tr>
+      <tr>
+        <td>Evaluation sandbox</td>
+        <td>{{ utr.evaluation_sandbox_paths|join(" ") }}</td>
       </tr>
       {% endif %}
     </tbody>

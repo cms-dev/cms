@@ -20,13 +20,11 @@
 
 """
 
+from collections.abc import Callable
+import functools
 import ipaddress
 import logging
-
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import typing
 
 from cms.db.submission import Submission
 from cms.server import multi_contest
@@ -39,14 +37,60 @@ from ..phase_management import actual_phase_required
 logger = logging.getLogger(__name__)
 
 
-class ApiLoginHandler(ContestHandler):
+class ApiContestHandler(ContestHandler):
+    """An extension of ContestHandler marking the request as a part of the API.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.api_request = True
+
+
+_P = typing.ParamSpec("_P")
+_R = typing.TypeVar("_R")
+_Self = typing.TypeVar("_Self", bound="ApiContestHandler")
+
+def api_login_required(
+    func: Callable[typing.Concatenate[_Self, _P], _R],
+) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
+    """A decorator filtering out unauthenticated requests.
+
+    """
+
+    @functools.wraps(func)
+    def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
+        if not self.current_user:
+            self.json({"error": "An authenticated user is required"}, 403)
+        else:
+            return func(self, *args, **kwargs)
+
+    return wrapped
+
+
+class ApiLoginHandler(ApiContestHandler):
     """Login handler.
 
     """
     @multi_contest
     def post(self):
+        current_user = self.get_current_user()
+
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
+        admin_token = self.get_argument("admin_token", "")
+
+        if current_user is not None:
+            if username != "" and current_user.user.username != username:
+                self.json(
+                    {"error": f"Logged in as {current_user.user.username} but trying to login as {username}"}, 400)
+            else:
+                cookie_name = self.contest.name + "_login"
+                cookie = self.get_secure_cookie(cookie_name)
+                self.json({"login_data": self.request.headers.get(
+                    "X-CMS-Authorization", cookie if cookie is not None else "Already-Logged-In")})
+
+            return
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
@@ -57,7 +101,7 @@ class ApiLoginHandler(ContestHandler):
 
         participation, login_data = validate_login(
             self.sql_session, self.contest, self.timestamp, username, password,
-            ip_address)
+            ip_address, admin_token=admin_token)
 
         if participation is None:
             self.json({"error": "Login failed"}, 403)
@@ -72,11 +116,11 @@ class ApiLoginHandler(ContestHandler):
         pass
 
 
-class ApiTaskListHandler(ContestHandler):
+class ApiTaskListHandler(ApiContestHandler):
     """Handler to list all tasks and their statements.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self):
@@ -92,33 +136,50 @@ class ApiTaskListHandler(ContestHandler):
         self.json({"tasks": tasks})
 
 
-class ApiSubmitHandler(ContestHandler):
+class ApiSubmitHandler(ApiContestHandler):
     """Handles the received submissions.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def post(self, task_name: str):
         task = self.get_task(task_name)
         if task is None:
-            self.json({"error": "Not found"}, 404)
+            self.json({"error": "Task not found"}, 404)
             return
 
         # Only set the official bit when the user can compete and we are not in
         # analysis mode.
         official = self.r_params["actual_phase"] == 0
 
+        # If the submission is performed by the administrator acting on behalf
+        # of a contestant, allow overriding.
+        if self.impersonated_by_admin:
+            try:
+                official = self.get_boolean_argument('override_official', official)
+                override_max_number = self.get_boolean_argument('override_max_number', False)
+                override_min_interval = self.get_boolean_argument('override_min_interval', False)
+            except ValueError as err:
+                self.json({"error": str(err)}, 400)
+                return
+        else:
+            override_max_number = False
+            override_min_interval = False
+
         try:
             submission = accept_submission(
                 self.sql_session, self.service.file_cacher, self.current_user,
                 task, self.timestamp, self.request.files,
-                self.get_argument("language", None), official)
+                self.get_argument("language", None), official,
+                override_max_number=override_max_number,
+                override_min_interval=override_min_interval,
+            )
             self.sql_session.commit()
         except UnacceptableSubmission as e:
             logger.info("API submission rejected: `%s' - `%s'",
                         e.subject, e.formatted_text)
-            self.json({"error": e.subject, "details": e.formatted_text}, 400)
+            self.json({"error": e.subject, "details": e.formatted_text}, 422)
         else:
             logger.info(
                 f'API submission accepted: Submission ID {submission.id}')
@@ -127,11 +188,11 @@ class ApiSubmitHandler(ContestHandler):
             self.json({'id': str(submission.opaque_id)})
 
 
-class ApiSubmissionListHandler(ContestHandler):
+class ApiSubmissionListHandler(ApiContestHandler):
     """Retrieves the list of submissions on a task.
 
     """
-    @tornado_web.authenticated
+    @api_login_required
     @actual_phase_required(0, 3)
     @multi_contest
     def get(self, task_name: str):

@@ -312,8 +312,11 @@ class UserTestResult(Base):
     compilation_shard: int | None = Column(
         Integer,
         nullable=True)
-    compilation_sandbox: str | None = Column(
-        String,
+    compilation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
+        nullable=True)
+    compilation_sandbox_digests: list[str] | None = Column(
+        ARRAY(String),
         nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
@@ -352,8 +355,11 @@ class UserTestResult(Base):
     evaluation_shard: int | None = Column(
         Integer,
         nullable=True)
-    evaluation_sandbox: str | None = Column(
-        String,
+    evaluation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
+        nullable=True)
+    evaluation_sandbox_digests: list[str] | None = Column(
+        ARRAY(String),
         nullable=True)
 
     # These one-to-many relationships are the reversed directions of

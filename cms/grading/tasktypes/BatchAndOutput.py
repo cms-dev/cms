@@ -77,6 +77,7 @@ class BatchAndOutput(Batch):
 
     # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = True
+    REUSE_PREVIOUS_SUBMISSION = False
 
     _OUTPUT_ONLY_TESTCASES = ParameterTypeString(
         "Comma-separated list of output only testcases",

@@ -146,6 +146,7 @@ class Config:
         # necessary to change it.
         # [1] http://freedesktop.org/wiki/Software/shared-mime-info
         self.shared_mime_info_prefix = "/usr"
+        self.contest_admin_token = None
 
         # AdminWebServer.
         self.admin_listen_address = ""

@@ -9,7 +9,7 @@ dependencies. We also provide:
      spawn a volatile database (not persisted on disk) as well as a CMS instance
      that automatically runs all unit tests and functional tests.
 
-* :gh_blob:`docker/cms-stresstest.sh`: Similar to `cms_test.sh` but runs the stress
+* :gh_blob:`docker/cms-stresstest.sh`: Similar to ``cms_test.sh`` but runs the stress
      tests instead of the unit tests. The stress test consists of: creating a
      database, populating it with some sample tasks, and then simulating some
      users logging in via ContestWebServer and repeatedly performing actions
@@ -17,7 +17,7 @@ dependencies. We also provide:
 
 * :gh_blob:`docker/cms-dev.sh`: This file uses :gh_blob:`docker/docker-compose.dev.yml` to
      spawn a database (**persisted** in the local ``.dev/postgres-data`` folder
-     within the repository) as well as a CMS container that only runs `bash`,
+     within the repository) as well as a CMS container that only runs ``bash``,
      leaving you with a shell from where you can start cms services. Changes
      made in the repository are also reflected directly inside the container
      (the source code is mounted as a docker volume). The DB port and CMS server
@@ -60,7 +60,7 @@ is similar to:
     script uses the **name of the current git branch** and passes it to ``-p``.
 
     Note also that if you are not part of the ``docker`` group then you'll need
-    to run every docker command with ``sudo``, including ``sudo docker//cms-test.sh``.
+    to run every docker command with ``sudo``, including ``sudo docker/cms-test.sh``.
     We recommend adding yourself to the ``docker`` group.
 
 What the ``docker/cms-test.sh`` command does is: first build a fresh CMS image when

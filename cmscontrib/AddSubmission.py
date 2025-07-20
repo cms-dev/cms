@@ -41,6 +41,7 @@ def maybe_send_notification(submission_id: int):
     """Non-blocking attempt to notify a running ES of the submission"""
     rs = RemoteServiceClient(ServiceCoord("EvaluationService", 0))
     rs.connect()
+    rs.wait_for_connection(timeout=1)
     rs.new_submission(submission_id=submission_id)
     rs.disconnect()
 

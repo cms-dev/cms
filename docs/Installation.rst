@@ -81,7 +81,7 @@ On Ubuntu 24.04, one will need to run the following script as root to satisfy al
     apt install nginx-full php-cli texlive-latex-base \
         a2ps ghc rustc mono-mcs pypy3
 
-The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: `fp-units-base`, `fp-units-fcl`, `fp-units-misc`, `fp-units-math` and `fp-units-rtl`.
+The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: ``fp-units-base``, ``fp-units-fcl``, ``fp-units-misc``, ``fp-units-math`` and ``fp-units-rtl``.
 
 Arch Linux
 ----------
@@ -130,10 +130,10 @@ First obtain the source code of CMS. Download :gh_download:`CMS release`
 Alternatively, if you like living at the bleeding edge, check out the CMS
 `Git repository <https://github.com/cms-dev/cms>`_ instead.
 
-The preferred method of installation is using :samp:`./install.py --dir={target} cms`,
+The preferred method of installation is using :samp:`./install.py --dir={install_dir} cms`,
 which does the following:
 
-* Creates a *target directory* of the given name. It contains a Python
+* Creates an *installation directory* of the given name. It contains a Python
   virtual environment and subdirectories where CMS stores its data, logs, and caches.
   If you omit the ``--dir`` option, CMS is installed to ``~/cms`` (``cms`` in the
   home directory of the current user). Make sure that it is different from the
@@ -143,25 +143,25 @@ which does the following:
 
 * Checks that Isolate is available.
 
-* Installs the sample configuration files to :samp:`{target}/etc/cms.toml`
-  and :samp:`{target}/etc/cms_ranking.toml`.
+* Installs the sample configuration files to :samp:`{install_dir}/etc/cms.toml`
+  and :samp:`{install_dir}/etc/cms_ranking.toml`.
 
-Now you can run CMS commands from the shell directly as :samp:`{target}/bin/{command}`.
+Now you can run CMS commands from the shell directly as :samp:`{install_dir}/bin/{command}`.
 It is usually more convenient to activate the virtual environment, which adds
-:samp:`{target}/bin` to your ``$PATH``. This can be done by adding the following line
+:samp:`{install_dir}/bin` to your ``$PATH``. This can be done by adding the following line
 to your ``~/.profile``:
 
 .. sourcecode:: bash
 
     source $TARGET/bin/activate
 
-(with ``$TARGET`` replaced by the path to your target directory).
+(with ``$TARGET`` replaced by the path to your installation directory).
 
 
 Development installs
 --------------------
 
-If you want to develop CMS, you can use :samp:`./install.py --dir={target} cms --devel --editable`.
+If you want to develop CMS, you can use :samp:`./install.py --dir={install_dir} cms --devel --editable`.
 This includes development dependencies. It also makes the installation linked to the
 source directory, so you don't need to reinstall if you edit the source.
 
@@ -179,6 +179,8 @@ We suggest following Isolate's `guidelines <https://www.ucw.cz/isolate/isolate.1
 and running the ``isolate-check-environment`` command which checks your system
 for common issues.
 
+
+.. _installation_updatingcms:
 
 Updating CMS
 ============

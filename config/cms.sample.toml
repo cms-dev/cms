@@ -91,6 +91,10 @@ max_input_length = 5000000
 # example for C++ add 'cpp/index.html', for Java 'java/index.html'.
 docs_path = "/usr/share/cms/docs"
 
+# An authentication token that can be used by the administrator
+# to impersonate an arbitrary user and bypass submit restrictions.
+# contest_admin_token = "CHANGE-ME"
+
 ##################
 # AdminWebServer #
 ##################

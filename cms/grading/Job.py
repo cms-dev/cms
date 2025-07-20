@@ -85,9 +85,11 @@ class Job:
         task_type_parameters: object = None,
         language: str | None = None,
         multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         success: bool | None = None,
         text: list[str] | None = None,
@@ -104,12 +106,15 @@ class Job:
         language: the language of the submission / user test.
         multithreaded_sandbox: whether the sandbox should
             allow multithreading.
+        archive_sandbox: whether the sandbox is to be archived.
         shard: the shard of the Worker completing this job.
         keep_sandbox: whether to forcefully keep the sandbox,
             even if other conditions (the config, the sandbox status)
             don't warrant it.
         sandboxes: the paths of the sandboxes used in
             the Worker during the execution of the job.
+        sandbox_digests: the digests of the sandbox archives used to
+            debug solutions. (map of sandbox path -> archive digest)
         info: a human readable description of the job.
         success: whether the job succeeded.
         text: description of the outcome of the job,
@@ -125,6 +130,8 @@ class Job:
             task_type = ""
         if sandboxes is None:
             sandboxes = []
+        if sandbox_digests is None:
+            sandbox_digests = {}
         if info is None:
             info = ""
         if files is None:
@@ -139,9 +146,11 @@ class Job:
         self.task_type_parameters = task_type_parameters
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
+        self.archive_sandbox = archive_sandbox
         self.shard = shard
         self.keep_sandbox = keep_sandbox
         self.sandboxes = sandboxes
+        self.sandbox_digests = sandbox_digests
         self.info = info
 
         self.success = success
@@ -161,9 +170,11 @@ class Job:
             'task_type_parameters': self.task_type_parameters,
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
+            'archive_sandbox': self.archive_sandbox,
             'shard': self.shard,
             'keep_sandbox': self.keep_sandbox,
             'sandboxes': self.sandboxes,
+            'sandbox_digests': self.sandbox_digests,
             'info': self.info,
             'success': self.success,
             'text': self.text,
@@ -253,6 +264,26 @@ class Job:
             job = EvaluationJob.from_user_test(operation, object_, dataset)
         return job
 
+    def get_sandbox_digest_list(self) -> list[str] | None:
+        """
+        Convert self.sandbox_digests into a list, where each index matches the
+        corresponding index in self.sandboxes.
+        """
+        if not self.sandbox_digests:
+            return None
+        res: list[str | None] = [None] * len(self.sandboxes)
+        for k,v in self.sandbox_digests.items():
+            if k in self.sandboxes:
+                index = self.sandboxes.index(k)
+                res[index] = v
+            else:
+                logger.warning("Have digest for unknown sandbox %s", k)
+        if None in res:
+            ind = res.index(None)
+            logger.warning("Sandbox %s was not archived", self.sandboxes[ind])
+            return None
+        return res
+
 
 class CompilationJob(Job):
     """Job representing a compilation.
@@ -274,9 +305,11 @@ class CompilationJob(Job):
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         language: str | None = None,
         multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
         files: dict[str, File] | None = None,
         managers: dict[str, Manager] | None = None,
         success: bool | None = None,
@@ -296,9 +329,9 @@ class CompilationJob(Job):
         """
 
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
-                     shard, keep_sandbox, sandboxes, info, success, text,
-                     files, managers, executables)
+                     language, multithreaded_sandbox, archive_sandbox,
+                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     text, files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
 
@@ -341,6 +374,7 @@ class CompilationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(submission.files),
             managers=dict(dataset.managers),
             info="compile submission %d" % (submission.id)
@@ -367,7 +401,8 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         sr.compilation_memory = self.plus.get('execution_memory')
         sr.compilation_shard = self.shard
-        sr.compilation_sandbox = ":".join(self.sandboxes)
+        sr.compilation_sandbox_paths = self.sandboxes
+        sr.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             sr.executables.set(executable)
 
@@ -431,6 +466,7 @@ class CompilationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(user_test.files),
             managers=managers,
             info="compile user test %d" % (user_test.id)
@@ -457,7 +493,8 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.compilation_memory = self.plus.get('execution_memory')
         ur.compilation_shard = self.shard
-        ur.compilation_sandbox = ":".join(self.sandboxes)
+        ur.compilation_sandbox_paths = self.sandboxes
+        ur.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
@@ -485,9 +522,11 @@ class EvaluationJob(Job):
         shard: int | None = None,
         keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
         language: str | None = None,
         multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
         files: dict[str, File] | None = None,
         managers: dict[str, Manager] | None = None,
         executables: dict[str, Executable] | None = None,
@@ -526,9 +565,9 @@ class EvaluationJob(Job):
 
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
-                     shard, keep_sandbox, sandboxes, info, success, text,
-                     files, managers, executables)
+                     language, multithreaded_sandbox, archive_sandbox,
+                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     text, files, managers, executables)
         self.input = input
         self.output = output
         self.time_limit = time_limit
@@ -592,6 +631,7 @@ class EvaluationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(submission.files),
             managers=dict(dataset.managers),
             executables=dict(submission_result.executables),
@@ -619,7 +659,8 @@ class EvaluationJob(Job):
                 'execution_wall_clock_time'),
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
-            evaluation_sandbox=":".join(self.sandboxes),
+            evaluation_sandbox_paths=self.sandboxes,
+            evaluation_sandbox_digests=self.get_sandbox_digest_list(),
             testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
@@ -674,6 +715,7 @@ class EvaluationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(user_test.files),
             managers=managers,
             executables=dict(user_test_result.executables),
@@ -704,7 +746,8 @@ class EvaluationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.execution_memory = self.plus.get('execution_memory')
         ur.evaluation_shard = self.shard
-        ur.evaluation_sandbox = ":".join(self.sandboxes)
+        ur.evaluation_sandbox_paths = self.sandboxes
+        ur.evaluation_sandbox_digests = self.get_sandbox_digest_list()
         ur.output = self.user_output
 
 

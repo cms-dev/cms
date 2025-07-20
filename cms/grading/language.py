@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 class Language(metaclass=ABCMeta):
     """A supported programming language"""
 
+    def __repr__(self) -> str:
+        return f'Language({self.name})'
+
     @property
     @abstractmethod
     def name(self) -> str:

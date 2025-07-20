@@ -79,6 +79,7 @@ class ContestHandler(BaseHandler):
         super().__init__(*args, **kwargs)
         self.contest_url: Url = None
         self.contest: Contest
+        self.impersonated_by_admin = False
 
     def prepare(self):
         self.choose_contest()
@@ -173,7 +174,7 @@ class ContestHandler(BaseHandler):
                            self.request.remote_ip)
             return None
 
-        participation, cookie = authenticate_request(
+        participation, cookie, impersonated = authenticate_request(
             self.sql_session, self.contest,
             self.timestamp, cookie,
             authorization_header,
@@ -185,6 +186,7 @@ class ContestHandler(BaseHandler):
             self.set_secure_cookie(
                 cookie_name, cookie, expires_days=None, max_age=config.cookie_duration)
 
+        self.impersonated_by_admin = impersonated
         return participation
 
     def render_params(self):

@@ -27,16 +27,18 @@ lines inside string represented in the JSON have to be escaped
 anyway).
 
 An RPC request must be of the form (it is pretty printed here, but it
-is sent in compact form inside CMS)::
+is sent in compact form inside CMS):
 
-  {
-    "__method": <name of the requested method>,
-    "__data": {
-                <name of first arg>: <value of first arg>,
-                ...
-              },
-    "__id": <random ID string>
-  }
+.. sourcecode:: json
+
+    {
+      "__method": /* name of the requested method */,
+      "__data": {
+        /* name of first arg */: /* value of first arg */,
+        /* ... */
+      },
+      "__id": /* random ID string */
+    }
 
 The arguments in ``__data`` are (of course) not ordered: they have to
 be matched according to their names. In particular, this means that
@@ -47,13 +49,15 @@ The ``__id`` is a random string that will be returned in the response,
 and it is useful (actually, it's the only way) to match requests with
 responses.
 
-The response is of the form::
+The response is of the form:
 
-  {
-    "__data": <return value or null>,
-    "__error": <null or error string>,
-    "__id": <random ID string>
-  }
+.. sourcecode:: json
+
+    {
+      "__data": /* return value or null */,
+      "__error": /* null or error string */,
+      "__id": /* random ID string */
+    }
 
 The value of ``__id`` must of course be the same as in the request.
 If ``__error`` is not null, then ``__data`` is expected to be null.
@@ -65,7 +69,7 @@ Setting the ``backdoor`` configuration key to true causes services to
 serve a Python console (accessible with netcat), running in the same
 interpreter instance as the service, allowing to inspect and modify its
 data, live. It will be bound to a local UNIX domain socket, usually at
-:file:`{target}/run/{service}_{shard}`.
+:file:`{install_dir}/run/{service}_{shard}`.
 Although there's no authentication mechanism to prevent unauthorized
 access, the socket is accessible only to the ``cmsuser``, which should
 make it safe to run the backdoor everywhere, even on workers that are
