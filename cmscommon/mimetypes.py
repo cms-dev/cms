@@ -16,10 +16,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import functools
 import os.path
 
 import xdg.BaseDirectory
 import xdg.Mime
+import xdg.Locale
 
 
 __all__ = [
@@ -59,17 +61,36 @@ def get_icon_for_type(typename: str) -> str:
         return _icons[typename]
     return mimetype.media + "-x-generic"
 
-
-def get_name_for_type(typename: str) -> str:
+# xdg.Mime is by default memoized, but since we need to change the language, we
+# need to wipe the cache to load the correct language. So use our own caching
+# on top of it.
+@functools.cache
+def get_name_for_type(typename: str, language: str, alt_language: str) -> str:
     """Get the natural language description of the MIME type.
 
     typename: a MIME type, e.g., "application/pdf".
+    language: the BCP47 code of the language for which to return the result.
+    alt_language: underscore-separated form of the language code, to work
+        around incorrect behavior in pyxdg.
 
     return: the human-readable description (also called comment)
         of the given MIME type, e.g., "PDF document".
 
     """
+    # pyxdg expects the locale field to be provided as a posix-style locale
+    # name, e.g. zh_CN. It assumes this in both the provided language name, and
+    # in the xml:lang attribute of the mimetype xml files. Some distributions
+    # instead use BCP47 language codes, e.g. zh-Hans-CN, in the mimetype xml
+    # files (which is semantically more correct, as this is mandated by the xml
+    # spec).
+    # First parse the language from the posix format.
+    xdg.Locale.update(alt_language)
+    # Then, we make pyxdg think the BCP47 code is another variant of the
+    # current language name.
+    xdg.Locale.langs += [language]
     mimetype = xdg.Mime.lookup(typename).canonical()
+    # Force reloading the comment, because the language might have changed.
+    mimetype._comment = None
     return mimetype.get_comment()
 
 

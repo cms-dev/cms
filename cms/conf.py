@@ -140,12 +140,6 @@ class Config:
         self.max_input_length = 5_000_000  # 5 MB
         self.stl_path = "/usr/share/cppreference/doc/html/"
         self.docs_path = None
-        # Prefix of 'shared-mime-info'[1] installation. It can be found
-        # out using `pkg-config --variable=prefix shared-mime-info`, but
-        # it's almost universally the same (i.e. '/usr') so it's hardly
-        # necessary to change it.
-        # [1] http://freedesktop.org/wiki/Software/shared-mime-info
-        self.shared_mime_info_prefix = "/usr"
         self.contest_admin_token = None
 
         # AdminWebServer.
