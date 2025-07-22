@@ -136,6 +136,13 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
             "Execution failed because the return code was nonzero")
 
 
+class CheckMemoryLimit(CheckAbstractEvaluationFailure):
+    def __init__(self):
+        CheckAbstractEvaluationFailure.__init__(
+            self, "memory limit exceeded",
+            "Memory limit exceeded")
+
+
 class CheckUserTest(ABC):
     @abstractmethod
     def check(self, *args, **kwargs):
