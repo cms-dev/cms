@@ -59,4 +59,4 @@ class Php(Language):
             self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
         args = args if args is not None else []
-        return [["/usr/bin/php", executable_filename] + args]
+        return [["/usr/bin/php", "-d", "memory_limit=-1", executable_filename] + args]
