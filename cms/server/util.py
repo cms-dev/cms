@@ -39,13 +39,7 @@ except:
 
 import typing
 
-if typing.TYPE_CHECKING:
-    from tornado.web import RequestHandler
-else:
-    try:
-        from tornado4.web import RequestHandler
-    except ImportError:
-        from tornado.web import RequestHandler
+from tornado.web import RequestHandler
 
 from cms.db import Session
 from cms.server.file_middleware import FileServerMiddleware

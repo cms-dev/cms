@@ -20,7 +20,6 @@
 
 import unittest
 
-# Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms.db import Contest, SessionGen, Submission, User

@@ -44,10 +44,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 from sqlalchemy.orm.exc import NoResultFound
 
 from cms import config
@@ -96,7 +93,7 @@ class RegistrationHandler(ContestHandler):
     @multi_contest
     def post(self):
         if not self.contest.allow_registration:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         create_new_user = self.get_argument("new_user") == "true"
 
@@ -113,7 +110,7 @@ class RegistrationHandler(ContestHandler):
                                    .filter(Participation.contest == contest)\
                                    .count()
             if tot_participants > 0:
-                raise tornado_web.HTTPError(409)
+                raise tornado.web.HTTPError(409)
 
         # Create participation
         team = self._get_team()
@@ -128,7 +125,7 @@ class RegistrationHandler(ContestHandler):
     @multi_contest
     def get(self):
         if not self.contest.allow_registration:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.r_params["MAX_INPUT_LENGTH"] = self.MAX_INPUT_LENGTH
         self.r_params["MIN_PASSWORD_LENGTH"] = self.MIN_PASSWORD_LENGTH
@@ -158,8 +155,8 @@ class RegistrationHandler(ContestHandler):
             if not self.MIN_PASSWORD_LENGTH <= len(password) \
                     <= self.MAX_INPUT_LENGTH:
                 raise ValueError()
-        except (tornado_web.MissingArgumentError, ValueError):
-            raise tornado_web.HTTPError(400)
+        except (tornado.web.MissingArgumentError, ValueError):
+            raise tornado.web.HTTPError(400)
 
         # Override password with its hash
         password = hash_password(password)
@@ -169,7 +166,7 @@ class RegistrationHandler(ContestHandler):
                         .filter(User.username == username).count()
         if tot_users != 0:
             # HTTP 409: Conflict
-            raise tornado_web.HTTPError(409)
+            raise tornado.web.HTTPError(409)
 
         # Store new user
         user = User(first_name, last_name, username, password, email=email)
@@ -187,11 +184,11 @@ class RegistrationHandler(ContestHandler):
                 User.username == username).first()
         )
         if user is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         # Check if password is correct
         if not validate_password(user.password, password):
-            raise tornado_web.HTTPError(403)
+            raise tornado.web.HTTPError(403)
 
         return user
 
@@ -204,8 +201,8 @@ class RegistrationHandler(ContestHandler):
                     self.sql_session.query(Team).filter(
                         Team.code == team_code).one()
                 )
-            except (tornado_web.MissingArgumentError, NoResultFound):
-                raise tornado_web.HTTPError(400)
+            except (tornado.web.MissingArgumentError, NoResultFound):
+                raise tornado.web.HTTPError(400)
         else:
             team = None
 
@@ -263,7 +260,7 @@ class StartHandler(ContestHandler):
     Used by a user who wants to start their per_user_time.
 
     """
-    @tornado_web.authenticated
+    @tornado.web.authenticated
     @actual_phase_required(-1)
     @multi_contest
     def post(self):
@@ -293,7 +290,7 @@ class NotificationsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado_web.authenticated
+    @tornado.web.authenticated
     @multi_contest
     def get(self):
         participation: Participation = self.current_user
@@ -325,14 +322,14 @@ class PrintingHandler(ContestHandler):
     """Serve the interface to print and handle submitted print jobs.
 
     """
-    @tornado_web.authenticated
+    @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def get(self):
         participation: Participation = self.current_user
 
         if not self.r_params["printing_enabled"]:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         printjobs: list[PrintJob] = (
             self.sql_session.query(PrintJob)
@@ -349,7 +346,7 @@ class PrintingHandler(ContestHandler):
                     pdf_printing_allowed=config.pdf_printing_allowed,
                     **self.r_params)
 
-    @tornado_web.authenticated
+    @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
     def post(self):
@@ -359,7 +356,7 @@ class PrintingHandler(ContestHandler):
                 self.timestamp, self.request.files)
             self.sql_session.commit()
         except PrintingDisabled:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
         except UnacceptablePrintJob as e:
             self.notify_error(e.subject, e.text, e.text_params)
         else:
@@ -375,7 +372,7 @@ class DocumentationHandler(ContestHandler):
     ...) of the contest.
 
     """
-    @tornado_web.authenticated
+    @tornado.web.authenticated
     @multi_contest
     def get(self):
         contest: Contest = self.r_params.get("contest")

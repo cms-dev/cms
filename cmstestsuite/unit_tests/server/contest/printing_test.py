@@ -24,7 +24,6 @@ import unittest
 from collections import namedtuple
 from unittest.mock import Mock, patch
 
-# Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms import config
