@@ -13,7 +13,7 @@ dropdb --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
-cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
+cmsRunFunctionalTests -vvv --coverage codecov/functionaltests.xml
 FUNC=$?
 
 # This check is needed because otherwise failing unit tests aren't reported in
