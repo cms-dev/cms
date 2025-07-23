@@ -35,10 +35,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
@@ -88,7 +85,7 @@ class QuestionActionHandler(BaseHandler, metaclass=ABCMeta):
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.process_question(question)
         self.redirect(ref)
@@ -148,7 +145,7 @@ class QuestionClaimHandler(QuestionActionHandler):
     def process_question(self, question):
         # Can claim/unclaim only a question not ignored or answered.
         if question.ignored or question.reply_timestamp is not None:
-            raise tornado_web.HTTPError(405)
+            raise tornado.web.HTTPError(405)
 
         should_claim = self.get_argument("claim", "no") == "yes"
 

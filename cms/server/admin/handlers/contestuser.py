@@ -38,10 +38,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.db import Contest, Message, Participation, Submission, User, Team
 from cmscommon.datetime import make_datetime
@@ -113,7 +110,7 @@ class RemoveParticipationHandler(BaseHandler):
         )
         # Check that the participation is valid.
         if participation is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         submission_query = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)
@@ -193,7 +190,7 @@ class ParticipationHandler(BaseHandler):
 
         # Check that the participation is valid.
         if participation is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         submission_query = self.sql_session.query(Submission)\
             .filter(Submission.participation == participation)
@@ -220,7 +217,7 @@ class ParticipationHandler(BaseHandler):
 
         # Check that the participation is valid.
         if participation is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         try:
             attrs = participation.get_attrs()
@@ -281,7 +278,7 @@ class MessageHandler(BaseHandler):
 
         # check that the participation is valid
         if participation is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         message = Message(make_datetime(),
                           self.get_argument("message_subject", ""),

@@ -36,10 +36,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
@@ -296,7 +293,7 @@ class StatementHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if task is not statement.task:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(statement)
         self.try_commit()
@@ -368,7 +365,7 @@ class AttachmentHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if attachment.task is not task:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(attachment)
         self.try_commit()
