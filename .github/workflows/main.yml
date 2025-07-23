@@ -15,9 +15,17 @@ jobs:
         run: |
           mount | grep cgroup
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build docker image
-        run: |
-          docker compose -p cms -f docker/docker-compose.test.yml build testcms
+        uses: docker/build-push-action@v6
+        with:
+          # This action used to be `docker compose -p cms build testcms`, so the tag name is cms-testcms.
+          tags: cms-testcms
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha
 
       - name: Run tests
         run: |
