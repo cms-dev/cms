@@ -176,8 +176,12 @@ var Scoreboard = new function () {
 <col class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"/> <col/><col/><col/>";
         }
 
-        result += " \
+        self.show_global_score = contests.length > 1;
+
+        if(self.show_global_score) {
+            result += " \
 <col class=\"score global\" data-sort_key=\"global\"/> <col/><col/><col/><col/>";
+        }
 
         return result;
     };
@@ -212,9 +216,11 @@ var Scoreboard = new function () {
     <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"><abbr title=\"" + escapeHTML(contest["name"]) + "\">" + escapeHTML(contest["name"]) + "</abbr></th>";
         }
 
-        result += " \
+        if(self.show_global_score) {
+            result += " \
     <th colspan=\"5\" class=\"score global\" data-sort_key=\"global\">Global</th> \
 </tr>";
+        }
 
         return result;
     };
@@ -269,10 +275,12 @@ var Scoreboard = new function () {
     <td colspan=\"4\" class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id], contest["score_precision"]) + "</td>";
         }
 
-        var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
-        result += " \
+        if(self.show_global_score) {
+            var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
+            result += " \
     <td colspan=\"5\" class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"], DataStore.global_score_precision) + "</td> \
 </tr>";
+        }
 
         return result;
     };
