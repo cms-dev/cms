@@ -497,16 +497,19 @@ class RemoveTaskHandler(BaseHandler):
         num = task.num
 
         self.sql_session.delete(task)
+        self.sql_session.flush()
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
             following_tasks: list[Task] = (
                 self.sql_session.query(Task)
                 .filter(Task.contest_id == contest_id)
                 .filter(Task.num > num)
+                .order_by(Task.num)
                 .all()
             )
             for task in following_tasks:
                 task.num -= 1
+                self.sql_session.flush()
         if self.try_commit():
             self.service.proxy_service.reinitialize()
 

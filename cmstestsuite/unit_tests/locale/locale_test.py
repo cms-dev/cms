@@ -53,6 +53,7 @@ HINDI = Translation("hi")
 ITALIAN = Translation("it")
 DANISH = Translation("da")
 CHINESE = Translation("zh_CN")
+CHINESE_TRADITIONAL = Translation("zh_TW")
 
 
 class TestIdentifier(unittest.TestCase):
@@ -591,20 +592,15 @@ class TestFormatDecimal(unittest.TestCase):
 
 class TestTranslateMimetype(unittest.TestCase):
 
-    @unittest.skipIf(not os.path.isfile(
-        "/usr/share/locale/it/LC_MESSAGES/shared-mime-info.mo"),
-        reason="need Italian shared-mime-info translation")
     def test_translate_mimetype(self):
-        self.assertEqual(ENGLISH.translate_mimetype("PDF document"),
+        self.assertEqual(ENGLISH.translate_mimetype("application/pdf"),
                          "PDF document")
-        self.assertEqual(ITALIAN.translate_mimetype("PDF document"),
+        self.assertEqual(ITALIAN.translate_mimetype("application/pdf"),
                          "Documento PDF")
-
-    def test_graceful_failure(self):
-        self.assertEqual(ENGLISH.translate_mimetype("Not a MIME type"),
-                         "Not a MIME type")
-        self.assertEqual(ITALIAN.translate_mimetype("Not a MIME type"),
-                         "Not a MIME type")
+        self.assertEqual(CHINESE.translate_mimetype("application/pdf"),
+                         "PDF 文档")
+        self.assertEqual(CHINESE_TRADITIONAL.translate_mimetype("application/pdf"),
+                         "PDF 文件")
 
 
 class TestFilterLanguageCodes(unittest.TestCase):

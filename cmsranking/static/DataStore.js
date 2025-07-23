@@ -914,6 +914,10 @@ var DataStore = new function () {
         self.update_network_status(0);
     });
 
+    self.team_create.add(function() {
+        $(document.body).removeClass("teams-hidden");
+    });
+
 
     ////// Sorted contest list
 

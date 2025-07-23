@@ -42,8 +42,7 @@ from cms.locale import Translation, DEFAULT_TRANSLATION
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from cmscommon.datetime import make_datetime, make_timestamp, utc, local_tz
-from cmscommon.mimetypes import get_type_for_file_name, get_name_for_type, \
-    get_icon_for_type
+from cmscommon.mimetypes import get_type_for_file_name, get_icon_for_type
 
 
 @contextfilter
@@ -211,7 +210,6 @@ def instrument_cms_toolbox(env: Environment):
     env.globals["get_score_type"] = safe_get_score_type
 
     env.globals["get_mimetype_for_file_name"] = get_type_for_file_name
-    env.globals["get_name_for_mimetype"] = get_name_for_type
     env.globals["get_icon_for_mimetype"] = get_icon_for_type
 
     env.filters["to_language"] = get_language
