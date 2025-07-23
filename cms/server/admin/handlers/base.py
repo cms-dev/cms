@@ -46,10 +46,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, subqueryload
 
@@ -81,7 +78,7 @@ def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
     """
 
     def helper(
-        self: tornado_web.RequestHandler, dest: dict, name: str, empty: object = empty
+        self: tornado.web.RequestHandler, dest: dict, name: str, empty: object = empty
     ):
         """Read the argument called "name" and save it in "dest".
 
@@ -194,7 +191,7 @@ def require_permission(permission: str = "authenticated", self_allowed: bool = F
 
         """
         @wraps(func)
-        @tornado_web.authenticated
+        @tornado.web.authenticated
         def newfunc(self: _T, *args: _P.args, **kwargs: _P.kwargs):
             """Check if the permission is present before calling the function.
 
@@ -213,7 +210,7 @@ def require_permission(permission: str = "authenticated", self_allowed: bool = F
                     # the current user id.
                     return func(self, *args, **kwargs)
                 else:
-                    raise tornado_web.HTTPError(403, "Admin is not authorized")
+                    raise tornado.web.HTTPError(403, "Admin is not authorized")
 
         return newfunc
 
@@ -302,7 +299,7 @@ class BaseHandler(CommonRequestHandler):
             session = self.sql_session
         entity = cls.get_from_id(ident, session)
         if entity is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
         return entity
 
     def prepare(self):
@@ -354,7 +351,7 @@ class BaseHandler(CommonRequestHandler):
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
-                kwargs["exc_info"][0] != tornado_web.HTTPError:
+                kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
                 "Uncaught exception (%r) while processing a request: %s",

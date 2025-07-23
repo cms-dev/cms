@@ -70,7 +70,7 @@ On Ubuntu 24.04, one will need to run the following script as root to satisfy al
         postgresql postgresql-client \
         python3.12 python3.12-dev python3-pip python3-venv \
         libpq-dev libcups2-dev libyaml-dev libffi-dev \
-        cppreference-doc-en-html zip curl
+        shared-mime-info cppreference-doc-en-html zip curl
 
     # Isolate from upstream package repository
     echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ noble-isolate main' >/etc/apt/sources.list.d/isolate.list
@@ -92,7 +92,8 @@ On Arch Linux, run the following commands as root to install almost all dependen
 .. sourcecode:: bash
 
     pacman -S base-devel jdk8-openjdk fpc postgresql postgresql-client \
-        python python-pip postgresql-libs libcups libyaml
+        python python-pip postgresql-libs libcups libyaml \
+        shared-mime-info
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/cppreference/

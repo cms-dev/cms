@@ -44,10 +44,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest, contest
@@ -126,7 +123,7 @@ class ContestHandler(BaseHandler):
                 # the one from the base class is enough to display a 404 page.
                 super().prepare()
                 self.r_params = super().render_params()
-                raise tornado_web.HTTPError(404)
+                raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
             self.contest = Contest.get_from_id(
@@ -164,7 +161,7 @@ class ContestHandler(BaseHandler):
         authorization_header = self.request.headers.get(
             "X-CMS-Authorization", None)
         if authorization_header is not None:
-            authorization_header = tornado_web.decode_signed_value(self.application.settings["cookie_secret"],
+            authorization_header = tornado.web.decode_signed_value(self.application.settings["cookie_secret"],
                                                                    cookie_name, authorization_header)
 
         try:
