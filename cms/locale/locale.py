@@ -33,7 +33,6 @@ from collections.abc import Iterable
 import copy
 import logging
 import math
-import os
 
 import babel.core
 import babel.dates
@@ -43,8 +42,8 @@ import babel.support
 import babel.units
 import importlib.resources
 
-from cms import config
 from cmscommon.datetime import utc
+from cmscommon.mimetypes import get_name_for_type
 from datetime import datetime, tzinfo, timedelta
 
 
@@ -70,9 +69,6 @@ class Translation:
             self.translation = babel.support.Translations(mofile, domain="cms")
         else:
             self.translation = babel.support.NullTranslations()
-        self.mimetype_translation = babel.support.Translations.load(
-            os.path.join(config.shared_mime_info_prefix, "share", "locale"),
-            [self.locale], "shared-mime-info")
 
     @property
     def identifier(self) -> str:
@@ -266,7 +262,11 @@ class Translation:
             return code
 
     def translate_mimetype(self, mimetype: str) -> str:
-        return self.mimetype_translation.gettext(mimetype)
+        lang_code = self.identifier
+        alt_lang_code = babel.core.get_locale_identifier(
+            (self.locale.language, self.locale.territory), sep="_"
+        )
+        return get_name_for_type(mimetype, lang_code, alt_lang_code)
 
 
 DEFAULT_TRANSLATION = Translation("en")

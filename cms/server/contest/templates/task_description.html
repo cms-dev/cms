@@ -177,10 +177,8 @@
     {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
         {% if mime_type is not none %}
-            {% set type_name = get_name_for_mimetype(mime_type) %}
             {% set type_icon = get_icon_for_mimetype(mime_type) %}
         {% else %}
-            {% set type_name = none %}
             {% set type_icon = none %}
         {% endif %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
@@ -195,8 +193,8 @@
                         <span class="name">{{ filename }}</span>
                         <span class="size">{{ file_size|format_size }}</span>
                     </span>
-            {% if type_name is not none %}
-                    <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
+            {% if mime_type is not none %}
+                    <span class="type">{{ translation.translate_mimetype(mime_type) }}</span>
             {% endif %}
                 </a>
             </li>

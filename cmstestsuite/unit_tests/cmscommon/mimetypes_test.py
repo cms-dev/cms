@@ -42,11 +42,11 @@ class TestGetIconForType(unittest.TestCase):
 class TestGetNameForType(unittest.TestCase):
 
     def test_basic(self):
-        self.assertEqual(get_name_for_type("application/pdf"),
+        self.assertEqual(get_name_for_type("application/pdf", "en", "en"),
                          "PDF document")
 
     def test_alias(self):
-        self.assertEqual(get_name_for_type("text/x-octave"),
+        self.assertEqual(get_name_for_type("text/x-octave", "en", "en"),
                          "MATLAB file")
 
 
