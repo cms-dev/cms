@@ -10,6 +10,7 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -49,11 +50,13 @@ try:
 except ImportError:
     import tornado.web as tornado_web
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import PrintJob, User, Participation, Team
+from cms.db import Contest, PrintJob, User, Participation, Team
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
+from cms.grading.scoring import task_score
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
@@ -79,8 +82,49 @@ class MainHandler(ContestHandler):
     """
     @multi_contest
     def get(self):
+        self.r_params = self.render_params()
         self.render("overview.html", **self.r_params)
 
+    def render_params(self):
+        ret = super().render_params()
+
+        if self.current_user is not None:
+            # This massive joined load gets all the information which we will need
+            participation = self.sql_session.query(Participation)\
+                .filter(Participation.id == self.current_user.id)\
+                .options(
+                    joinedload('user'),
+                    joinedload('contest'),
+                    joinedload('submissions').joinedload('token'),
+                    joinedload('submissions').joinedload('results'),
+            )\
+                .first()
+
+            self.contest = self.sql_session.query(Contest)\
+                .filter(Contest.id == participation.contest.id)\
+                .options(
+                    joinedload('tasks')
+                    .joinedload('active_dataset')
+            )\
+                .first()
+
+            ret["participation"] = participation
+
+            # Compute public scores for all tasks
+            task_scores = {}
+            for task in self.contest.tasks:
+                score_type = task.active_dataset.score_type_object
+                max_public_score = round(
+                    score_type.max_public_score, task.score_precision)
+                public_score, _ = task_score(
+                    participation, task, public=True, rounded=True)
+                public_score = round(public_score, task.score_precision)
+                task_scores[task.id] = (public_score,
+                                        max_public_score,
+                                        score_type.format_score(public_score, score_type.max_public_score, None, task.score_precision, translation=self.translation))
+            ret["task_scores"] = task_scores
+
+        return ret
 
 class RegistrationHandler(ContestHandler):
     """Registration handler.
@@ -384,7 +428,7 @@ class DocumentationHandler(ContestHandler):
         language_docs = []
         if config.docs_path is not None:
             for language in languages:
-                ext = language.source_extensions[0][1:]  # remove dot
+                ext = language.source_extensions[0][1:] # remove dot
                 path = os.path.join(config.docs_path, ext)
                 if os.path.exists(path):
                     language_docs.append((language.name, ext))
