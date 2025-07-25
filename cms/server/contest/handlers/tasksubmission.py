@@ -113,7 +113,7 @@ class SubmitHandler(ContestHandler):
             # (nor it discloses information to the user), but it is
             # useful for automatic testing to obtain the submission id).
             query_args["submission_id"] = \
-                encrypt_number(submission.id, config.secret_key)
+                encrypt_number(submission.id, config.web_server.secret_key)
 
         self.redirect(self.contest_url("tasks", task.name, "submissions",
                                        **query_args))

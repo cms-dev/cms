@@ -41,7 +41,7 @@ FILE_CONTENT = b"this is a pdf file"
 FILE_DIGEST = bytes_digest(FILE_CONTENT)
 
 
-@patch.object(config, "printer", "not none")
+@patch.object(config.printing, "printer", "not none")
 class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
@@ -69,7 +69,7 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
                                                            self.timestamp))
 
     def test_printing_not_allowed(self):
-        with patch.object(config, "printer", None):
+        with patch.object(config.printing, "printer", None):
             with self.assertRaises(PrintingDisabled):
                 self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 
@@ -92,12 +92,12 @@ class TestAcceptPrintJob(DatabaseMixin, unittest.TestCase):
         with self.assertRaises(UnacceptablePrintJob):
             self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 
-    @patch.object(config, "max_print_length", len(FILE_CONTENT) - 1)
+    @patch.object(config.printing, "max_print_length", len(FILE_CONTENT) - 1)
     def test_file_too_big(self):
         with self.assertRaises(UnacceptablePrintJob):
             self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
 
-    @patch.object(config, "max_jobs_per_user", 1)
+    @patch.object(config.printing, "max_jobs_per_user", 1)
     def test_too_many_print_jobs(self):
         self.call({"file": [MockHTTPFile("myfile.pdf", FILE_CONTENT)]})
         with self.assertRaises(UnacceptablePrintJob):
