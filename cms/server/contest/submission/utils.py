@@ -146,7 +146,7 @@ def store_local_copy(
 
     """
     try:
-        path = os.path.join(path.replace("%s", config.data_dir),
+        path = os.path.join(path.replace("%s", config.global_.data_dir),
                             participation.user.username)
         if not os.path.exists(path):
             os.makedirs(path)

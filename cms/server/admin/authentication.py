@@ -130,7 +130,7 @@ class AWSAuthMiddleware:
         self._local.request = Request(environ)
         self._local.cookie = JSONSecureCookie.load_cookie(
             self._request, AWSAuthMiddleware.COOKIE,
-            hex_to_bin(config.secret_key))
+            hex_to_bin(config.web_server.secret_key))
         self._verify_cookie()
 
         def my_start_response(status, headers, exc_info=None):
@@ -144,7 +144,7 @@ class AWSAuthMiddleware:
             response = Response(status=status, headers=headers)
             self._cookie.save_cookie(
                 response, AWSAuthMiddleware.COOKIE, httponly=True,
-                max_age=config.admin_cookie_duration)
+                max_age=config.admin_web_server.cookie_duration)
             return start_response(
                 status, response.headers.to_wsgi_list(), exc_info)
 
@@ -170,6 +170,6 @@ class AWSAuthMiddleware:
             self.clear()
             return
 
-        if make_timestamp() - timestamp > config.admin_cookie_duration:
+        if make_timestamp() - timestamp > config.admin_web_server.cookie_duration:
             self.clear()
             return

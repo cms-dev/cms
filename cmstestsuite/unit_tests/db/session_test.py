@@ -27,7 +27,7 @@ from cms.db.session import custom_psycopg2_connection
 
 def _patch_db(s):
     """Patch the db connection string in the configuration"""
-    return patch.object(config, "database", s)
+    return patch.object(config.database, "url", s)
 
 
 @patch("psycopg2.connect")

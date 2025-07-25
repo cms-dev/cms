@@ -129,10 +129,10 @@ class TelegramBot:
         self.application.add_handler(CallbackQueryHandler(self.answer))
 
         self.question_storage_dir = os.path.join(
-            config.data_dir, "telegram", "question"
+            config.global_.data_dir, "telegram", "question"
         )
         self.announcement_storage_dir = os.path.join(
-            config.data_dir, "telegram", "announcement"
+            config.global_.data_dir, "telegram", "announcement"
         )
         os.makedirs(self.question_storage_dir, exist_ok=True)
         os.makedirs(self.announcement_storage_dir, exist_ok=True)
@@ -464,12 +464,12 @@ def main():
     if contest_id == "ALL":
         contest_id = None
 
-    if config.telegram_bot_token is None or config.telegram_bot_chat_id is None:
+    if config.telegram_bot is None:
         raise ConfigError(
             "Need to configure the Telegram bot before starting it")
 
     bot = TelegramBot(
-        config.telegram_bot_chat_id, config.telegram_bot_token, contest_id
+        config.telegram_bot.chat_id, config.telegram_bot.bot_token, contest_id
     )
 
     asyncio.run(bot.run())

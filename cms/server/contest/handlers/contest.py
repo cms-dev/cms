@@ -181,7 +181,11 @@ class ContestHandler(BaseHandler):
             self.clear_cookie(cookie_name)
         elif self.refresh_cookie:
             self.set_secure_cookie(
-                cookie_name, cookie, expires_days=None, max_age=config.cookie_duration)
+                cookie_name,
+                cookie,
+                expires_days=None,
+                max_age=config.contest_web_server.cookie_duration,
+            )
 
         self.impersonated_by_admin = impersonated
         return participation
@@ -196,7 +200,7 @@ class ContestHandler(BaseHandler):
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
-        ret["printing_enabled"] = (config.printer is not None)
+        ret["printing_enabled"] = (config.printing.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
         ret["testing_enabled"] = self.contest.allow_user_tests
 

@@ -35,7 +35,7 @@ import chardet
 import gevent
 import gevent.socket
 
-from cms import ServiceCoord, Address, ConfigError, async_config
+from cms import ServiceCoord, Address, ConfigError, config
 import typing
 
 if typing.TYPE_CHECKING:
@@ -144,7 +144,7 @@ def get_safe_shard(service: str, provided_shard: int | None) -> int:
             return computed_shard
     else:
         coord = ServiceCoord(service, provided_shard)
-        if coord not in async_config.core_services:
+        if coord not in config.services:
             logger.critical("The provided shard number for service %s "
                             "cannot be found in the configuration, "
                             "quitting.", service)
@@ -160,10 +160,8 @@ def get_service_address(key: ServiceCoord) -> Address:
     returns: listening address of key.
 
     """
-    if key in async_config.core_services:
-        return async_config.core_services[key]
-    elif key in async_config.other_services:
-        return async_config.other_services[key]
+    if key in config.services:
+        return config.services[key]
     else:
         raise KeyError("Service not found.")
 

@@ -65,7 +65,6 @@ class WebService(Service):
         rpc_enabled = parameters.pop('rpc_enabled', False)
         rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
-        is_proxy_used = parameters.pop('is_proxy_used', None)
         num_proxies_used = parameters.pop('num_proxies_used', None)
 
         self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
@@ -101,10 +100,7 @@ class WebService(Service):
         # were allowed to directlty communicate with the server they
         # could fake their IP and compromise the security of IP lock).
         if num_proxies_used is None:
-            if is_proxy_used:
-                num_proxies_used = 1
-            else:
-                num_proxies_used = 0
+            num_proxies_used = 0
 
         if num_proxies_used > 0:
             self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)

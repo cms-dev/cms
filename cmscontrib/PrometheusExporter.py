@@ -302,12 +302,12 @@ def main():
     parser.add_argument(
         "--host",
         help="IP address to bind to",
-        default=config.prometheus_listen_address,
+        default=config.prometheus.listen_address,
     )
     parser.add_argument(
         "--port",
         help="Port to use",
-        default=config.prometheus_listen_port,
+        default=config.prometheus.listen_port,
         type=int,
     )
     parser.add_argument(
