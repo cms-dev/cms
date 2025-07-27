@@ -46,7 +46,7 @@ def maybe_send_notification(submission_id: int):
     rs.disconnect()
 
 
-def language_from_submitted_files(files: dict[str, str]) -> Language | None:
+def language_from_submitted_files(files: dict[str, str], contest_languages: list[Language]) -> Language | None:
     """Return the language inferred from the submitted files.
 
     files: dictionary mapping the expected filename to a path in
@@ -61,7 +61,7 @@ def language_from_submitted_files(files: dict[str, str]) -> Language | None:
     # TODO: deduplicate with the code in SubmitHandler.
     language = None
     for filename in files.keys():
-        this_language = filename_to_language(files[filename])
+        this_language = filename_to_language(files[filename], contest_languages)
         if this_language is None and ".%l" in filename:
             raise ValueError(
                 "Cannot recognize language for file `%s'." % filename)
@@ -126,7 +126,11 @@ def add_submission(
                 if given_language is not None:
                     language = get_language(given_language)
                 else:
-                    language = language_from_submitted_files(files)
+                    contest_languages = [
+                        get_language(language)
+                        for language in task.contest.languages
+                    ]
+                    language = language_from_submitted_files(files, contest_languages)
             except ValueError as e:
                 logger.critical(e)
                 return False
