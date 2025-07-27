@@ -440,6 +440,7 @@ class ResourceService(Service):
             logger.error("Unable to decode service shard.")
 
         remote_service = self.connect_to(ServiceCoord(name, shard))
+        remote_service.wait_for_connection(timeout=5)
         result = remote_service.quit(reason="Asked by ResourceService")
         return result.get()
 
