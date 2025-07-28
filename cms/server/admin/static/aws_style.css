@@ -382,6 +382,36 @@ table td.wrapping-options label {
     margin-right: 15px;
 }
 
+/* Language grid layout for better readability */
+table td.language-grid {
+    width: 100%;
+}
+
+.language-grid-container {
+    width: 100%;
+    max-width: 600px;
+}
+
+.language-row {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.language-item {
+    flex: 1;
+    min-width: 120px;
+    padding-right: 10px;
+}
+
+.language-item label {
+    display: block;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.language-item input[type="checkbox"] {
+    margin-right: 6px;
+}
 table td.partial::after {
     content: "*";
 }

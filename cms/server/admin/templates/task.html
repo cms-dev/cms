@@ -137,13 +137,31 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                                     Otherwise, only the selected languages (which must be a subset of contest languages) are allowed."></span>
           Allowed programming languages
         </td>
-        <td class="wrapping-options">
+        <td class="language-grid">
           {% if task.contest %}
+            {% set contest_langs = [] %}
             {% for lang in LANGUAGES %}
               {% if lang.name in task.contest.languages %}
-                <label><input type="checkbox" name="allowed_languages" value="{{ lang.name }}" {{ "checked" if not task.allowed_languages or lang.name in task.allowed_languages else "" }}>{{ lang.name }}</label>
+                {% set _ = contest_langs.append(lang.name) %}
               {% endif %}
             {% endfor %}
+
+            <div class="language-grid-container">
+              {% for i in range(0, contest_langs|length, 3) %}
+                <div class="language-row">
+                  {% for j in range(3) %}
+                    {% if i + j < contest_langs|length %}
+                      {% set lang_name = contest_langs[i + j] %}
+                      <div class="language-item">
+                        <label><input type="checkbox" name="allowed_languages" value="{{ lang_name }}" {{ "checked" if not task.allowed_languages or lang_name in task.allowed_languages else "" }}>{{ lang_name }}</label>
+                      </div>
+                    {% else %}
+                      <div class="language-item"></div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
           {% else %}
             <em>Task must be assigned to a contest to configure allowed languages.</em>
           {% endif %}
