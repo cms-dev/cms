@@ -116,6 +116,10 @@ class Task(Base):
         nullable=False,
         default=[])
 
+    # The list of names of programming languages allowed for this task.
+    # If empty, all contest languages are allowed.
+    allowed_languages: list[str] = Column(ARRAY(String), nullable=False, default=[])
+
     # The parameters that control task-tokens follow. Note that their
     # effect during the contest depends on the interaction with the
     # parameters that control contest-tokens, defined on the Contest.

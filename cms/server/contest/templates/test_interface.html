@@ -2,6 +2,23 @@
 
 {% set page = "test_interface" %}
 
+{% block js_init %}
+// Override LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
+{% for lang in task_languages %}
+    '{{ lang }}': {
+{% for extension in (lang|to_language).source_extensions %}
+        '{{ extension }}': true,
+{% endfor %}
+    },
+{% endfor %}
+};
+
+// Override the global LANGUAGES with task-specific ones for this page
+LANGUAGES = TASK_LANGUAGES;
+{% endblock js_init %}
+
 {% block additional_js %}
 $(document).on("click", ".user_test_list tbody tr td.status .details", function (event) {
     var $this = $(this);
@@ -118,7 +135,8 @@ $(document).ready(function () {
                 <div class="control-group">
                     <div class="controls">
                         <select name="language">
-{% for lang in contest.languages %}
+{% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
+{% for lang in task_languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
 {% endfor %}
                         </select>

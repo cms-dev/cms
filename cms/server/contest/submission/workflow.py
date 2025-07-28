@@ -62,6 +62,24 @@ def N_(msgid):
     return msgid
 
 
+def get_task_allowed_languages(task: Task) -> list[str] | None:
+    """Get the list of allowed languages for a task.
+
+    If the task has specific allowed languages configured, return those.
+    Otherwise, return the contest's allowed languages.
+
+    task: the task object
+
+    return: list of allowed language names, or None if all languages are allowed
+    """
+    # If task has specific language restrictions, use those
+    if task.allowed_languages:
+        return task.allowed_languages
+
+    # Otherwise, use contest language restrictions
+    return task.contest.languages if task.contest else None
+
+
 class UnacceptableSubmission(Exception):
 
     def __init__(self, subject: str, text: str, text_params: object = None):
@@ -193,8 +211,11 @@ def accept_submission(
 
     try:
         files, language = match_files_and_language(
-            received_files, language_name, required_codenames,
-            contest.languages)
+            received_files,
+            language_name,
+            required_codenames,
+            get_task_allowed_languages(task),
+        )
     except InvalidFilesOrLanguage as err:
         logger.info(f'Submission rejected: {err}')
         raise UnacceptableSubmission(
@@ -387,8 +408,11 @@ def accept_user_test(
 
     try:
         files, language = match_files_and_language(
-            received_files, language_name, required_codenames,
-            contest.languages)
+            received_files,
+            language_name,
+            required_codenames,
+            get_task_allowed_languages(task),
+        )
     except InvalidFilesOrLanguage as err:
         logger.info(f'Test rejected: {err}')
         raise UnacceptableUserTest(

@@ -6,6 +6,23 @@
 
 {% set score_type = get_score_type(dataset=task.active_dataset) %}
 
+{% block js_init %}
+// Override LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
+{% for lang in task_languages %}
+    '{{ lang }}': {
+{% for extension in (lang|to_language).source_extensions %}
+        '{{ extension }}': true,
+{% endfor %}
+    },
+{% endfor %}
+};
+
+// Override the global LANGUAGES with task-specific ones for this page
+LANGUAGES = TASK_LANGUAGES;
+{% endblock js_init %}
+
 {# Whether tokens are allowed on this contest. #}
 {% set can_use_tokens_in_contest =
        tokens_contest != TOKEN_MODE_DISABLED
@@ -262,7 +279,8 @@ $(document).ready(function () {
                 <div class="control-group">
                     <div class="controls">
                         <select name="language">
-  {% for lang in contest.languages %}
+  {% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
+  {% for lang in task_languages %}
                             <option value="{{ lang }}">{{ lang }}</option>
   {% endfor %}
                         </select>
