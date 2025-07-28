@@ -141,7 +141,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           {% if task.contest %}
             {% for lang in LANGUAGES %}
               {% if lang.name in task.contest.languages %}
-                <label><input type="checkbox" name="allowed_languages" value="{{ lang.name }}" {{ "checked" if lang.name in task.allowed_languages else "" }}>{{ lang.name }}</label>
+                <label><input type="checkbox" name="allowed_languages" value="{{ lang.name }}" {{ "checked" if not task.allowed_languages or lang.name in task.allowed_languages else "" }}>{{ lang.name }}</label>
               {% endif %}
             {% endfor %}
           {% else %}

@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -118,7 +119,10 @@ class Task(Base):
 
     # The list of names of programming languages allowed for this task.
     # If empty, all contest languages are allowed.
-    allowed_languages: list[str] = Column(ARRAY(String), nullable=False, default=[])
+    allowed_languages: list[str] = Column(
+        ARRAY(String),
+        nullable=False,
+        default=[])
 
     # The parameters that control task-tokens follow. Note that their
     # effect during the contest depends on the interaction with the
