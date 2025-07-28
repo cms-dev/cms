@@ -382,14 +382,9 @@ table td.wrapping-options label {
     margin-right: 15px;
 }
 
-/* Language grid layout for better readability */
-table td.language-grid {
-    width: 100%;
-}
-
 .language-grid-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 500px;
 }
 
 .language-row {
