@@ -50,7 +50,7 @@ def get_language(name: str) -> Language:
     return _BY_NAME[name]
 
 
-def filename_to_language(filename: str) -> Language | None:
+def filename_to_language(filename: str, available_languages: list[Language] | None=None) -> Language | None:
     """Return one of the languages inferred from the given filename.
 
     filename: the file to test.
@@ -59,12 +59,14 @@ def filename_to_language(filename: str) -> Language | None:
     matching the given filename, or None if none match.
 
     """
+    if available_languages is None:
+        available_languages = LANGUAGES
     ext_index = filename.rfind(".")
     if ext_index == -1:
         return None
     ext = filename[ext_index:]
     names = sorted(language.name
-                   for language in LANGUAGES
+                   for language in available_languages
                    if ext in language.source_extensions)
     return None if len(names) == 0 else get_language(names[0])
 

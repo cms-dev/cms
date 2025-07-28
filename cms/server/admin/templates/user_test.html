@@ -92,10 +92,12 @@
         <td>Failures during evaluation</td>
         <td>{{ utr.evaluation_tries }}</td>
       </tr>
-      <tr>
-        <td>Evaluation sandbox</td>
-        <td>{{ utr.evaluation_sandbox_paths|join(" ") }}</td>
-      </tr>
+        {% if utr.evaluated() %}
+        <tr>
+          <td>Evaluation sandbox</td>
+          <td>{{ utr.evaluation_sandbox_paths|join(" ") }}</td>
+        </tr>
+        {% endif %}
       {% endif %}
     </tbody>
   </table>
