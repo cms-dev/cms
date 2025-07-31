@@ -3,3 +3,4 @@ Dockerfile
 .vagrant/
 codecov/
 .dev/
+.venv/
