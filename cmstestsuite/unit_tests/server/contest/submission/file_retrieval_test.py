@@ -19,6 +19,7 @@
 
 import base64
 import io
+import sys
 import tarfile
 import unittest
 import zipfile
@@ -94,6 +95,7 @@ class TestExtractFilesFromArchive(unittest.TestCase):
             extract_files_from_archive(archive_data.getvalue()),
             [ReceivedFile(None, "foo", b"some content")])
 
+    @unittest.skipIf(sys.version_info < (3, 12), "this archive crashes zipfile before py3.12")
     def test_empty_filename(self):
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
