@@ -118,11 +118,10 @@ class Task(Base):
         default=[])
 
     # The list of names of programming languages allowed for this task.
-    # If empty, all contest languages are allowed.
-    allowed_languages: list[str] = Column(
-        ARRAY(String),
-        nullable=False,
-        default=[])
+    # If null, all contest languages are allowed.
+    allowed_languages: list[str] | None = Column(
+        ARRAY(String), nullable=True, default=None
+    )
 
     # The parameters that control task-tokens follow. Note that their
     # effect during the contest depends on the interaction with the
@@ -279,6 +278,21 @@ class Task(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
+
+    def get_allowed_languages(self) -> list[str] | None:
+        """Get the list of allowed languages for this task.
+
+        If the task has specific allowed languages configured, return those.
+        Otherwise, return the contest's allowed languages.
+
+        return: list of allowed language names, or None if no contest is set
+        """
+        # If task has specific language restrictions, use those
+        if self.allowed_languages is not None:
+            return self.allowed_languages
+
+        # Otherwise, use contest language restrictions
+        return self.contest.languages if self.contest else None
 
 
 class Statement(Base):

@@ -151,15 +151,17 @@ class TaskHandler(BaseHandler):
             # Process allowed languages
             selected_languages = self.get_arguments("allowed_languages")
             if task.contest:
-                # If all contest languages are selected, store as empty list (no restriction)
+                # If all contest languages are selected, store as None (no restriction)
                 # Otherwise, store the specific selection
                 contest_languages = set(task.contest.languages)
                 if set(selected_languages) == contest_languages:
-                    attrs["allowed_languages"] = []
+                    attrs["allowed_languages"] = None
                 else:
                     attrs["allowed_languages"] = selected_languages
             else:
-                attrs["allowed_languages"] = selected_languages
+                attrs["allowed_languages"] = (
+                    selected_languages if selected_languages else None
+                )
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")

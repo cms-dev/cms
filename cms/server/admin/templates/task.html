@@ -153,7 +153,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                     {% if i + j < contest_langs|length %}
                       {% set lang_name = contest_langs[i + j] %}
                       <div class="language-item">
-                        <label><input type="checkbox" name="allowed_languages" value="{{ lang_name }}" {{ "checked" if not task.allowed_languages or lang_name in task.allowed_languages else "" }}>{{ lang_name }}</label>
+                        <label><input type="checkbox" name="allowed_languages" value="{{ lang_name }}" {{ "checked" if task.allowed_languages is none or lang_name in (task.allowed_languages or []) else "" }}>{{ lang_name }}</label>
                       </div>
                     {% else %}
                       <div class="language-item"></div>

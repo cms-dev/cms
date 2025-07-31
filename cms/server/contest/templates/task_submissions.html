@@ -7,10 +7,9 @@
 {% set score_type = get_score_type(dataset=task.active_dataset) %}
 
 {% block js_init %}
-// Override LANGUAGES for task-specific language filtering
+// Define TASK_LANGUAGES for task-specific language filtering
 var TASK_LANGUAGES = {
-{% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
-{% for lang in task_languages %}
+{% for lang in task.get_allowed_languages() or [] %}
     '{{ lang }}': {
 {% for extension in (lang|to_language).source_extensions %}
         '{{ extension }}': true,
@@ -18,9 +17,6 @@ var TASK_LANGUAGES = {
     },
 {% endfor %}
 };
-
-// Override the global LANGUAGES with task-specific ones for this page
-LANGUAGES = TASK_LANGUAGES;
 {% endblock js_init %}
 
 {# Whether tokens are allowed on this contest. #}
@@ -271,7 +267,7 @@ $(document).ready(function () {
                         <input type="file" class="input-xlarge"
                                id="input{{ loop.index0 }}" name="{{ filename }}"
                                onchange="CMS.CWSUtils.filter_languages($(this).parents('form').find('select[name=language] option'),
-                                                                       $(this).parents('form').find('input[type=file]'))"/>
+                                                                       $(this).parents('form').find('input[type=file]'), TASK_LANGUAGES)"/>
                     </div>
                 </div>
   {% endfor %}
@@ -279,8 +275,7 @@ $(document).ready(function () {
                 <div class="control-group">
                     <div class="controls">
                         <select name="language">
-  {% set task_languages = task.allowed_languages if task.allowed_languages else contest.languages %}
-  {% for lang in task_languages %}
+  {% for lang in task.get_allowed_languages() or [] %}
                             <option value="{{ lang }}">{{ lang }}</option>
   {% endfor %}
                         </select>
