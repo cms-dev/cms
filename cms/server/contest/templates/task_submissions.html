@@ -6,6 +6,19 @@
 
 {% set score_type = get_score_type(dataset=task.active_dataset) %}
 
+{% block js_init %}
+// Define TASK_LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{% for lang in task.get_allowed_languages() or [] %}
+    '{{ lang }}': {
+{% for extension in (lang|to_language).source_extensions %}
+        '{{ extension }}': true,
+{% endfor %}
+    },
+{% endfor %}
+};
+{% endblock js_init %}
+
 {# Whether tokens are allowed on this contest. #}
 {% set can_use_tokens_in_contest =
        tokens_contest != TOKEN_MODE_DISABLED
@@ -254,7 +267,7 @@ $(document).ready(function () {
                         <input type="file" class="input-xlarge"
                                id="input{{ loop.index0 }}" name="{{ filename }}"
                                onchange="CMS.CWSUtils.filter_languages($(this).parents('form').find('select[name=language] option'),
-                                                                       $(this).parents('form').find('input[type=file]'))"/>
+                                                                       $(this).parents('form').find('input[type=file]'), TASK_LANGUAGES)"/>
                     </div>
                 </div>
   {% endfor %}
@@ -262,7 +275,7 @@ $(document).ready(function () {
                 <div class="control-group">
                     <div class="controls">
                         <select name="language">
-  {% for lang in contest.languages %}
+  {% for lang in task.get_allowed_languages() or [] %}
                             <option value="{{ lang }}">{{ lang }}</option>
   {% endfor %}
                         </select>
