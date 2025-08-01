@@ -292,6 +292,7 @@ var UserDetail = new function () {
         } else {
             for (var i in self.submissions[task_id]) {
                 var submission = self.submissions[task_id][i];
+                var rounded_extra = submission["extra"].map(x => round_to_str(parseFloat(x), DataStore.tasks[task_id]['score_precision']));
                 time = submission["time"] - DataStore.contests[DataStore.tasks[task_id]["contest"]]["begin"];
                 time = format_time(time);
                 res += " \
@@ -299,7 +300,7 @@ var UserDetail = new function () {
             <td>" + time + "</td> \
             <td>" + round_to_str(submission['score'], DataStore.tasks[task_id]['score_precision']) + "</td> \
             <td>" + (submission["token"] ? 'Yes' : 'No') + "</td> \
-            " + (submission["extra"].length > 0 ? "<td>" + submission["extra"].join("</td><td>") + "</td>" : "") + " \
+            " + (submission["extra"].length > 0 ? "<td>" + rounded_extra.join("</td><td>") + "</td>" : "") + " \
         </tr>";
             }
         }
