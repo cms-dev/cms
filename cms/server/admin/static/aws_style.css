@@ -382,22 +382,6 @@ table td.wrapping-options label {
     margin-right: 15px;
 }
 
-.language-grid-container {
-    width: 100%;
-    max-width: 500px;
-}
-
-.language-row {
-    display: flex;
-    margin-bottom: 8px;
-}
-
-.language-item {
-    flex: 1;
-    min-width: 120px;
-    padding-right: 10px;
-}
-
 .language-item label {
     display: block;
     white-space: nowrap;
