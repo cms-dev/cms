@@ -30,23 +30,20 @@ from cms import Address, ServiceCoord, \
     get_safe_shard, get_service_address, get_service_shards, rmtree
 
 
-class FakeAsyncConfig:
-    """Fake class for the configuration of service addresses."""
-    core_services = {
-        ServiceCoord("Service", 0): Address("0.0.0.0", 0),
-        ServiceCoord("Service", 1): Address("0.0.0.1", 1),
-        }
-    other_services = {}
+fake_async_config = {
+    ServiceCoord("Service", 0): Address("0.0.0.0", 0),
+    ServiceCoord("Service", 1): Address("0.0.0.1", 1),
+}
 
 
 def _set_up_async_config(restore=False):
     """Fake the async config."""
     if not restore:
         if not hasattr(_set_up_async_config, "original"):
-            _set_up_async_config.original = cms.util.async_config
-        cms.util.async_config = FakeAsyncConfig()
+            _set_up_async_config.original = cms.config.services
+        cms.config.services = fake_async_config
     else:
-        cms.util.async_config = _set_up_async_config.original
+        cms.config.services = _set_up_async_config.original
 
 
 def _set_up_ip_addresses(addresses=None, restore=False):

@@ -352,8 +352,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.evaluation_step_after_run.side_effect = \
             lambda sandbox, *args, **kwargs: sandbox_to_return_value[sandbox]
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
-    @patch.object(config, "trusted_sandbox_max_memory_kib", 1234 * 1024)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config.sandbox, "trusted_sandbox_max_memory_kib", 1234 * 1024)
     def test_single_process_success(self):
         tt, job = self.prepare(
             [1, "stub", "fifo_io"],
@@ -405,7 +405,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         sandbox_mgr.cleanup.assert_called_once_with(delete=True)
         sandbox_usr.cleanup.assert_called_once_with(delete=True)
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 1)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 1)
     def test_single_process_success_long_time_limit(self):
         # If the time limit is longer than trusted step default time limit,
         # the manager run should use the task time limit.
@@ -596,8 +596,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                  stdout_redirect="/fifo0/u0_to_m",
                  multiprocess=ANY)])
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
-    @patch.object(config, "trusted_sandbox_max_memory_kib", 1234 * 1024)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config.sandbox, "trusted_sandbox_max_memory_kib", 1234 * 1024)
     def test_many_processes_success(self):
         tt, job = self.prepare(
             [2, "stub", "fifo_io"],
@@ -666,7 +666,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         sandbox_usr0.cleanup.assert_called_once_with(delete=True)
         sandbox_usr1.cleanup.assert_called_once_with(delete=True)
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 3)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 3)
     def test_many_processes_success_long_time_limit(self):
         # If the time limit is longer than trusted step default time limit,
         # the manager run should use the task time limit.

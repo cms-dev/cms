@@ -123,8 +123,8 @@ def validate_login(
         return None, None
 
     if admin_token != "":
-        if (config.contest_admin_token is not None
-            and admin_token != config.contest_admin_token):
+        if (config.contest_web_server.contest_admin_token is not None
+            and admin_token != config.contest_web_server.contest_admin_token):
             log_failed_attempt("invalid admin token")
             return None, None
 
@@ -375,9 +375,11 @@ def _authenticate_request_from_cookie_or_authorization_header(
                     *args)
 
     # Check if the cookie is expired.
-    if timestamp - last_update > timedelta(seconds=config.cookie_duration):
+    if timestamp - last_update > timedelta(
+        seconds=config.contest_web_server.cookie_duration
+    ):
         log_failed_attempt("cookie expired (lasts %d seconds)",
-                           config.cookie_duration)
+                           config.contest_web_server.cookie_duration)
         return None, None, False
 
     # Load participation from DB and make sure it exists.

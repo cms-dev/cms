@@ -90,7 +90,7 @@ def safe_put_data(ranking: str, resource: str, data: dict, operation: str):
         res = requests.put(url, json.dumps(data),
                            auth=(auth.username, auth.password),
                            headers={'content-type': 'application/json'},
-                           verify=config.https_certfile)
+                           verify=config.proxy_service.https_certfile)
     except requests.exceptions.RequestException as error:
         msg = "%s while %s: %s." % (type(error).__name__, operation, error)
         logger.warning(msg)
@@ -273,7 +273,7 @@ class ProxyService(TriggeredService[ProxyOperation, ProxyExecutor]):
 
         # Create one executor for each ranking.
         self.rankings = list()
-        for ranking in config.rankings:
+        for ranking in config.proxy_service.rankings:
             self.add_executor(ProxyExecutor(ranking))
 
         # Enqueue the dispatch of some initial data to rankings. Needs

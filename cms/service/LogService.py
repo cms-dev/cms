@@ -47,8 +47,8 @@ class LogService(Service):
         Service.__init__(self, shard)
 
         # Determine location of log file, and make directories.
-        log_dir = os.path.join(config.log_dir, "cms")
-        if not mkdir(config.log_dir) or \
+        log_dir = os.path.join(config.global_.log_dir, "cms")
+        if not mkdir(config.global_.log_dir) or \
                 not mkdir(log_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()

@@ -154,7 +154,7 @@ class RemoteServiceBase:
             remote address, for use in log messages and exceptions.
 
         """
-        return "%s:%d" % (self.remote_address)
+        return str(self.remote_address)
 
     def initialize(self, sock: socket.socket, plus: object):
         """Activate the communication on the given socket.
@@ -483,8 +483,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def _repr_remote(self):
         """See RemoteServiceBase._repr_remote."""
-        return "%s:%d (%r)" % (self.remote_address +
-                               (self.remote_service_coord,))
+        return f"{self.remote_address} ({self.remote_service_coord})"
 
     def finalize(self, reason=""):
         """See RemoteServiceBase.finalize."""

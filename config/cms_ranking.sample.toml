@@ -7,6 +7,21 @@ bind_address = "127.0.0.1"
 # Listening port for RankingWebServer.
 http_port = 8890
 
+# Socket parameters for HTTPS. For certfile and keyfile, see
+# <https://docs.python.org/3/library/ssl.html#certificates>.
+#https_port = ...
+#https_certfile = "..."
+#https_keyfile = "..."
+
 # Login information for adding and editing data.
 username = "usern4me"
 password = "passw0rd"
+realm_name = "Scoreboard"
+
+# How many events to keep buffered for the server-sent events stream.
+buffer_size = 100
+
+# Log files.
+#log_dir = "INSTALL_DIR/log/ranking"
+# Data directory (the scoreboard data is stored here).
+#lib_dir = "INSTALL_DIR/lib/ranking"

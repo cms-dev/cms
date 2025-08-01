@@ -17,7 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import atexit
 import functools
+import importlib.resources
 import json
 import logging
 import os
@@ -40,7 +42,7 @@ from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
 # Needed for initialization. Do not remove.
 import cmsranking.Logger  # noqa
 from cmscommon.eventsource import EventSource
-from cmsranking.Config import Config
+from cmsranking.Config import load_config
 from cmsranking.Contest import Contest
 from cmsranking.Entity import InvalidData
 from cmsranking.Scoring import ScoringStore
@@ -533,8 +535,13 @@ def main() -> int:
                         help="do not require confirmation on dropping data")
     args = parser.parse_args()
 
-    config = Config()
-    config.load(args.config)
+    config = load_config(args.config)
+
+    # Keep the static files context manager alive for the application lifetime
+    static_files_context = importlib.resources.path("cmsranking", "static")
+    web_dir = str(static_files_context.__enter__())
+    # Register cleanup handler to properly exit the context manager
+    atexit.register(static_files_context.__exit__, None, None, None)
 
     if args.drop:
         if args.yes:
@@ -580,11 +587,11 @@ def main() -> int:
     stores["scoring"].init_store()
 
     toplevel_handler = RoutingHandler(
-        RootHandler(config.web_dir),
+        RootHandler(web_dir),
         DataWatcher(stores, config.buffer_size),
         ImageHandler(
             os.path.join(config.lib_dir, '%(name)s'),
-            os.path.join(config.web_dir, 'img', 'logo.png')),
+            os.path.join(web_dir, 'img', 'logo.png')),
         ScoreHandler(stores),
         HistoryHandler(stores))
 
@@ -610,12 +617,12 @@ def main() -> int:
                 config.username, config.password, config.realm_name),
             '/faces': ImageHandler(
                 os.path.join(config.lib_dir, 'faces', '%(name)s'),
-                os.path.join(config.web_dir, 'img', 'face.png')),
+                os.path.join(web_dir, 'img', 'face.png')),
             '/flags': ImageHandler(
                 os.path.join(config.lib_dir, 'flags', '%(name)s'),
-                os.path.join(config.web_dir, 'img', 'flag.png')),
+                os.path.join(web_dir, 'img', 'flag.png')),
             '/sublist': SubListHandler(stores),
-        }), {'/': config.web_dir})
+        }), {'/': web_dir})
 
     servers: list[WSGIServer] = list()
     if config.http_port is not None:
