@@ -74,3 +74,7 @@ devel = [
 [build-system]
 requires = ["setuptools>=80,<81", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py", "*_test.py", "*Test.py"]
+testpaths = ["cmstestsuite/unit_tests"]
