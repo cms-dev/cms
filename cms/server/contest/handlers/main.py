@@ -107,19 +107,30 @@ class MainHandler(ContestHandler):
 
             ret["participation"] = participation
 
-            # Compute public scores for all tasks
-            task_scores = {}
-            for task in self.contest.tasks:
-                score_type = task.active_dataset.score_type_object
-                max_public_score = round(
-                    score_type.max_public_score, task.score_precision)
-                public_score, _ = task_score(
-                    participation, task, public=True, rounded=True)
-                public_score = round(public_score, task.score_precision)
-                task_scores[task.id] = (public_score,
-                                        max_public_score,
-                                        score_type.format_score(public_score, score_type.max_public_score, None, task.score_precision, translation=self.translation))
-            ret["task_scores"] = task_scores
+            # Compute public scores for all tasks only if they will be shown
+            if self.contest.show_task_scores_in_overview:
+                task_scores = {}
+                for task in self.contest.tasks:
+                    score_type = task.active_dataset.score_type_object
+                    max_public_score = round(
+                        score_type.max_public_score, task.score_precision
+                    )
+                    public_score, _ = task_score(
+                        participation, task, public=True, rounded=True
+                    )
+                    public_score = round(public_score, task.score_precision)
+                    task_scores[task.id] = (
+                        public_score,
+                        max_public_score,
+                        score_type.format_score(
+                            public_score,
+                            score_type.max_public_score,
+                            None,
+                            task.score_precision,
+                            translation=self.translation,
+                        ),
+                    )
+                ret["task_scores"] = task_scores
 
         return ret
 
