@@ -93,28 +93,6 @@ class ContestHandler(SimpleContestHandler("contest.html")):
 
             attrs["languages"] = self.get_arguments("languages")
 
-            # Auto-enable newly added languages in all tasks
-            old_languages = set(contest.languages)
-            new_languages = set(attrs["languages"])
-            newly_added_languages = new_languages - old_languages
-            newly_removed_languages = old_languages - new_languages
-
-            if newly_added_languages or newly_removed_languages:
-                # Update all tasks in this contest that have allowed_languages set
-                for task in contest.tasks:
-                    if task.allowed_languages is not None:
-                        current_task_languages = set(task.allowed_languages)
-
-                        # Add newly enabled contest languages to task's allowed languages
-                        if newly_added_languages:
-                            current_task_languages |= newly_added_languages
-
-                        # Remove newly disabled contest languages from task's allowed languages
-                        if newly_removed_languages:
-                            current_task_languages -= newly_removed_languages
-
-                        task.allowed_languages = list(current_task_languages)
-
             self.get_bool(attrs, "submissions_download_allowed")
             self.get_bool(attrs, "allow_questions")
             self.get_bool(attrs, "allow_user_tests")
