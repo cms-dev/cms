@@ -50,7 +50,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import Contest, PrintJob, User, Participation, Team
+from cms.db import PrintJob, User, Participation, Team, Submission, Token, Task, Dataset
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.grading.scoring import task_score
@@ -87,23 +87,26 @@ class MainHandler(ContestHandler):
 
         if self.current_user is not None:
             # This massive joined load gets all the information which we will need
-            participation = self.sql_session.query(Participation)\
-                .filter(Participation.id == self.current_user.id)\
+            participation = (
+                self.sql_session.query(Participation)
+                .filter(Participation.id == self.current_user.id)
                 .options(
-                    joinedload('user'),
-                    joinedload('contest'),
-                    joinedload('submissions').joinedload('token'),
-                    joinedload('submissions').joinedload('results'),
-            )\
+                    joinedload(Participation.user),
+                    joinedload(Participation.contest),
+                    joinedload(Participation.submissions).joinedload(Submission.token),
+                    joinedload(Participation.submissions).joinedload(
+                        Submission.results
+                    ),
+                )
                 .first()
+            )
 
-            self.contest = self.sql_session.query(Contest)\
-                .filter(Contest.id == participation.contest.id)\
-                .options(
-                    joinedload('tasks')
-                    .joinedload('active_dataset')
-            )\
+            self.contest = (
+                self.sql_session.query(Contest)
+                .filter(Contest.id == participation.contest.id)
+                .options(joinedload(Contest.tasks).joinedload(Task.active_dataset))
                 .first()
+            )
 
             ret["participation"] = participation
 
@@ -118,7 +121,6 @@ class MainHandler(ContestHandler):
                     public_score, _ = task_score(
                         participation, task, public=True, rounded=True
                     )
-                    public_score = round(public_score, task.score_precision)
                     task_scores[task.id] = (
                         public_score,
                         max_public_score,
