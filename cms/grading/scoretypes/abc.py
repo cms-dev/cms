@@ -490,7 +490,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             else:
                 public_subtasks.append({"idx": st_idx,
                                         "testcases": public_testcases})
-            ranking_details.append("%g" % st_score)
+            ranking_details.append("%g" % rounded_score)
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 
