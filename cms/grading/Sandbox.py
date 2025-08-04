@@ -208,7 +208,7 @@ class SandboxBase(metaclass=ABCMeta):
         """
         self.file_cacher = file_cacher
         self.name = name if name is not None else "unnamed"
-        self.temp_dir = temp_dir if temp_dir is not None else config.temp_dir
+        self.temp_dir = temp_dir if temp_dir is not None else config.global_.temp_dir
 
         self.cmd_file: str = "commands.log"
 
@@ -216,7 +216,6 @@ class SandboxBase(metaclass=ABCMeta):
         # TODO: move all other common properties here.
         self.box_id: int = 0
         self.fsize: int | None = None
-        self.cgroup: bool = False
         self.dirs: list[tuple[str, str, str | None]] = []
         self.preserve_env: bool = False
         self.inherit_env: list[str] = []
@@ -947,7 +946,6 @@ class IsolateSandbox(SandboxBase):
 
         # Default parameters for isolate
         self.box_id = box_id  # -b
-        self.cgroup = config.use_cgroups  # --cg
         self.chdir = self._home_dest  # -c
         self.dirs = []  # -d
         self.preserve_env = False  # -e
@@ -1127,11 +1125,9 @@ class IsolateSandbox(SandboxBase):
         return: the arguments list as strings.
 
         """
-        res = list()
+        res = ["--cg"]
         if self.box_id is not None:
             res += ["--box-id=%d" % self.box_id]
-        if self.cgroup:
-            res += ["--cg"]
         if self.chdir is not None:
             res += ["--chdir=%s" % self.chdir]
         for src, dest, options in self.dirs:
@@ -1155,10 +1151,7 @@ class IsolateSandbox(SandboxBase):
             res += ["--stack=%d" % (self.stack_space // 1024)]
         if self.address_space is not None:
             # Isolate wants memory size as KiB.
-            if self.cgroup:
-                res += ["--cg-mem=%d" % (self.address_space // 1024)]
-            else:
-                res += ["--mem=%d" % (self.address_space // 1024)]
+            res += ["--cg-mem=%d" % (self.address_space // 1024)]
         if self.stdout_file is not None:
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
@@ -1468,10 +1461,7 @@ class IsolateSandbox(SandboxBase):
 
     def initialize_isolate(self):
         """Initialize isolate's box."""
-        init_cmd = (
-            [self.box_exec]
-            + (["--cg"] if self.cgroup else [])
-            + ["--box-id=%d" % self.box_id, "--init"])
+        init_cmd = [self.box_exec, "--box-id=%d" % self.box_id, "--cg", "--init"]
         try:
             subprocess.check_call(init_cmd)
         except subprocess.CalledProcessError as e:
@@ -1487,9 +1477,7 @@ class IsolateSandbox(SandboxBase):
         # will be able to delete everything. If not, we leave the files as they
         # are to avoid masking possible problems the admin wanted to debug.
 
-        exe = [self.box_exec] \
-            + (["--cg"] if self.cgroup else []) \
-            + ["--box-id=%d" % self.box_id]
+        exe = [self.box_exec, "--box-id=%d" % self.box_id, "--cg"]
 
         if delete:
             # Ignore exit status as some files may be owned by our user
@@ -1520,4 +1508,4 @@ else:
     Sandbox = {
         "stupid": StupidSandbox,
         "isolate": IsolateSandbox,
-    }[config.sandbox_implementation]
+    }[config.sandbox.sandbox_implementation]

@@ -55,7 +55,7 @@ class RemoteService:
 
     """
     def __init__(self, cms_config, service_name, shard):
-        address, port = cms_config["core_services"][service_name][shard]
+        address, port = cms_config["services"][service_name][shard]
 
         self.service_name = service_name
         self.shard = shard
@@ -227,9 +227,9 @@ class Program:
 
         # In case it is a server, we also check HTTP is serving.
         if self.service_name == "AdminWebServer":
-            port = self.cms_config["admin_listen_port"]
+            port = self.cms_config["admin_web_server"]["listen_port"]
         elif self.service_name == "ContestWebServer":
-            port = self.cms_config["contest_listen_port"][self.shard]
+            port = self.cms_config["contest_web_server"]["listen_port"][self.shard]
         else:
             return
 
@@ -239,7 +239,7 @@ class Program:
 
     def _check_ranking_web_server(self):
         """Health checker for RWS."""
-        url = urlsplit(self.cms_config["rankings"][0])
+        url = urlsplit(self.cms_config["proxy_service"]["rankings"][0])
         sock = socket.socket()
         sock.connect((url.hostname, url.port))
         sock.close()

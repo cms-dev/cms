@@ -230,7 +230,7 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def test_success_with_data_dir(self):
         content = self.generate_content()
-        with patch.object(config, "data_dir", self.base_dir):
+        with patch.object(config.global_, "data_dir", self.base_dir):
             store_local_copy("%s/bar", self.participation, self.task,
                              self.timestamp, {"foo.%l": content})
         self.assertSomeFileContains(content,

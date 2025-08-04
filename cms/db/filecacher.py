@@ -522,16 +522,16 @@ class FileCacher:
             self.backend = FSBackend(path)
 
         # First we create the config directories.
-        self._create_directory_or_die(config.temp_dir)
-        self._create_directory_or_die(config.cache_dir)
+        self._create_directory_or_die(config.global_.temp_dir)
+        self._create_directory_or_die(config.global_.cache_dir)
 
         if not self.is_shared():
-            self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
+            self.file_dir = tempfile.mkdtemp(dir=config.global_.temp_dir)
             # Delete this directory on exit since it has a random name and
             # won't be used again.
             atexit.register(lambda: rmtree(self.file_dir))
         else:
-            self.file_dir = os.path.join(config.cache_dir, "fs-cache-shared")
+            self.file_dir = os.path.join(config.global_.cache_dir, "fs-cache-shared")
         self._create_directory_or_die(self.file_dir)
 
         # Temp dir must be a subdirectory of file_dir to avoid cross-filesystem
@@ -895,7 +895,7 @@ class FileCacher:
 
         """
         self.destroy_cache()
-        if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
+        if not mkdir(config.global_.cache_dir) or not mkdir(self.file_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
 
