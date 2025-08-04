@@ -87,8 +87,6 @@ keep_sandbox = false
 # Which sandbox implementation to use. Currently only isolate is
 # supported.
 sandbox_implementation = "isolate"
-# Whether to use cgroups in isolate.
-use_cgroups = true
 # Do not allow contestants' solutions to write files bigger than this
 # size (expressed in KB; defaults to 1 GB).
 max_file_size = 1_048_576

@@ -91,7 +91,6 @@ class WorkerConfig:
 @dataclass()
 class SandboxConfig:
     sandbox_implementation: str = "isolate"
-    use_cgroups: bool = True
     # Max size of each writable file during an evaluation step, in KiB.
     max_file_size: int = 1024 * 1024  # 1 GiB
     # Max processes, CPU time (s), memory (KiB) for compilation runs.
