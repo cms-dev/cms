@@ -559,27 +559,27 @@ td.token_rules p:last-child {
     color: #AAA;
 }
 
-.main_task_list td.public_score.score_0 {
+td.public_score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.4);
 }
 
-.main_task_list tr:hover td.public_score.score_0 {
+tr:hover td.public_score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.5);
 }
 
-.main_task_list td.public_score.score_0_100 {
+td.public_score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.4);
 }
 
-.main_task_list tr:hover td.public_score.score_0_100 {
+tr:hover td.public_score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.5);
 }
 
-.main_task_list td.public_score.score_100 {
+td.public_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.4);
 }
 
-.main_task_list tr:hover td.public_score.score_100 {
+tr:hover td.public_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.5);
 }
 

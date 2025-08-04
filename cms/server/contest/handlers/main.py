@@ -438,7 +438,7 @@ class DocumentationHandler(ContestHandler):
         language_docs = []
         if config.docs_path is not None:
             for language in languages:
-                ext = language.source_extensions[0][1:] # remove dot
+                ext = language.source_extensions[0][1:]  # remove dot
                 path = os.path.join(config.docs_path, ext)
                 if os.path.exists(path):
                     language_docs.append((language.name, ext))

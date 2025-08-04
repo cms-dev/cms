@@ -212,7 +212,7 @@
 {% for t_iter in contest.tasks %}
         <tr>
 {% if contest.show_task_scores_in_overview and task_scores is defined %}
-            <td class="public_score {{ get_score_class(task_scores[t_iter.id][0], task_scores[t_iter.id][1]) }}">{{ task_scores[t_iter.id][2] }}</td>
+            <td class="public_score {{ get_score_class(task_scores[t_iter.id][0], task_scores[t_iter.id][1], t_iter.score_precision) }}">{{ task_scores[t_iter.id][2] }}</td>
 {% endif %}
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
