@@ -26,7 +26,9 @@
 
 """
 
+import json
 import logging
+import difflib
 
 from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import get_language
@@ -86,6 +88,89 @@ class SubmissionFileHandler(FileHandler):
 
         self.sql_session.close()
         self.fetch(digest, "text/plain", real_filename)
+
+
+class SubmissionDiffHandler(BaseHandler):
+    """Shows a diff between two submissions.
+    """
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self, old_id, new_id):
+        sub_old = Submission.get_from_id(old_id, self.sql_session)
+        sub_new = Submission.get_from_id(new_id, self.sql_session)
+
+        self.set_header("Content-type", "application/json; charset=utf-8")
+        resp = {
+            'message': None,
+            'files': []
+        }
+
+        if sub_old is None or sub_new is None:
+            missing_id = old_id if sub_old is None else new_id
+            resp['message'] = f"Submission ID {missing_id} not found."
+            self.write(json.dumps(resp))
+            return
+
+        if sub_old.task_id == sub_new.task_id:
+            files_to_compare = sub_old.task.submission_format
+            old_files = sub_old.files
+            new_files = sub_new.files
+        elif len(sub_old.files) == 1 and len(sub_new.files) == 1:
+            old_file = list(sub_old.files.values())[0]
+            old_files = {"submission.%l": old_file}
+            new_file = list(sub_new.files.values())[0]
+            new_files = {"submission.%l": new_file}
+            files_to_compare = ["submission.%l"]
+        else:
+            resp['message'] = "Cannot compare submissions: they are for " \
+                "different tasks and have more than 1 file."
+            self.write(json.dumps(resp))
+            return
+
+        result_files = []
+        for fname in files_to_compare:
+            if ".%l" in fname:
+                if sub_old.language == sub_new.language and sub_old.language is not None:
+                    ext = get_language(sub_old.language).source_extension
+                else:
+                    ext = ".txt"
+                real_fname = fname.replace(".%l", ext)
+            else:
+                real_fname = fname
+
+            def get_file(x, which):
+                if fname not in x:
+                    return None, f"File not present in {which} submission"
+                digest = x[fname].digest
+                file_bin = self.service.file_cacher.get_file_content(digest)
+                if len(file_bin) > 1000000:
+                    return None, f"{which} file is too big to diff".capitalize()
+                file_lines = file_bin.decode(errors='replace').splitlines()
+                if len(file_lines) > 5000:
+                    return None, f"{which} file has too many lines to diff".capitalize()
+                return file_lines, None
+
+            old_content, old_status = get_file(old_files, "old")
+            if old_status:
+                result_files.append({"fname": real_fname, "status": old_status})
+                continue
+            new_content, new_status = get_file(new_files, "new")
+            if new_status:
+                result_files.append({"fname": real_fname, "status": new_status})
+                continue
+
+            if old_content == new_content:
+                result_files.append({"fname": real_fname, "status": "No changes"})
+            else:
+                diff_iter = difflib.unified_diff(old_content, new_content, lineterm='')
+                # skip the "---" and "+++" lines.
+                next(diff_iter)
+                next(diff_iter)
+                diff = '\n'.join(diff_iter)
+
+                result_files.append({"fname": real_fname, "diff": diff})
+
+        resp['files'] = result_files
+        self.write(json.dumps(resp))
 
 
 class SubmissionCommentHandler(BaseHandler):
