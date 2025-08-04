@@ -37,7 +37,7 @@ import cmstestsuite.tasks.outputonly as outputonly
 import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 import cmstestsuite.tasks.twosteps as twosteps
 import cmstestsuite.tasks.twosteps_comparator as twosteps_comparator
-from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
+from cmstestsuite.Test import CheckMemoryLimit, Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckTimeoutWall, CheckNonzeroReturn, CheckUserTestEvaluated
 
 
@@ -257,12 +257,12 @@ ALL_TESTS = [
          task=batch_stdio, filenames=['oom-static.%l'],
          languages=(LANG_C, LANG_CPP, LANG_CPP14,
                     LANG_CPP17, LANG_CPP20, LANG_PASCAL),
-         checks=[CheckOverallScore(0, 100)]),
+         checks=[CheckOverallScore(0, 100), CheckMemoryLimit()]),
 
     Test('oom-heap',
          task=batch_stdio, filenames=['oom-heap.%l'],
          languages=ALL_LANGUAGES,
-         checks=[CheckOverallScore(0, 100)]),
+         checks=[CheckOverallScore(0, 100), CheckMemoryLimit()]),
 
     # Tasks with graders.
 

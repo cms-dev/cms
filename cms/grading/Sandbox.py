@@ -188,6 +188,7 @@ class SandboxBase(metaclass=ABCMeta):
     EXIT_SIGNAL = 'signal'
     EXIT_TIMEOUT = 'timeout'
     EXIT_TIMEOUT_WALL = 'wall timeout'
+    EXIT_MEM_LIMIT = 'memory limit exceeded'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
     def __init__(
@@ -1283,7 +1284,10 @@ class IsolateSandbox(SandboxBase):
             else:
                 return self.EXIT_TIMEOUT
         elif 'SG' in status_list:
-            return self.EXIT_SIGNAL
+            if 'cg-oom-killed' in self.log:
+                return self.EXIT_MEM_LIMIT
+            else:
+                return self.EXIT_SIGNAL
         elif 'RE' in status_list:
             return self.EXIT_NONZERO_RETURN
         # OK status is not reported in the log file, it's implicit.
