@@ -154,9 +154,6 @@ var UserDetail = new function () {
             self.f_name_label.text(self.user["f_name"]);
             self.l_name_label.text(self.user["l_name"]);
 
-            // Clear the existing face image
-            self.face_image.attr("src", "");
-
             // Create a new image element and replace the old one
             var new_face_image = $('<img id="UserDetail_face" alt="Face"/>');
             new_face_image.attr("src", Config.get_face_url(self.user_id));
