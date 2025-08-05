@@ -42,6 +42,7 @@ ALTER TABLE user_test_results ADD COLUMN evaluation_sandbox_digests VARCHAR[];
 UPDATE user_test_results SET evaluation_sandbox_paths = string_to_array(evaluation_sandbox, ':');
 ALTER TABLE user_test_results DROP COLUMN evaluation_sandbox;
 
+-- https://github.com/cms-dev/cms/pull/1496
 ALTER TABLE tasks add skip_failed_subtask boolean NOT NULL DEFAULT false;
 ALTER TABLE tasks ALTER COLUMN skip_failed_subtask DROP DEFAULT;
 
