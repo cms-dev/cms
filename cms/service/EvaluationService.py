@@ -47,6 +47,7 @@ from cms.db import SessionGen, Digest, Dataset, Evaluation, Submission, \
     SubmissionResult, Testcase, UserTest, UserTestResult, get_submissions, \
     get_submission_results, get_datasets_to_judge
 from cms.grading.Job import Job, JobGroup
+from cms.grading.subtask_skipper import SubtaskSkipper
 from cms.io import Executor, TriggeredService, rpc_method
 from .esoperations import ESOperation, get_relevant_operations, \
     get_submissions_operations, get_user_tests_operations, \
@@ -640,6 +641,82 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
 
         elif operation.type_ == ESOperation.EVALUATION:
             if result.job_success:
+                # Handle skip subtask logic
+                if isinstance(object_result, SubmissionResult):
+                    task = object_result.submission.task
+                    if (
+                        getattr(task, "skip_failed_subtask", True)
+                        and operation.testcase_codename
+                    ):
+                        skipper = SubtaskSkipper(task, object_result)
+                        # Check if this testcase failed and mark others for skipping
+                        if (
+                            hasattr(result.job, "outcome")
+                            and result.job.outcome is not None
+                        ):
+                            try:
+                                outcome_value = float(result.job.outcome)
+                                skipper.mark_testcase_failed(
+                                    operation.testcase_codename, outcome_value
+                                )
+
+                                # Remove skipped testcases from the queue
+                                skipped_testcases = skipper.get_skipped_testcases()
+                                if skipped_testcases:
+                                    logger.info(
+                                        "Skipping %d testcases in subtask due to failed testcase %s",
+                                        len(skipped_testcases),
+                                        operation.testcase_codename,
+                                    )
+                                    for skipped_testcase in skipped_testcases:
+                                        skip_operation = ESOperation(
+                                            ESOperation.EVALUATION,
+                                            object_result.submission_id,
+                                            object_result.dataset_id,
+                                            skipped_testcase,
+                                            operation.archive_sandbox,
+                                        )
+                                        # Remove from queue if it exists
+                                        try:
+                                            self.get_executor().dequeue(skip_operation)
+                                            logger.info(
+                                                "Removed testcase %s from evaluation queue (skipped)",
+                                                skipped_testcase,
+                                            )
+                                        except KeyError:
+                                            # Testcase wasn't in queue, might already be running
+                                            pass
+
+                                        # Add a skipped evaluation record
+                                        from cms.db import Evaluation
+
+                                        skipped_evaluation = Evaluation(
+                                            text=[
+                                                "Skipped due to failed testcase in subtask"
+                                            ],
+                                            outcome="N/A",
+                                            execution_time=None,
+                                            execution_wall_clock_time=None,
+                                            execution_memory=None,
+                                            evaluation_shard=result.job.shard
+                                            if hasattr(result.job, "shard")
+                                            else None,
+                                            evaluation_sandbox_paths=[],
+                                            evaluation_sandbox_digests=[],
+                                            testcase=object_result.dataset.testcases[
+                                                skipped_testcase
+                                            ],
+                                        )
+                                        object_result.evaluations.append(
+                                            skipped_evaluation
+                                        )
+                            except (ValueError, AttributeError, KeyError) as e:
+                                logger.warning(
+                                    "Failed to process skip logic for testcase %s: %s",
+                                    operation.testcase_codename,
+                                    e,
+                                )
+
                 result.job.to_submission(object_result)
             else:
                 if result.job.plus is not None and \

@@ -430,24 +430,39 @@ class ScoreTypeGroup(ScoreTypeAlone):
             tc_first_lowest_idx = None
             tc_first_lowest_score = None
             for tc_idx in target:
-                tc_score = float(evaluations[tc_idx].outcome)
-                tc_outcome = self.get_public_outcome(
-                    tc_score, parameter)
+                evaluation = evaluations[tc_idx]
+
+                # Handle skipped testcases
+                if evaluation.outcome == "N/A" or evaluation.outcome is None:
+                    tc_score = 0.0  # Skipped testcases count as 0.0 for scoring
+                    tc_outcome = "Skipped"
+                else:
+                    try:
+                        tc_score = float(evaluation.outcome)
+                        # Convert parameter tuple to list for the method call
+                        parameter_list = list(parameter)
+                        tc_outcome = self.get_public_outcome(tc_score, parameter_list)
+                    except (ValueError, TypeError):
+                        tc_score = 0.0
+                        tc_outcome = "Not correct"
 
                 time_limit_was_exceeded = False
-                if evaluations[tc_idx].text == [EVALUATION_MESSAGES.get("timeout").message]:
+                if evaluation.text == [EVALUATION_MESSAGES.get("timeout").message]:
                     time_limit_was_exceeded = True
 
-                testcases.append({
-                    "idx": tc_idx,
-                    "outcome": tc_outcome,
-                    "text": evaluations[tc_idx].text,
-                    "time": evaluations[tc_idx].execution_time,
-                    "time_limit": evaluations[tc_idx].dataset.time_limit,
-                    "time_limit_was_exceeded": time_limit_was_exceeded,
-                    "memory": evaluations[tc_idx].execution_memory,
-                    "show_in_restricted_feedback": self.public_testcases[tc_idx],
-                    "show_in_oi_restricted_feedback": self.public_testcases[tc_idx]})
+                testcases.append(
+                    {
+                        "idx": tc_idx,
+                        "outcome": tc_outcome,
+                        "text": evaluation.text,
+                        "time": evaluation.execution_time,
+                        "time_limit": evaluation.dataset.time_limit,
+                        "time_limit_was_exceeded": time_limit_was_exceeded,
+                        "memory": evaluation.execution_memory,
+                        "show_in_restricted_feedback": self.public_testcases[tc_idx],
+                        "show_in_oi_restricted_feedback": self.public_testcases[tc_idx],
+                    }
+                )
 
                 if self.public_testcases[tc_idx]:
                     public_testcases.append(testcases[-1])
@@ -458,9 +473,21 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 else:
                     public_testcases.append({"idx": tc_idx})
 
-            st_score_fraction = self.reduce(
-                [float(evaluations[tc_idx].outcome) for tc_idx in target],
-                parameter)
+            # Calculate scores considering skipped testcases as 0.0
+            outcome_values = []
+            for tc_idx in target:
+                evaluation = evaluations[tc_idx]
+                if evaluation.outcome == "N/A" or evaluation.outcome is None:
+                    outcome_values.append(0.0)  # Skipped testcases count as 0.0
+                else:
+                    try:
+                        outcome_values.append(float(evaluation.outcome))
+                    except (ValueError, TypeError):
+                        outcome_values.append(0.0)
+
+            # Convert parameter tuple to list for the method call
+            parameter_list = list(parameter)
+            st_score_fraction = self.reduce(outcome_values, parameter_list)
             st_score = st_score_fraction * parameter[0]
             rounded_score = round(st_score, score_precision)
 
