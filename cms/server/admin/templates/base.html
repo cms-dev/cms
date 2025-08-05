@@ -50,6 +50,8 @@ function init()
     $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
     $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
 
+    $(".diff-radio").change(utils.update_diff_ids);
+
     {% block js_init %}{% endblock js_init %}
 }
 
@@ -80,7 +82,7 @@ $(document).ready(init);
           <h1 class="child">{{ contest.name }}</h1>
           {% endif %}
         </div>
-        {% if config.secret_key == config.secret_key_default %}
+        {% if config.web_server.secret_key == config.web_server.DEFAULT_SECRET_KEY %}
         <div class="secret_notice">
           Change secret_key in cms.toml!<br/>
           For example,<br/>
