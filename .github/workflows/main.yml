@@ -8,6 +8,10 @@ jobs:
   test:
     runs-on: ubuntu-24.04
 
+    strategy:
+      matrix:
+        base_image: ["ubuntu:noble", "debian:bookworm"]
+
     steps:
       - uses: actions/checkout@v2
 
@@ -17,7 +21,8 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker compose -p cms -f docker/docker-compose.test.yml build testcms
+          docker compose -p cms -f docker/docker-compose.test.yml build \
+              --build-arg BASE_IMAGE=${{ matrix.base_image }} testcms
 
       - name: Run tests
         run: |
