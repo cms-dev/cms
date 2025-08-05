@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2016 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2015 wafrelka <wafrelka@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -285,6 +286,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 <tr class="correct">
             {% elif tc["outcome"] == "Not correct" %}
                 <tr class="notcorrect">
+            {% elif tc["outcome"] == "Skipped" %}
+                <tr class="partiallycorrect">
             {% else %}
                 <tr class="partiallycorrect">
             {% endif %}
@@ -433,9 +436,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 evaluation = evaluations[tc_idx]
 
                 # Handle skipped testcases specifically
-                if evaluation.outcome == "N/A" and evaluation.text == [
-                    "Skipped due to failed testcase in subtask"
-                ]:
+                if (
+                    evaluation.outcome == "N/A"
+                    and evaluation.text
+                    and len(evaluation.text) > 0
+                    and "Skipped due to failed testcase in subtask"
+                    in evaluation.text[0]
+                ):
                     tc_score = 0.0  # Skipped testcases count as 0.0 for scoring
                     tc_outcome = "Skipped"
                 elif evaluation.outcome == "N/A" or evaluation.outcome is None:
@@ -459,7 +466,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     {
                         "idx": tc_idx,
                         "outcome": tc_outcome,
-                        "text": evaluation.text,
+                        "text": ["N/A"]
+                        if tc_outcome == "Skipped"
+                        else evaluation.text,  # Show N/A for skipped testcases
                         "time": evaluation.execution_time,
                         "time_limit": evaluation.dataset.time_limit,
                         "time_limit_was_exceeded": time_limit_was_exceeded,
@@ -476,7 +485,24 @@ class ScoreTypeGroup(ScoreTypeAlone):
                         tc_first_lowest_idx = tc_idx
                         tc_first_lowest_score = tc_score
                 else:
-                    public_testcases.append({"idx": tc_idx})
+                    # For non-public testcases, still show the outcome if it's "Skipped"
+                    # This ensures that skipped testcases are visible to contestants
+                    if tc_outcome == "Skipped":
+                        public_testcases.append(
+                            {
+                                "idx": tc_idx,
+                                "outcome": tc_outcome,
+                                "text": [
+                                    "N/A"
+                                ],
+                                "time": None,
+                                "memory": None,
+                                "show_in_restricted_feedback": False,
+                                "show_in_oi_restricted_feedback": False,
+                            }
+                        )
+                    else:
+                        public_testcases.append({"idx": tc_idx})
 
             # Calculate scores considering skipped testcases as 0.0
             outcome_values = []

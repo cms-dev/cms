@@ -244,6 +244,13 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <tr><td colspan=2><h2>Score options</h2></td></tr>
       <tr>
         <td>
+          <span class="info" title="When enabled, if one testcase fails in a subtask (for GroupMin/GroupMul score types), remaining testcases in that subtask will be skipped and marked as 'Skipped'."></span>
+          Skip entire subtask on failed testcase
+        </td>
+        <td><input type="checkbox" name="skip_failed_subtask" /></td>
+      </tr>
+      <tr>
+        <td>
           <span class="info" title="The number of decimal places the scores will be rounded to.
                                     Example: '2' to allow 98.76."></span>
           Score decimal places
@@ -262,13 +269,6 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
             <option value="{{ SCORE_MODE_MAX_SUBTASK }}" {{ "selected" if task.score_mode == SCORE_MODE_MAX_SUBTASK else "" }}>Use the sum over each subtask of the best result for that subtask across all submissions (IOI 2017-)</option>
           </select>
         </td>
-      </tr>
-      <tr>
-        <td>
-          <span class="info" title="When enabled, if one testcase fails in a subtask (for GroupMin/GroupMul score types), remaining testcases in that subtask will be skipped and marked as 'Skipped'."></span>
-          Skip entire subtask on failed testcase
-        </td>
-        <td><input type="checkbox" name="skip_failed_subtask" {{ "checked" if task.skip_failed_subtask else "" }} /></td>
       </tr>
     </table>
     <div class="hr"></div>

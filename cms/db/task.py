@@ -222,7 +222,7 @@ class Task(Base):
         default=SCORE_MODE_MAX_TOKENED_LAST)
 
     # Skip entire subtask on failed testcase when using GroupMin/GroupMul score types.
-    skip_failed_subtask: bool = Column(Boolean, nullable=False, default=True)
+    skip_failed_subtask: bool = Column(Boolean, nullable=False, default=False)
 
     # Active Dataset (id and object) currently being used for scoring.
     # The ForeignKeyConstraint for this column is set at table-level.

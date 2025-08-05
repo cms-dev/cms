@@ -8,6 +8,7 @@
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2016 Luca Versari <veluca93@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -137,6 +138,21 @@ class EvaluationExecutor(Executor[ESOperation]):
             self._currently_executing = []
             for entry in entries:
                 operation = entry.item
+
+                # Check if this testcase should be skipped before execution
+                if (
+                    operation.type_ == ESOperation.EVALUATION
+                    and operation.testcase_codename
+                ):
+                    should_skip = self._should_skip_evaluation(operation)
+                    if should_skip:
+                        logger.info(
+                            f"Skipping evaluation of testcase {operation.testcase_codename} due to earlier failure in subtask"
+                        )
+                        # Create a skipped evaluation result immediately
+                        self._create_skipped_evaluation(operation)
+                        continue
+
                 # Side data is attached to the operation sent to the
                 # worker pool. In case the operation is lost, the pool
                 # will return it to us, and we will use it to
@@ -201,6 +217,81 @@ class EvaluationExecutor(Executor[ESOperation]):
         self.queue_status_cumulative[key]["item"]["multiplicity"] -= 1
         if self.queue_status_cumulative[key]["item"]["multiplicity"] == 0:
             del self.queue_status_cumulative[key]
+
+    def _should_skip_evaluation(self, operation: ESOperation) -> bool:
+        """Check if an evaluation operation should be skipped.
+
+        operation: the evaluation operation to check
+
+        Returns: True if the operation should be skipped, False otherwise
+        """
+        if not operation.testcase_codename:
+            return False
+
+        try:
+            with SessionGen() as session:
+                submission = Submission.get_from_id(operation.object_id, session)
+                if not submission:
+                    return False
+
+                dataset = Dataset.get_from_id(operation.dataset_id, session)
+                if not dataset:
+                    return False
+
+                submission_result = submission.get_result_or_create(dataset)
+                task = submission.task
+
+                if not getattr(task, "skip_failed_subtask", True):
+                    return False
+
+                skipper = SubtaskSkipper(task, submission_result)
+                return skipper.should_skip_testcase(operation.testcase_codename)
+        except Exception as e:
+            logger.warning(
+                f"Error checking skip status for testcase {operation.testcase_codename}: {e}"
+            )
+            return False
+
+    def _create_skipped_evaluation(self, operation: ESOperation):
+        """Create a skipped evaluation result for an operation.
+
+        operation: the evaluation operation to skip
+        """
+        if not operation.testcase_codename:
+            return
+
+        try:
+            with SessionGen() as session:
+                submission = Submission.get_from_id(operation.object_id, session)
+                if not submission:
+                    return
+
+                dataset = Dataset.get_from_id(operation.dataset_id, session)
+                if not dataset:
+                    return
+
+                submission_result = submission.get_result_or_create(dataset)
+
+                # Add a skipped evaluation record
+                from cms.db import Evaluation
+
+                skipped_evaluation = Evaluation(
+                    text=["Skipped due to failed testcase in subtask"],
+                    outcome="N/A",
+                    execution_time=None,
+                    execution_wall_clock_time=None,
+                    execution_memory=None,
+                    evaluation_shard=None,
+                    evaluation_sandbox_paths=[],
+                    evaluation_sandbox_digests=[],
+                    testcase=dataset.testcases[operation.testcase_codename],
+                )
+                submission_result.evaluations.append(skipped_evaluation)
+                session.commit()
+        except Exception as e:
+            logger.warning(
+                f"Error creating skipped evaluation for testcase {operation.testcase_codename}: {e}"
+            )
 
 
 def with_post_finish_lock(func):

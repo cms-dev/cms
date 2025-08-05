@@ -43,6 +43,6 @@ UPDATE user_test_results SET evaluation_sandbox_paths = string_to_array(evaluati
 ALTER TABLE user_test_results DROP COLUMN evaluation_sandbox;
 
 ALTER TABLE tasks add skip_failed_subtask boolean NOT NULL DEFAULT false;
-ALTER TABLE tasks ALTER COLUMN kip_failed_subtask DROP DEFAULT;
+ALTER TABLE tasks ALTER COLUMN skip_failed_subtask DROP DEFAULT;
 
 COMMIT;

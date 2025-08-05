@@ -41,7 +41,7 @@ class SubtaskSkipper:
         self.task = task
         self.submission_result = submission_result
         self.dataset = submission_result.dataset if submission_result else None
-        self.skip_enabled = getattr(task, 'skip_failed_subtask', True)
+        self.skip_enabled = getattr(task, "skip_failed_subtask", False)
         self._subtask_groups = None
         self._failed_subtasks = set()
         self._skipped_testcases = set()
@@ -56,16 +56,35 @@ class SubtaskSkipper:
         if not self.skip_enabled or not self.dataset:
             return False
 
-        # Only skip for GroupMin and GroupMul score types
         score_type = self.dataset.score_type
-        if score_type not in ['GroupMin', 'GroupMul']:
+        if score_type not in ["GroupMin", "GroupMul"]:
             return False
 
+        if testcase_codename in self._skipped_testcases:
+            return True
+
+        # Check if any earlier testcase in the same subtask has failed
         subtask_idx = self._get_subtask_for_testcase(testcase_codename)
         if subtask_idx is None:
             return False
 
-        return subtask_idx in self._failed_subtasks
+        # Check if this subtask has already failed due to an earlier testcase
+        if subtask_idx in self._failed_subtasks:
+            subtask_testcases = self._get_testcases_in_subtask(subtask_idx)
+            try:
+                current_testcase_idx = subtask_testcases.index(testcase_codename)
+                # Check if any earlier testcase in this subtask has failed
+                for i in range(current_testcase_idx):
+                    earlier_testcase = subtask_testcases[i]
+                    if self._is_testcase_failed(earlier_testcase):
+                        logger.info(
+                            f"Skipping testcase {testcase_codename} because earlier testcase {earlier_testcase} failed in subtask {subtask_idx}"
+                        )
+                        return True
+            except ValueError:
+                pass
+
+        return False
 
     def mark_testcase_failed(self, testcase_codename: str, outcome: float):
         """Mark a testcase as failed and potentially skip remaining testcases in the subtask.
@@ -76,31 +95,52 @@ class SubtaskSkipper:
         if not self.skip_enabled or not self.dataset:
             return
 
-        # Only handle for GroupMin and GroupMul score types
         score_type = self.dataset.score_type
         if score_type not in ['GroupMin', 'GroupMul']:
             return
 
-        # Check if this testcase failed (outcome is 0.0 for failed)
+        # Check if this testcase failed
         if outcome > 0.0:
             return
 
         subtask_idx = self._get_subtask_for_testcase(testcase_codename)
         if subtask_idx is None:
+            logger.warning(f"Could not find subtask for testcase {testcase_codename}")
             return
 
         # Mark this subtask as failed
         self._failed_subtasks.add(subtask_idx)
         logger.info(f"Marking subtask {subtask_idx} as failed due to testcase {testcase_codename}")
 
-        # Get all testcases in this subtask and mark remaining ones as skipped
+        # Get all testcases in this subtask in order
         subtask_testcases = self._get_testcases_in_subtask(subtask_idx)
-        for tc_codename in subtask_testcases:
-            if tc_codename != testcase_codename:  # Skip the failing testcase itself
-                # Check if this testcase hasn't been evaluated yet
-                if not self._is_testcase_evaluated(tc_codename):
-                    self._skipped_testcases.add(tc_codename)
-                    logger.info(f"Marking testcase {tc_codename} as skipped in subtask {subtask_idx}")
+        logger.info(f"Subtask {subtask_idx} testcases in order: {subtask_testcases}")
+
+        # Find the position of the failing testcase
+        try:
+            failing_testcase_idx = subtask_testcases.index(testcase_codename)
+            logger.info(
+                f"Failing testcase {testcase_codename} is at position {failing_testcase_idx} in subtask {subtask_idx}"
+            )
+        except ValueError:
+            logger.warning(
+                f"Failed testcase {testcase_codename} not found in subtask {subtask_idx}"
+            )
+            return
+
+        # Skip only the testcases that come after the failing one in this subtask
+        for i in range(failing_testcase_idx + 1, len(subtask_testcases)):
+            tc_codename = subtask_testcases[i]
+            # Only skip if this testcase hasn't been started yet
+            if not self._is_testcase_started(tc_codename):
+                self._skipped_testcases.add(tc_codename)
+                logger.info(
+                    f"Marking testcase {tc_codename} (position {i}) as skipped in subtask {subtask_idx} (after failure of {testcase_codename})"
+                )
+            else:
+                logger.info(
+                    f"Testcase {tc_codename} (position {i}) already started/completed, not skipping"
+                )
 
     def get_skipped_testcases(self) -> Set[str]:
         """Get the set of testcase codenames that should be skipped."""
@@ -126,22 +166,31 @@ class SubtaskSkipper:
 
             self._subtask_groups = {}
             testcase_names = sorted(self.dataset.testcases.keys())
+            logger.debug(f"All testcase names in order: {testcase_names}")
+            logger.debug(f"Score type parameters: {parameters}")
 
             for subtask_idx, parameter in enumerate(parameters):
                 if len(parameter) < 2:
                     continue
 
-                max_score, target = parameter[0], parameter[1]
+                _, target = (
+                    parameter[0],
+                    parameter[1],
+                )
 
                 if isinstance(target, int):
-                    # Number-based grouping: first N testcases
                     start_idx = sum(param[1] for param in parameters[:subtask_idx] if isinstance(param[1], int))
                     end_idx = start_idx + target
                     group_testcases = testcase_names[start_idx:end_idx]
+                    logger.debug(
+                        f"Subtask {subtask_idx} (number-based): testcases {start_idx}-{end_idx - 1} = {group_testcases}"
+                    )
                 elif isinstance(target, str):
-                    # Regex-based grouping
                     pattern = re.compile(target)
                     group_testcases = [tc for tc in testcase_names if pattern.match(tc)]
+                    logger.debug(
+                        f"Subtask {subtask_idx} (regex-based): pattern '{target}' = {group_testcases}"
+                    )
                 else:
                     continue
 
@@ -198,3 +247,52 @@ class SubtaskSkipper:
                 return True
 
         return False
+
+    def _is_testcase_started(self, testcase_codename: str) -> bool:
+        """Check if a testcase has been started (queued, running, or completed).
+
+        This is more comprehensive than _is_testcase_evaluated as it also
+        checks if the testcase is currently being evaluated.
+
+        testcase_codename: The codename of the testcase
+
+        Returns: True if the testcase has been started, False otherwise
+        """
+        # First check if it's already completed
+        if self._is_testcase_evaluated(testcase_codename):
+            return True
+
+        # For now, we'll use the same logic as _is_testcase_evaluated
+        # In the future, we could check if the testcase is currently
+        # In the evaluation queue or being processed
+        # But since we don't have easy access to the queue state here,
+        # we will only skip testcases that definitely
+        # haven't been touched yet.
+
+        # TODO: Could be enhanced to check the evaluation service queue
+        return self._is_testcase_evaluated(testcase_codename)
+
+    def _is_testcase_failed(self, testcase_codename: str) -> bool:
+        """Check if a testcase has failed (outcome <= 0.0).
+
+        testcase_codename: The codename of the testcase
+
+        Returns: True if the testcase failed, False otherwise
+        """
+        if not self.submission_result:
+            return False
+
+        for evaluation in self.submission_result.evaluations:
+            if evaluation.codename == testcase_codename:
+                try:
+                    outcome = (
+                        float(evaluation.outcome)
+                        if evaluation.outcome != "N/A"
+                        and evaluation.outcome is not None
+                        else 0.0
+                    )
+                    return outcome <= 0.0
+                except (ValueError, TypeError):
+                    return True  # If we can't parse the outcome, consider it failed
+
+        return False  # Not evaluated yet, so not failed
