@@ -131,6 +131,14 @@ def run_pg_dump() -> str:
 def get_updated_schema(schema_file: str, updater_file: str) -> str:
     drop_db()
     schema_sql = open(schema_file).read()
+    # The schema sets the owner of every object explicitly. We actually want
+    # these objects to be owned by whichever user CMS uses, so we skip the
+    # OWNER TO commands and let the owners be defaulted to the current user.
+    schema_sql = '\n'.join(
+        line
+        for line in schema_sql.splitlines()
+        if not (line.startswith('ALTER ') and ' OWNER TO ' in line)
+    )
     updater_sql = open(updater_file).read()
     # We need to do this in two separate connections, since the schema_sql sets
     # some connection properties which we don't want.
