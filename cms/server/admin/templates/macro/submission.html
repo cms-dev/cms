@@ -21,11 +21,21 @@ dataset (Dataset|None): the dataset to show results for, or if not defined use
 
 {% else %}
 
+<details id="diffchooser" ontoggle="utils.update_diffchooser()">
+  <summary>Diff submissions...</summary>
+  Select two submissions from the table, or enter submission IDs: <br>
+  old: <input type="number" size="5" id="diff-old-input">
+  new: <input type="number" size="5" id="diff-new-input">
+  <button onclick="utils.do_diff()">Diff</button>
+</details>
+
 {{ macro_pages.selector(page_url, page, pages) }}
 
-<table class="bordered">
+<table class="bordered" id="submissions_table">
   <thead>
     <tr>
+      <th class="diff-only">-</th>
+      <th class="diff-only">+</th>
       <th>Time</th>
       <th>User</th>
       <th>Task</th>
@@ -72,6 +82,8 @@ dataset (Dataset|None): the dataset to show results for, or if not defined use
 {% endif %}
 {% set score_type = get_score_type(dataset=dataset) %}
 <tr>
+  <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-old" data-submission="{{ s.id }}"></td>
+  <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-new" data-submission="{{ s.id }}"></td>
   <td><a href="{{ url("submission", s.id) }}">{{ s.timestamp }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
   <td><a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a></td>

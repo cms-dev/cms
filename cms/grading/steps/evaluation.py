@@ -67,15 +67,12 @@ EVALUATION_MESSAGES = MessageCollection([
                     "for example. Note that in this case the CPU time "
                     "visible in the submission details might be much smaller "
                     "than the time limit.")),
+    HumanMessage("memorylimit",
+                 N_("Memory limit exceeded"),
+                 N_("Your submission used too much memory.")),
     HumanMessage("signal",
-                 N_("Execution killed (could be triggered by violating memory "
-                    "limits)"),
-                 N_("The evaluation was killed by a signal. "
-                    "Among other things, this might be caused by exceeding "
-                    "the memory limit. Note that if this is the reason, "
-                    "the memory usage visible in the submission details is "
-                    "the usage before the allocation that caused the "
-                    "signal.")),
+                 N_("Execution killed by signal"),
+                 N_("The evaluation was killed by a signal.")),
     HumanMessage("returncode",
                  N_("Execution failed because the return code was nonzero"),
                  N_("Your submission failed because it exited with a return "
@@ -203,8 +200,8 @@ def evaluation_step_before_run(
     else:
         sandbox.address_space = None
 
-    # config.max_file_size is in KiB
-    sandbox.fsize = config.max_file_size * 1024
+    # config.sandbox.max_file_size is in KiB
+    sandbox.fsize = config.sandbox.max_file_size * 1024
 
     sandbox.stdin_file = stdin_redirect
     sandbox.stdout_file = stdout_redirect
@@ -244,6 +241,7 @@ def evaluation_step_after_run(
             Sandbox.EXIT_TIMEOUT,
             Sandbox.EXIT_TIMEOUT_WALL,
             Sandbox.EXIT_NONZERO_RETURN,
+            Sandbox.EXIT_MEM_LIMIT,
             Sandbox.EXIT_SIGNAL]:
         # Evaluation succeeded, and user program was interrupted for some error
         # condition. We report the success, the task type should decide how to
@@ -288,6 +286,8 @@ def human_evaluation_message(stats: StatsDict) -> list[str]:
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         # Contestants won't see this, the submission will still be evaluating.
         return []
+    elif exit_status == Sandbox.EXIT_MEM_LIMIT:
+        return [EVALUATION_MESSAGES.get("memorylimit").message]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
         return [EVALUATION_MESSAGES.get("returncode").message]

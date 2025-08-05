@@ -136,12 +136,15 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         self.fetch_file_digests_from_previous_submission.side_effect = \
             lambda *args, **kwargs: self.digests
 
-        patcher = patch.object(config, "submit_local_copy", True)
+        patcher = patch.object(config.contest_web_server, "submit_local_copy", True)
         patcher.start()
         self.addCleanup(patcher.stop)
 
         patcher = patch.object(
-            config, "submit_local_copy_path", self.submit_local_copy_path)
+            config.contest_web_server,
+            "submit_local_copy_path",
+            self.submit_local_copy_path,
+        )
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -342,13 +345,13 @@ class TestAcceptSubmission(DatabaseMixin, unittest.TestCase):
         self.files["foo.%l"] = FOO_CONTENT * 100
         max_size = len(FOO_CONTENT) * 100 - 1
 
-        with patch.object(config, "max_submission_length", max_size):
+        with patch.object(config.contest_web_server, "max_submission_length", max_size):
             with self.assertRaisesRegex(UnacceptableSubmission,
                                         "%d" % max_size):
                 self.call()
 
     def test_success_without_store_local_copy(self):
-        with patch.object(config, "submit_local_copy", False):
+        with patch.object(config.contest_web_server, "submit_local_copy", False):
             submission = self.call()
 
         self.assertSubmissionIsValid(
@@ -466,12 +469,15 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.fetch_file_digests_from_previous_submission.side_effect = \
             lambda *args, **kwargs: self.digests
 
-        patcher = patch.object(config, "tests_local_copy", True)
+        patcher = patch.object(config.contest_web_server, "tests_local_copy", True)
         patcher.start()
         self.addCleanup(patcher.stop)
 
         patcher = patch.object(
-            config, "tests_local_copy_path", self.tests_local_copy_path)
+            config.contest_web_server,
+            "tests_local_copy_path",
+            self.tests_local_copy_path,
+        )
         patcher.start()
         self.addCleanup(patcher.stop)
 
@@ -681,7 +687,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.files["foo.%l"] = FOO_CONTENT * 100
         max_size = len(FOO_CONTENT) * 100 - 1
 
-        with patch.object(config, "max_submission_length", max_size):
+        with patch.object(config.contest_web_server, "max_submission_length", max_size):
             with self.assertRaisesRegex(UnacceptableUserTest, "%d" % max_size):
                 self.call()
 
@@ -689,7 +695,7 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.files["spam.%l"] = SPAM_CONTENT * 100
         max_size = len(SPAM_CONTENT) * 100 - 1
 
-        with patch.object(config, "max_submission_length", max_size):
+        with patch.object(config.contest_web_server, "max_submission_length", max_size):
             with self.assertRaisesRegex(UnacceptableUserTest, "%d" % max_size):
                 self.call()
 
@@ -697,12 +703,12 @@ class TestAcceptUserTest(DatabaseMixin, unittest.TestCase):
         self.files["input"] = INPUT_CONTENT * 100
         max_size = len(INPUT_CONTENT) * 100 - 1
 
-        with patch.object(config, "max_input_length", max_size):
+        with patch.object(config.contest_web_server, "max_input_length", max_size):
             with self.assertRaisesRegex(UnacceptableUserTest, "%d" % max_size):
                 self.call()
 
     def test_success_without_store_local_copy(self):
-        with patch.object(config, "tests_local_copy", False):
+        with patch.object(config.contest_web_server, "tests_local_copy", False):
             user_test = self.call()
 
         self.assertUserTestIsValid(

@@ -96,7 +96,7 @@ class TaskTypeTestMixin:
         self.tasktype = tasktype
 
         # Ensure we don't retain all sandboxes so we can verify delete().
-        patcher = patch.object(config, "keep_sandbox", False)
+        patcher = patch.object(config.worker, "keep_sandbox", False)
         self.addCleanup(patcher.stop)
         patcher.start()
 
