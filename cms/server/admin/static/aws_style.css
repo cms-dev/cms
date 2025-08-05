@@ -751,3 +751,10 @@ a.button-link {
 a.button-link:hover {
     background-color: #EEF3EA;
 }
+
+th.diff-only, td.diff-only {
+    display: none;
+}
+table.diff-open th.diff-only, table.diff-open td.diff-only {
+    display: table-cell;
+}

@@ -40,16 +40,14 @@ from . import engine
 
 logger = logging.getLogger(__name__)
 
+_session = sessionmaker(engine, twophase=config.database.twophase_commit)
 if typing.TYPE_CHECKING:
     # the type checker doesn't understand sessionmaker, so for type hints
     # define Session as the sqlalchemy class directly.
     Session = sqlalchemy.orm.Session
 else:
-    Session = sessionmaker(engine, twophase=config.twophase_commit)
+    Session = _session
 ScopedSession = scoped_session(Session)
-
-# For two-phases transactions:
-# Session = sessionmaker(db, twophase=True)
 
 
 class SessionGen:
@@ -93,7 +91,7 @@ def custom_psycopg2_connection(**kwargs: dict[str, str]):
         configured to use psycopg2 as the DB-API driver.
 
     """
-    database_url: URL = make_url(config.database)
+    database_url: URL = make_url(config.database.url)
     assert database_url.get_dialect().driver == "psycopg2"
     # For Unix-domain socket we don't have a port nor a host and that's fine.
     if database_url.port is None and database_url.host is not None:

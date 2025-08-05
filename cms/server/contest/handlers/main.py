@@ -246,7 +246,11 @@ class LoginHandler(ContestHandler):
             self.clear_cookie(cookie_name)
         else:
             self.set_secure_cookie(
-                cookie_name, cookie, expires_days=None, max_age=config.cookie_duration)
+                cookie_name,
+                cookie,
+                expires_days=None,
+                max_age=config.contest_web_server.cookie_duration,
+            )
 
         if participation is None:
             self.redirect(error_page)
@@ -337,13 +341,13 @@ class PrintingHandler(ContestHandler):
             .all()
         )
 
-        remaining_jobs = max(0, config.max_jobs_per_user - len(printjobs))
+        remaining_jobs = max(0, config.printing.max_jobs_per_user - len(printjobs))
 
         self.render("printing.html",
                     printjobs=printjobs,
                     remaining_jobs=remaining_jobs,
-                    max_pages=config.max_pages_per_job,
-                    pdf_printing_allowed=config.pdf_printing_allowed,
+                    max_pages=config.printing.max_pages_per_job,
+                    pdf_printing_allowed=config.printing.pdf_printing_allowed,
                     **self.r_params)
 
     @tornado.web.authenticated
@@ -379,10 +383,10 @@ class DocumentationHandler(ContestHandler):
         languages = [get_language(lang) for lang in contest.languages]
 
         language_docs = []
-        if config.docs_path is not None:
+        if config.contest_web_server.docs_path is not None:
             for language in languages:
                 ext = language.source_extensions[0][1:]  # remove dot
-                path = os.path.join(config.docs_path, ext)
+                path = os.path.join(config.contest_web_server.docs_path, ext)
                 if os.path.exists(path):
                     language_docs.append((language.name, ext))
         else:
