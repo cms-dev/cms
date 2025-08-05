@@ -37,7 +37,7 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # conf
-    "Address", "ServiceCoord", "ConfigError", "async_config", "config",
+    "Address", "ServiceCoord", "ConfigError", "config",
     # util
     "mkdir", "rmtree", "utf8_decoder", "get_safe_shard", "get_service_address",
     "get_service_shards", "contest_id_from_args", "default_argument_parser",
@@ -74,7 +74,7 @@ FEEDBACK_LEVEL_RESTRICTED = "restricted"
 FEEDBACK_LEVEL_OI_RESTRICTED = "oi_restricted"
 
 
-from .conf import Address, ServiceCoord, ConfigError, async_config, config
+from .conf import Address, ServiceCoord, ConfigError, config
 from .util import mkdir, rmtree, utf8_decoder, get_safe_shard, \
     get_service_address, get_service_shards, contest_id_from_args, \
     default_argument_parser

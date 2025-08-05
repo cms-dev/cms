@@ -96,7 +96,7 @@ class Service:
         try:
             address = get_service_address(self._my_coord)
         except KeyError:
-            raise ConfigError("Unable to find address for service %r. "
+            raise ConfigError("Unable to find address for service %s. "
                               "Is it specified in core_services in cms.toml?" %
                               (self._my_coord,))
 
@@ -118,9 +118,9 @@ class Service:
         shell_handler.addFilter(filter_)
 
         # Determine location of log file, and make directories.
-        log_dir = os.path.join(config.log_dir,
+        log_dir = os.path.join(config.global_.log_dir,
                                "%s-%d" % (self.name, self.shard))
-        mkdir(config.log_dir)
+        mkdir(config.global_.log_dir)
         mkdir(log_dir)
 
         log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")
@@ -128,7 +128,7 @@ class Service:
         # Install a file handler.
         file_handler = FileHandler(os.path.join(log_dir, log_filename),
                                    mode='w', encoding='utf-8')
-        if config.file_log_debug:
+        if config.global_.file_log_debug:
             file_log_level = logging.DEBUG
         else:
             file_log_level = logging.INFO
@@ -242,14 +242,14 @@ class Service:
         """Terminate the service at the next step.
 
         """
-        logger.warning("%r received request to shut down.", self._my_coord)
+        logger.warning("%s received request to shut down.", self._my_coord)
         self.rpc_server.stop()
 
     def get_backdoor_path(self) -> str:
         """Return the path for a UNIX domain socket to use as backdoor.
 
         """
-        return os.path.join(config.run_dir, "%s_%d" % (self.name, self.shard))
+        return os.path.join(config.global_.run_dir, "%s_%d" % (self.name, self.shard))
 
     @rpc_method
     def start_backdoor(self, backlog=50):
@@ -316,7 +316,7 @@ class Service:
             else:
                 raise
 
-        if config.backdoor:
+        if config.global_.backdoor:
             self.start_backdoor()
 
         logger.info("%s %d up and running!", *self._my_coord)
@@ -326,7 +326,7 @@ class Service:
 
         logger.info("%s %d is shutting down", *self._my_coord)
 
-        if config.backdoor:
+        if config.global_.backdoor:
             self.stop_backdoor()
 
         self._disconnect_all()
