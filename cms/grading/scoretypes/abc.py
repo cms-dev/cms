@@ -432,10 +432,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
             for tc_idx in target:
                 evaluation = evaluations[tc_idx]
 
-                # Handle skipped testcases
-                if evaluation.outcome == "N/A" or evaluation.outcome is None:
+                # Handle skipped testcases specifically
+                if evaluation.outcome == "N/A" and evaluation.text == [
+                    "Skipped due to failed testcase in subtask"
+                ]:
                     tc_score = 0.0  # Skipped testcases count as 0.0 for scoring
                     tc_outcome = "Skipped"
+                elif evaluation.outcome == "N/A" or evaluation.outcome is None:
+                    tc_score = 0.0  # Other N/A cases count as 0.0 for scoring
+                    tc_outcome = "N/A"
                 else:
                     try:
                         tc_score = float(evaluation.outcome)

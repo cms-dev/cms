@@ -641,7 +641,8 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
 
         elif operation.type_ == ESOperation.EVALUATION:
             if result.job_success:
-                # Handle skip subtask logic
+                result.job.to_submission(object_result)
+
                 if isinstance(object_result, SubmissionResult):
                     task = object_result.submission.task
                     if (
@@ -656,60 +657,63 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
                         ):
                             try:
                                 outcome_value = float(result.job.outcome)
-                                skipper.mark_testcase_failed(
-                                    operation.testcase_codename, outcome_value
-                                )
-
-                                # Remove skipped testcases from the queue
-                                skipped_testcases = skipper.get_skipped_testcases()
-                                if skipped_testcases:
-                                    logger.info(
-                                        "Skipping %d testcases in subtask due to failed testcase %s",
-                                        len(skipped_testcases),
-                                        operation.testcase_codename,
+                                # Only process skip logic if this testcase actually failed
+                                if outcome_value <= 0.0:
+                                    skipper.mark_testcase_failed(
+                                        operation.testcase_codename, outcome_value
                                     )
-                                    for skipped_testcase in skipped_testcases:
-                                        skip_operation = ESOperation(
-                                            ESOperation.EVALUATION,
-                                            object_result.submission_id,
-                                            object_result.dataset_id,
-                                            skipped_testcase,
-                                            operation.archive_sandbox,
+
+                                    # Remove skipped testcases from the queue
+                                    skipped_testcases = skipper.get_skipped_testcases()
+                                    if skipped_testcases:
+                                        logger.info(
+                                            "Skipping %d testcases in subtask due to failed testcase %s",
+                                            len(skipped_testcases),
+                                            operation.testcase_codename,
                                         )
-                                        # Remove from queue if it exists
-                                        try:
-                                            self.get_executor().dequeue(skip_operation)
-                                            logger.info(
-                                                "Removed testcase %s from evaluation queue (skipped)",
+                                        for skipped_testcase in skipped_testcases:
+                                            skip_operation = ESOperation(
+                                                ESOperation.EVALUATION,
+                                                object_result.submission_id,
+                                                object_result.dataset_id,
                                                 skipped_testcase,
+                                                operation.archive_sandbox,
                                             )
-                                        except KeyError:
-                                            # Testcase wasn't in queue, might already be running
-                                            pass
+                                            # Remove from queue if it exists
+                                            try:
+                                                self.get_executor().dequeue(
+                                                    skip_operation
+                                                )
+                                                logger.info(
+                                                    "Removed testcase %s from evaluation queue (skipped)",
+                                                    skipped_testcase,
+                                                )
+                                            except KeyError:
+                                                pass
 
-                                        # Add a skipped evaluation record
-                                        from cms.db import Evaluation
+                                            # Add a skipped evaluation record
+                                            from cms.db import Evaluation
 
-                                        skipped_evaluation = Evaluation(
-                                            text=[
-                                                "Skipped due to failed testcase in subtask"
-                                            ],
-                                            outcome="N/A",
-                                            execution_time=None,
-                                            execution_wall_clock_time=None,
-                                            execution_memory=None,
-                                            evaluation_shard=result.job.shard
-                                            if hasattr(result.job, "shard")
-                                            else None,
-                                            evaluation_sandbox_paths=[],
-                                            evaluation_sandbox_digests=[],
-                                            testcase=object_result.dataset.testcases[
-                                                skipped_testcase
-                                            ],
-                                        )
-                                        object_result.evaluations.append(
-                                            skipped_evaluation
-                                        )
+                                            skipped_evaluation = Evaluation(
+                                                text=[
+                                                    "Skipped due to failed testcase in subtask"
+                                                ],
+                                                outcome="N/A",
+                                                execution_time=None,
+                                                execution_wall_clock_time=None,
+                                                execution_memory=None,
+                                                evaluation_shard=result.job.shard
+                                                if hasattr(result.job, "shard")
+                                                else None,
+                                                evaluation_sandbox_paths=[],
+                                                evaluation_sandbox_digests=[],
+                                                testcase=object_result.dataset.testcases[
+                                                    skipped_testcase
+                                                ],
+                                            )
+                                            object_result.evaluations.append(
+                                                skipped_evaluation
+                                            )
                             except (ValueError, AttributeError, KeyError) as e:
                                 logger.warning(
                                     "Failed to process skip logic for testcase %s: %s",
@@ -717,7 +721,8 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
                                     e,
                                 )
 
-                result.job.to_submission(object_result)
+                # Note: result.job.to_submission() was already called above
+                # No need to call it again
             else:
                 if result.job.plus is not None and \
                    result.job.plus.get("tombstone") is True:

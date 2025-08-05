@@ -96,7 +96,7 @@ class SubtaskSkipper:
         # Get all testcases in this subtask and mark remaining ones as skipped
         subtask_testcases = self._get_testcases_in_subtask(subtask_idx)
         for tc_codename in subtask_testcases:
-            if tc_codename != testcase_codename:
+            if tc_codename != testcase_codename:  # Skip the failing testcase itself
                 # Check if this testcase hasn't been evaluated yet
                 if not self._is_testcase_evaluated(tc_codename):
                     self._skipped_testcases.add(tc_codename)
