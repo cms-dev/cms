@@ -1,53 +1,43 @@
 name: ci
 
 on:
-  - push
-  - pull_request
+  push:
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-24.04
-
     strategy:
+      fail-fast: false
       matrix:
         base_image: ["ubuntu:noble", "debian:bookworm"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Check available cgroups
-        run: |
-          mount | grep cgroup
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ matrix.base_image }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-${{ matrix.base_image }}-
 
       - name: Build docker image
         run: |
-          docker compose -p cms -f docker/docker-compose.test.yml build \
-              --build-arg BASE_IMAGE=${{ matrix.base_image }} testcms
+          docker buildx build \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
+            --build-arg BASE_IMAGE=${{ matrix.base_image }} \
+            -t testcms .
 
       - name: Run tests
-        run: |
-          docker compose -p cms -f docker/docker-compose.test.yml run --rm testcms
+        run: docker compose -p cms -f docker/docker-compose.test.yml run --rm --attach-dependencies testcms
 
-      - name: Upload test results to Codecov
+      - name: Upload all coverage to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          files: ./codecov/junit.xml
-          flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload unit test coverage results to Codecov
         uses: codecov/codecov-action@v4
-        if: ${{ !cancelled() }}
         with:
-          files: ./codecov/unittests.xml
-          flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload functional test coverage results to Codecov
-        uses: codecov/codecov-action@v4
-        if: ${{ !cancelled() }}
-        with:
-          files: ./codecov/functionaltests.xml
-          flags: functionaltests
+          files: ./codecov/unittests.xml,./codecov/functionaltests.xml
+          flags: unittests,functionaltests
           token: ${{ secrets.CODECOV_TOKEN }}
