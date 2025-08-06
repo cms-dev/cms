@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/Dockerfile.test
+          file: Dockerfile
           push: false
           tags: testcms
           cache-from: type=local,src=/tmp/.docker-cache
