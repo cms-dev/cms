@@ -1,8 +1,9 @@
 name: ci
 
 on:
-  - push
-  - pull_request
+  push:
+    branches: [ main, develop ]
+  pull_request:
 
 jobs:
   test:
@@ -13,16 +14,30 @@ jobs:
         base_image: ["ubuntu:noble", "debian:bookworm"]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Check available cgroups
-        run: |
-          mount | grep cgroup
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
 
-      - name: Build docker image
-        run: |
-          docker compose -p cms -f docker/docker-compose.test.yml build \
-              --build-arg BASE_IMAGE=${{ matrix.base_image }} testcms
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.test
+          push: false
+          tags: testcms
+          cache-from: type=local,src=/tmp/.docker-cache
+          cache-to: type=local,dest=/tmp/.docker-cache
+          build-args: BASE_IMAGE=${{ matrix.base_image }}
 
       - name: Run tests
         run: |
