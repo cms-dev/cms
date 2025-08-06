@@ -338,7 +338,9 @@ CMS.CWSUtils.prototype.switch_lang = function() {
     location.reload();
 };
 
-CMS.CWSUtils.filter_languages = function(options, inputs) {
+CMS.CWSUtils.filter_languages = function (options, inputs, languages) {
+    languages = languages || LANGUAGES;
+
     var exts = [];
     for (var i = 0; i < inputs.length; i++) {
         exts.push('.' + inputs[i].value.match(/[^.]*$/)[0]);
@@ -346,9 +348,9 @@ CMS.CWSUtils.filter_languages = function(options, inputs) {
     // Find all languages that should be enabled.
     var enabled = {};
     var anyEnabled = false;
-    for (var lang in LANGUAGES) {
+    for (var lang in languages) {
         for (i = 0; i < exts.length; i++) {
-            if (LANGUAGES[lang][exts[i]]) {
+            if (languages[lang][exts[i]]) {
                 enabled[lang] = true;
                 anyEnabled = true;
                 break;

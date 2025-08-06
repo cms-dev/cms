@@ -208,8 +208,9 @@
         </tr>
     </thead>
     <tbody>
-{% set extensions = "[%s]"|format(contest.languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
 {% for t_iter in contest.tasks %}
+        {% set task_allowed_languages = t_iter.get_allowed_languages() %}
+        {% set extensions = "[%s]"|format(task_allowed_languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
         <tr>
 {% if contest.show_task_scores_in_overview and task_scores is defined %}
             <td class="public_score {{ get_score_class(task_scores[t_iter.id][0], task_scores[t_iter.id][1], t_iter.score_precision) }}">{{ task_scores[t_iter.id][2] }}</td>

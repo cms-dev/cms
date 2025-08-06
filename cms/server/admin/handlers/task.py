@@ -8,6 +8,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -146,6 +147,14 @@ class TaskHandler(BaseHandler):
 
             self.get_submission_format(attrs)
             self.get_string(attrs, "feedback_level")
+
+            # Process allowed languages
+            selected_languages = self.get_arguments("allowed_languages")
+            if not selected_languages:
+                # No languages selected means allow all contest languages (NULL)
+                attrs["allowed_languages"] = None
+            else:
+                attrs["allowed_languages"] = selected_languages
 
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
