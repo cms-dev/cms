@@ -153,7 +153,12 @@ var UserDetail = new function () {
         if (self.data_fetched == 2) {
             self.f_name_label.text(self.user["f_name"]);
             self.l_name_label.text(self.user["l_name"]);
-            self.face_image.attr("src", Config.get_face_url(self.user_id));
+
+            // Create a new image element and replace the old one
+            var new_face_image = $('<img id="UserDetail_face" alt="Face"/>');
+            new_face_image.attr("src", Config.get_face_url(self.user_id));
+            self.face_image.replaceWith(new_face_image);
+            self.face_image = new_face_image;
 
             if (self.user["team"]) {
                 self.team_label.text(DataStore.teams[self.user["team"]]["name"]);

@@ -417,8 +417,8 @@ class Dataset(Base):
         nullable=True)
     memory_limit: int | None = Column(
         BigInteger,
-        CheckConstraint("memory_limit > 0"),
-        CheckConstraint("MOD(memory_limit, 1048576) = 0"),
+        CheckConstraint("memory_limit > 0", name='datasets_memory_limit_check'),
+        CheckConstraint("MOD(memory_limit, 1048576) = 0", name='datasets_memory_limit_check1'),
         nullable=True)
 
     # Name of the TaskType child class suited for the task.
