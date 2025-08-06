@@ -2,42 +2,67 @@ name: ci
 
 on:
   push:
+    branches: [ main, develop ]
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-24.04
+
     strategy:
-      fail-fast: false
       matrix:
         base_image: ["ubuntu:noble", "debian:bookworm"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ matrix.base_image }}-${{ github.sha }}
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
           restore-keys: |
-            ${{ runner.os }}-docker-${{ matrix.base_image }}-
+            ${{ runner.os }}-docker-
 
-      - name: Build docker image
-        run: |
-          docker buildx build \
-            --cache-from type=local,src=/tmp/.buildx-cache \
-            --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
-            --build-arg BASE_IMAGE=${{ matrix.base_image }} \
-            -t testcms .
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile.test
+          push: false
+          tags: testcms
+          cache-from: type=local,src=/tmp/.docker-cache
+          cache-to: type=local,dest=/tmp/.docker-cache
+          build-args: BASE_IMAGE=${{ matrix.base_image }}
 
       - name: Run tests
-        run: docker compose -p cms -f docker/docker-compose.test.yml run --rm --attach-dependencies testcms
+        run: |
+          docker compose -p cms -f docker/docker-compose.test.yml run --rm testcms
 
-      - name: Upload all coverage to Codecov
+      - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/test-results-action@v1
         with:
-          files: ./codecov/unittests.xml,./codecov/functionaltests.xml
-          flags: unittests,functionaltests
+          files: ./codecov/junit.xml
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload unit test coverage results to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ !cancelled() }}
+        with:
+          files: ./codecov/unittests.xml
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload functional test coverage results to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ !cancelled() }}
+        with:
+          files: ./codecov/functionaltests.xml
+          flags: functionaltests
           token: ${{ secrets.CODECOV_TOKEN }}
