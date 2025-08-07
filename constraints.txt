@@ -9,7 +9,7 @@ chardet==5.2.0
 charset-normalizer==3.4.2
 coverage==7.9.1
 gevent==25.5.1
-greenlet==3.2.3
+greenlet==3.2.4
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
