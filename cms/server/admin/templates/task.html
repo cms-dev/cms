@@ -134,12 +134,12 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <td>
           <span class="info" title="Programming languages that contestants can use to solve this task.
                                     If none are selected, all contest languages are allowed.
-                                    Otherwise, only the selected languages (which must be a subset of contest languages) are allowed."></span>
+                                    Otherwise, only the selected languages are allowed."></span>
           Allowed programming languages
         </td>
         <td class="wrapping-options">
           {% for lang in LANGUAGES %}
-            <label><input type="checkbox" name="allowed_languages" value="{{ lang.name }}" {{ "checked" if task.allowed_languages is none or lang.name in (task.allowed_languages or []) else "" }}>{{ lang.name }}</label>
+            <label><input type="checkbox" name="allowed_languages" value="{{ lang.name }}" {{ "checked" if task.allowed_languages is not none and lang.name in task.allowed_languages else "" }}>{{ lang.name }}</label>
           {% endfor %}
         </td>
       </tr>
