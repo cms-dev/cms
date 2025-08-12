@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: zh_TW\n"
@@ -354,6 +354,12 @@ msgstr "密碼"
 msgid "Login"
 msgstr "登入"
 
+msgid "Don't have an account?"
+msgstr "還沒有帳號嗎？"
+
+msgid "Register"
+msgstr "註冊"
+
 msgid "New message"
 msgstr "新訊息"
 
@@ -403,8 +409,17 @@ msgstr "遵循"
 msgid "GNU Affero General Public License"
 msgstr "GNU AGPL 通用公共許可證"
 
+msgid "Choose a contest"
+msgstr "選擇一場競賽"
+
+msgid "Programming languages and libraries"
+msgstr "程式語言和函式庫"
+
 msgid "Standard Template Library"
 msgstr "STL 標準樣板函數庫"
+
+msgid "Message"
+msgstr "訊息"
 
 #, python-format
 msgid "Error %(status_code)s"

@@ -35,6 +35,7 @@ from cms import config, rmtree
 from cms.db import SessionGen, PrintJob
 from cms.db.filecacher import FileCacher
 from cms.io import Executor, QueueItem, TriggeredService, rpc_method
+from cms.io.priorityqueue import QueueEntry
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from cmscommon.commands import pretty_print_cmdline
 from cmscommon.datetime import get_timezone, utc
@@ -50,7 +51,8 @@ def N_(message):
 
 
 class PrintingOperation(QueueItem):
-    def __init__(self, printjob_id):
+
+    def __init__(self, printjob_id: int):
         self.printjob_id = printjob_id
 
     def __str__(self):
@@ -60,7 +62,7 @@ class PrintingOperation(QueueItem):
         return {"printjob_id": self.printjob_id}
 
 
-class PrintingExecutor(Executor):
+class PrintingExecutor(Executor[PrintingOperation]):
     def __init__(self, file_cacher):
         super().__init__()
 
@@ -71,13 +73,12 @@ class PrintingExecutor(Executor):
         self.jinja2_env.filters["escape_tex_normal"] = escape_tex_normal
         self.jinja2_env.filters["escape_tex_tt"] = escape_tex_tt
 
-    def execute(self, entry):
+    def execute(self, entry: QueueEntry[PrintingOperation]):
         """Print a print job.
 
         This is the core of PrintingService.
 
-        entry (QueueEntry): the entry containing the operation to
-            perform.
+        entry: the entry containing the operation to perform.
 
         """
         # TODO: automatically re-enqueue in case of a recoverable
@@ -101,7 +102,7 @@ class PrintingExecutor(Executor):
                 logger.info("Print job %d was already sent to the printer.",
                             printjob_id)
 
-            directory = tempfile.mkdtemp(dir=config.temp_dir)
+            directory = tempfile.mkdtemp(dir=config.global_.temp_dir)
             logger.info("Preparing print job in directory %s", directory)
 
             # Take the base name just to be sure.
@@ -110,7 +111,7 @@ class PrintingExecutor(Executor):
             with open(source, "wb") as file_:
                 self.file_cacher.get_file_to_fobj(printjob.digest, file_)
 
-            if filename.endswith(".pdf") and config.pdf_printing_allowed:
+            if filename.endswith(".pdf") and config.printing.pdf_printing_allowed:
                 source_pdf = source
             else:
                 # Convert text to ps.
@@ -119,11 +120,11 @@ class PrintingExecutor(Executor):
                        source,
                        "--delegate=no",
                        "--output=" + source_ps,
-                       "--medium=%s" % config.paper_size.capitalize(),
+                       "--medium=%s" % config.printing.paper_size.capitalize(),
                        "--portrait",
                        "--columns=1",
                        "--rows=1",
-                       "--pages=1-%d" % (config.max_pages_per_job),
+                       "--pages=1-%d" % (config.printing.max_pages_per_job),
                        "--header=",
                        "--footer=",
                        "--left-footer=",
@@ -146,7 +147,7 @@ class PrintingExecutor(Executor):
                 # Convert ps to pdf
                 source_pdf = os.path.join(directory, "source.pdf")
                 cmd = ["ps2pdf",
-                       "-sPAPERSIZE=%s" % config.paper_size.lower(),
+                       "-sPAPERSIZE=%s" % config.printing.paper_size.lower(),
                        source_ps]
                 try:
                     subprocess.check_call(cmd, cwd=directory)
@@ -161,7 +162,7 @@ class PrintingExecutor(Executor):
             logger.info("Preparing %d page(s) (plus the title page)",
                         page_count)
 
-            if page_count > config.max_pages_per_job:
+            if page_count > config.printing.max_pages_per_job:
                 logger.info("Too many pages.")
                 printjob.done = True
                 printjob.status = [N_("Print job has too many pages")]
@@ -177,7 +178,7 @@ class PrintingExecutor(Executor):
                         .render(user=user, filename=filename,
                                 timestr=timestr,
                                 page_count=page_count,
-                                paper_size=config.paper_size))
+                                paper_size=config.printing.paper_size))
             cmd = ["pdflatex",
                    "-interaction",
                    "nonstopmode",
@@ -196,7 +197,7 @@ class PrintingExecutor(Executor):
             try:
                 printer_connection = cups.Connection()
                 printer_connection.printFile(
-                    config.printer, result,
+                    config.printing.printer, result,
                     "Printout %d" % printjob_id, {})
             except cups.IPPError as error:
                 logger.error("Unable to print: `%s'.", error)
@@ -208,12 +209,12 @@ class PrintingExecutor(Executor):
                 rmtree(directory)
 
 
-class PrintingService(TriggeredService):
+class PrintingService(TriggeredService[PrintingOperation, PrintingExecutor]):
     """A service that prepares print jobs and sends them to a printer.
 
     """
 
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         """Initialize the PrintingService.
 
         """
@@ -224,7 +225,7 @@ class PrintingService(TriggeredService):
         self.add_executor(PrintingExecutor(self.file_cacher))
         self.start_sweeper(61.0)
 
-        if config.printer is None:
+        if config.printing.printer is None:
             logger.info("Printing is disabled, so the PrintingService is "
                         "idle.")
             return
@@ -247,12 +248,12 @@ class PrintingService(TriggeredService):
         return counter
 
     @rpc_method
-    def new_printjob(self, printjob_id):
+    def new_printjob(self, printjob_id: int):
         """Schedule the given print job.
 
         Put it in the queue to have it printed, sooner or later.
 
-        printjob_id (int): the id of the printjob.
+        printjob_id: the id of the printjob.
 
         """
         self.enqueue(PrintingOperation(printjob_id))

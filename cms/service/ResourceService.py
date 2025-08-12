@@ -25,6 +25,7 @@ that saves the resources usage in that machine.
 
 """
 
+from collections.abc import Generator
 import logging
 import os
 import re
@@ -56,16 +57,18 @@ PSUTIL_PROC_ATTRS = \
 class ProcessMatcher:
     def __init__(self):
         # Running processes, lazily loaded.
-        self._procs = None
+        self._procs: dict[str, dict[int | None, psutil.Process]] | None = None
 
-    def find(self, service, cpu_times=None):
+    def find(
+        self, service: ServiceCoord, cpu_times: dict[ServiceCoord, object] | None = None
+    ) -> psutil.Process | None:
         """Returns the pid of a given service running on this machine.
 
-        service (ServiceCoord): the service we are interested in.
-        cpu_times ({ServiceCoord: object}|None): if not None, a dict to update
-            with the cputimes of the found process, if found.
+        service: the service we are interested in.
+        cpu_times: if not None, a dict to update with the cputimes of the
+            found process, if found.
 
-        return (psutil.Process|None): the process of service, or None
+        return: the process of service, or None
              if not found
 
         """
@@ -82,11 +85,10 @@ class ProcessMatcher:
         return None
 
     @staticmethod
-    def _get_all_processes():
+    def _get_all_processes() -> Generator[tuple[list[str], psutil.Process]]:
         """Wrapper of psutil for testing.
 
-        return (([string], psutil.Process)): generator for tuples
-            (full command line, process).
+        return: generator for tuples (full command line, process).
 
         """
         for proc in psutil.process_iter():
@@ -96,11 +98,12 @@ class ProcessMatcher:
                 continue
 
     @staticmethod
-    def _get_interesting_running_processes():
+    def _get_interesting_running_processes() -> (
+        dict[str, dict[int | None, psutil.Process]]
+    ):
         """Return the processes that might be CMS services
 
-        return ({string: {int|None: psutil.Process}): maps service
-            names to a map from shards to the corresponding process.
+        return: maps service names to a map from shards to the corresponding process.
 
         """
         logger.debug("_get_interesting_running_processes")
@@ -113,15 +116,16 @@ class ProcessMatcher:
         return ret
 
     @staticmethod
-    def _is_interesting_command_line(cmdline):
+    def _is_interesting_command_line(
+        cmdline: list[str],
+    ) -> tuple[str, int | None] | None:
         """Returns if cmdline can be the command line of a service.
 
-        cmdline ([string]): a command line.
+        cmdline: a command line.
 
-        return ((string, int|None)|None): if cmdline is not a CMS
-            service, None; otherwise, a tuple whose first element is
-            the service name, and the second is the shard number, or
-            None if the default was used.
+        return: if cmdline is not a CMS service, None; otherwise, a
+            tuple whose first element is the service name, and the
+            second is the shard number, or None if the default was used.
 
         """
         if not cmdline:
@@ -161,7 +165,9 @@ class ResourceService(Service):
     upon request.
 
     """
-    def __init__(self, shard, contest_id=None, autorestart=False):
+    def __init__(
+        self, shard: int, contest_id: int | None = None, autorestart: bool = False
+    ):
         """If contest_id is not None, we assume the user wants the
         autorestart feature.
 
@@ -265,16 +271,16 @@ class ResourceService(Service):
         # Run forever.
         return True
 
-    def _find_local_services(self):
+    def _find_local_services(self) -> list[ServiceCoord]:
         """Returns the services that are running on the same machine
         as us.
 
-        returns (list): a list of ServiceCoord elements, sorted by
-                        name and shard
+        returns: a list of ServiceCoord elements, sorted by
+                 name and shard
 
         """
         logger.debug("ResourceService._find_local_services")
-        services = config.async_config.core_services
+        services = config.services
         local_machine = services[self._my_coord].ip
         local_services = [x
                           for x in services
@@ -282,10 +288,10 @@ class ResourceService(Service):
         return sorted(local_services)
 
     @staticmethod
-    def _get_cpu_times():
+    def _get_cpu_times() -> dict:
         """Wrapper of psutil.cpu_times to get the format we like.
 
-        return (dict): dictionary of cpu times information.
+        return: dictionary of cpu times information.
 
         """
         cpu_times = psutil.cpu_times()
@@ -297,12 +303,11 @@ class ResourceService(Service):
                 "irq": cpu_times.irq,
                 "softirq": cpu_times.softirq}
 
-    def _store_resources(self, store=True):
+    def _store_resources(self, store: bool = True):
         """Looks at the resources usage and store the data locally.
 
-        store (bool): if False, run the method but do not store the
-                      resulting values - useful for initializing the
-                      previous values
+        store: if False, run the method but do not store the resulting
+            values - useful for initializing the previous values
 
         """
         logger.debug("ResourceService._store_resources")
@@ -396,11 +401,11 @@ class ResourceService(Service):
         return True
 
     @rpc_method
-    def get_resources(self, last_time=0.0):
+    def get_resources(self, last_time: float = 0.0):
         """Returns the resurce usage information from last_time to
         now.
 
-        last_time (float): timestamp of the last time the caller
+        last_time: timestamp of the last time the caller
             called this method.
 
         """
@@ -415,12 +420,12 @@ class ResourceService(Service):
         return result
 
     @rpc_method
-    def kill_service(self, service):
+    def kill_service(self, service: str):
         """Restart the service. Note that after calling successfully
         this method, get_resource could still report the service
         running untile we call _store_resources again.
 
-        service (string): format: name,shard.
+        service: format: name,shard.
 
         """
         logger.info("Killing %s as asked.", service)
@@ -435,17 +440,18 @@ class ResourceService(Service):
             logger.error("Unable to decode service shard.")
 
         remote_service = self.connect_to(ServiceCoord(name, shard))
+        remote_service.wait_for_connection(timeout=5)
         result = remote_service.quit(reason="Asked by ResourceService")
         return result.get()
 
     @rpc_method
-    def toggle_autorestart(self, service):
+    def toggle_autorestart(self, service: str) -> bool | None:
         """If the service is scheduled for autorestart, disable it,
         otherwise enable it.
 
-        service (string): format: name,shard.
+        service: format: name,shard.
 
-        return (bool/None): current status of will_restart.
+        return: current status of will_restart.
 
         """
         if not self.autorestart:

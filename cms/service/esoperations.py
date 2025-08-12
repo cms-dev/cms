@@ -26,12 +26,15 @@ compute sets of operations to do.
 
 """
 
+from collections.abc import Generator
+from datetime import datetime
 import logging
 
 from sqlalchemy import case, literal
 
 from cms.db import Dataset, Evaluation, Submission, SubmissionResult, \
     Task, Testcase, UserTest, UserTestResult
+from cms.db.session import Session
 from cms.io import PriorityQueue, QueueItem
 
 
@@ -74,12 +77,12 @@ FILTER_USER_TEST_RESULTS_TO_EVALUATE = (
 )
 
 
-def submission_to_compile(submission_result):
+def submission_to_compile(submission_result: SubmissionResult | None) -> bool:
     """Return whether ES is interested in compiling the submission.
 
-    submission_result (SubmissionResult): a submission result.
+    submission_result: a submission result.
 
-    return (bool): True if ES wants to compile the submission.
+    return: True if ES wants to compile the submission.
 
     """
     return submission_result is None or \
@@ -87,12 +90,12 @@ def submission_to_compile(submission_result):
          submission_result.compilation_tries < MAX_COMPILATION_TRIES)
 
 
-def submission_to_evaluate(submission_result):
+def submission_to_evaluate(submission_result: SubmissionResult | None) -> bool:
     """Return whether ES is interested in evaluating the submission.
 
-    submission_result (SubmissionResult): a submission result.
+    submission_result: a submission result.
 
-    return (bool): True if ES wants to evaluate the submission.
+    return: True if ES wants to evaluate the submission.
 
     """
     return submission_result is not None and \
@@ -101,14 +104,16 @@ def submission_to_evaluate(submission_result):
         submission_result.evaluation_tries < MAX_EVALUATION_TRIES
 
 
-def submission_to_evaluate_on_testcase(submission_result, testcase_codename):
+def submission_to_evaluate_on_testcase(
+    submission_result: SubmissionResult, testcase_codename: str
+) -> bool:
     """Return whether ES is interested in evaluating the submission
     on the given testcase.
 
-    submission_result (SubmissionResult): a submission result.
-    testcase_codename (str): codename of a testcase.
+    submission_result: a submission result.
+    testcase_codename: codename of a testcase.
 
-    return (bool): True if ES wants to evaluate the submission.
+    return: True if ES wants to evaluate the submission.
 
     """
     if not submission_to_evaluate(submission_result):
@@ -120,12 +125,12 @@ def submission_to_evaluate_on_testcase(submission_result, testcase_codename):
     return True
 
 
-def user_test_to_compile(user_test_result):
+def user_test_to_compile(user_test_result: UserTestResult | None) -> bool:
     """Return whether ES is interested in compiling the user test.
 
-    user_test_result (UserTestResult): a user test result.
+    user_test_result: a user test result.
 
-    return (bool): True if ES wants to compile the user test.
+    return: True if ES wants to compile the user test.
 
     """
     r = user_test_result
@@ -134,12 +139,12 @@ def user_test_to_compile(user_test_result):
          r.compilation_tries < MAX_USER_TEST_COMPILATION_TRIES)
 
 
-def user_test_to_evaluate(user_test_result):
+def user_test_to_evaluate(user_test_result: UserTestResult | None) -> bool:
     """Return whether ES is interested in evaluating the user test.
 
-    user_test_result (UserTestResult): a user test result.
+    user_test_result: a user test result.
 
-    return (bool): True if ES wants to evaluate the user test.
+    return: True if ES wants to evaluate the user test.
 
     """
     r = user_test_result
@@ -148,15 +153,21 @@ def user_test_to_evaluate(user_test_result):
         r.evaluation_tries < MAX_USER_TEST_EVALUATION_TRIES
 
 
-def submission_get_operations(submission_result, submission, dataset):
+def submission_get_operations(
+    submission_result: SubmissionResult | None,
+    submission: Submission,
+    dataset: Dataset,
+    archive_sandbox: bool = False,
+) -> Generator[tuple["ESOperation", int, datetime]]:
     """Generate all operations originating from a submission for a given
     dataset.
 
-    submission_result (SubmissionResult|None): a submission result.
-    submission (Submission): the submission for submission_result.
-    dataset (Dataset): the dataset for submission_result.
+    submission_result: a submission result.
+    submission: the submission for submission_result.
+    dataset: the dataset for submission_result.
+    archive_sandbox: whether to archive the sandbox.
 
-    yield (ESOperation, int, datetime): an iterator providing triplets
+    yield: an iterator providing triplets
         consisting of a ESOperation for a certain operation to
         perform, its priority and its timestamp.
 
@@ -172,7 +183,8 @@ def submission_get_operations(submission_result, submission, dataset):
 
         yield ESOperation(ESOperation.COMPILATION,
                           submission.id,
-                          dataset.id), \
+                          dataset.id,
+                          archive_sandbox=archive_sandbox), \
             priority, \
             submission.timestamp
 
@@ -193,19 +205,22 @@ def submission_get_operations(submission_result, submission, dataset):
                 yield ESOperation(ESOperation.EVALUATION,
                                   submission.id,
                                   dataset.id,
-                                  testcase_codename), \
+                                  testcase_codename,
+                                  archive_sandbox=archive_sandbox), \
                     priority, \
                     submission.timestamp
 
 
-def user_test_get_operations(user_test, dataset):
+def user_test_get_operations(
+    user_test: UserTest, dataset: Dataset
+) -> Generator[tuple["ESOperation", int, datetime]]:
     """Generate all operations originating from a user test for a given
     dataset.
 
-    user_test (UserTest): a user test;
-    dataset (Dataset): a dataset.
+    user_test: a user test;
+    dataset: a dataset.
 
-    yield (ESOperation, int, datetime): an iterator providing triplets
+    yield: an iterator providing triplets
         consisting of a ESOperation for a certain operation to
         perform, its priority and its timestamp.
 
@@ -241,17 +256,19 @@ def user_test_get_operations(user_test, dataset):
             user_test.timestamp
 
 
-def get_relevant_operations(level, submissions, dataset_id=None):
+def get_relevant_operations(
+    level: str, submissions: list[Submission], dataset_id: int | None = None
+) -> list["ESOperation"]:
     """Return all possible operations involving the submissions
 
-    level (string): the starting level; if 'compilation', then we
+    level: the starting level; if 'compilation', then we
         return operations for both compilation and evaluation; if
         'evaluation', we return evaluations only.
-    submissions ([Submission]): submissions we want the operations for.
-    dataset_id (int|None): id of the dataset to select, or None for all
+    submissions: submissions we want the operations for.
+    dataset_id: id of the dataset to select, or None for all
         datasets
 
-    return ([ESOperation]): list of relevant operations.
+    return: list of relevant operations.
 
     """
     operations = []
@@ -283,15 +300,16 @@ def get_relevant_operations(level, submissions, dataset_id=None):
     return operations
 
 
-def get_submissions_operations(session, contest_id=None):
+def get_submissions_operations(
+    session: Session, contest_id: int | None = None
+) -> list[tuple["ESOperation", int, datetime]]:
     """Return all the operations to do for submissions in the contest.
 
-    session (Session): the database session to use.
-    contest_id (int|None): the contest for which we want the operations.
+    session: the database session to use.
+    contest_id: the contest for which we want the operations.
         If none, get operations for any contest.
 
-    return ([ESOperation, float, int]): a list of operation, timestamp
-        and priority.
+    return: a list of tuples of operation, priority and timestamp.
 
     """
     operations = []
@@ -390,15 +408,16 @@ def get_submissions_operations(session, contest_id=None):
     return operations
 
 
-def get_user_tests_operations(session, contest_id=None):
+def get_user_tests_operations(
+    session: Session, contest_id: int | None = None
+) -> list[tuple["ESOperation", int, datetime]]:
     """Return all the operations to do for user tests in the contest.
 
-    session (Session): the database session to use.
-    contest_id (int|None): the contest for which we want the operations.
+    session: the database session to use.
+    contest_id: the contest for which we want the operations.
         If none, get operations for any contest.
 
-    return ([ESOperation, float, int]): a list of operation, timestamp
-        and priority.
+    return: a list of tuples of operation, priority and timestamp.
 
     """
     operations = []
@@ -497,18 +516,27 @@ class ESOperation(QueueItem):
     USER_TEST_EVALUATION = "evaluate_test"
 
     # Testcase codename is only needed for EVALUATION type of operation
-    def __init__(self, type_, object_id, dataset_id, testcase_codename=None):
+    def __init__(
+        self,
+        type_: str,
+        object_id: int,
+        dataset_id: int,
+        testcase_codename: str | None = None,
+        archive_sandbox: bool = False,
+    ):
         self.type_ = type_
         self.object_id = object_id
         self.dataset_id = dataset_id
         self.testcase_codename = testcase_codename
+        self.archive_sandbox = archive_sandbox
 
     @staticmethod
     def from_dict(d):
         return ESOperation(d["type"],
                            d["object_id"],
                            d["dataset_id"],
-                           d["testcase_codename"])
+                           d["testcase_codename"],
+                           d["archive_sandbox"])
 
     def __eq__(self, other):
         # We may receive a non-ESOperation other when comparing with
@@ -519,32 +547,34 @@ class ESOperation(QueueItem):
         return self.type_ == other.type_ \
             and self.object_id == other.object_id \
             and self.dataset_id == other.dataset_id \
-            and self.testcase_codename == other.testcase_codename
+            and self.testcase_codename == other.testcase_codename \
+            and self.archive_sandbox == other.archive_sandbox
 
     def __hash__(self):
         return hash((self.type_, self.object_id, self.dataset_id,
-                     self.testcase_codename))
+                     self.testcase_codename, self.archive_sandbox))
 
     def __str__(self):
         if self.type_ == ESOperation.EVALUATION:
-            return "%s on %d against dataset %d, testcase %s" % (
+            return "%s on %d against dataset %d, testcase %s, archiving sandbox %s" % (
                 self.type_, self.object_id, self.dataset_id,
-                self.testcase_codename)
+                self.testcase_codename, self.archive_sandbox)
         else:
-            return "%s on %d against dataset %d" % (
-                self.type_, self.object_id, self.dataset_id)
+            return "%s on %d against dataset %d, archiving sandbox %s" % (
+                self.type_, self.object_id, self.dataset_id, self.archive_sandbox)
 
     def __repr__(self):
-        return "(\"%s\", %s, %s, %s)" % (
+        return "(\"%s\", %s, %s, %s, %s)" % (
             self.type_,
             self.object_id,
             self.dataset_id,
-            self.testcase_codename)
+            self.testcase_codename,
+            self.archive_sandbox)
 
-    def for_submission(self):
+    def for_submission(self) -> bool:
         """Return if the operation is for a submission or for a user test.
 
-        return (bool): True if this operation is for a submission.
+        return: True if this operation is for a submission.
 
         """
         return self.type_ == ESOperation.COMPILATION or \
@@ -555,7 +585,8 @@ class ESOperation(QueueItem):
             "type": self.type_,
             "object_id": self.object_id,
             "dataset_id": self.dataset_id,
-            "testcase_codename": self.testcase_codename
+            "testcase_codename": self.testcase_codename,
+            "archive_sandbox": self.archive_sandbox
         }
 
     def short_key(self):

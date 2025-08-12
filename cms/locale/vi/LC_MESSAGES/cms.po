@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2024-12-23 21:08+0000\n"
-"PO-Revision-Date: 2024-12-23 21:08+0000\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: vi\n"
@@ -441,6 +441,12 @@ msgstr "Mật khẩu"
 msgid "Login"
 msgstr "Đăng nhập"
 
+msgid "Don't have an account?"
+msgstr "Không có tài khoản?"
+
+msgid "Register"
+msgstr "Đăng ký"
+
 msgid "New message"
 msgstr "Tin nhắn mới"
 
@@ -720,6 +726,15 @@ msgstr "Đang chuẩn bị..."
 
 msgid "no print jobs yet"
 msgstr "chưa có yêu cầu in nào"
+
+msgid "The passwords do not match!"
+msgstr "Mật khẩu không khớp!"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Tên người dùng này đã được đặt, vui lòng chọn tên người dùng khác."
+
+msgid "This user is already registered in the contest."
+msgstr "Người dùng này đã đăng kí cuộc thi."
 
 msgid "Compilation output"
 msgstr "Thông báo từ trình biên dịch"

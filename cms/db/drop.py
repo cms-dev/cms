@@ -35,7 +35,7 @@ from . import custom_psycopg2_connection
 logger = logging.getLogger(__name__)
 
 
-def drop_db():
+def drop_db() -> bool:
     """Drop everything in the database. In theory metadata.drop_all()
     should do the same; in practice, it isn't able to handle cases
     when the data present in the database doesn't fit the schema known
@@ -47,7 +47,7 @@ def drop_db():
     database was set up to use a different schema: this situation is
     strange enough for us to just ignore it.
 
-    return (bool): True if successful.
+    return: True if successful.
 
     """
     connection = custom_psycopg2_connection()
@@ -62,7 +62,7 @@ def drop_db():
         logger.error("Couldn't drop schema \"public\", probably you don't "
                      "have the privileges. Please execute as database "
                      "superuser: \"ALTER SCHEMA public OWNER TO %s;\" and "
-                     "run again", make_url(config.database).username)
+                     "run again", make_url(config.database.url).username)
         return False
     cursor.execute("CREATE SCHEMA public")
 
@@ -73,7 +73,7 @@ def drop_db():
         logger.error("Couldn't list large objects, probably you don't have "
                      "the privileges. Please execute as database superuser: "
                      "\"GRANT SELECT ON pg_largeobject TO %s;\" and run "
-                     "again", make_url(config.database).username)
+                     "again", make_url(config.database.url).username)
         return False
     rows = cursor.fetchall()
     for row in rows:

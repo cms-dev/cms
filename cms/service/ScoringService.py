@@ -30,6 +30,7 @@ import logging
 from cms import ServiceCoord, config
 from cms.db import SessionGen, Submission, Dataset, get_submission_results
 from cms.io import Executor, TriggeredService, rpc_method
+from cms.io.priorityqueue import QueueEntry
 from cmscommon.datetime import make_datetime
 from .scoringoperations import ScoringOperation, get_operations
 
@@ -37,12 +38,12 @@ from .scoringoperations import ScoringOperation, get_operations
 logger = logging.getLogger(__name__)
 
 
-class ScoringExecutor(Executor):
+class ScoringExecutor(Executor[ScoringOperation]):
     def __init__(self, proxy_service):
         super().__init__()
         self.proxy_service = proxy_service
 
-    def execute(self, entry):
+    def execute(self, entry: QueueEntry[ScoringOperation]):
         """Assign a score to a submission result.
 
         This is the core of ScoringService: here we retrieve the result
@@ -50,7 +51,7 @@ class ScoringExecutor(Executor):
         instantiate its ScoreType, compute its score, store it back in
         the database and tell ProxyService to update RWS if needed.
 
-        entry (QueueEntry): entry containing the operation to perform.
+        entry: entry containing the operation to perform.
 
         """
         operation = entry.item
@@ -100,6 +101,9 @@ class ScoringExecutor(Executor):
                 submission_result.ranking_score_details = \
                 score_type.compute_score(submission_result)
 
+            if submission_result.scored_at is None:
+                submission_result.scored_at = make_datetime()
+
             # Store it.
             session.commit()
 
@@ -112,7 +116,7 @@ class ScoringExecutor(Executor):
                     submission_id=submission.id)
 
 
-class ScoringService(TriggeredService):
+class ScoringService(TriggeredService[ScoringOperation, ScoringExecutor]):
     """A service that assigns a score to submission results.
 
     A submission result is ready to be scored when its compilation is
@@ -125,14 +129,14 @@ class ScoringService(TriggeredService):
 
     """
 
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         """Initialize the ScoringService.
 
         """
         super().__init__(shard)
 
         # Set up communication with ProxyService.
-        ranking_enabled = len(config.rankings) > 0
+        ranking_enabled = len(config.proxy_service.rankings) > 0
         self.proxy_service = self.connect_to(
             ServiceCoord("ProxyService", 0),
             must_be_present=ranking_enabled)
@@ -156,23 +160,27 @@ class ScoringService(TriggeredService):
         return counter
 
     @rpc_method
-    def new_evaluation(self, submission_id, dataset_id):
+    def new_evaluation(self, submission_id: int, dataset_id: int):
         """Schedule the given submission result for scoring.
 
         Put it in the queue to have it scored, sooner or later. Usually
         called by EvaluationService when it's done with a result.
 
-        submission_id (int): the id of the submission that has to be
-            scored.
-        dataset_id (int): the id of the dataset to use.
+        submission_id: the id of the submission that has to be scored.
+        dataset_id: the id of the dataset to use.
 
         """
         self.enqueue(ScoringOperation(submission_id, dataset_id))
 
     @rpc_method
-    def invalidate_submission(self, submission_id=None, dataset_id=None,
-                              participation_id=None, task_id=None,
-                              contest_id=None):
+    def invalidate_submission(
+        self,
+        submission_id: int | None = None,
+        dataset_id: int | None = None,
+        participation_id: int | None = None,
+        task_id: int | None = None,
+        contest_id: int | None = None,
+    ):
         """Invalidate (and re-score) some submission results.
 
         Invalidate the scores of the submission results that:
@@ -184,15 +192,15 @@ class ScoringService(TriggeredService):
           or, if None, to any dataset of contest_id or, if None, to any
           dataset in the database.
 
-        submission_id (int|None): id of the submission whose results
+        submission_id: id of the submission whose results
             should be invalidated, or None.
-        dataset_id (int|None): id of the dataset whose results should
+        dataset_id: id of the dataset whose results should
             be invalidated, or None.
-        participation_id (int|None): id of the participation whose results
+        participation_id: id of the participation whose results
             should be invalidated, or None.
-        task_id (int|None): id of the task whose results should be
+        task_id: id of the task whose results should be
             invalidated, or None.
-        contest_id (int|None): id of the contest whose results should
+        contest_id: id of the contest whose results should
             be invalidated, or None.
 
         """

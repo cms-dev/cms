@@ -1,0 +1,31 @@
+services:
+  testdb:
+    image: docker.io/postgres:15
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  testcms:
+    build: ..
+    depends_on:
+      - "testdb"
+    environment:
+      CMS_CONFIG: /home/cmsuser/cms/etc/cms-testdb.toml
+      # Could be removed in the future, see:
+      # - https://github.com/pytest-dev/pytest/issues/7443
+      # - https://github.com/actions/runner/issues/241
+      PYTEST_ADDOPTS: --color=yes
+    volumes:
+      - "../codecov:/home/cmsuser/src/codecov"
+    privileged: true
+    cgroup: host
+    command: wait-for-it testdb:5432 -- docker/_cms-test-internal.sh
+
+  stresstestcms:
+    build: ..
+    depends_on:
+      - "testdb"
+    environment:
+      CMS_CONFIG: /home/cmsuser/cms/etc/cms-testdb.toml
+    privileged: true
+    cgroup: host
+    command: wait-for-it testdb:5432 -- docker/_cms-stresstest-internal.sh

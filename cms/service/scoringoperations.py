@@ -25,10 +25,12 @@ compute sets of operations to do.
 
 """
 
+from datetime import datetime
 import logging
 
 from cms.db import Dataset, Submission, SubmissionResult, \
     Task
+from cms.db.session import Session
 from cms.io import QueueItem
 
 
@@ -46,13 +48,12 @@ FILTER_SUBMISSION_RESULTS_TO_SCORE = (
 )
 
 
-def get_operations(session):
+def get_operations(session: Session) -> list[tuple["ScoringOperation", datetime]]:
     """Return all the operations to do for all submissions.
 
-    session (Session): the database session to use.
+    session: the database session to use.
 
-    return ([ScoringOperation, float]): a list of operations and
-        timestamps.
+    return: a list of operations and timestamps.
 
     """
     # Retrieve all the compilation operations for submissions
@@ -80,7 +81,7 @@ class ScoringOperation(QueueItem):
 
     """
 
-    def __init__(self, submission_id, dataset_id):
+    def __init__(self, submission_id: int, dataset_id: int):
         self.submission_id = submission_id
         self.dataset_id = dataset_id
 

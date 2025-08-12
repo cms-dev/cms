@@ -60,23 +60,47 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct.
-        self.assertComputeScore(st.compute_score(sr),
-                                testcase_score * 4, testcase_score, [])
+        self.assertComputeScore(
+            st.compute_score(sr),
+            testcase_score * 4, testcase_score, [], [
+                {"idx": '0'},
+                {"idx": '1'},
+                {"idx": '2'},
+                {"idx": '3'}
+            ])
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3", 0.0)
-        self.assertComputeScore(st.compute_score(sr),
-                                testcase_score * 3, testcase_score, [])
+        self.assertComputeScore(
+            st.compute_score(sr),
+            testcase_score * 3, testcase_score, [], [
+                {"idx": '0'},
+                {"idx": '1'},
+                {"idx": '2'},
+                {"idx": '3'}
+            ])
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1", 0.0)
-        self.assertComputeScore(st.compute_score(sr),
-                                testcase_score * 2, 0.0, [])
+        self.assertComputeScore(
+            st.compute_score(sr),
+            testcase_score * 2, 0.0, [], [
+                {"idx": '0'},
+                {"idx": '1'},
+                {"idx": '2'},
+                {"idx": '3'}
+            ])
 
         # Now the public subtask has some partial scores.
         self.set_outcome(sr, "1", 0.2)
-        self.assertComputeScore(st.compute_score(sr),
-                                testcase_score * 2.2, testcase_score * 0.2, [])
+        self.assertComputeScore(
+            st.compute_score(sr),
+            testcase_score * 2.2, testcase_score * 0.2, [], [
+                {"idx": '0'},
+                {"idx": '1'},
+                {"idx": '2'},
+                {"idx": '3'}
+            ])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,113 @@
+{# This macro should be imported "with context". #}
+
+{% import 'macro/markdown_input.html' as macro_markdown %}
+
+{% macro question(msg, user_id) %}
+{#
+Render one question by a participant.
+
+msg (Question): the question object.
+user_id (int|None): if we are rendering one of the questions on a single user's
+    page, this is the user's id. if we are rendering one of the questions on
+    the contest questions page, then None.
+#}
+<div class="notification communication {{ ("answered" if msg.reply_timestamp is not none else ("ignored" if msg.ignored else "")) }}">
+  <div class="notification_msg">
+    <div class="notification_timestamp">
+      {% if user_id is none %}
+        <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash;
+      {% endif %}
+      {{ msg.question_timestamp }}
+    </div>
+    <div class="notification_subject">{{ msg.subject }}</div>
+    <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+    {% if msg.reply_timestamp is not none %}
+      <hr>
+      <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
+      <div class="notification_text">{{ msg.reply_text | markdown }}</div>
+      <hr>
+      <div class="notification_admin_owner">
+        Reply from: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}</div>
+    {% else %}
+      <hr>
+      <div class="notification_subject">Not yet replied.</div>
+      <hr>
+      {% if msg.admin is not none %}
+        <div class="notification_admin_owner">
+          {{ "Ignored" if msg.ignored else "Claimed" }} by: {{ msg.admin.name }}
+        </div>
+      {% endif %}
+    {% endif %}
+    {% if admin.permission_all or admin.permission_messaging %}
+      {% if msg.reply_timestamp is none %}
+        {% if not msg.ignored %}
+          <div class="claim_reply">
+            <form class="claim_question_form" action="{{ url("contest", contest.id, "question", msg.id, "claim") }}" name="claim{{ msg.id }}" method="POST">
+              {{ xsrf_form_html|safe }}
+              {% if user_id is not none %}
+                <input type="hidden" name="user_id" value="{{ user_id }}" />
+              {% endif %}
+              {% if msg.admin is none %}
+                <input type="hidden" name="claim" value="yes"/>
+                <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Claim</a>
+              {% else %}
+                <input type="hidden" name="claim" value="no"/>
+                <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Unclaim</a>
+              {% endif %}
+            </form>
+          </div>
+      {% endif %}
+    <div class="ignore_reply">
+      <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
+        {{ xsrf_form_html|safe }}
+        {% if user_id is not none %}
+          <input type="hidden" name="user_id" value="{{ user_id }}" />
+        {% endif %}
+        {% if not msg.ignored %}
+          <input type="hidden" name="ignore" value="yes"/>
+          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
+        {% else %}
+          <input type="hidden" name="ignore" value="no"/>
+          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
+        {% endif %}
+      </form>
+    </div>
+    {% endif %}
+    <div class="reply_question_toggle">
+      <a href="javascript:void(0);" onclick="utils.question_reply_toggle(event, this);">
+    {% if msg.reply_timestamp is none %}
+        Reply
+    {% else %}
+        Edit reply
+    {% endif %}
+      </a>
+    </div>
+    <div class="reply_question">
+      <hr/>
+      <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
+        {{ xsrf_form_html|safe }}
+        {% if user_id is not none %}
+          <input type="hidden" name="user_id" value="{{ user_id }}" />
+        {% endif %}
+        Precompiled answer:
+        <select name="reply_question_quick_answer" onchange="utils.update_additional_answer(event, this);">
+          {% for key, value in question_quick_answers.items() %}
+            <option value="{{ key }}">{{ value }}</option>
+          {% endfor %}
+          <option value="other" selected>Other</option>
+        </select>
+        <br/>
+        <div class="alternative_answer">
+          Alternative answer:<br/>
+          {{ macro_markdown.markdown_input("reply_question_text") }}
+        </div>
+        <input type="submit" value="Send"/>
+        <span class="alternative_answer">
+          {{ macro_markdown.markdown_preview() }}
+        </span>
+      </form>
+    </div>
+{% endif %}
+  </div>
+</div>
+{% endmacro %}

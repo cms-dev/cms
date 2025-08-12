@@ -26,17 +26,19 @@ from werkzeug.test import Client, EnvironBuilder
 from werkzeug.wrappers import Response
 from werkzeug.wsgi import responder
 
-from cms.db.filecacher import TombstoneError
+from cms.db.filecacher import FileCacher, TombstoneError
 from cms.server.file_middleware import FileServerMiddleware
 from cmscommon.digest import bytes_digest
+
+
+# Choose a size that is larger than FileCacher.CHUNK_SIZE.
+TESTFILE_LEN = FileCacher.CHUNK_SIZE + 128
 
 
 class TestFileByDigestMiddleware(unittest.TestCase):
 
     def setUp(self):
-        # Choose a size that is larger than FileCacher.CHUNK_SIZE.
-        self.content = \
-            bytes(random.getrandbits(8) for _ in range(17 * 1024))
+        self.content = random.randbytes(TESTFILE_LEN)
         self.digest = bytes_digest(self.content)
 
         self.filename = "foobar.pdf"
@@ -51,7 +53,7 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.provide_filename = True
 
         self.wsgi_app = \
-            FileServerMiddleware(self.file_cacher,self.wrapped_wsgi_app)
+            FileServerMiddleware(self.file_cacher, self.wrapped_wsgi_app)
         self.environ_builder = EnvironBuilder("/some/url")
         self.client = Client(self.wsgi_app, Response)
 
@@ -141,7 +143,7 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.assertEqual(response.content_range.units, "bytes")
         self.assertEqual(response.content_range.start, 256)
         self.assertEqual(response.content_range.stop, 768)
-        self.assertEqual(response.content_range.length, 17 * 1024)
+        self.assertEqual(response.content_range.length, TESTFILE_LEN)
         self.assertEqual(response.get_data(), self.content[256:768])
 
     def test_range_request_end_overflows(self):
@@ -151,12 +153,13 @@ class TestFileByDigestMiddleware(unittest.TestCase):
         self.assertEqual(response.content_range.units, "bytes")
         self.assertEqual(response.content_range.start, 256)
         self.assertEqual(response.content_range.stop, 2048)
-        self.assertEqual(response.content_range.length, 17 * 1024)
+        self.assertEqual(response.content_range.length, TESTFILE_LEN)
         self.assertEqual(response.get_data(), self.content[256:2048])
 
     def test_range_request_start_overflows(self):
         # Test a range that starts after the end of the file.
-        response = self.request(headers=[("Range", f"bytes={len(self.content) + 1}-")])
+        response = self.request(
+            headers=[("Range", f"bytes={len(self.content) + 1}-")])
         self.assertEqual(response.status_code, 416)
 
 

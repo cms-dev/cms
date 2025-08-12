@@ -25,6 +25,7 @@
 
 """
 
+from abc import ABCMeta, abstractmethod
 import logging
 
 import collections
@@ -34,10 +35,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
@@ -64,39 +62,51 @@ class QuestionsHandler(BaseHandler):
         self.render("questions.html", **self.r_params)
 
 
-class QuestionReplyHandler(BaseHandler):
-    """Called when the manager replies to a question made by a user.
 
-    """
-    QUICK_ANSWERS = {
-        "yes": "Yes",
-        "no": "No",
-        "answered": "Answered in task description",
-        "invalid": "Invalid question",
-        "nocomment": "No comment",
-    }
+class QuestionActionHandler(BaseHandler, metaclass=ABCMeta):
+    """Base class for handlers for actions on questions."""
+
+    @abstractmethod
+    def process_question(self, question: Question):
+        """Called on POST requests. Perform the appropriate action on the
+        question."""
+        pass
 
     @require_permission(BaseHandler.PERMISSION_MESSAGING)
     def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
+        user_id = self.get_argument("user_id", None)
+        if user_id is not None:
+            ref = self.url("contest", contest_id, "user", user_id, "edit")
+        else:
+            ref = self.url("contest", contest_id, "questions")
+
         question = self.safe_get_item(Question, question_id)
         self.contest = self.safe_get_item(Contest, contest_id)
 
         # Protect against URLs providing incompatible parameters.
         if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
-        reply_subject_code = self.get_argument("reply_question_quick_answer",
-                                               "")
+        self.process_question(question)
+        self.redirect(ref)
+
+class QuestionReplyHandler(QuestionActionHandler):
+    """Called when the manager replies to a question made by a user.
+
+    """
+
+    def process_question(self, question):
+        reply_subject_code: str = self.get_argument(
+            "reply_question_quick_answer", "")
         question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers
-        if reply_subject_code not in QuestionReplyHandler.QUICK_ANSWERS:
+        if reply_subject_code not in Question.QUICK_ANSWERS:
             question.reply_subject = ""
         else:
             # Quick answer given, ignore long answer.
             question.reply_subject = \
-                QuestionReplyHandler.QUICK_ANSWERS[reply_subject_code]
+                Question.QUICK_ANSWERS[reply_subject_code]
             question.reply_text = ""
 
         question.reply_timestamp = make_datetime()
@@ -107,26 +117,14 @@ class QuestionReplyHandler(BaseHandler):
                         "question with id %s.",
                         question.participation.user.username,
                         question.participation.contest.name,
-                        question_id)
+                        question.id)
 
-        self.redirect(ref)
-
-
-class QuestionIgnoreHandler(BaseHandler):
+class QuestionIgnoreHandler(QuestionActionHandler):
     """Called when the manager chooses to ignore or stop ignoring a
     question.
 
     """
-    @require_permission(BaseHandler.PERMISSION_MESSAGING)
-    def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
-        question = self.safe_get_item(Question, question_id)
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        # Protect against URLs providing incompatible parameters.
-        if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
-
+    def process_question(self, question):
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
         # Commit the change.
@@ -140,25 +138,14 @@ class QuestionIgnoreHandler(BaseHandler):
                         question.participation.contest.name,
                         "ignored" if should_ignore else "unignored")
 
-        self.redirect(ref)
 
-
-class QuestionClaimHandler(BaseHandler):
+class QuestionClaimHandler(QuestionActionHandler):
     """Called when the manager chooses to claim or unclaim a question."""
 
-    @require_permission(BaseHandler.PERMISSION_MESSAGING)
-    def post(self, contest_id, question_id):
-        ref = self.url("contest", contest_id, "questions")
-        question = self.safe_get_item(Question, question_id)
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        # Protect against URLs providing incompatible parameters.
-        if self.contest is not question.participation.contest:
-            raise tornado_web.HTTPError(404)
-
+    def process_question(self, question):
         # Can claim/unclaim only a question not ignored or answered.
         if question.ignored or question.reply_timestamp is not None:
-            raise tornado_web.HTTPError(405)
+            raise tornado.web.HTTPError(405)
 
         should_claim = self.get_argument("claim", "no") == "yes"
 
@@ -175,5 +162,3 @@ class QuestionClaimHandler(BaseHandler):
                         question.participation.contest.name,
                         "claimed" if should_claim else "unclaimed",
                         self.current_user.name)
-
-        self.redirect(ref)

@@ -45,10 +45,13 @@
 
 import logging
 import sys
+import typing
 
 import gevent.lock
 
 from cmscommon.terminal import colors, add_color_to_string, has_color_support
+if typing.TYPE_CHECKING:
+    from cms.io.rpc import RemoteServiceClient
 
 
 class StreamHandler(logging.StreamHandler):
@@ -99,12 +102,12 @@ class LogServiceHandler(logging.Handler):
     then store the message as msg and drop args.
 
     """
-    def __init__(self, log_service):
+    def __init__(self, log_service: "RemoteServiceClient"):
         """Initialize the handler.
 
         Establish a connection to the given LogService.
 
-        log_service (RemoteService): a handle for a remote LogService.
+        log_service: a handle for a remote LogService.
 
         """
         logging.Handler.__init__(self)
@@ -143,16 +146,16 @@ class LogServiceHandler(logging.Handler):
             self.handleError(record)
 
 
-def get_color_hash(string):
+def get_color_hash(string: str) -> int:
     """Deterministically return a color based on the string's content.
 
     Determine one of colors.* using only the data of the given string.
     The only condition is for the operation to give the same result when
     repeated.
 
-    string (string): the string.
+    string: the string.
 
-    return (int): a color, as a colors.* constant.
+    return: a color, as a colors.* constant.
 
     """
     # We get the default hash of the string and use it to pick a color.
@@ -188,17 +191,16 @@ class CustomFormatter(logging.Formatter):
                        logging.INFO: colors.GREEN,
                        logging.DEBUG: colors.CYAN}
 
-    def __init__(self, colors=False):
+    def __init__(self, colors: bool = False):
         """Initialize a formatter.
 
-        colors (bool): whether to use colors in formatted output or
-            not.
+        colors: whether to use colors in formatted output or not.
 
         """
         logging.Formatter.__init__(self, "")
         self.colors = colors
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         """Format the specified record as text.
 
         Taken from CPython (see link in the file header) and adapted to use our
@@ -223,7 +225,7 @@ class CustomFormatter(logging.Formatter):
             s = s + self.formatStack(record.stack_info)
         return s
 
-    def do_format(self, record):
+    def do_format(self, record: logging.LogRecord) -> str:
         """Produce a human-readable message from the given record.
 
         This is the "core" of the format method, but it has been split
@@ -231,9 +233,9 @@ class CustomFormatter(logging.Formatter):
         bookkeeping (putting args into their placeholders in msg and
         formatting time and exception).
 
-        record (LogRecord): the data for the log message.
+        record: the data for the log message.
 
-        return (string): the formatted log message.
+        return: the formatted log message.
 
         """
         severity = self.get_severity(record)
@@ -261,12 +263,12 @@ class CustomFormatter(logging.Formatter):
         fmt += " %s" % message
         return fmt
 
-    def get_severity(self, record):
+    def get_severity(self, record: logging.LogRecord) -> str:
         """Return the severity part of the log for the given record."""
         severity = record.asctime + " - " + record.levelname
         return severity
 
-    def get_coordinates(self, record):
+    def get_coordinates(self, record: logging.LogRecord) -> str:
         """Return the coordinates part of the log for the given record.
 
         It contains information on what originates the log. For the
@@ -282,7 +284,7 @@ class CustomFormatter(logging.Formatter):
             coordinates = "<unknown>"
         return coordinates
 
-    def get_operation(self, record):
+    def get_operation(self, record: logging.LogRecord) -> str:
         """Return the operation part of the log for the given record.
 
         The operation is a string explicitly passed in the logger call.
@@ -294,7 +296,7 @@ class CustomFormatter(logging.Formatter):
 class DetailedFormatter(CustomFormatter):
     """A version of custom formatter showing more information."""
 
-    def get_coordinates(self, record):
+    def get_coordinates(self, record: logging.LogRecord) -> str:
         """See CustomFormatter.get_coordinates
 
         The detailed log contains the service coordinate, the thread
@@ -324,24 +326,24 @@ class ServiceFilter(logging.Filter):
     not already set) with the values given to the constructor.
 
     """
-    def __init__(self, name, shard):
+    def __init__(self, name: str, shard: int):
         """Initialize a filter for the given coords.
 
-        name (string): the service name (its class).
-        shard (int): its shard (the index of its entry in the config).
+        name: the service name (its class).
+        shard: its shard (the index of its entry in the config).
 
         """
         logging.Filter.__init__(self, "")
         self.name = name
         self.shard = shard
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord) -> bool:
         """Add data to the given record.
 
-        record (LogRecord): data for a log message, to analyze and (if
+        record: data for a log message, to analyze and (if
             needed) tamper with.
 
-        return (bool): whether to keep the record or not (will always
+        return: whether to keep the record or not (will always
             be True).
 
         """
@@ -361,10 +363,10 @@ class OperationAdapter(logging.LoggerAdapter):
     If "operation" is already set it isn't altered.
 
     """
-    def __init__(self, logger, operation):
+    def __init__(self, logger, operation: str):
         """Initialize an adapter to set the given operation.
 
-        operation (string): a human-readable description of what the
+        operation: a human-readable description of what the
             code will be performing while it's logging messages to
             this object instead of to the wrapped logger.
 
@@ -372,12 +374,12 @@ class OperationAdapter(logging.LoggerAdapter):
         logging.LoggerAdapter.__init__(self, logger, {"operation": operation})
         self.operation = operation
 
-    def process(self, msg, kwargs):
+    def process(self, msg: str, kwargs: dict):
         """Inject the data in the log message.
 
-        msg (string): the message given to one of debug(), info(),
+        msg: the message given to one of debug(), info(),
             warning(), etc. methods.
-        kwargs (dict): the keyword arguments given to such method (not
+        kwargs: the keyword arguments given to such method (not
             the positional ones!).
 
         """
@@ -391,16 +393,16 @@ root_logger.setLevel(logging.DEBUG)
 
 
 # Install a shell handler.
-shell_handler = StreamHandler(sys.stdout)
+shell_handler = StreamHandler(sys.stderr)
 shell_handler.setLevel(logging.INFO)
-shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
+shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stderr)))
 root_logger.addHandler(shell_handler)
 
 
-def set_detailed_logs(detailed):
+def set_detailed_logs(detailed: bool):
     """Set or unset the shell logs to detailed."""
     global shell_handler
-    color = has_color_support(sys.stdout)
+    color = has_color_support(sys.stderr)
     formatter = DetailedFormatter(color) \
         if detailed else CustomFormatter(color)
     shell_handler.setFormatter(formatter)

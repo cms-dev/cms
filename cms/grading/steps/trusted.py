@@ -36,11 +36,13 @@ can be translated by writing "translate:x" where x is "success", "partial" or
 """
 
 import logging
+import re
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
 from .evaluation import EVALUATION_MESSAGES
 from .utils import generic_step
+from .stats import StatsDict
 
 
 logger = logging.getLogger(__name__)
@@ -54,33 +56,34 @@ CHECKER_CORRECT_OUTPUT_FILENAME = "correct_output.txt"
 CHECKER_FILENAME = "checker"
 
 
-def _filter_ansi_escape(string):
-    """Filter out ANSI commands from the given string.
+def _sanitize_message(string: str) -> str:
+    """Sanitize a message read from manager output.
 
-    string (str): string to process.
+    Percent signs are escaped (so they are not treated as formatting specifiers
+    later). Control characters are rejected.
 
-    return (str): string with ANSI commands stripped.
+    string: string to process.
+
+    return: sanitized string.
+
+    raise (ValueError): if invalid characters were found.
 
     """
-    ansi_mode = False
-    res = ''
-    for char in string:
-        if char == u'\033':
-            ansi_mode = True
-        if not ansi_mode:
-            res += char
-        if char == u'm':
-            ansi_mode = False
-    return res
+    match = re.search('[\x00-\x08\x0a-\x1f\x7f-\xbf]', string)
+    if match:
+        ch = ord(match[0])
+        raise ValueError(f'Invalid character in outcome: 0x{ch:02x}')
+
+    return string.replace('%', '%%')
 
 
-def extract_outcome_and_text(sandbox):
+def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
     """Extract the outcome and the text from the a standard manager output.
 
-    sandbox (Sandbox): the sandbox whose last execution was a manager writing
+    sandbox: the sandbox whose last execution was a manager writing
         a standard manager output.
 
-    return (float, [str]): outcome and text.
+    return: outcome and text.
 
     raise (ValueError): if cannot decode the data.
     raise (FileNotFoundError): if any of the sandbox stdout or stderr file
@@ -97,10 +100,13 @@ def extract_outcome_and_text(sandbox):
 
     with sandbox.get_file_text(sandbox.stderr_file) as stderr_file:
         try:
-            text = _filter_ansi_escape(stderr_file.readline().strip())
+            text = _sanitize_message(stderr_file.readline().strip())
         except UnicodeDecodeError as error:
             logger.error("Manager stderr (text) is not valid UTF-8. %r", error)
             raise ValueError("Cannot decode the text.")
+        except ValueError as error:
+            logger.error("Manager stderr (text) is malformed. %r", error)
+            raise error
 
     try:
         outcome = float(outcome)
@@ -122,17 +128,19 @@ def extract_outcome_and_text(sandbox):
     return outcome, [text]
 
 
-def trusted_step(sandbox, commands):
+def trusted_step(
+    sandbox: Sandbox, commands: list[list[str]]
+) -> tuple[bool, bool | None, StatsDict | None]:
     """Execute some trusted commands in the sandbox.
 
     Even if the commands are trusted, we use the sandbox to limit the resources
     they use to avoid crashing a worker due to some configuration or
     programming error.
 
-    sandbox (Sandbox): the sandbox we consider, already created.
-    commands ([[str]]): trusted commands to execute.
+    sandbox: the sandbox we consider, already created.
+    commands: trusted commands to execute.
 
-    return ((bool, bool|None, dict|None)): a tuple with three items:
+    return: a tuple with three items:
         * success: True if the sandbox did not fail, in any command;
         * execution_success: True if all commands terminated correctly,
             without timeouts or other errors; None if success is False;
@@ -142,10 +150,10 @@ def trusted_step(sandbox, commands):
     """
     # Set sandbox parameters suitable for trusted commands.
     sandbox.preserve_env = True
-    sandbox.max_processes = config.trusted_sandbox_max_processes
-    sandbox.timeout = config.trusted_sandbox_max_time_s
+    sandbox.max_processes = config.sandbox.trusted_sandbox_max_processes
+    sandbox.timeout = config.sandbox.trusted_sandbox_max_time_s
     sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
-    sandbox.address_space = config.trusted_sandbox_max_memory_kib * 1024
+    sandbox.address_space = config.sandbox.trusted_sandbox_max_memory_kib * 1024
 
     # Run the trusted commands.
     stats = generic_step(sandbox, commands, "trusted")
@@ -181,25 +189,31 @@ def trusted_step(sandbox, commands):
         return False, None, None
 
 
-def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
-                 output_filename):
+def checker_step(
+    sandbox: Sandbox,
+    checker_digest: str | None,
+    input_digest: str,
+    correct_output_digest: str,
+    output_filename: str,
+    extra_args: list[str] | None = None
+) -> tuple[bool, float | None, list[str] | None]:
     """Run the explicit checker given by the admins
 
-    sandbox (Sandbox): the sandbox to run the checker in; should already
+    sandbox: the sandbox to run the checker in; should already
         contain input, correct output, and user output; the checker is instead
         copied from the managers.
-    checker_digest (str|None): digest of the checker, will be fetched as
+    checker_digest: digest of the checker, will be fetched as
         "checker"; if None, an appropriate error for bad configuration of the
         task will be generated.
-    input_digest (str): digest of the input, will be fetched as "input.txt".
-    correct_output_digest (str): digest of the correct output, will be fetched
+    input_digest: digest of the input, will be fetched as "input.txt".
+    correct_output_digest: digest of the correct output, will be fetched
         as "correct_output.txt".
-    output_filename (str): inner filename of the user output (already in the
+    output_filename: inner filename of the user output (already in the
         sandbox).
+    extra_args: extra arguments to pass to the checker.
 
-    return (bool, float|None, [str]|None): success (true if the checker was
-        able to check the solution successfully), outcome and text (both None
-        if success is False).
+    return: success (true if the checker was able to check the solution
+        successfully), outcome and text (both None if success is False).
 
     """
     # Check that the file we are going to inject in the sandbox are not already
@@ -228,7 +242,7 @@ def checker_step(sandbox, checker_digest, input_digest, correct_output_digest,
     command = ["./%s" % CHECKER_FILENAME,
                CHECKER_INPUT_FILENAME,
                CHECKER_CORRECT_OUTPUT_FILENAME,
-               output_filename]
+               output_filename] + (extra_args if extra_args is not None else [])
     box_success, success, unused_stats = trusted_step(sandbox, [command])
     if not box_success or not success:
         logger.error("Sandbox failed during checker step. "

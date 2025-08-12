@@ -29,7 +29,23 @@ Each of these fields can be left unset to prevent the corresponding limitation f
 Feedback to contestants
 =======================
 
-Each testcase can be marked as public or private. After sending a submission, a contestant can always see its results on the public testcases: a brief passed / partial / not passed status for each testcase, and the partial score that is computable from the public testcases only. Note that input and output data are always hidden.
+Each testcase can be marked as public or private.
+
+On public testcases, the information that a contestant receives depends on
+the feedback mode configured for the task. More precisely:
+
+- if the feedback mode is "Full", a contestant can always see its results on
+  the public testcases: a brief passed / partial / not passed status for each
+  testcase, and the partial score that is computable from the public testcases
+  only. Note that input and output data are always hidden.
+
+- if the feedback mode is "Restricted", information is only shown about
+  testcases up to the first testcase that has the lowest score for a given
+  subtask (inclusive).
+
+- if the feedback mode is "OI Restricted", information is only shown about
+  the first testcase that has the lowest score for a given subtask (inclusive).
+  This matches IOI contest rules.
 
 Tokens were introduced to provide contestants with limited access to the detailed results of their submissions on the private testcases as well. If a contestant uses a token on a submission, then they will be able to see its result on all testcases, and the global score.
 
@@ -135,14 +151,14 @@ In general, each user can have multiple ranges of IP addresses associated to it.
 
 .. warning::
 
-  If a reverse-proxy (like nginx) is in use then it is necessary to set ``num_proxies_used`` (in :file:`cms.conf`) to ``1`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`). That configuration option can be set to a higher number if there are more proxies between the origin and the server.
+  If a reverse-proxy (like nginx) is in use then it is necessary to set ``num_proxies_used`` (in :file:`cms.toml`) to ``1`` and configure the proxy in order to properly pass the ``X-Forwarded-For``-style headers (see :ref:`running-cms_recommended-setup`). That configuration option can be set to a higher number if there are more proxies between the origin and the server.
 
 Logging in with credentials
 ---------------------------
 
 If the autologin is not enabled, users can log in with username and password, which have to be specified in the user configuration (in cleartext, for the moment). The password can also be overridden for a specific contest in the participation configuration. These credentials need to be inserted by the admins (i.e. there's no way to sign up, of log in as a "guest", etc.).
 
-A successfully logged in user needs to reauthenticate after ``cookie_duration`` seconds (specified in the :file:`cms.conf` file) from when they last visited a page.
+A successfully logged in user needs to reauthenticate after ``cookie_duration`` seconds (specified in the :file:`cms.toml` file) from when they last visited a page.
 
 Even without autologin, it is possible to restrict the IP address or subnet that the user is using for accessing CWS, using the "IP-based login restriction" option in the contest configuration (in which case, admins need to set ``num_proxies_used`` as before). If this is set, then the login will fail if the IP address that attempted it does not match at least one of the addresses or subnets specified in the participation settings. If the participation IP address is not set, then no restriction applies.
 

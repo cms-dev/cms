@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 import json
 
 from werkzeug.contrib.securecookie import SecureCookie
@@ -30,11 +31,11 @@ from cmscommon.datetime import make_timestamp
 
 class UTF8JSON:
     @staticmethod
-    def dumps(d):
+    def dumps(d: object) -> bytes:
         return json.dumps(d).encode('utf-8')
 
     @staticmethod
-    def loads(e):
+    def loads(e: bytes) -> object:
         return json.loads(e.decode('utf-8'))
 
 
@@ -56,10 +57,10 @@ class AWSAuthMiddleware:
     """
     COOKIE = "awslogin"
 
-    def __init__(self, app):
+    def __init__(self, app: Callable):
         """Initialize the middleware, and chain it to the given app.
 
-        app (function): a WSGI application.
+        app: a WSGI application.
 
         """
         self._app = app
@@ -68,30 +69,29 @@ class AWSAuthMiddleware:
         self._local_manager = LocalManager([self._local])
         self.wsgi_app = self._local_manager.make_middleware(self.wsgi_app)
 
-        self._request = self._local("request")
-        self._cookie = self._local("cookie")
+        self._request: Request = self._local("request")
+        self._cookie: JSONSecureCookie = self._local("cookie")
 
     @property
-    def admin_id(self):
+    def admin_id(self) -> int | None:
         """Return the ID of the admin.
 
         It's the value that has been read from the cookie and (if
         modified by the rest of the application) will be written back.
 
-        returns (int or None): the ID of the admin, if logged in.
+        returns: the ID of the admin, if logged in.
 
         """
         return self._cookie.get("id", None)
 
-    def set(self, admin_id):
+    def set(self, admin_id: int):
         """Set the admin ID that will be stored in the cookie.
 
-        admin_id (int): the ID of the admin (to unset don't pass None:
+        admin_id: the ID of the admin (to unset don't pass None:
             use clear()).
 
         """
         self._cookie["id"] = admin_id
-        self._cookie["ip"] = self._request.remote_addr
         self.refresh()
 
     def refresh(self):
@@ -109,28 +109,28 @@ class AWSAuthMiddleware:
         """
         self._cookie.clear()
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ: dict, start_response: Callable):
         """Invoke the class as a WSGI application.
 
-        environ (dict): the WSGI environment.
-        start_response (function): the WSGI start_response callable.
-        returns (iterable): the WSGI response data.
+        environ: the WSGI environment.
+        start_response: the WSGI start_response callable.
+        returns: the WSGI response data.
 
         """
         return self.wsgi_app(environ, start_response)
 
-    def wsgi_app(self, environ, start_response):
+    def wsgi_app(self, environ: dict, start_response: Callable):
         """Invoke the class as a WSGI application.
 
-        environ (dict): the WSGI environment.
-        start_response (function): the WSGI start_response callable.
-        returns (iterable): the WSGI response data.
+        environ: the WSGI environment.
+        start_response: the WSGI start_response callable.
+        returns: the WSGI response data.
 
         """
         self._local.request = Request(environ)
         self._local.cookie = JSONSecureCookie.load_cookie(
             self._request, AWSAuthMiddleware.COOKIE,
-            hex_to_bin(config.secret_key))
+            hex_to_bin(config.web_server.secret_key))
         self._verify_cookie()
 
         def my_start_response(status, headers, exc_info=None):
@@ -143,7 +143,8 @@ class AWSAuthMiddleware:
             """
             response = Response(status=status, headers=headers)
             self._cookie.save_cookie(
-                response, AWSAuthMiddleware.COOKIE, httponly=True)
+                response, AWSAuthMiddleware.COOKIE, httponly=True,
+                max_age=config.admin_web_server.cookie_duration)
             return start_response(
                 status, response.headers.to_wsgi_list(), exc_info)
 
@@ -159,10 +160,9 @@ class AWSAuthMiddleware:
             return
 
         admin_id = self._cookie.get("id", None)
-        remote_addr = self._cookie.get("ip", None)
         timestamp = self._cookie.get("timestamp", None)
 
-        if admin_id is None or remote_addr is None or timestamp is None:
+        if admin_id is None or timestamp is None:
             self.clear()
             return
 
@@ -170,10 +170,6 @@ class AWSAuthMiddleware:
             self.clear()
             return
 
-        if remote_addr != self._request.remote_addr:
-            self.clear()
-            return
-
-        if make_timestamp() - timestamp > config.admin_cookie_duration:
+        if make_timestamp() - timestamp > config.admin_web_server.cookie_duration:
             self.clear()
             return

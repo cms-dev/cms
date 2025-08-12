@@ -25,7 +25,9 @@ import re
 import subprocess
 from datetime import timedelta
 
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import Task, Dataset, Manager, Testcase, Attachment, Statement
+from cmscommon.constants import SCORE_MODE_MAX_SUBTASK
 from .base_loader import TaskLoader
 
 
@@ -64,7 +66,7 @@ class TpsTaskLoader(TaskLoader):
         task_type_parameters = json.loads(parameters_str)
         par_prefix = 'task_type_parameters_%s' % task_type
 
-        if task_type == 'Batch':
+        if task_type == 'Batch' or task_type == 'BatchAndOutput':
             par_compilation = '%s_compilation' % par_prefix
             par_input = '%s_io_0_inputfile' % par_prefix
             par_output = '%s_io_1_outputfile' % par_prefix
@@ -86,18 +88,21 @@ class TpsTaskLoader(TaskLoader):
                 if not os.path.exists(pas_grader):
                     user_managers = '[\\"grader.%l\\"]'
                 task_type_parameters[par_user_managers] = user_managers
-            return [
+            param_list = [
                 task_type_parameters[par_compilation],
                 [task_type_parameters[par_input],
                  task_type_parameters[par_output]],
                 evaluation_param,
             ]
+            if task_type == 'BatchAndOutput':
+                param_list.append(','.join(data["output_only_testcases"]))
+            return param_list
 
         if task_type == 'Communication':
             par_processes = '%s_num_processes' % par_prefix
             if par_processes not in task_type_parameters:
                 task_type_parameters[par_processes] = 1
-            return [task_type_parameters[par_processes], "stub", "fifo_io"]
+            return [task_type_parameters[par_processes], "stub", "std_io"]
 
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
             return [evaluation_param]
@@ -123,6 +128,15 @@ class TpsTaskLoader(TaskLoader):
 
         args["name"] = name
         args["title"] = data['name']
+        args["score_mode"] = SCORE_MODE_MAX_SUBTASK
+
+        feedback_level = data.get("feedback_level", None)
+        if feedback_level:
+            if feedback_level not in (FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED):
+                logger.critical(f"invalid feedback_level: {feedback_level}")
+                return None
+
+            args["feedback_level"] = feedback_level
 
         # Statements
         if get_statement:
@@ -159,7 +173,19 @@ class TpsTaskLoader(TaskLoader):
         data["task_type"] = \
             data["task_type"][0].upper() + data["task_type"][1:]
 
-        # Setting the submission format
+        # Parse subtask data
+        subtasks_dir = os.path.join(self.path, 'subtasks')
+        subtask_data = {}
+        if not os.path.exists(subtasks_dir):
+            logger.warning('Subtask folder was not found')
+            subtasks = []
+        else:
+            subtasks = sorted(os.listdir(subtasks_dir))
+            for subtask in subtasks:
+                with open(os.path.join(subtasks_dir, subtask), 'rt',
+                          encoding='utf-8') as subtask_json:
+                    subtask_data[subtask] = json.load(subtask_json)
+
         # Obtaining testcases' codename
         testcases_dir = os.path.join(self.path, 'tests')
         if not os.path.exists(testcases_dir):
@@ -170,12 +196,34 @@ class TpsTaskLoader(TaskLoader):
                 filename[:-3]
                 for filename in os.listdir(testcases_dir)
                 if filename[-3:] == '.in'])
+        if data["task_type"] == 'BatchAndOutput':
+            output_only_testcases = set()
+            output_optional_testcases = set()
+            for cur_subtask_data in subtask_data.values():
+                is_output_only = cur_subtask_data.get('output_only', False)
+                is_output_optional = cur_subtask_data.get('output_optional', False)
+                if is_output_only:
+                    codenames = cur_subtask_data.get('testcases', list())
+                    output_only_testcases.update(codenames)
+                elif is_output_optional:
+                    codenames = cur_subtask_data.get('testcases', list())
+                    output_optional_testcases.update(codenames)
+            data["output_only_testcases"] = output_only_testcases
+            output_testcases = \
+                output_optional_testcases | output_only_testcases
+            data["output_testcases"] = output_testcases
+        
+        # Setting the submission format
         if data["task_type"] == 'OutputOnly':
             args["submission_format"] = list()
             for codename in testcase_codenames:
-                args["submission_format"].append("%s.out" % codename)
+                args["submission_format"].append("output_%s.txt" % codename)
         elif data["task_type"] == 'Notice':
             args["submission_format"] = list()
+        elif data["task_type"] == "BatchAndOutput":
+            args["submission_format"] = ["%s.%%l" % name]
+            for codename in sorted(data["output_testcases"]):
+                args["submission_format"].append("output_%s.txt" % codename)
         else:
             args["submission_format"] = ["%s.%%l" % name]
 
@@ -229,7 +277,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Checker found, compiling")
             checker_exe = os.path.join(checker_dir, "checker")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-std=gnu++14", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++20", "-O2", "-static",
                 "-o", checker_exe, checker_src
             ])
             if ret != 0:
@@ -287,7 +335,7 @@ class TpsTaskLoader(TaskLoader):
             logger.info("Manager found, compiling")
             manager_exe = os.path.join(graders_dir, "manager")
             ret = subprocess.call([
-                "g++", "-x", "c++", "-O2", "-static",
+                "g++", "-x", "c++", "-std=gnu++20", "-O2", "-static",
                 "-o", manager_exe, manager_src
             ])
             if ret != 0:
@@ -321,13 +369,6 @@ class TpsTaskLoader(TaskLoader):
             args["testcases"][codename] = testcase
 
         # Score Type
-        subtasks_dir = os.path.join(self.path, 'subtasks')
-        if not os.path.exists(subtasks_dir):
-            logger.warning('Subtask folder was not found')
-            subtasks = []
-        else:
-            subtasks = sorted(os.listdir(subtasks_dir))
-
         if len(subtasks) == 0:
             number_tests = max(len(testcase_codenames), 1)
             args["score_type"] = "Sum"
@@ -339,22 +380,20 @@ class TpsTaskLoader(TaskLoader):
             add_optional_name = False
             for subtask in subtasks:
                 subtask_no += 1
-                with open(os.path.join(subtasks_dir, subtask), 'rt',
-                          encoding='utf-8') as subtask_json:
-                    subtask_data = json.load(subtask_json)
-                    score = int(subtask_data["score"])
-                    testcases = "|".join(
-                        re.escape(testcase)
-                        for testcase in subtask_data["testcases"]
-                    )
-                    optional_name = "Subtask %d" % subtask_no
-                    if subtask_no == 0 and score == 0:
-                        add_optional_name = True
-                        optional_name = "Samples"
-                    if add_optional_name:
-                        parsed_data.append([score, testcases, optional_name])
-                    else:
-                        parsed_data.append([score, testcases])
+                cur_subtask_data = subtask_data[subtask]
+                score = int(cur_subtask_data["score"])
+                testcases = "|".join(
+                    re.escape(testcase)
+                    for testcase in cur_subtask_data["testcases"]
+                )
+                optional_name = "Subtask %d" % subtask_no
+                if subtask_no == 0 and score == 0:
+                    add_optional_name = True
+                    optional_name = "Samples"
+                if add_optional_name:
+                    parsed_data.append([score, testcases, optional_name])
+                else:
+                    parsed_data.append([score, testcases])
             args["score_type_parameters"] = parsed_data
 
         dataset = Dataset(**args)

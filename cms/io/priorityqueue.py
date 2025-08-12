@@ -38,7 +38,10 @@ together the three data point: item, priority, and timestamp.
 
 """
 
+from datetime import datetime
 from functools import total_ordering
+from typing import TypedDict
+import typing
 
 from gevent.event import Event
 
@@ -53,25 +56,30 @@ class QueueItem:
 
     """
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Return a dict() representation of the object."""
         return self.__dict__
 
 
+QueueItemT = typing.TypeVar("QueueItemT", bound=QueueItem)
+
+
 @total_ordering
-class QueueEntry:
+class QueueEntry(typing.Generic[QueueItemT]):
 
     """Type of the actual objects in the queue.
 
     """
 
-    def __init__(self, item, priority, timestamp, index):
+    def __init__(
+        self, item: QueueItemT, priority: int, timestamp: datetime, index: int
+    ):
         """Create a QueueEntry object.
 
-        item (QueueItem): the payload.
-        priority (int): the priority.
-        timestamp (datetime): the timestamp of first request.
-        index (int): used to enforce strict ordering.
+        item: the payload.
+        priority: the priority.
+        timestamp: the timestamp of first request.
+        index: used to enforce strict ordering.
 
         """
         # TODO: item is not actually necessary, as we store the whole
@@ -92,7 +100,15 @@ class QueueEntry:
                < (other.priority, other.timestamp, other.index)
 
 
-class PriorityQueue:
+class QueueEntryDict(TypedDict):
+    """Serialized form of QueueEntry, for sending over RPC."""
+
+    item: dict
+    priority: int
+    timestamp: float
+
+
+class PriorityQueue(typing.Generic[QueueItemT]):
 
     """A priority queue.
 
@@ -115,11 +131,11 @@ class PriorityQueue:
         """Create a priority queue."""
         # The queue: a min-heap whose elements are of the form
         # (priority, timestamp, item), where item is the actual data.
-        self._queue = []
+        self._queue: list[QueueEntry[QueueItemT]] = []
 
         # Reverse lookup for the items in the queue: a dictionary
         # associating the index in the queue to each item.
-        self._reverse = {}
+        self._reverse: dict[QueueItemT, int] = {}
 
         # Event to signal that there are items in the queue.
         self._event = Event()
@@ -130,7 +146,7 @@ class PriorityQueue:
     def __len__(self):
         return len(self._queue)
 
-    def _verify(self):
+    def _verify(self) -> bool:
         """Make sure that the internal state of the queue is consistent.
 
         This is used only for testing.
@@ -149,22 +165,22 @@ class PriorityQueue:
                 return False
         return True
 
-    def __contains__(self, item):
+    def __contains__(self, item: QueueItemT) -> bool:
         """Implement the 'in' operator for an item in the queue.
 
-        item (QueueItem): an item to search.
+        item: an item to search.
 
-        return (bool): True if item is in the queue.
+        return: True if item is in the queue.
 
         """
         return item in self._reverse
 
-    def _swap(self, idx1, idx2):
+    def _swap(self, idx1: int, idx2: int):
         """Swap two elements in the queue, keeping their reverse
         indices up to date.
 
-        idx1 (int): the index of the first element.
-        idx2 (int): the index of the second element.
+        idx1: the index of the first element.
+        idx2: the index of the second element.
 
         """
         self._queue[idx1], self._queue[idx2] = \
@@ -172,13 +188,13 @@ class PriorityQueue:
         self._reverse[self._queue[idx1].item] = idx1
         self._reverse[self._queue[idx2].item] = idx2
 
-    def _up_heap(self, idx):
+    def _up_heap(self, idx: int) -> int:
         """Take the element in position idx up in the heap until its
         position is the right one.
 
-        idx (int): the index of the element to lift.
+        idx: the index of the element to lift.
 
-        return (int): the new index of the element.
+        return: the new index of the element.
 
         """
         while idx > 0:
@@ -190,13 +206,13 @@ class PriorityQueue:
                 break
         return idx
 
-    def _down_heap(self, idx):
+    def _down_heap(self, idx: int) -> int:
         """Take the element in position idx down in the heap until its
         position is the right one.
 
-        idx (int): the index of the element to lower.
+        idx: the index of the element to lower.
 
-        return (int): the new index of the element.
+        return: the new index of the element.
 
         """
         last = len(self._queue) - 1
@@ -212,30 +228,35 @@ class PriorityQueue:
                 break
         return idx
 
-    def _updown_heap(self, idx):
+    def _updown_heap(self, idx: int) -> int:
         """Perform both operations of up_heap and down_heap on an
         element.
 
-        idx (int): the index of the element to lift.
+        idx: the index of the element to lift.
 
-        return (int): the new index of the element.
+        return: the new index of the element.
 
         """
         idx = self._up_heap(idx)
         return self._down_heap(idx)
 
-    def push(self, item, priority=None, timestamp=None):
+    def push(
+        self,
+        item: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> bool:
         """Push an item in the queue. If timestamp is not specified,
         uses the current time.
 
-        item (QueueItem): the item to add to the queue.
-        priority (int|None): the priority of the item, or None for
+        item: the item to add to the queue.
+        priority: the priority of the item, or None for
             medium priority.
-        timestamp (datetime|None): the time of the submission, or None
+        timestamp: the time of the submission, or None
             to use now.
 
-        return (bool): false if the element was already in the queue
-            and was not pushed again, true otherwise..
+        return: false if the element was already in the queue
+            and was not pushed again, true otherwise.
 
         """
         if item in self._reverse:
@@ -259,12 +280,12 @@ class PriorityQueue:
 
         return True
 
-    def top(self, wait=False):
+    def top(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Return the first element in the queue without extracting it.
 
-        wait (bool): if True, block until an element is present.
+        wait: if True, block until an element is present.
 
-        return (QueueEntry): first element in the queue.
+        return: first element in the queue.
 
         raise (LookupError): on empty queue if wait was false.
 
@@ -281,12 +302,12 @@ class PriorityQueue:
                         continue
                     return self._queue[0]
 
-    def pop(self, wait=False):
+    def pop(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Extract (and return) the first element in the queue.
 
-        wait (bool): if True, block until an element is present.
+        wait: if True, block until an element is present.
 
-        return (QueueEntry): first element in the queue.
+        return: first element in the queue.
 
         raise (LookupError): on empty queue, if wait was false.
 
@@ -306,12 +327,12 @@ class PriorityQueue:
             self._event.clear()
         return top
 
-    def remove(self, item):
+    def remove(self, item: QueueItemT) -> QueueEntry[QueueItemT]:
         """Remove an item from the queue. Raise a KeyError if not present.
 
-        item (QueueItem): the item to remove.
+        item: the item to remove.
 
-        return (QueueEntry): the complete entry removed.
+        return: the complete entry removed.
 
         raise (KeyError): if item not present.
 
@@ -332,12 +353,12 @@ class PriorityQueue:
 
         return entry
 
-    def set_priority(self, item, priority):
+    def set_priority(self, item: QueueItemT, priority: int):
         """Change the priority of an item inside the queue. Raises an
         exception if the item is not in the queue.
 
-        item (QueueItem): the item whose priority needs to change.
-        priority (int): the new priority.
+        item: the item whose priority needs to change.
+        priority: the new priority.
 
         raise (LookupError): if item not present.
 
@@ -346,27 +367,27 @@ class PriorityQueue:
         self._queue[pos].priority = priority
         self._updown_heap(pos)
 
-    def length(self):
+    def length(self) -> int:
         """Return the number of elements in the queue.
 
-        return (int): length of the queue
+        return: length of the queue
 
         """
         return len(self._queue)
 
-    def empty(self):
+    def empty(self) -> bool:
         """Return if the queue is empty.
 
-        return (bool): is the queue empty?
+        return: is the queue empty?
 
         """
         return self.length() == 0
 
-    def get_status(self):
+    def get_status(self) -> list[QueueEntryDict]:
         """Return the content of the queue. Note that the order may be not
         correct, but the first element is the one at the top.
 
-        return ([QueueEntry]): a list of entries containing the
+        return: a list of entries containing the
             representation of the item, the priority and the
             timestamp.
 

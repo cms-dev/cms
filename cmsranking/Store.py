@@ -16,10 +16,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 import json
 import logging
 import os
 import re
+from typing import Any, Generic, TypeVar
 
 from gevent.lock import RLock
 
@@ -33,7 +35,10 @@ logger = logging.getLogger(__name__)
 LOCK = RLock()
 
 
-class Store:
+EntityT = TypeVar("EntityT", bound=Entity)
+
+
+class Store(Generic[EntityT]):
     """A store for entities.
 
     Provide methods to perform the CRUD operations (create, retrieve,
@@ -44,13 +49,19 @@ class Store:
     callbacks.
 
     """
-    def __init__(self, entity, path, all_stores, depends=None):
+    def __init__(
+        self,
+        entity: type[EntityT],
+        path: str,
+        all_stores: dict[str, "Store"],
+        depends: list["Store"] | None = None,
+    ):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind
         of entities will be stored. It cannot be changed.
 
-        entity (type): the class definition of the entities that will
+        entity: the class definition of the entities that will
             be stored
 
         """
@@ -61,10 +72,10 @@ class Store:
         self._path = path
         self._all_stores = all_stores
         self._depends = depends if depends is not None else []
-        self._store = dict()
-        self._create_callbacks = list()
-        self._update_callbacks = list()
-        self._delete_callbacks = list()
+        self._store: dict[str, EntityT] = dict()
+        self._create_callbacks: list[Callable[[str, EntityT], Any]] = list()
+        self._update_callbacks: list[Callable[[str, EntityT, EntityT], Any]] = list()
+        self._delete_callbacks: list[Callable[[str, EntityT], Any]] = list()
 
     def load_from_disk(self):
         """Load the initial data for this store from the disk.
@@ -96,41 +107,40 @@ class Store:
             logger.error(str(exc), exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
 
-    def add_create_callback(self, callback):
+    def add_create_callback(self, callback: Callable[[str, EntityT], Any]):
         """Add a callback to be called when entities are created.
 
-        Callbacks can be any kind of callable objects. They must accept
-        a single argument: the key of the entity.
+        The first argument of the callback is the key, the second is the
+        freshly created entity.
 
         """
         self._create_callbacks.append(callback)
 
-    def add_update_callback(self, callback):
+    def add_update_callback(self, callback: Callable[[str, EntityT, EntityT], Any]):
         """Add a callback to be called when entities are updated.
 
-        Callbacks can be any kind of callable objects. They must accept
-        a single argument: the key of the entity.
+        The first argument of the callback is the key, the second is the
+        entity before updating, the third is the entity after updating.
 
         """
         self._update_callbacks.append(callback)
 
-    def add_delete_callback(self, callback):
+    def add_delete_callback(self, callback: Callable[[str, EntityT], Any]):
         """Add a callback to be called when entities are deleted.
 
-        Callbacks can be any kind of callable objects. They must accept
-        a single argument: the key of the entity.
+        The first argument of the callback is the key, the second is the
+        entity that was deleted.
 
         """
         self._delete_callbacks.append(callback)
 
-    def create(self, key, data):
+    def create(self, key: str, data: dict):
         """Create a new entity.
 
         Create a new entity with the given key and the given data.
 
-        key (unicode): the key with which the entity will be later
-            accessed
-        data (dict): the properties of the entity
+        key: the key with which the entity will be later accessed
+        data: the properties of the entity
 
         raise (InvalidKey): if key isn't a unicode or if an entity
             with the same key is already present in the store.
@@ -161,14 +171,14 @@ class Store:
                 logger.error("I/O error occured while creating entity",
                              exc_info=True)
 
-    def update(self, key, data):
+    def update(self, key: str, data: dict):
         """Update an entity.
 
         Update an existing entity with the given key and the given
         data.
 
-        key (unicode): the key of the entity that has to be updated
-        data (dict): the new properties of the entity
+        key: the key of the entity that has to be updated
+        data: the new properties of the entity
 
         raise (InvalidKey): if key isn't a unicode or if no entity
             with that key is present in the store.
@@ -200,14 +210,14 @@ class Store:
                 logger.error("I/O error occured while updating entity",
                              exc_info=True)
 
-    def merge_list(self, data_dict):
+    def merge_list(self, data_dict: dict[str, dict]):
         """Merge a list of entities.
 
         Take a dictionary of entites and, for each of them:
          - if it's not present in the store, create it
          - if it's present, update it
 
-        data_dict (dict): the dictionary of entities
+        data_dict: the dictionary of entities
 
         raise (InvalidData) if data cannot be parsed, if an entity is
             missing some properties or if properties are of the wrong
@@ -255,12 +265,12 @@ class Store:
                         "I/O error occured while merging entity lists",
                         exc_info=True)
 
-    def delete(self, key):
+    def delete(self, key: str):
         """Delete an entity.
 
         Delete an existing entity from the store.
 
-        key (unicode): the key of the entity that has to be deleted
+        key: the key of the entity that has to be deleted
 
         raise (InvalidKey): if key isn't a unicode or if no entity
             with that key is present in the store.
@@ -298,12 +308,12 @@ class Store:
             for key in list(self._store.keys()):
                 self.delete(key)
 
-    def retrieve(self, key):
+    def retrieve(self, key: str) -> dict:
         """Retrieve an entity.
 
         Retrieve an existing entity from the store.
 
-        key (unicode): the key of the entity that has to be retrieved
+        key: the key of the entity that has to be retrieved
 
         raise (InvalidKey): if key isn't a unicode or if no entity
             with that key is present in the store.
@@ -315,12 +325,12 @@ class Store:
         # retrieve entity
         return self._store[key].get()
 
-    def retrieve_list(self):
+    def retrieve_list(self) -> dict[str, dict]:
         """Retrieve a list of all entities."""
         result = dict()
         for key, value in self._store.items():
             result[key] = value.get()
         return result
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         return key in self._store

@@ -34,9 +34,21 @@ testcase".
 """
 
 import logging
+from typing import Self
 
-from cms.db import Dataset, Evaluation, Executable, File, Manager, Submission, \
-    UserTest, UserTestExecutable
+from cms.db import (
+    Dataset,
+    Evaluation,
+    Executable,
+    File,
+    Manager,
+    Submission,
+    UserTest,
+    UserTestExecutable,
+    Contest,
+    SubmissionResult,
+    UserTestResult,
+)
 from cms.grading.languagemanager import get_language
 from cms.service.esoperations import ESOperation
 
@@ -44,14 +56,14 @@ from cms.service.esoperations import ESOperation
 logger = logging.getLogger(__name__)
 
 
-def _is_contest_multithreaded(contest):
+def _is_contest_multithreaded(contest: Contest) -> bool:
     """Return if the contest allows multithreaded compilations and evaluations
 
     The rule is that this is allowed when the contest has a language that
     requires this.
 
-    contest (Contest): the contest to check
-    return (boolean): True if the sandbox should allow multithreading.
+    contest: the contest to check
+    return: True if the sandbox should allow multithreading.
 
     """
     return any(get_language(l).requires_multithreading
@@ -66,45 +78,60 @@ class Job:
 
     """
 
-    def __init__(self, operation=None,
-                 task_type=None, task_type_parameters=None,
-                 language=None, multithreaded_sandbox=False,
-                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
-                 success=None, text=None,
-                 files=None, managers=None, executables=None):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
+        info: str | None = None,
+        success: bool | None = None,
+        text: list[str] | None = None,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        executables: dict[str, Executable] | None = None,
+    ):
         """Initialization.
 
-        operation (ESOperation|None): the operation.
-        task_type (string|None): the name of the task type.
-        task_type_parameters (object|None): the parameters for the
+        operation: the operation.
+        task_type: the name of the task type.
+        task_type_parameters: the parameters for the
             creation of the correct task type.
-        language (string|None): the language of the submission / user
-            test.
-        multithreaded_sandbox (boolean): whether the sandbox should
+        language: the language of the submission / user test.
+        multithreaded_sandbox: whether the sandbox should
             allow multithreading.
-        shard (int|None): the shard of the Worker completing this job.
-        keep_sandbox (bool): whether to forcefully keep the sandbox,
+        archive_sandbox: whether the sandbox is to be archived.
+        shard: the shard of the Worker completing this job.
+        keep_sandbox: whether to forcefully keep the sandbox,
             even if other conditions (the config, the sandbox status)
             don't warrant it.
-        sandboxes ([string]|None): the paths of the sandboxes used in
+        sandboxes: the paths of the sandboxes used in
             the Worker during the execution of the job.
-        info (string|None): a human readable description of the job.
-        success (bool|None): whether the job succeeded.
-        text ([object]|None): description of the outcome of the job,
+        sandbox_digests: the digests of the sandbox archives used to
+            debug solutions. (map of sandbox path -> archive digest)
+        info: a human readable description of the job.
+        success: whether the job succeeded.
+        text: description of the outcome of the job,
             to be presented to the user. The first item is a string,
             potentially with %-escaping; the following items are the
             values to be %-formatted into the first.
-        files ({string: File}|None): files submitted by the user.
-        managers ({string: Manager}|None): managers provided by the
-            admins.
-        executables ({string: Executable}|None): executables created
-            in the compilation.
+        files: files submitted by the user.
+        managers: managers provided by the admins.
+        executables: executables created in the compilation.
 
         """
         if task_type is None:
             task_type = ""
         if sandboxes is None:
             sandboxes = []
+        if sandbox_digests is None:
+            sandbox_digests = {}
         if info is None:
             info = ""
         if files is None:
@@ -119,9 +146,11 @@ class Job:
         self.task_type_parameters = task_type_parameters
         self.language = language
         self.multithreaded_sandbox = multithreaded_sandbox
+        self.archive_sandbox = archive_sandbox
         self.shard = shard
         self.keep_sandbox = keep_sandbox
         self.sandboxes = sandboxes
+        self.sandbox_digests = sandbox_digests
         self.info = info
 
         self.success = success
@@ -131,7 +160,7 @@ class Job:
         self.managers = managers
         self.executables = executables
 
-    def export_to_dict(self):
+    def export_to_dict(self) -> dict:
         """Return a dict representing the job."""
         res = {
             'operation': (self.operation.to_dict()
@@ -141,9 +170,11 @@ class Job:
             'task_type_parameters': self.task_type_parameters,
             'language': self.language,
             'multithreaded_sandbox': self.multithreaded_sandbox,
+            'archive_sandbox': self.archive_sandbox,
             'shard': self.shard,
             'keep_sandbox': self.keep_sandbox,
             'sandboxes': self.sandboxes,
+            'sandbox_digests': self.sandbox_digests,
             'info': self.info,
             'success': self.success,
             'text': self.text,
@@ -157,14 +188,14 @@ class Job:
         return res
 
     @staticmethod
-    def import_from_dict_with_type(data):
+    def import_from_dict_with_type(data: dict) -> "Job":
         """Create a Job from a dict having a type information.
 
-        data (dict): a dict with all the items required for a job, and
+        data: a dict with all the items required for a job, and
             in addition a 'type' key with associated value
             'compilation' or 'evaluation'.
 
-        return (Job): either a CompilationJob or an EvaluationJob.
+        return: either a CompilationJob or an EvaluationJob.
 
         """
         type_ = data['type']
@@ -178,7 +209,7 @@ class Job:
                             (type_))
 
     @classmethod
-    def import_from_dict(cls, data):
+    def import_from_dict(cls, data: dict) -> Self:
         """Create a Job from the output of export_to_dict."""
         if data['operation'] is not None:
             data['operation'] = ESOperation.from_dict(data['operation'])
@@ -191,18 +222,20 @@ class Job:
         return cls(**data)
 
     @staticmethod
-    def from_operation(operation, object_, dataset):
+    def from_operation(
+        operation: ESOperation, object_: Submission | UserTest, dataset: Dataset
+    ) -> "Job":
         """Produce the job for the operation in the argument.
 
         Return the Job object that has to be sent to Workers to have
         them perform the operation this object describes.
 
-        operation (ESOperation): the operation to use.
-        object_ (Submission|UserTest): the object this operation
+        operation: the operation to use.
+        object_: the object this operation
             refers to (might be a submission or a user test).
-        dataset (Dataset): the dataset this operation refers to.
+        dataset: the dataset this operation refers to.
 
-        return (Job): the job encoding of the operation, as understood
+        return: the job encoding of the operation, as understood
             by Workers and TaskTypes.
 
         raise (ValueError): if object_ or dataset are not those
@@ -231,6 +264,26 @@ class Job:
             job = EvaluationJob.from_user_test(operation, object_, dataset)
         return job
 
+    def get_sandbox_digest_list(self) -> list[str] | None:
+        """
+        Convert self.sandbox_digests into a list, where each index matches the
+        corresponding index in self.sandboxes.
+        """
+        if not self.sandbox_digests:
+            return None
+        res: list[str | None] = [None] * len(self.sandboxes)
+        for k,v in self.sandbox_digests.items():
+            if k in self.sandboxes:
+                index = self.sandboxes.index(k)
+                res[index] = v
+            else:
+                logger.warning("Have digest for unknown sandbox %s", k)
+        if None in res:
+            ind = res.index(None)
+            logger.warning("Sandbox %s was not archived", self.sandboxes[ind])
+            return None
+        return res
+
 
 class CompilationJob(Job):
     """Job representing a compilation.
@@ -244,31 +297,45 @@ class CompilationJob(Job):
 
     """
 
-    def __init__(self, operation=None, task_type=None,
-                 task_type_parameters=None,
-                 shard=None, keep_sandbox=False, sandboxes=None, info=None,
-                 language=None, multithreaded_sandbox=False,
-                 files=None, managers=None,
-                 success=None, compilation_success=None,
-                 executables=None, text=None, plus=None):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
+        info: str | None = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        success: bool | None = None,
+        compilation_success: bool | None = None,
+        executables: dict[str, Executable] | None = None,
+        text: list[str] | None = None,
+        plus: dict | None = None,
+    ):
         """Initialization.
 
         See base class for the remaining arguments.
 
-        compilation_success (bool|None): whether the compilation implicit
+        compilation_success: whether the compilation implicit
             in the job succeeded, or there was a compilation error.
-        plus ({}|None): additional metadata.
+        plus: additional metadata.
 
         """
 
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
-                     shard, keep_sandbox, sandboxes, info, success, text,
-                     files, managers, executables)
+                     language, multithreaded_sandbox, archive_sandbox,
+                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     text, files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
 
-    def export_to_dict(self):
+    def export_to_dict(self) -> dict:
         res = Job.export_to_dict(self)
         res.update({
             'type': 'compilation',
@@ -278,16 +345,18 @@ class CompilationJob(Job):
         return res
 
     @staticmethod
-    def from_submission(operation, submission, dataset):
+    def from_submission(
+        operation: ESOperation, submission: Submission, dataset: Dataset
+    ) -> "CompilationJob":
         """Create a CompilationJob from a submission.
 
-        operation (ESOperation): a COMPILATION operation.
-        submission (Submission): the submission object referred by the
+        operation: a COMPILATION operation.
+        submission: the submission object referred by the
             operation.
-        dataset (Dataset): the dataset object referred by the
+        dataset: the dataset object referred by the
             operation.
 
-        return (CompilationJob): the job.
+        return: the job.
 
         """
         if operation.type_ != ESOperation.COMPILATION:
@@ -305,15 +374,16 @@ class CompilationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(submission.files),
             managers=dict(dataset.managers),
             info="compile submission %d" % (submission.id)
         )
 
-    def to_submission(self, sr):
+    def to_submission(self, sr: SubmissionResult):
         """Fill detail of the submission result with the job result.
 
-        sr (SubmissionResult): the DB object to fill.
+        sr: the DB object to fill.
 
         """
         # This should actually be useless.
@@ -331,21 +401,24 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         sr.compilation_memory = self.plus.get('execution_memory')
         sr.compilation_shard = self.shard
-        sr.compilation_sandbox = ":".join(self.sandboxes)
+        sr.compilation_sandbox_paths = self.sandboxes
+        sr.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             sr.executables.set(executable)
 
     @staticmethod
-    def from_user_test(operation, user_test, dataset):
+    def from_user_test(
+        operation: ESOperation, user_test: UserTest, dataset: Dataset
+    ) -> "CompilationJob":
         """Create a CompilationJob from a user test.
 
-        operation (ESOperation): a USER_TEST_COMPILATION operation.
-        user_test (UserTest): the user test object referred by the
+        operation: a USER_TEST_COMPILATION operation.
+        user_test: the user test object referred by the
             operation.
-        dataset (Dataset): the dataset object referred by the
+        dataset: the dataset object referred by the
             operation.
 
-        return (CompilationJob): the job.
+        return: the job.
 
         """
         if operation.type_ != ESOperation.USER_TEST_COMPILATION:
@@ -393,15 +466,16 @@ class CompilationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(user_test.files),
             managers=managers,
             info="compile user test %d" % (user_test.id)
         )
 
-    def to_user_test(self, ur):
+    def to_user_test(self, ur: UserTestResult):
         """Fill detail of the user test result with the job result.
 
-        ur (UserTestResult): the DB object to fill.
+        ur: the DB object to fill.
 
         """
         # This should actually be useless.
@@ -419,7 +493,8 @@ class CompilationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.compilation_memory = self.plus.get('execution_memory')
         ur.compilation_shard = self.shard
-        ur.compilation_sandbox = ":".join(self.sandboxes)
+        ur.compilation_sandbox_paths = self.sandboxes
+        ur.compilation_sandbox_digests = self.get_sandbox_digest_list()
         for executable in self.executables.values():
             u_executable = UserTestExecutable(
                 executable.filename, executable.digest)
@@ -439,42 +514,60 @@ class EvaluationJob(Job):
     only_execution, get_output.
 
     """
-    def __init__(self, operation=None, task_type=None,
-                 task_type_parameters=None, shard=None,
-                 keep_sandbox=False, sandboxes=None, info=None,
-                 language=None, multithreaded_sandbox=False,
-                 files=None, managers=None, executables=None,
-                 input=None, output=None,
-                 time_limit=None, memory_limit=None,
-                 success=None, outcome=None, text=None,
-                 user_output=None, plus=None,
-                 only_execution=False, get_output=False):
+    def __init__(
+        self,
+        operation: ESOperation | None = None,
+        task_type: str | None = None,
+        task_type_parameters: object = None,
+        shard: int | None = None,
+        keep_sandbox: bool = False,
+        sandboxes: list[str] | None = None,
+        sandbox_digests: dict[str, str] | None = None,
+        info: str | None = None,
+        language: str | None = None,
+        multithreaded_sandbox: bool = False,
+        archive_sandbox: bool = False,
+        files: dict[str, File] | None = None,
+        managers: dict[str, Manager] | None = None,
+        executables: dict[str, Executable] | None = None,
+        input: str | None = None,
+        output: str | None = None,
+        time_limit: float | None = None,
+        memory_limit: int | None = None,
+        success: bool | None = None,
+        outcome: str | None = None,
+        text: list[str] | None = None,
+        user_output: str | None = None,
+        plus: dict | None = None,
+        only_execution: bool | None = False,
+        get_output: bool | None = False,
+    ):
         """Initialization.
 
         See base class for the remaining arguments.
 
-        input (string|None): digest of the input file.
-        output (string|None): digest of the output file.
-        time_limit (float|None): user time limit in seconds.
-        memory_limit (int|None): memory limit in bytes.
-        outcome (string|None): the outcome of the evaluation, from
+        input: digest of the input file.
+        output: digest of the output file.
+        time_limit: user time limit in seconds.
+        memory_limit: memory limit in bytes.
+        outcome: the outcome of the evaluation, from
             which to compute the score.
-        user_output (unicode|None): if requested (with get_output),
+        user_output: if requested (with get_output),
             the digest of the file containing the output of the user
             program.
-        plus ({}|None): additional metadata.
-        only_execution (bool|None): whether to perform only the
+        plus: additional metadata.
+        only_execution: whether to perform only the
             execution, or to compare the output with the reference
             solution too.
-        get_output (bool|None): whether to retrieve the execution
+        get_output: whether to retrieve the execution
             output (together with only_execution, useful for the user
             tests).
 
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
-                     language, multithreaded_sandbox,
-                     shard, keep_sandbox, sandboxes, info, success, text,
-                     files, managers, executables)
+                     language, multithreaded_sandbox, archive_sandbox,
+                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     text, files, managers, executables)
         self.input = input
         self.output = output
         self.time_limit = time_limit
@@ -485,7 +578,7 @@ class EvaluationJob(Job):
         self.only_execution = only_execution
         self.get_output = get_output
 
-    def export_to_dict(self):
+    def export_to_dict(self) -> dict:
         res = Job.export_to_dict(self)
         res.update({
             'type': 'evaluation',
@@ -502,16 +595,16 @@ class EvaluationJob(Job):
         return res
 
     @staticmethod
-    def from_submission(operation, submission, dataset):
+    def from_submission(
+        operation: ESOperation, submission: Submission, dataset: Dataset
+    ) -> "EvaluationJob":
         """Create an EvaluationJob from a submission.
 
-        operation (ESOperation): an EVALUATION operation.
-        submission (Submission): the submission object referred by the
-            operation.
-        dataset (Dataset): the dataset object referred by the
-            operation.
+        operation: an EVALUATION operation.
+        submission: the submission object referred by the operation.
+        dataset: the dataset object referred by the operation.
 
-        return (EvaluationJob): the job.
+        return: the job.
 
         """
         if operation.type_ != ESOperation.EVALUATION:
@@ -538,6 +631,7 @@ class EvaluationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=submission.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(submission.files),
             managers=dict(dataset.managers),
             executables=dict(submission_result.executables),
@@ -548,10 +642,10 @@ class EvaluationJob(Job):
             info=info
         )
 
-    def to_submission(self, sr):
+    def to_submission(self, sr: SubmissionResult):
         """Fill detail of the submission result with the job result.
 
-        sr (SubmissionResult): the DB object to fill.
+        sr: the DB object to fill.
 
         """
         # No need to check self.success because this method gets called
@@ -565,20 +659,23 @@ class EvaluationJob(Job):
                 'execution_wall_clock_time'),
             execution_memory=self.plus.get('execution_memory'),
             evaluation_shard=self.shard,
-            evaluation_sandbox=":".join(self.sandboxes),
+            evaluation_sandbox_paths=self.sandboxes,
+            evaluation_sandbox_digests=self.get_sandbox_digest_list(),
             testcase=sr.dataset.testcases[self.operation.testcase_codename])]
 
     @staticmethod
-    def from_user_test(operation, user_test, dataset):
+    def from_user_test(
+        operation: ESOperation, user_test: UserTest, dataset: Dataset
+    ) -> "EvaluationJob":
         """Create an EvaluationJob from a user test.
 
-        operation (ESOperation): an USER_TEST_EVALUATION operation.
-        user_test (UserTest): the user test object referred by the
+        operation: an USER_TEST_EVALUATION operation.
+        user_test: the user test object referred by the
             operation.
-        dataset (Dataset): the dataset object referred by the
+        dataset: the dataset object referred by the
             operation.
 
-        return (EvaluationJob): the job.
+        return: the job.
 
         """
         if operation.type_ != ESOperation.USER_TEST_EVALUATION:
@@ -618,6 +715,7 @@ class EvaluationJob(Job):
             task_type_parameters=dataset.task_type_parameters,
             language=user_test.language,
             multithreaded_sandbox=multithreaded,
+            archive_sandbox=operation.archive_sandbox,
             files=dict(user_test.files),
             managers=managers,
             executables=dict(user_test_result.executables),
@@ -629,10 +727,10 @@ class EvaluationJob(Job):
             only_execution=True
         )
 
-    def to_user_test(self, ur):
+    def to_user_test(self, ur: UserTestResult):
         """Fill detail of the user test result with the job result.
 
-        ur (UserTestResult): the DB object to fill.
+        ur: the DB object to fill.
 
         """
         # This should actually be useless.
@@ -648,14 +746,15 @@ class EvaluationJob(Job):
             self.plus.get('execution_wall_clock_time')
         ur.execution_memory = self.plus.get('execution_memory')
         ur.evaluation_shard = self.shard
-        ur.evaluation_sandbox = ":".join(self.sandboxes)
+        ur.evaluation_sandbox_paths = self.sandboxes
+        ur.evaluation_sandbox_digests = self.get_sandbox_digest_list()
         ur.output = self.user_output
 
 
 class JobGroup:
     """A simple collection of jobs."""
 
-    def __init__(self, jobs=None):
+    def __init__(self, jobs: list[Job] | None = None):
         self.jobs = jobs if jobs is not None else []
 
     def export_to_dict(self):
@@ -664,7 +763,7 @@ class JobGroup:
         }
 
     @classmethod
-    def import_from_dict(cls, data):
+    def import_from_dict(cls, data: dict) -> Self:
         jobs = []
         for job in data["jobs"]:
             jobs.append(Job.import_from_dict_with_type(job))

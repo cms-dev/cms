@@ -8,6 +8,7 @@
 # Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,10 +37,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.db import Attachment, Dataset, Session, Statement, Submission, Task
 from cmscommon.datetime import make_datetime
@@ -150,6 +148,14 @@ class TaskHandler(BaseHandler):
             self.get_submission_format(attrs)
             self.get_string(attrs, "feedback_level")
 
+            # Process allowed languages
+            selected_languages = self.get_arguments("allowed_languages")
+            if not selected_languages:
+                # No languages selected means allow all contest languages (NULL)
+                attrs["allowed_languages"] = None
+            else:
+                attrs["allowed_languages"] = selected_languages
+
             self.get_string(attrs, "token_mode")
             self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
@@ -236,7 +242,7 @@ class AddStatementHandler(BaseHandler):
 
         task = self.safe_get_item(Task, task_id)
 
-        language = self.get_argument("language", "")
+        language: str = self.get_argument("language", "")
         if len(language) == 0:
             self.service.add_notification(
                 make_datetime(),
@@ -296,7 +302,7 @@ class StatementHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if task is not statement.task:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(statement)
         self.try_commit()
@@ -368,7 +374,7 @@ class AttachmentHandler(BaseHandler):
 
         # Protect against URLs providing incompatible parameters.
         if attachment.task is not task:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.sql_session.delete(attachment)
         self.try_commit()
@@ -500,14 +506,19 @@ class RemoveTaskHandler(BaseHandler):
         num = task.num
 
         self.sql_session.delete(task)
+        self.sql_session.flush()
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
-            following_tasks = self.sql_session.query(Task)\
-                .filter(Task.contest_id == contest_id)\
-                .filter(Task.num > num)\
+            following_tasks: list[Task] = (
+                self.sql_session.query(Task)
+                .filter(Task.contest_id == contest_id)
+                .filter(Task.num > num)
+                .order_by(Task.num)
                 .all()
+            )
             for task in following_tasks:
                 task.num -= 1
+                self.sql_session.flush()
         if self.try_commit():
             self.service.proxy_service.reinitialize()
 

@@ -18,7 +18,7 @@ Database
 
 - *Symptom.* Some components of CMS fail randomly and PostgreSQL complains about having too many connections.
 
-  *Possible cause.* The default configuration of PostgreSQL may allow insufficiently many incoming connections on the database engine. You can raise this limit by tweaking the ```max_connections``` parameter in ```postgresql.conf``` (`see docs <http://www.postgresql.org/docs/9.1/static/runtime-config-connection.html>`_). This, in turn, requires more shared memory for the PostgreSQL process (see ```shared_buffers``` parameter in `docs <http://www.postgresql.org/docs/9.1/static/runtime-config-resource.html>`_), which may overflow the maximum limit allowed by the operating system. In such case see the suggestions in http://www.postgresql.org/docs/9.1/static/kernel-resources.html#SYSVIPC. Users reported that another way to go is to use a connection pooler like `PgBouncer <https://wiki.postgresql.org/wiki/PgBouncer>`_.
+  *Possible cause.* The default configuration of PostgreSQL may allow insufficiently many incoming connections on the database engine. You can raise this limit by tweaking the ``max_connections`` parameter in ``postgresql.conf`` (`see docs <http://www.postgresql.org/docs/9.1/static/runtime-config-connection.html>`_). This, in turn, requires more shared memory for the PostgreSQL process (see ``shared_buffers`` parameter in `docs <http://www.postgresql.org/docs/9.1/static/runtime-config-resource.html>`_), which may overflow the maximum limit allowed by the operating system. In such case see the suggestions in http://www.postgresql.org/docs/9.1/static/kernel-resources.html#SYSVIPC. Users reported that another way to go is to use a connection pooler like `PgBouncer <https://wiki.postgresql.org/wiki/PgBouncer>`_.
 
 Services
 ========
@@ -34,15 +34,15 @@ Servers
 
 - *Symptom.* Some HTTP requests to ContestWebServer take a long time and fail with 500 Internal Server Error. ContestWebServer logs contain entries such as :samp:`TimeoutError('QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 60',)`.
 
-  *Possible cause.* The server may be overloaded with user requests. You can try to increase the ```pool_timeout``` argument in :gh_blob:`cms/db/__init__.py` or, preferably, spread your users over more instances of ContestWebServer.
+  *Possible cause.* The server may be overloaded with user requests. You can try to increase the ``pool_timeout`` argument in :gh_blob:`cms/db/__init__.py` or, preferably, spread your users over more instances of ContestWebServer.
 
 - *Symptom.* Message from ContestWebServer such as: :samp:`WARNING:root:Invalid cookie signature KFZzdW5kdWRlCnAwCkkxMzI5MzQzNzIwCnRw...`
 
-  *Possible cause.* The contest secret key (defined in cms.conf) may have been changed and users' browsers are still attempting to use cookies signed with the old key. If this is the case, the problem should correct itself and won't be seen by users.
+  *Possible cause.* The contest secret key (defined in cms.toml) may have been changed and users' browsers are still attempting to use cookies signed with the old key. If this is the case, the problem should correct itself and won't be seen by users.
 
 - *Symptom.* Ranking Web Server displays wrong data, or too much data.
 
-  *Possible cause.* RWS is designed to handle groups of contests, so it retains data about past contests. If you want to delete previous data, run RWS with the ```-d``` option. See :doc:`RankingWebServer` for more details
+  *Possible cause.* RWS is designed to handle groups of contests, so it retains data about past contests. If you want to delete previous data, run RWS with the ``-d`` option. See :doc:`RankingWebServer` for more details.
 
 - *Symptom.* Ranking Web Server prints an "Inconsistent data" exception.
 
@@ -53,7 +53,7 @@ Sandbox
 
 - *Symptom.* The Worker fails to evaluate a submission logging about an invalid (empty) output from the manager.
 
-  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```. Also, make sure that the checker was compiled for the architecture of the workers (e.g., 32 or 64 bits).
+  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ``-static``. Also, make sure that the checker was compiled for the architecture of the workers (e.g., 32 or 64 bits).
 
 - *Symptom.* The Worker fails to evaluate a submission with a generic failure.
 
@@ -61,7 +61,7 @@ Sandbox
 
 - *Symptom.* Contestants' solutions fail when trying to write large outputs.
 
-  *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.conf`.
+  *Possible cause.* CMS limits the maximum output size from programs being evaluated for security reasons. Currently the limit is 1 GB and can be configured by changing the parameter ``max_file_size`` in :file:`cms.toml`.
 
 Evaluations
 ===========

@@ -39,7 +39,7 @@ from cmscommon.crypto import generate_random_password, hash_password
 logger = logging.getLogger(__name__)
 
 
-def add_admin(username, password=None):
+def add_admin(username: str, password: str | None = None) -> bool:
     logger.info("Creating the admin on the database.")
     if password is None:
         password = generate_random_password()

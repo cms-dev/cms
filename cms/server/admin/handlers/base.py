@@ -27,6 +27,7 @@
 
 """
 
+from collections.abc import Callable
 import ipaddress
 import json
 import logging
@@ -35,67 +36,75 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 import collections
+import typing
+
+from cms.db.session import Session
+
 try:
     collections.MutableMapping
 except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import subqueryload
+from sqlalchemy.orm import Query, subqueryload
 
 from cms import __version__, config
 from cms.db import Admin, Contest, Participation, Question, Submission, \
     SubmissionResult, Task, Team, User, UserTest
+import cms.db
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import CommonRequestHandler, FileHandlerMixin
 from cmscommon.crypto import hash_password, parse_authentication
 from cmscommon.datetime import make_datetime
+if typing.TYPE_CHECKING:
+    from cms.server.admin import AdminWebServer
 
 
 logger = logging.getLogger(__name__)
 
 
-def argument_reader(func, empty=None):
+def argument_reader(func: Callable[[str], typing.Any], empty: object = None):
     """Return an helper method for reading and parsing form values.
 
-    func (function): the parser and validator for the value.
-    empty (object): the value to store if an empty string is retrieved.
+    func: the parser and validator for the value.
+    empty: the value to store if an empty string is retrieved.
 
-    return (function): a function to be used as a method of a
+    return: a function to be used as a method of a
         RequestHandler.
 
     """
-    def helper(self, dest, name, empty=empty):
+
+    def helper(
+        self: tornado.web.RequestHandler, dest: dict, name: str, empty: object = empty
+    ):
         """Read the argument called "name" and save it in "dest".
 
-        self (RequestHandler): a thing with a get_argument method.
-        dest (dict): a place to store the obtained value.
-        name (string): the name of the argument and of the item.
-        empty (object): overrides the default empty value.
+        self: a thing with a get_argument method.
+        dest: a place to store the obtained value.
+        name: the name of the argument and of the item.
+        empty: overrides the default empty value.
 
         """
-        value = self.get_argument(name, None)
+        value: str | None = self.get_argument(name, None)
         if value is None:
             return
         if len(value) == 0:
             dest[name] = empty
         else:
             dest[name] = func(value)
+
     return helper
 
 
-def parse_string_list(value):
+def parse_string_list(value: str) -> list[str]:
     """Parse a comma-separated list of strings."""
     return list(x.strip() for x in value.split(",") if x.strip())
 
 
-def parse_int(value):
+def parse_int(value: str) -> int:
     """Parse and validate an integer."""
     try:
         return int(value)
@@ -103,7 +112,7 @@ def parse_int(value):
         raise ValueError("Can't cast %s to int." % value)
 
 
-def parse_timedelta_sec(value):
+def parse_timedelta_sec(value: str) -> timedelta:
     """Parse and validate a timedelta (as number of seconds)."""
     try:
         return timedelta(seconds=float(value))
@@ -111,7 +120,7 @@ def parse_timedelta_sec(value):
         raise ValueError("Can't cast %s to timedelta." % value)
 
 
-def parse_timedelta_min(value):
+def parse_timedelta_min(value: str) -> timedelta:
     """Parse and validate a timedelta (as number of minutes)."""
     try:
         return timedelta(minutes=float(value))
@@ -119,7 +128,7 @@ def parse_timedelta_min(value):
         raise ValueError("Can't cast %s to timedelta." % value)
 
 
-def parse_datetime(value):
+def parse_datetime(value: str) -> datetime:
     """Parse and validate a datetime (in pseudo-ISO8601)."""
     if '.' not in value:
         value += ".0"
@@ -129,16 +138,18 @@ def parse_datetime(value):
         raise ValueError("Can't cast %s to datetime." % value)
 
 
-def parse_ip_networks(networks):
+def parse_ip_networks(
+    networks: str,
+) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
     """Parse and validate a comma-separated list of IP networks.
 
-    networks (unicode): a comma-separated list of IP networks, which
+    networks: a comma-separated list of IP networks, which
         are IP addresses (both in v4 and v6 formats) with, possibly, a
         subnet mask specified as a "/<int>" suffix (in that case all
         unmasked bits of the address have to be zeros).
 
-    return ([ipaddress.IPv4Network|ipaddress.IPv6Network]): the parsed
-        and normalized networks converted to an appropriate type.
+    return: the parsed and normalized networks converted to an appropriate
+        type.
 
     """
     result = list()
@@ -151,15 +162,15 @@ def parse_ip_networks(networks):
     return result
 
 
-def require_permission(permission="authenticated", self_allowed=False):
+def require_permission(permission: str = "authenticated", self_allowed: bool = False):
     """Return a decorator requiring a specific admin permission level
 
     The default value, "authenticated", just checkes that the admin is
     logged in. All other values also implicitly require it. Therefore,
     there is no need to use tornado.web.authenticated if using this.
 
-    permission (string): one of the permission levels.
-    self_allowed (bool): if true, interpret the first argument as the
+    permission: one of the permission levels.
+    self_allowed: if true, interpret the first argument as the
        admin id that can execute the method regardless of their
        permission.
 
@@ -169,13 +180,19 @@ def require_permission(permission="authenticated", self_allowed=False):
                           BaseHandler.AUTHENTICATED]:
         raise ValueError("Invalid permission level %s." % permission)
 
-    def decorator(func):
+    _P = typing.ParamSpec("_P")
+    _R = typing.TypeVar("_R")
+    _T = typing.TypeVar("_T", bound=BaseHandler)
+
+    def decorator(
+        func: Callable[typing.Concatenate[_T, _P], _R],
+    ) -> Callable[typing.Concatenate[_T, _P], _R]:
         """Decorator for requiring a permission level
 
         """
         @wraps(func)
-        @tornado_web.authenticated
-        def newfunc(self, *args, **kwargs):
+        @tornado.web.authenticated
+        def newfunc(self: _T, *args: _P.args, **kwargs: _P.kwargs):
             """Check if the permission is present before calling the function.
 
             """
@@ -189,11 +206,11 @@ def require_permission(permission="authenticated", self_allowed=False):
             else:
                 if self_allowed and len(args) > 0 and int(args[0]) == user.id:
                     # First argument is assumed to be the admin id,
-                    # encoded as a unicode object, and should match
+                    # encoded as a str, and should match
                     # the current user id.
                     return func(self, *args, **kwargs)
                 else:
-                    raise tornado_web.HTTPError(403, "Admin is not authorized")
+                    raise tornado.web.HTTPError(403, "Admin is not authorized")
 
         return newfunc
 
@@ -210,13 +227,15 @@ class BaseHandler(CommonRequestHandler):
     PERMISSION_ALL = "all"
     PERMISSION_MESSAGING = "messaging"
     AUTHENTICATED = "authenticated"
+    current_user: Admin | None
+    service: "AdminWebServer"
 
-    def try_commit(self):
+    def try_commit(self) -> bool:
         """Try to commit the current session.
 
         If not successful display a warning in the webpage.
 
-        return (bool): True if commit was successful, False otherwise.
+        return: True if commit was successful, False otherwise.
 
         """
         try:
@@ -232,10 +251,10 @@ class BaseHandler(CommonRequestHandler):
                 "Operation successful.", "")
             return True
 
-    def get_current_user(self):
+    def get_current_user(self) -> Admin | None:
         """Gets the current admin from cookies.
 
-        return (Admin|None): if a valid cookie is retrieved, return
+        return: if a valid cookie is retrieved, return
             the Admin object, otherwise None.
 
         """
@@ -258,16 +277,20 @@ class BaseHandler(CommonRequestHandler):
 
         return admin
 
-    def safe_get_item(self, cls, ident, session=None):
+    _GetItemT = typing.TypeVar("_GetItemT", bound=cms.db.Base)
+
+    def safe_get_item(
+        self, cls: type[_GetItemT], ident: int | str, session: "Session | None" = None
+    ) -> _GetItemT:
         """Get item from database of class cls and id ident, using
         session if given, or self.sql_session if not given. If id is
         not found, raise a 404.
 
-        cls (type): class of object to retrieve.
-        ident (string): id of object.
-        session (Session|None): session to use.
+        cls: class of object to retrieve.
+        ident: id of object.
+        session: session to use.
 
-        return (object): the object with the given id.
+        return: the object with the given id.
 
         raise (HTTPError): 404 if not found.
 
@@ -276,7 +299,7 @@ class BaseHandler(CommonRequestHandler):
             session = self.sql_session
         entity = cls.get_from_id(ident, session)
         if entity is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
         return entity
 
     def prepare(self):
@@ -286,15 +309,15 @@ class BaseHandler(CommonRequestHandler):
         super().prepare()
         self.contest = None
 
-    def render(self, template_name, **params):
+    def render(self, template_name: str, **params):
         t = self.service.jinja2_environment.get_template(template_name)
         for chunk in t.generate(**params):
             self.write(chunk)
 
-    def render_params(self):
+    def render_params(self) -> dict:
         """Return the default render params used by almost all handlers.
 
-        return (dict): default render params
+        return: default render params
 
         """
         params = {}
@@ -319,15 +342,16 @@ class BaseHandler(CommonRequestHandler):
                 .filter(Question.ignored.is_(False))\
                 .count()
         # TODO: not all pages require all these data.
-        params["contest_list"] = self.sql_session.query(Contest).all()
-        params["task_list"] = self.sql_session.query(Task).all()
-        params["user_list"] = self.sql_session.query(User).all()
-        params["team_list"] = self.sql_session.query(Team).all()
+        # TODO: use a better sorting method.
+        params["contest_list"] = self.sql_session.query(Contest).order_by(Contest.name).all()
+        params["task_list"] = self.sql_session.query(Task).order_by(Task.name).all()
+        params["user_list"] = self.sql_session.query(User).order_by(User.username).all()
+        params["team_list"] = self.sql_session.query(Team).order_by(Team.name).all()
         return params
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
-                kwargs["exc_info"][0] != tornado_web.HTTPError:
+                kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
                 "Uncaught exception (%r) while processing a request: %s",
@@ -351,11 +375,11 @@ class BaseHandler(CommonRequestHandler):
 
     # When a checkbox isn't active it's not sent at all, making it
     # impossible to distinguish between missing and False.
-    def get_bool(self, dest, name):
+    def get_bool(self, dest: dict, name: str):
         """Parse a boolean.
 
-        dest (dict): a place to store the result.
-        name (string): the name of the argument and of the item.
+        dest: a place to store the result.
+        name: the name of the argument and of the item.
 
         """
         value = self.get_argument(name, False)
@@ -374,14 +398,14 @@ class BaseHandler(CommonRequestHandler):
 
     get_ip_networks = argument_reader(parse_ip_networks)
 
-    def get_submission_format(self, dest):
+    def get_submission_format(self, dest: dict):
         """Parse the submission format.
 
         Using the two arguments "submission_format_choice" and
         "submission_format" set the "submission_format" item of the
         given dictionary.
 
-        dest (dict): a place to store the result.
+        dest: a place to store the result.
 
         """
         choice = self.get_argument("submission_format_choice", "other")
@@ -397,14 +421,14 @@ class BaseHandler(CommonRequestHandler):
             raise ValueError("Submission format not recognized.")
         dest["submission_format"] = format_
 
-    def get_time_limit(self, dest, field):
+    def get_time_limit(self, dest: dict, field: str):
         """Parse the time limit.
 
         Read the argument with the given name and use its value to set
         the "time_limit" item of the given dictionary.
 
-        dest (dict): a place to store the result.
-        field (string): the name of the argument to use.
+        dest: a place to store the result.
+        field: the name of the argument to use.
 
         """
         value = self.get_argument(field, None)
@@ -421,14 +445,14 @@ class BaseHandler(CommonRequestHandler):
                 raise ValueError("Time limit out of range.")
             dest["time_limit"] = value
 
-    def get_memory_limit(self, dest, field):
+    def get_memory_limit(self, dest: dict, field: str):
         """Parse the memory limit.
 
         Read the argument with the given name and use its value to set
         the "memory_limit" item of the given dictionary.
 
-        dest (dict): a place to store the result.
-        field (string): the name of the argument to use.
+        dest: a place to store the result.
+        field: the name of the argument to use.
 
         """
         value = self.get_argument(field, None)
@@ -446,17 +470,17 @@ class BaseHandler(CommonRequestHandler):
             # AWS displays the value as MiB, but it is stored as bytes.
             dest["memory_limit"] = value * 1024 * 1024
 
-    def get_task_type(self, dest, name, params):
+    def get_task_type(self, dest: dict, name: str, params: str):
         """Parse the task type.
 
         Parse the arguments to get the task type and its parameters,
         and fill them in the "task_type" and "task_type_parameters"
         items of the given dictionary.
 
-        dest (dict): a place to store the result.
-        name (string): the name of the argument that holds the task
+        dest: a place to store the result.
+        name: the name of the argument that holds the task
             type name.
-        params (string): the prefix of the names of the arguments that
+        params: the prefix of the names of the arguments that
             hold the parameters.
 
         """
@@ -471,18 +495,16 @@ class BaseHandler(CommonRequestHandler):
         dest["task_type"] = name
         dest["task_type_parameters"] = params
 
-    def get_score_type(self, dest, name, params):
+    def get_score_type(self, dest: dict, name: str, params: str):
         """Parse the score type.
 
         Parse the arguments to get the score type and its parameters,
         and fill them in the "score_type" and "score_type_parameters"
         items of the given dictionary.
 
-        dest (dict): a place to store the result.
-        name (string): the name of the argument that holds the score
-            type name.
-        params (string): the name of the argument that hold the
-            parameters.
+        dest: a place to store the result.
+        name: the name of the argument that holds the score type name.
+        params: the name of the argument that hold the parameters.
 
         """
         name = self.get_argument(name, None)
@@ -502,7 +524,7 @@ class BaseHandler(CommonRequestHandler):
         dest["score_type"] = name
         dest["score_type_parameters"] = params
 
-    def get_password(self, dest, old_password, allow_unset):
+    def get_password(self, dest: dict, old_password: str | None, allow_unset: bool):
         """Parse a (possibly hashed) password.
 
         Parse the value of the password and the method that should be
@@ -510,11 +532,11 @@ class BaseHandler(CommonRequestHandler):
         making sure that a hashed password can be left unchanged and,
         if allowed, unset.
 
-        dest (dict): a place to store the result in.
-        old_password (string|None): the current password for the object
-            if any, with a "<method>:" prefix.
-        allow_unset (bool): whether the password is allowed to be left
-            unset, which is represented as a value of None in dest.
+        dest: a place to store the result in.
+        old_password: the current password for the object if any, with a
+            "<method>:" prefix.
+        allow_unset: whether the password is allowed to be left unset,
+            which is represented as a value of None in dest.
 
         """
         # The admin leaving the password field empty could mean one of
@@ -536,8 +558,8 @@ class BaseHandler(CommonRequestHandler):
         else:
             old_method = None
 
-        password = self.get_argument("password")
-        method = self.get_argument("method")
+        password: str = self.get_argument("password")
+        method: str = self.get_argument("method")
 
         # If a password is given, we use that.
         if len(password) > 0:
@@ -559,13 +581,14 @@ class BaseHandler(CommonRequestHandler):
         else:
             dest["password"] = hash_password("", method)
 
-    def render_params_for_submissions(self, query, page, page_size=50):
+    def render_params_for_submissions(
+        self, query: Query, page: int, page_size: int = 50
+    ):
         """Add data about the requested submissions to r_params.
 
-        query (sqlalchemy.orm.query.Query): the query giving back all
-            interesting submissions.
-        page (int): the index of the page to display.
-        page_size(int): the number of submissions per page.
+        query: the query giving back all interesting submissions.
+        page: the index of the page to display.
+        page_size: the number of submissions per page.
 
         """
         query = query\
@@ -594,13 +617,14 @@ class BaseHandler(CommonRequestHandler):
         self.r_params["submission_pages"] = \
             (count + page_size - 1) // page_size
 
-    def render_params_for_user_tests(self, query, page, page_size=50):
+    def render_params_for_user_tests(
+        self, query: Query, page: int, page_size: int = 50
+    ):
         """Add data about the requested user tests to r_params.
 
-        query (sqlalchemy.orm.query.Query): the query giving back all
-            interesting user tests.
-        page (int): the index of the page to display.
-        page_size(int): the number of submissions per page.
+        query: the query giving back all interesting user tests.
+        page: the index of the page to display.
+        page_size: the number of submissions per page.
 
         """
         query = query\
@@ -630,7 +654,7 @@ class BaseHandler(CommonRequestHandler):
             self.r_params = self.render_params()
         self.r_params["submission_count"] = count
 
-    def get_login_url(self):
+    def get_login_url(self) -> str:
         """Return the URL unauthenticated users are redirected to.
 
         """
@@ -650,7 +674,7 @@ class FileFromDigestHandler(FileHandler):
         self.fetch(digest, "text/plain", filename)
 
 
-def SimpleHandler(page, authenticated=True, permission_all=False):
+def SimpleHandler(page, authenticated=True, permission_all=False) -> type[BaseHandler]:
     if permission_all:
         class Cls(BaseHandler):
             @require_permission(BaseHandler.PERMISSION_ALL)
@@ -671,12 +695,13 @@ def SimpleHandler(page, authenticated=True, permission_all=False):
     return Cls
 
 
-def SimpleContestHandler(page):
+def SimpleContestHandler(page) -> type[BaseHandler]:
     class Cls(BaseHandler):
         @require_permission(BaseHandler.AUTHENTICATED)
-        def get(self, contest_id):
+        def get(self, contest_id: str):
             self.contest = self.safe_get_item(Contest, contest_id)
 
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
+
     return Cls

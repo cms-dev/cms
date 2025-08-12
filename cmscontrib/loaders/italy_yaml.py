@@ -33,7 +33,7 @@ from copy import deepcopy
 import yaml
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
     Manager, Testcase
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
@@ -253,8 +253,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "analysis_start", conv=parse_datetime)
         load(conf, args, "analysis_stop", conv=parse_datetime)
 
-        tasks = load(conf, None, ["tasks", "problemi"])
-        participations = load(conf, None, ["users", "utenti"])
+        tasks: list[str] | None = load(conf, None, ["tasks", "problemi"])
+        participations: list[dict] | None = load(conf, None, ["users", "utenti"])
         participations = [] if participations is None else participations
         for p in participations:
             p["password"] = build_password(p["password"])
@@ -340,7 +340,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         return Team(**args)
 
-    def get_task(self, get_statement=True):
+    def get_task(self, get_statement=True) -> Task | None:
         """See docstring in class TaskLoader."""
         name = os.path.split(self.path)[1]
 
@@ -459,12 +459,14 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         args["submission_format"] = ["%s.%%l" % name]
 
-        # Import the feedback level when explicitly set to full
+        # Import the feedback level when explicitly set
         # (default behaviour is restricted)
         if conf.get("feedback_level", None) == FEEDBACK_LEVEL_FULL:
             args["feedback_level"] = FEEDBACK_LEVEL_FULL
         elif conf.get("feedback_level", None) == FEEDBACK_LEVEL_RESTRICTED:
             args["feedback_level"] = FEEDBACK_LEVEL_RESTRICTED
+        elif conf.get("feedback_level", None) == FEEDBACK_LEVEL_OI_RESTRICTED:
+            args["feedback_level"] = FEEDBACK_LEVEL_OI_RESTRICTED
 
         if conf.get("score_mode", None) == SCORE_MODE_MAX:
             args["score_mode"] = SCORE_MODE_MAX
@@ -754,12 +756,34 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                                 Manager(other_filename, digest)]
                     break
 
-            # Otherwise, the task type is Batch
+            # Otherwise, the task type is Batch or BatchAndOutput
             else:
                 args["task_type"] = "Batch"
-                args["task_type_parameters"] = \
-                    [compilation_param, [infile_param, outfile_param],
-                     evaluation_param]
+                args["task_type_parameters"] = [
+                    compilation_param,
+                    [infile_param, outfile_param],
+                    evaluation_param,
+                ]
+
+                output_only_testcases = load(conf, None, "output_only_testcases",
+                                             conv=lambda x: "" if x is None else x)
+                output_optional_testcases = load(conf, None, "output_optional_testcases",
+                                             conv=lambda x: "" if x is None else x)
+                if len(output_only_testcases) > 0 or len(output_optional_testcases) > 0:
+                    args["task_type"] = "BatchAndOutput"
+                    output_only_codenames = set()
+                    if len(output_only_testcases) > 0:
+                        output_only_codenames = \
+                            {"%03d" % int(x.strip()) for x in output_only_testcases.split(',')}
+                        args["task_type_parameters"].append(','.join(output_only_codenames))
+                    else:
+                        args["task_type_parameters"].append("")
+                    output_codenames = set()
+                    if len(output_optional_testcases) > 0:
+                        output_codenames = \
+                            {"%03d" % int(x.strip()) for x in output_optional_testcases.split(',')}
+                    output_codenames.update(output_only_codenames)
+                    task.submission_format.extend(["output_%s.txt" % s for s in sorted(output_codenames)])
 
         args["testcases"] = []
         for i in range(n_input):
@@ -769,11 +793,18 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             output_digest = self.file_cacher.put_file_from_path(
                 os.path.join(self.path, "output", "output%d.txt" % i),
                 "Output %d for task %s" % (i, task.name))
+            test_codename = "%03d" % i
             args["testcases"] += [
-                Testcase("%03d" % i, False, input_digest, output_digest)]
+                Testcase(test_codename, False, input_digest, output_digest)]
+            add_attachment = False
             if args["task_type"] == "OutputOnly":
                 task.attachments.set(
-                    Attachment("input_%03d.txt" % i, input_digest))
+                    Attachment("input_%s.txt" % test_codename, input_digest))
+            elif args["task_type"] == "BatchAndOutput":
+                if output_codenames is not None and test_codename in output_codenames:
+                    task.attachments.set(
+                        Attachment("input_%s.txt" % test_codename, input_digest))
+
         public_testcases = load(conf, None, ["public_testcases", "risultati"],
                                 conv=lambda x: "" if x is None else x)
         if public_testcases == "all":

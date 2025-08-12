@@ -22,6 +22,7 @@
 
 """
 
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -41,78 +42,78 @@ class UserTest(Base):
     __tablename__ = 'user_tests'
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # User and Contest, thus Participation (id and object) that did the
     # submission.
-    participation_id = Column(
+    participation_id: int = Column(
         Integer,
         ForeignKey(Participation.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    participation = relationship(
+    participation: Participation = relationship(
         Participation,
         back_populates="user_tests")
 
     # Task (id and object) of the test.
-    task_id = Column(
+    task_id: int = Column(
         Integer,
         ForeignKey(Task.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task: Task = relationship(
         Task,
         back_populates="user_tests")
 
     # Time of the request.
-    timestamp = Column(
+    timestamp: datetime = Column(
         DateTime,
         nullable=False)
 
     # Language of test, or None if not applicable.
-    language = Column(
+    language: str | None = Column(
         String,
         nullable=True)
 
     # Input (provided by the user) file's digest for this test.
-    input = Column(
+    input: str = Column(
         Digest,
         nullable=False)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    files = relationship(
+    files: dict[str, "UserTestFile"] = relationship(
         "UserTestFile",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="user_test")
 
-    managers = relationship(
+    managers: dict[str, "UserTestManager"] = relationship(
         "UserTestManager",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="user_test")
 
-    results = relationship(
+    results: list["UserTestResult"] = relationship(
         "UserTestResult",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="user_test")
 
-    def get_result(self, dataset=None):
+    def get_result(self, dataset: Dataset | None = None) -> "UserTestResult | None":
         """Return the result associated to a dataset.
 
-        dataset (Dataset|None): the dataset for which the caller wants
+        dataset: the dataset for which the caller wants
             the user test result; if None, the active one is used.
 
-        return (UserTestResult|None): the user test result associated
+        return: the user test result associated
             to this user test and the given dataset, if it exists in
             the database, otherwise None.
 
@@ -127,13 +128,13 @@ class UserTest(Base):
         return UserTestResult.get_from_id(
             (self.id, dataset_id), self.sa_session)
 
-    def get_result_or_create(self, dataset=None):
+    def get_result_or_create(self, dataset: Dataset | None = None) -> "UserTestResult":
         """Return and, if necessary, create the result for a dataset.
 
-        dataset (Dataset|None): the dataset for which the caller wants
+        dataset: the dataset for which the caller wants
             the user test result; if None, the active one is used.
 
-        return (UserTestResult): the user test result associated to
+        return: the user test result associated to
             the this user test and the given dataset; if it does not
             exists, a new one is created.
 
@@ -161,26 +162,26 @@ class UserTestFile(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # UserTest (id and object) owning the file.
-    user_test_id = Column(
+    user_test_id: int = Column(
         Integer,
         ForeignKey(UserTest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = relationship(
+    user_test: UserTest = relationship(
         UserTest,
         back_populates="files")
 
     # Filename and digest of the submitted file.
-    filename = Column(
+    filename: str = Column(
         FilenameSchema,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -196,26 +197,26 @@ class UserTestManager(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # UserTest (id and object) owning the manager.
-    user_test_id = Column(
+    user_test_id: int = Column(
         Integer,
         ForeignKey(UserTest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = relationship(
+    user_test: UserTest = relationship(
         UserTest,
         back_populates="managers")
 
     # Filename and digest of the submitted manager.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -243,81 +244,84 @@ class UserTestResult(Base):
     )
 
     # Primary key is (user_test_id, dataset_id).
-    user_test_id = Column(
+    user_test_id: int = Column(
         Integer,
         ForeignKey(UserTest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True)
-    user_test = relationship(
+    user_test: UserTest = relationship(
         UserTest,
         back_populates="results")
 
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         primary_key=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset)
 
     # Now below follow the actual result fields.
 
     # Output file's digest for this test
-    output = Column(
+    output: str | None = Column(
         Digest,
         nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, throw it away).
-    compilation_outcome = Column(
+    compilation_outcome: str | None = Column(
         String,
         nullable=True)
 
     # The output from the sandbox (to allow localization the first item
     # of the list is a format string, possibly containing some "%s",
     # that will be filled in using the remaining items of the list).
-    compilation_text = Column(
+    compilation_text: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])
 
     # Number of attempts of compilation.
-    compilation_tries = Column(
+    compilation_tries: int = Column(
         Integer,
         nullable=False,
         default=0)
 
     # The compiler stdout and stderr.
-    compilation_stdout = Column(
+    compilation_stdout: str | None = Column(
         Unicode,
         nullable=True)
-    compilation_stderr = Column(
+    compilation_stderr: str | None = Column(
         Unicode,
         nullable=True)
 
     # Other information about the compilation.
-    compilation_time = Column(
+    compilation_time: float | None = Column(
         Float,
         nullable=True)
-    compilation_wall_clock_time = Column(
+    compilation_wall_clock_time: float | None = Column(
         Float,
         nullable=True)
-    compilation_memory = Column(
+    compilation_memory: int | None = Column(
         BigInteger,
         nullable=True)
 
     # Worker shard and sandbox where the compilation was performed.
-    compilation_shard = Column(
+    compilation_shard: int | None = Column(
         Integer,
         nullable=True)
-    compilation_sandbox = Column(
-        String,
+    compilation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
+        nullable=True)
+    compilation_sandbox_digests: list[str] | None = Column(
+        ARRAY(String),
         nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful).
-    evaluation_outcome = Column(
+    evaluation_outcome: str | None = Column(
         String,
         nullable=True)
 
@@ -325,47 +329,50 @@ class UserTestResult(Base):
     # (to allow localization the first item of the list is a format
     # string, possibly containing some "%s", that will be filled in
     # using the remaining items of the list).
-    evaluation_text = Column(
+    evaluation_text: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])
 
     # Number of attempts of evaluation.
-    evaluation_tries = Column(
+    evaluation_tries: int = Column(
         Integer,
         nullable=False,
         default=0)
 
     # Other information about the execution.
-    execution_time = Column(
+    execution_time: float | None = Column(
         Float,
         nullable=True)
-    execution_wall_clock_time = Column(
+    execution_wall_clock_time: float | None = Column(
         Float,
         nullable=True)
-    execution_memory = Column(
+    execution_memory: int | None = Column(
         BigInteger,
         nullable=True)
 
     # Worker shard and sandbox where the evaluation was performed.
-    evaluation_shard = Column(
+    evaluation_shard: int | None = Column(
         Integer,
         nullable=True)
-    evaluation_sandbox = Column(
-        String,
+    evaluation_sandbox_paths: list[str] | None = Column(
+        ARRAY(Unicode),
+        nullable=True)
+    evaluation_sandbox_digests: list[str] | None = Column(
+        ARRAY(String),
         nullable=True)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    executables = relationship(
+    executables: dict[str, "UserTestExecutable"] = relationship(
         "UserTestExecutable",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="user_test_result")
 
-    def get_status(self):
+    def get_status(self) -> int:
         """Return the status of this object.
 
         """
@@ -378,10 +385,10 @@ class UserTestResult(Base):
         else:
             return UserTestResult.EVALUATED
 
-    def compiled(self):
+    def compiled(self) -> bool:
         """Return whether the user test result has been compiled.
 
-        return (bool): True if compiled, False otherwise.
+        return: True if compiled, False otherwise.
 
         """
         return self.compilation_outcome is not None
@@ -393,10 +400,10 @@ class UserTestResult(Base):
         """
         return UserTestResult.compilation_outcome.isnot(None)
 
-    def compilation_failed(self):
+    def compilation_failed(self) -> bool:
         """Return whether the user test result did not compile.
 
-        return (bool): True if the compilation failed (in the sense
+        return: True if the compilation failed (in the sense
             that there is a problem in the user's source), False if
             not yet compiled or compilation was successful.
 
@@ -411,10 +418,10 @@ class UserTestResult(Base):
         """
         return UserTestResult.compilation_outcome == "fail"
 
-    def compilation_succeeded(self):
+    def compilation_succeeded(self) -> bool:
         """Return whether the user test compiled.
 
-        return (bool): True if the compilation succeeded (in the sense
+        return: True if the compilation succeeded (in the sense
             that an executable was created), False if not yet compiled
             or compilation was unsuccessful.
 
@@ -429,10 +436,10 @@ class UserTestResult(Base):
         """
         return UserTestResult.compilation_outcome == "ok"
 
-    def evaluated(self):
+    def evaluated(self) -> bool:
         """Return whether the user test result has been evaluated.
 
-        return (bool): True if evaluated, False otherwise.
+        return: True if evaluated, False otherwise.
 
         """
         return self.evaluation_outcome is not None
@@ -473,10 +480,10 @@ class UserTestResult(Base):
         self.evaluation_sandbox = None
         self.output = None
 
-    def set_compilation_outcome(self, success):
+    def set_compilation_outcome(self, success: bool):
         """Set the compilation outcome based on the success.
 
-        success (bool): if the compilation was successful.
+        success: if the compilation was successful.
 
         """
         self.compilation_outcome = "ok" if success else "fail"
@@ -503,41 +510,41 @@ class UserTestExecutable(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # UserTest (id and object) owning the executable.
-    user_test_id = Column(
+    user_test_id: int = Column(
         Integer,
         ForeignKey(UserTest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    user_test = relationship(
+    user_test: UserTest = relationship(
         UserTest,
         viewonly=True)
 
     # Dataset (id and object) owning the executable.
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset,
         viewonly=True)
 
     # UserTestResult owning the executable.
-    user_test_result = relationship(
+    user_test_result: UserTestResult = relationship(
         UserTestResult,
         back_populates="executables")
 
     # Filename and digest of the generated executable.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)

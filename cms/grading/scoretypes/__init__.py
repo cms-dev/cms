@@ -40,24 +40,26 @@ SCORE_TYPES = dict((cls.__name__, cls)
                    for cls in plugin_list("cms.grading.scoretypes"))
 
 
-def get_score_type_class(name):
+def get_score_type_class(name: str):
     """Load the ScoreType class given as parameter."""
     return SCORE_TYPES[name]
 
 
-def get_score_type(name, parameters, public_testcases):
+def get_score_type(
+    name: str, parameters: object, public_testcases: dict[str, bool]
+) -> ScoreType:
     """Construct the ScoreType specified by parameters.
 
     Load the ScoreType class named "name" and instantiate it with the
     data structure obtained by JSON-decoding "parameters" and with the
     dict "public_testcases".
 
-    name (str): the name of the ScoreType class.
-    parameters (object): the parameters.
-    public_testcases ({str: bool}): for each testcase (identified by
+    name: the name of the ScoreType class.
+    parameters: the parameters.
+    public_testcases: for each testcase (identified by
         its codename) a flag telling whether it's public or not.
 
-    return (ScoreType): an instance of the correct ScoreType class.
+    return: an instance of the correct ScoreType class.
 
     """
     class_ = get_score_type_class(name)

@@ -25,10 +25,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime, timedelta
 import logging
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_INFINITE
 from cms.db import Token, Submission
+from cms.db.session import Session
+from cms.db.task import Task
+from cms.db.user import Participation
 
 
 __all__ = [
@@ -45,8 +49,18 @@ def N_(msgid):
     return msgid
 
 
-def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
-                      max_number, min_interval, start, history, timestamp):
+def _tokens_available(
+    mode: str,
+    gen_initial: int,
+    gen_number: int,
+    gen_interval: timedelta,
+    gen_max: int | None,
+    max_number: int | None,
+    min_interval: timedelta,
+    start: datetime,
+    history: list[datetime],
+    timestamp: datetime,
+) -> tuple[int, datetime | None, datetime | None]:
     """Return the same as tokens_available, on one set of parameters.
 
     Compute the same three values as tokens_available but taking into
@@ -54,31 +68,30 @@ def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
     just task-tokens). What tokens_available will do is call this
     function twice, once for each type, and then combine the results.
 
-    mode (str): one of the TOKEN_MODE_* constants.
-    gen_initial (int): in finite mode, how many tokens the contestant
+    mode: one of the TOKEN_MODE_* constants.
+    gen_initial: in finite mode, how many tokens the contestant
         starts with.
-    gen_number (int): in finite mode, how many tokens the contestant
+    gen_number: in finite mode, how many tokens the contestant
         receives (at most) at the end of each generation period.
-    gen_interval (timedelta): in finite mode, how long each generation
+    gen_interval: in finite mode, how long each generation
         period lasts.
-    gen_max (int|None): in finite mode, a cap on the number of tokens
+    gen_max: in finite mode, a cap on the number of tokens
         that a contestant can have at any time due to generation (i.e.,
         generated tokens that would cause to exceed this number will be
         discarded).
-    max_number (int|None): in finite mode, how many tokens can be used
+    max_number: in finite mode, how many tokens can be used
         in total.
-    min_interval (timedelta): in finite mode, how much time needs to
+    min_interval: in finite mode, how much time needs to
         pass between two consecutive token usages.
-    start (datetime): the time at which the contestant starts
+    start: the time at which the contestant starts
         accumulating tokens.
-    history ([datetime]): list of timestamps of played tokens, sorted
+    history: list of timestamps of played tokens, sorted
         in chronological order, up to the given timestamp.
-    timestamp (datetime): the time relative to which the calculation
+    timestamp: the time relative to which the calculation
         should be made (has to be greater than or equal to all elements
         of history).
 
-    return ((int, datetime|None, datetime|None)): same as
-        tokens_available.
+    return: same as tokens_available.
 
     """
     # If tokens are disabled there are no tokens available.
@@ -96,13 +109,13 @@ def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
     # the DB). gen_initial can be ignored after this.
     avail = gen_initial
 
-    def generate_tokens(begin_timestamp, end_timestamp):
+    def generate_tokens(begin_timestamp: datetime, end_timestamp: datetime) -> int:
         """Compute how many tokens are generated in the given interval.
 
-        begin_timestamp (datetime): the beginning of the interval.
-        end_timestamp (datetime): the end of the interval.
+        begin_timestamp: the beginning of the interval.
+        end_timestamp: the end of the interval.
 
-        return (int): the number of tokens generated.
+        return: the number of tokens generated.
 
         """
         # How many generation periods we passed from start to the
@@ -163,7 +176,9 @@ def _tokens_available(mode, gen_initial, gen_number, gen_interval, gen_max,
     return avail, next_gen_time, expiration
 
 
-def tokens_available(participation, task, timestamp):
+def tokens_available(
+    participation: Participation, task: Task, timestamp: datetime
+) -> tuple[int, datetime | None, datetime | None]:
     """Return three pieces of data:
 
     [0] the number of available tokens the user can play on the task
@@ -206,26 +221,27 @@ def tokens_available(participation, task, timestamp):
     future. Also, if r[0] == 0 and r[1] is None, then r[2] should be
     ignored.
 
-    participation (Participation): the participation.
-    task (Task): the task.
-    timestamp (datetime): the time relative to which making the
+    participation: the participation.
+    task: the task.
+    timestamp: the time relative to which making the
         calculation.
 
-    return ((int, datetime|None, datetime|None)): see description
-        above.
+    return: see description above.
 
     """
     contest = participation.contest
     assert task.contest is contest
 
     # Take the list of the tokens already played (sorted by time).
-    token_timestamps = participation.sa_session \
-        .query(Token.timestamp, Submission.task_id) \
-        .select_from(Token) \
-        .filter(Token.timestamp <= timestamp) \
-        .join(Submission) \
-        .filter(Submission.participation == participation) \
-        .order_by(Token.timestamp).all()
+    token_timestamps: list[tuple[datetime, int]] = (
+        participation.sa_session.query(Token.timestamp, Submission.task_id)
+        .select_from(Token)
+        .filter(Token.timestamp <= timestamp)
+        .join(Submission)
+        .filter(Submission.participation == participation)
+        .order_by(Token.timestamp)
+        .all()
+    )
 
     contest_history = list(
         ts for ts, _ in token_timestamps)
@@ -303,7 +319,7 @@ def tokens_available(participation, task, timestamp):
 class UnacceptableToken(Exception):
     """Raised when a token request can't be accepted."""
 
-    def __init__(self, subject, text):
+    def __init__(self, subject: str, text: str):
         super().__init__(subject, text)
         self.subject = subject
         self.text = text
@@ -312,13 +328,15 @@ class UnacceptableToken(Exception):
 class TokenAlreadyPlayed(Exception):
     """Raised when the same token request is received more than once."""
 
-    def __init__(self, subject, text):
+    def __init__(self, subject: str, text: str):
         super().__init__(subject, text)
         self.subject = subject
         self.text = text
 
 
-def accept_token(sql_session, submission, timestamp):
+def accept_token(
+    sql_session: Session, submission: Submission, timestamp: datetime
+) -> Token:
     """Add a token to the database.
 
     This function is primarily called by CWS when a contestant sends a
@@ -327,13 +345,13 @@ def accept_token(sql_session, submission, timestamp):
     it adds a token to the database, for the given submission at the
     given timestamp.
 
-    sql_session (Session): the SQLAlchemy database session to use.
-    submission (Submission): the submission on which the token should
+    sql_session: the SQLAlchemy database session to use.
+    submission: the submission on which the token should
         be applied (the participation, task and contest will be
         extracted from here).
-    timestamp (datetime): the moment at which the request occurred.
+    timestamp: the moment at which the request occurred.
 
-    return (Token): the Token that was added to the database.
+    return: the Token that was added to the database.
 
     raise (UnacceptableToken): if some of the requirements that have to
         be met in order for the request to be accepted don't hold.

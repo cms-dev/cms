@@ -23,7 +23,8 @@
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Boolean, Integer, Unicode
 
-from . import Codename, Base
+from .types import Codename
+from .base import Base
 
 
 class Admin(Base):
@@ -38,38 +39,38 @@ class Admin(Base):
     __tablename__ = 'admins'
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Real name (human readable) of the user.
-    name = Column(
+    name: str = Column(
         Unicode,
         nullable=False)
 
     # Username used to log in in AWS.
-    username = Column(
+    username: str = Column(
         Codename,
         nullable=False,
         unique=True)
 
     # String used to authenticate the user, in the format
     # <authentication type>:<authentication_string>
-    authentication = Column(
+    authentication: str = Column(
         Unicode,
         nullable=False)
 
     # Whether the account is enabled. Disabled accounts have their
     # info kept in the database, but for all other purposes it is like
     # they did not exist.
-    enabled = Column(
+    enabled: bool = Column(
         Boolean,
         nullable=False,
         default=True)
 
     # All-access bit. If this is set, the admin can do any operation
     # in AWS, regardless of the value of the other access bits.
-    permission_all = Column(
+    permission_all: bool = Column(
         Boolean,
         nullable=False,
         default=False)
@@ -77,7 +78,7 @@ class Admin(Base):
     # Messaging-access bit. If this is set, the admin can communicate
     # with the contestants via announcement, private messages and
     # questions.
-    permission_messaging = Column(
+    permission_messaging: bool = Column(
         Boolean,
         nullable=False,
         default=False)

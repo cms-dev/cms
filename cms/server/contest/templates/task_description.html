@@ -2,6 +2,13 @@
 
 {% set page = "task_description" %}
 
+{# This macro includes the filename as the last component as a hack for chrome
+   to display the correct page title (which it pulls from just the last
+   component of the URL). It's completely ignored by the server. #}
+{% macro statement_url(lang_code) -%}
+{{ contest_url("tasks", task.name, "statements", lang_code, task.name + "." + lang_code + ".pdf") }}
+{%- endmacro %}
+
 {% block core %}
 
 
@@ -25,7 +32,7 @@
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", lang_code) }}" class="btn btn-large btn-success">{% trans %}Download task statement{% endtrans %}</a>
+        <a href="{{ statement_url(lang_code) }}" target="_blank" class="btn btn-large btn-success">{% trans %}Download task statement{% endtrans %}</a>
     {% endfor %}
     </div>
 </div>
@@ -39,7 +46,7 @@
         </p>
     {% for statement in task.statements.values()|sort(attribute="language") %}
         {% if statement.language in task.primary_statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large btn-success">
+        <a href="{{ statement_url(statement.language) }}" target="_blank" class="btn btn-large btn-success">
             {% set language_name = statement.language|format_locale %}
             {% if statement.language != language_name %}
                 {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
@@ -51,7 +58,7 @@
     {% endfor %}
     {% for statement in task.statements.values()|sort(attribute="language") %}
         {% if statement.language in participation.user.preferred_languages and statement.language not in task.primary_statements %}
-        <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}" class="btn btn-large">
+        <a href="{{ statement_url(statement.language) }}" target="_blank" class="btn btn-large">
             {% set language_name = statement.language|format_locale %}
             {% if statement.language != language_name %}
                 {% trans lang=language_name %}Statement in <b>{{ lang }}</b>{% endtrans %}
@@ -67,7 +74,7 @@
             <ul>
     {% for statement in task.statements.values()|sort(attribute="language") %}
                 <li>
-                    <a href="{{ contest_url("tasks", task.name, "statements", statement.language) }}">
+                    <a href="{{ statement_url(statement.language) }}" target="_blank">
         {% set language_name = statement.language|format_locale %}
         {% if statement.language != language_name %}
             {% trans lang=language_name %}<b>{{ lang }}</b>{% endtrans %}
@@ -111,7 +118,8 @@
 {% endif %}
 {% set compilation_commands = task_type.get_compilation_commands(task.submission_format) %}
 {% if compilation_commands is not none %}
-{% set compilation_commands = compilation_commands|dictselect("in", contest.languages, by="key") %}
+{% set allowed_languages = task.get_allowed_languages() %}
+{% set compilation_commands = compilation_commands|dictselect("in", allowed_languages, by="key") %}
 <tr>
     <th rowspan="{{ compilation_commands|length }}">{% trans %}Compilation commands{% endtrans %}</th>
     {% for l, c in compilation_commands|dictsort(by="key") %}
@@ -170,10 +178,8 @@
     {% for filename, attachment in task.attachments|dictsort(by="key") %}
         {% set mime_type = get_mimetype_for_file_name(filename) %}
         {% if mime_type is not none %}
-            {% set type_name = get_name_for_mimetype(mime_type) %}
             {% set type_icon = get_icon_for_mimetype(mime_type) %}
         {% else %}
-            {% set type_name = none %}
             {% set type_icon = none %}
         {% endif %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
@@ -188,8 +194,8 @@
                         <span class="name">{{ filename }}</span>
                         <span class="size">{{ file_size|format_size }}</span>
                     </span>
-            {% if type_name is not none %}
-                    <span class="type">{{ translation.translate_mimetype(type_name) }}</span>
+            {% if mime_type is not none %}
+                    <span class="type">{{ translation.translate_mimetype(mime_type) }}</span>
             {% endif %}
                 </a>
             </li>

@@ -43,12 +43,12 @@ class LogService(Service):
 
     LAST_MESSAGES_COUNT = 100
 
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         Service.__init__(self, shard)
 
         # Determine location of log file, and make directories.
-        log_dir = os.path.join(config.log_dir, "cms")
-        if not mkdir(config.log_dir) or \
+        log_dir = os.path.join(config.global_.log_dir, "cms")
+        if not mkdir(config.global_.log_dir) or \
                 not mkdir(log_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()
@@ -78,8 +78,8 @@ class LogService(Service):
 
         Receive the attributes of a LogRecord, rebuild and handle it.
         The given keyword arguments will contain:
-        msg (string): the message to log.
-        levelname (string): the name of the level, one of "DEBUG",
+        msg (str): the message to log.
+        levelname (str): the name of the level, one of "DEBUG",
             "INFO", "WARNING", "ERROR" and "CRITICAL".
         levelno (int): a numeric value denoting the level, one of the
             constants defined by the logging module. In fact, `levelno
@@ -88,11 +88,11 @@ class LogService(Service):
             timestamp, seconds from epoch).
 
         And they may contain:
-        service_name (string) and service_shard (int): the coords of
+        service_name (str) and service_shard (int): the coords of
             the service where this message was generated.
-        operation (string): a high-level description of the long-term
+        operation (str): a high-level description of the long-term
             operation that is going on in the service.
-        exc_text (string): the text of the logged exception.
+        exc_text (str): the text of the logged exception.
 
         """
         record = logging.makeLogRecord(kwargs)

@@ -19,6 +19,7 @@
 
 import json
 import logging
+from typing import Callable
 
 from werkzeug.exceptions import HTTPException, BadRequest, Forbidden, \
     NotFound, NotAcceptable, UnsupportedMediaType, ServiceUnavailable
@@ -27,6 +28,7 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.wsgi import responder
 
 from cms import ServiceCoord
+from cms.io.service import Service
 
 
 logger = logging.getLogger(__name__)
@@ -64,12 +66,14 @@ class RPCMiddleware:
     string describing the error that occured (if any).
 
     """
-    def __init__(self, service, auth=None):
+    def __init__(
+        self, service: Service, auth: Callable[[str, int, str], bool] | None = None
+    ):
         """Create an HTTP-to-RPC proxy for the given service.
 
-        service (Service): the service this application is running for.
+        service: the service this application is running for.
             Will usually be the AdminWebServer.
-        auth (function|None): a function taking the environ of a request
+        auth: a function taking the environ of a request
             and returning whether the request is allowed. If not present,
             all requests are allowed.
 

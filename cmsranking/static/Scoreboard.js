@@ -94,7 +94,7 @@ var Scoreboard = new function () {
         });
 
         // Create callbacks for UserPanel
-        self.tbody_el.on("click", "td.f_name, td.l_name", function () {
+        self.tbody_el.on("click", "td.f_name, td.l_name, td.user_id", function () {
             UserDetail.show($(this).parent().data("user"));
         });
 
@@ -155,6 +155,7 @@ var Scoreboard = new function () {
 <col class=\"rank\"/> \
 <col class=\"f_name\"/> <col/><col/><col/><col/><col/><col/><col/><col/><col/> \
 <col class=\"l_name\"/> <col/><col/><col/><col/><col/><col/><col/><col/><col/> \
+<col class=\"user_id\"/> \
 <col class=\"team\"/>";
 
         var contests = DataStore.contest_list;
@@ -175,8 +176,12 @@ var Scoreboard = new function () {
 <col class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"/> <col/><col/><col/>";
         }
 
-        result += " \
+        self.show_global_score = contests.length > 1;
+
+        if(self.show_global_score) {
+            result += " \
 <col class=\"score global\" data-sort_key=\"global\"/> <col/><col/><col/><col/>";
+        }
 
         return result;
     };
@@ -190,6 +195,7 @@ var Scoreboard = new function () {
     <th class=\"rank\">Rank</th> \
     <th colspan=\"10\" class=\"f_name\">First Name</th> \
     <th colspan=\"10\" class=\"l_name\">Last Name</th> \
+    <th class=\"user_id\">ID</th> \
     <th class=\"team\">Team</th>";
 
         var contests = DataStore.contest_list;
@@ -210,9 +216,11 @@ var Scoreboard = new function () {
     <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"><abbr title=\"" + escapeHTML(contest["name"]) + "\">" + escapeHTML(contest["name"]) + "</abbr></th>";
         }
 
-        result += " \
+        if(self.show_global_score) {
+            result += " \
     <th colspan=\"5\" class=\"score global\" data-sort_key=\"global\">Global</th> \
 </tr>";
+        }
 
         return result;
     };
@@ -236,7 +244,8 @@ var Scoreboard = new function () {
     <td class=\"sel\"></td> \
     <td class=\"rank\">" + user["rank"] + "</td> \
     <td colspan=\"10\" class=\"f_name\">" + escapeHTML(user["f_name"]) + "</td> \
-    <td colspan=\"10\" class=\"l_name\">" + escapeHTML(user["l_name"]) + "</td>";
+    <td colspan=\"10\" class=\"l_name\">" + escapeHTML(user["l_name"]) + "</td> \
+    <td class=\"user_id\">" + user["key"] + "</td>";
 
         if (user['team']) {
             result += " \
@@ -266,10 +275,12 @@ var Scoreboard = new function () {
     <td colspan=\"4\" class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id], contest["score_precision"]) + "</td>";
         }
 
-        var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
-        result += " \
+        if(self.show_global_score) {
+            var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
+            result += " \
     <td colspan=\"5\" class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"], DataStore.global_score_precision) + "</td> \
 </tr>";
+        }
 
         return result;
     };
@@ -492,7 +503,7 @@ var Scoreboard = new function () {
     self.scroll_into_view = function (u_id) {
         var $row = $("tr.user[data-user=" + u_id + "]", self.tbody_el);
         var $frame = $("#InnerFrame");
-        var scroll = $row.position().top + $frame.scrollTop() + $row.height() / 2 - $frame.height() / 2;
+        var scroll = $row.position().top + $row.height() / 2 - $frame.height() / 2;
         $frame.scrollTop(scroll);
     };
 };

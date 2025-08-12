@@ -27,14 +27,14 @@ from cms import utf8_decoder
 from cms.db import SessionGen, Task
 
 
-def ask(task_name):
+def ask(task_name: str):
     ans = input("This will delete task `%s' and all related data, including "
                 "submissions. Are you sure? [y/N] "
                 % task_name).strip().lower()
     return ans in ["y", "yes"]
 
 
-def remove_task(task_name):
+def remove_task(task_name: str):
     with SessionGen() as session:
         task = session.query(Task)\
             .filter(Task.name == task_name).first()
@@ -47,14 +47,17 @@ def remove_task(task_name):
         num = task.num
         contest_id = task.contest_id
         session.delete(task)
+        session.flush()
         # Keeping the tasks' nums to the range 0... n - 1.
         if contest_id is not None:
             following_tasks = session.query(Task)\
                 .filter(Task.contest_id == contest_id)\
                 .filter(Task.num > num)\
+                .order_by(Task.num)\
                 .all()
             for task in following_tasks:
                 task.num -= 1
+                session.flush()
         session.commit()
         print("Task `%s' removed." % task_name)
 

@@ -1,0 +1,958 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: VERSION\n"
+"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"PO-Revision-Date: 2025-06-06 09:35+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "N/A"
+msgstr "nem elérhető"
+
+msgid "Correct"
+msgstr "Helyes"
+
+msgid "Not correct"
+msgstr "Helytelen"
+
+msgid "Partially correct"
+msgstr "Részlegesen helyes"
+
+msgid "Outcome"
+msgstr "Eredmény"
+
+msgid "#"
+msgstr "#"
+
+msgid "Details"
+msgstr "Részletek"
+
+msgid "Execution time"
+msgstr "Futásidő"
+
+msgid "Memory used"
+msgstr "Memórihasználat"
+
+msgid "Score details temporarily unavailable."
+msgstr "A pontozás részletei ideiglenesen nem elérhetőek."
+
+#, python-format
+msgid "Subtask %(index)s"
+msgstr "%(index)s. részfeladat"
+
+msgid "Compilation succeeded"
+msgstr "Sikeres fordítás"
+
+msgid "Your submission successfully compiled to an executable."
+msgstr "A beküldött megoldásod sikeresen lefordult."
+
+msgid "Compilation failed"
+msgstr "Sikertelen fordítás"
+
+msgid "Your submission did not compile correctly."
+msgstr "A beküldött megoldásod nem fordult le."
+
+msgid "Compilation timed out"
+msgstr "A fordítás túllépte az időlimitet"
+
+msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
+msgstr "A fordítás túllépte a megadott időlimitet. Ezt okozhatja például a C++ sablonok túlzott használata is."
+
+#, python-format
+msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
+msgstr "A fordítás %s jelzés (signal) hatására fejeződött be"
+
+msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
+msgstr "A beküldött megoldásod fordítása a megadott jelzés (signal) hatására fejeződött be. Többek között ezt a fordító túlzott memóriahasználata is okozhatja, amelynek oka lehet a például a C++ sablonok túlzott használata."
+
+msgid "Output is correct"
+msgstr "Helyes kimenet"
+
+msgid "Your submission ran and gave the correct answer"
+msgstr "A beküldött megoldásod lefutott, és helyes eredményt adott"
+
+msgid "Output is partially correct"
+msgstr "Részlegesen helyes kimenet"
+
+msgid "Your submission ran and gave the partially correct answer"
+msgstr "A beküldött megoldásod lefutott, és részlegesen helyen eredményt adott"
+
+msgid "Output isn't correct"
+msgstr "Helytelen kimenet"
+
+msgid "Your submission ran, but gave the wrong answer"
+msgstr "A beküldött megoldásod lefutott, de helytelen eredményt adott"
+
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr "A kiértékelés közben nem jött létre a(z) %s fájl"
+
+msgid "Your submission ran, but did not write on the correct output file"
+msgstr "A beküldött megoldásod lefutott, de nem hozta létre a megfelelő kimeneti fájlt"
+
+msgid "Execution timed out"
+msgstr "Időlimit túllépés"
+
+msgid "Your submission used too much CPU time."
+msgstr "A beküldött megoldásod túl sok processzoridőt használt."
+
+msgid "Execution timed out (wall clock limit exceeded)"
+msgstr "Időlimit túllépés (valós idő)"
+
+msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
+msgstr "A megoldásod túl sok ideig futott valós időben mérve. Ezt például érvénytelen/hibás programkód, puffer túlcsordulás is okozhatja. Fontos, hogy ebben az esetben a beküldés részletes megtekintésekor mutatott processzoridő jóval kisebb lehet a feladatban megadott időlimitnél."
+
+msgid "Execution killed (could be triggered by violating memory limits)"
+msgstr "Kilőve futás közben (memóriatúllépés is okozhatja)"
+
+msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+msgstr "A kiértékelés hibakóddal fejeződött be. Többek között ezt a túlzott memóriahasználat okozhatja. Fontos, ha valóban ez okozta a hibát, akkor a beküldés részletes megtekintésekor mutatott memóriahasználat a hibát kiváltó memóriafoglalás előtti állapotot mutatja."
+
+msgid "Execution failed because the return code was nonzero"
+msgstr "A végrehajtás sikertelen, mert a kilépési kód nem nulla"
+
+msgid "Your submission failed because it exited with a return code different from 0."
+msgstr "A beküldött megoldásod a futás végén nem nulla kilépési kóddal fejeződött be."
+
+msgid "Execution completed successfully"
+msgstr "Sikeres végrehajtás"
+
+msgid "No compilation needed"
+msgstr "Nincs szükség fordításra"
+
+msgid "File not submitted"
+msgstr "A fájl nem került beküldésre"
+
+msgid "Question too long!"
+msgstr "Túl hosszú a kérdés!"
+
+#, python-format
+msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
+msgstr "A tárgy maximum %(max_subject_length)d karakter, míg a szöveg maximum %(max_text_length)d karakter hosszú lehet."
+
+msgid "contest-token"
+msgstr "verseny-zseton"
+
+msgid "contest-tokens"
+msgstr "verseny-zseton"
+
+msgid "task-token"
+msgstr "feladat-zseton"
+
+msgid "task-tokens"
+msgstr "feladat-zseton"
+
+msgid "token"
+msgstr "zseton"
+
+msgid "tokens"
+msgstr "zsetonok"
+
+#, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "Nem áll rendelkezésedre %(type_pl)s ehhez a feladathoz."
+
+#, python-format
+msgid "You have an infinite number of %(type_pl)s for this task."
+msgstr "Végtelen %(type_pl)s áll rendelkezésedre ehhez a feladathoz."
+
+#, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "Nem áll rendelkezésedre %(type_pl)s ehhez a feladathoz."
+
+#, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
+msgstr[0] "Kezdetben egy %(type_s)s áll rendelkezésedre."
+msgstr[1] "Kezdetben %(gen_initial)d %(type_pl)s áll rendelkezésedre."
+
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_interval)g minutes "
+msgstr[0] "Minden percben "
+msgstr[1] "Minden %(gen_interval)g. perben "
+
+#, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "kapsz egy %(type_s)st, "
+msgstr[1] "kapsz %(gen_number)d %(type_s)st, "
+
+#, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] "amíg nem lesz összesen egy %(type_s)sod."
+msgstr[1] "amíg nem lesz összesen %(gen_max)d %(type_s)sod."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Nem kapsz további %(type_pl)sokat."
+
+#, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "kapsz egy %(type_s)st."
+msgstr[1] "kapsz %(gen_number)d %(type_s)st."
+
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] "Minden másodpercben felhasználhatsz egy %(type_s)st "
+msgstr[1] "Minden %(min_interval)g. másodpercben felhasználhatsz egy %(type_s)st "
+
+#, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "egészen addig, amíg összesen egy %(type_s)st fel nem használtál."
+msgstr[1] "egészen addig, amíg összesen %(max_number)d %(type_pl)st fel nem használtál."
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "Minden másodpercben felhasználhatsz egy %(type_s)st."
+msgstr[1] "Minden %(min_interval)g. másodpercben felhasználhatsz egy %(type_s)st."
+
+#, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "Maximum egy %(type_s)st használhatsz fel."
+msgstr[1] "Maximum %(max_number)d %(type_s)st használhatsz fel."
+
+msgid "You have no limitations on how you use them."
+msgstr "Nincsenek korlátozások a zsetonok felhasználására vonatkozóan."
+
+msgid "Invalid format!"
+msgstr "Érvénytelen formátum!"
+
+msgid "Please select the correct files."
+msgstr "Kérlek válaszd ki a megfelelő fájlokat."
+
+msgid "File too big!"
+msgstr "Túl nagy fájl!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Minden fájl maximum %d bájt méretű lehet."
+
+msgid "Please try again."
+msgstr "Kérlek próbáld újra."
+
+msgid "Token request discarded"
+msgstr "Zseton kérelem elutasítva"
+
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "A kérelmed el lett utasítva, mert nincsenek zsetonjaid."
+
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "A kérelmed el lett utasítva, mert már felhasználtál egy zseton erre a beküldésre."
+
+msgid "Question received"
+msgstr "Kérdés elküldve"
+
+msgid "Your question has been received, you will be notified when it is answered."
+msgstr "A kérdésed el lett küldve, értesítve leszel amint megválaszolásra kerül."
+
+msgid "Submission received"
+msgstr "Beküldés elküldve"
+
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "A beküldésed megérkezett, jelenleg kiértékelés alatt."
+
+msgid "Compiling..."
+msgstr "Fordítás..."
+
+msgid "Evaluating..."
+msgstr "Kiértékelés..."
+
+msgid "Scoring..."
+msgstr "Pontozás..."
+
+msgid "Evaluated"
+msgstr "Kiértékelve"
+
+msgid "status"
+msgstr "állapot"
+
+msgid "Test received"
+msgstr "Teszt elküldve"
+
+msgid "Your test has been received and is currently being executed."
+msgstr "A teszt megérkezett, jelenleg végrehajtás alatt áll."
+
+msgid "details"
+msgstr "részletek"
+
+msgid "Executing..."
+msgstr "Végrehajtás..."
+
+msgid "Executed"
+msgstr "Végrehajtva"
+
+msgid "Too many submissions!"
+msgstr "Túl sok beküldés!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions among all tasks."
+msgstr "Elérted az összes feladatra engedélyezett beküldések maximális számát (%d)."
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d submissions on this task."
+msgstr "Elérted az erre a feladatra engedélyezett beküldések maximális számát (%d)."
+
+msgid "Submissions too frequent!"
+msgstr "Túl gyakori beküldések!"
+
+#, python-format
+msgid "Among all tasks, you can submit again after %d seconds from last submission."
+msgstr "Az összes feladatra vonatkoztatva az utolsó beküldésed után %d másodperccel tudsz újra beküldeni."
+
+#, python-format
+msgid "For this task, you can submit again after %d seconds from last submission."
+msgstr "Ennél a feladatnál az utolsó beküldésed után %d másodperccel tudsz újra beküldeni."
+
+msgid "The submitted archive could not be opened."
+msgstr "A beküldött tömörített állományt nem sikerült megnyitni."
+
+msgid "Submission too big!"
+msgstr "Túl nagy beküldés!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Minden forrásfájl maximum %d bájt méretű lehet."
+
+msgid "Submission storage failed!"
+msgstr "A beküldés mentése nem sikerült!"
+
+msgid "Tests too frequent!"
+msgstr "Túl gyakori tesztelés!"
+
+#, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr "Az összes feladatra vonatkoztatva az utolsó tesztelésed után %d másodperccel tudsz újra tesztelni."
+
+#, python-format
+msgid "For this task, you can test again after %d seconds from last test."
+msgstr "Ennél a feladatnál az utolsó tesztelésed után %d másodperccel tudsz újra tesztelni."
+
+msgid "Invalid test format!"
+msgstr "Érvénytelen teszt formátum!"
+
+msgid "Test too big!"
+msgstr "Túl nagy teszt!"
+
+msgid "Input too big!"
+msgstr "Túl nagy bemenet!"
+
+#, python-format
+msgid "The input file must be at most %d bytes long."
+msgstr "A bemeneti fájl maximum %d bájt méretű lehet."
+
+msgid "Communication"
+msgstr "Kommunikáció"
+
+msgid "Announcements"
+msgstr "Közlemények"
+
+msgid "(no subject)"
+msgstr "(nincs tárgy)"
+
+msgid "Questions"
+msgstr "Kérdések"
+
+msgid "Subject"
+msgstr "Tárgy"
+
+msgid "Text"
+msgstr "Szöveg"
+
+msgid "Ask question"
+msgstr "Kérdezz"
+
+msgid "Reset"
+msgstr "Mégse"
+
+msgid "no answer yet"
+msgstr "még nem érkezett válasz"
+
+msgid "Messages"
+msgstr "Üzenetek"
+
+#, python-format
+msgid "Automatic (%(lang)s)"
+msgstr "Automatikus (%(lang)s)"
+
+msgid "Logout"
+msgstr "Kijelentkezés"
+
+#, python-format
+msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Bejelentkezve mint <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+
+msgid "Failed to log in."
+msgstr "Sikertelen bejelentkezés."
+
+msgid "Welcome"
+msgstr "Üdv"
+
+msgid "Please log in"
+msgstr "Kérlek lépj be"
+
+msgid "Username"
+msgstr "Felhasználónév"
+
+msgid "Password"
+msgstr "Jelszó"
+
+msgid "Login"
+msgstr "Bejelentkezés"
+
+msgid "Don't have an account?"
+msgstr "Nincs fiókod?"
+
+msgid "Register"
+msgstr "Regisztrálás"
+
+msgid "New message"
+msgstr "Új üzenet"
+
+msgid "New announcement"
+msgstr "Új közlemény"
+
+msgid "New answer"
+msgstr "Új válasz"
+
+#, python-format
+msgid "%d unread"
+msgstr "%d olvasatlan"
+
+msgid "Until contest starts:"
+msgstr "A verseny kezdetéig:"
+
+msgid "Until analysis starts:"
+msgstr "Az analízis kezdetéig:"
+
+msgid "Until contest ends:"
+msgstr "A verseny végéig:"
+
+msgid "Until analysis ends:"
+msgstr "Az analízis végéig:"
+
+msgid "Time left:"
+msgstr "Fennmaradó idő:"
+
+msgid "Server time:"
+msgstr "Szerveridő:"
+
+msgid "Overview"
+msgstr "Áttekintés"
+
+msgid "Statement"
+msgstr "Feladatleírás"
+
+msgid "Submissions"
+msgstr "Beküldések"
+
+msgid "Documentation"
+msgstr "Dokumentáció"
+
+msgid "Testing"
+msgstr "Tesztelés"
+
+msgid "Printing"
+msgstr "Nyomtatás"
+
+msgid "Contest Management System"
+msgstr "A Contest Management System"
+
+msgid "is released under the"
+msgstr "a következő licenc alatt áll:"
+
+msgid "GNU Affero General Public License"
+msgstr "GNU Affero General Public License"
+
+msgid "Choose a contest"
+msgstr "Válassz egy versenyt"
+
+msgid "Programming languages and libraries"
+msgstr "Programozási nyelvek és könyvtárak"
+
+msgid "Standard Template Library"
+msgstr "Standard Template Library"
+
+msgid "The main Java class of the solution should have exactly the same name as the task."
+msgstr "A megoldásod fő Java osztályának neve meg kell, hogy egyezzen a feladat nevével."
+
+msgid "Submission details for compilation"
+msgstr "Fordítás kimenetele"
+
+msgid "Message"
+msgstr "Üzenet"
+
+msgid "Explanation"
+msgstr "Magyarázat"
+
+msgid "Submission details for evaluation"
+msgstr "Kiértékelés kimenetele"
+
+#, python-format
+msgid "Error %(status_code)s"
+msgstr "Hiba: %(status_code)s"
+
+msgid "An error occured while the server was handling your request."
+msgstr "Hiba történt a kérés feldolgozása közben."
+
+msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
+msgstr "Megjegyezzük, hogy a Contest Management System (CMS) nem rendeltetésszerű használata (például tetszőleges URL-ek próbálgatása) csalásnak minősülhet és a versenyből való kizárást vonhatja maga után."
+
+msgid "If you encountered this error during normal usage, please notify the contest administrators."
+msgstr "Ha ezt a hibát látod, akkor értesítsd a versenyszervezőket."
+
+msgid "General information"
+msgstr "Általános információk"
+
+msgid "The contest hasn't started yet."
+msgstr "A verseny még nem indult el."
+
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "A verseny %(start_time)s időpontban fog elkezdődni, és %(stop_time)s időpontban fog véget érni."
+
+msgid "The contest is currently running."
+msgstr "A verseny jelenleg zajlik."
+
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr "A verseny %(start_time)s időpontban kezdődött el, és %(stop_time)s időpontban fog véget érni."
+
+msgid "The contest has already ended."
+msgstr "A verseny már bejeződött."
+
+#, python-format
+msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
+msgstr "A verseny %(start_time)s időpontban kezdődött el, és %(stop_time)s időpontban ért véget."
+
+msgid "The analysis mode hasn't started yet."
+msgstr "Az analízis mód még nem kezdődött el."
+
+#, python-format
+msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
+msgstr "Az analízis mód %(start_time)s időpontban fog elkezdődni, és %(stop_time)s időpontban fog véget érni."
+
+msgid "The analysis mode is currently running."
+msgstr "Az analízis mód jelenleg bekapcsolva."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
+msgstr "Az analízis mód %(start_time)s időpontban kezdődött el, és %(stop_time)s időpontban fog véget érni."
+
+msgid "The analysis mode has already ended."
+msgstr "Az analízis mód befejeződött."
+
+#, python-format
+msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
+msgstr "Az analízis mód %(start_time)s időpontban kezdődött el, és %(stop_time)s időpontban ért véget."
+
+msgid "You have an infinite number of tokens."
+msgstr "Végtelen zsetonod van."
+
+msgid "You can see the detailed result of a submission by using a token on it."
+msgstr "Zsetonok felhasználásával megtekintheted egy beküldés részleteit."
+
+msgid "You have a distinct set of tokens for each task."
+msgstr "Vannak zsetonjaid, amin nem osztoznak a feladatok."
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on each task's description page."
+msgstr "A %(type_pl)s használatára vonatkozó szabályokat a feladatok leírásában találod meg."
+
+msgid "You have a set of tokens shared among all tasks."
+msgstr "Vannak zsetonjaid, amin az összes feladat osztozik."
+
+msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
+msgstr "Kétféle zsetonod van: <em>verseny-zseton</em>ok, amelyeken az összes feladat osztozik; és <em>feladat-zseton</em>ok, amelyek egy adott feladatra vonatkoznak."
+
+msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
+msgstr "Egy beküldés részletes eredményét megtekintheted, ha mindkétféle zsetonból egyet felhasználsz."
+
+#, python-format
+msgid "You can submit at most %(submissions)s solutions during this contest."
+msgstr "Maximum %(submissions)s alkalommal küldhetsz be megoldást a verseny ideje alatt."
+
+#, python-format
+msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
+msgstr "Minden felhasználó megszakítás nélkül versenyezhet (küldhet be megoldásokat) ennyi ideig: %(per_user_time)s."
+
+msgid "As soon as the contest starts you can choose to start your time frame."
+msgstr "Amint elkezdődik a verseny, elindíthatod a rendelkezésedre álló időablakot."
+
+msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Miután elindítottad, lehetőséged van a megoldásokat beküldeni az időablakod vagy a verseny végéig (amelyik előbb következik be)."
+
+msgid "By clicking on the button below you can start your time frame."
+msgstr "A lenti gombra kattintva elindíthatod az időablakod."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s."
+msgstr "Az időablakod a következő időpontban indult: %(start_time)s."
+
+msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
+msgstr "Lehetőséged van a megoldásokat beküldeni az időablakod vagy a verseny végéig (amelyik előbb következik be)."
+
+#, python-format
+msgid "You started your time frame at %(start_time)s and you already finished it."
+msgstr "Az időablakod (kezd. %(start_time)s) véget ért."
+
+msgid "There's nothing you can do now."
+msgstr "Nincs további teendőd."
+
+msgid "You never started your time frame. Now it's too late."
+msgstr "Sosem indítottad el az időablakod, most már pedig túl késő."
+
+msgid "Start!"
+msgstr "Kezdjük!"
+
+msgid "Task overview"
+msgstr "Feladat áttekintés"
+
+msgid "Task"
+msgstr "Feladat"
+
+msgid "Name"
+msgstr "Név"
+
+msgid "Time limit"
+msgstr "Időlimit"
+
+msgid "Memory limit"
+msgstr "Memórialimit"
+
+msgid "Type"
+msgstr "Típus"
+
+msgid "Files"
+msgstr "Fájlok"
+
+msgid "Tokens"
+msgstr "Zsetonok"
+
+msgid "Yes"
+msgstr "Igen"
+
+msgid "No"
+msgstr "Nem"
+
+msgid "Print"
+msgstr "Nyomtatás"
+
+msgid "File (text or PDF)"
+msgstr "Fájl (szöveg vagy PDF)"
+
+msgid "File (text)"
+msgstr "Fájl (szöveg)"
+
+msgid "Submit"
+msgstr "Beküldés"
+
+msgid "You cannot print anything any more as you have used up your printing quota."
+msgstr "Nem tudsz többet nyomtatni, mert felhasználtad a nyomtatási keretedet."
+
+msgid "Previous print jobs"
+msgstr "Korábbi nyomtatások"
+
+msgid "Date and time"
+msgstr "Dátum és idő"
+
+msgid "Time"
+msgstr "Idő"
+
+msgid "File name"
+msgstr "Fájlnév"
+
+msgid "Status"
+msgstr "Állapot"
+
+msgid "Preparing..."
+msgstr "Előkészítés..."
+
+msgid "no print jobs yet"
+msgstr "nincsenek nyomtatások"
+
+msgid "The passwords do not match!"
+msgstr "A jelszavak nem egyeznek!"
+
+msgid "This username is already taken, please choose a different one."
+msgstr "Ez a felhasználónév foglalt, kérlek válassz másikat."
+
+msgid "This user is already registered in the contest."
+msgstr "Ez a felhasználó már regisztrált a versenyre."
+
+msgid "No such user."
+msgstr "Nincs ilyen felhasználó."
+
+msgid "The password is not correct."
+msgstr "Helytelen jelszó."
+
+msgid "Registration"
+msgstr "Regisztráció"
+
+msgid "Please fill in the fields to register"
+msgstr "Kérlek töltsd ki a mezőket a regisztrációhoz"
+
+msgid "New user"
+msgstr "Új felhasználó"
+
+msgid "First name"
+msgstr "Keresztnév"
+
+msgid "Last name"
+msgstr "Vezetéknév"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "Representing"
+msgstr "Képviselt intézmény"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] "Legalább egy karakter hosszúnak kell lennie."
+msgstr[1] "Legalább %(min_length)s karakter hosszúnak kell lennie."
+
+msgid "Confirm password"
+msgstr "Jelszó megerösítése"
+
+msgid "Registered in the contest successfully!"
+msgstr "Sikeresen regisztráltál a versenyre!"
+
+msgid "Your username is:"
+msgstr "A felhasználóneved:"
+
+msgid "Your password is stored securely."
+msgstr "A jelszó biztonságosan kerül tárolásra."
+
+msgid "Back to login"
+msgstr "Vissza a bejelentkezéshez"
+
+msgid "Compilation output"
+msgstr "Fordítás kimenete"
+
+msgid "Compilation outcome:"
+msgstr "Fordítás eredménye:"
+
+msgid "Compilation time:"
+msgstr "Fordítás ideje:"
+
+msgid "Memory used:"
+msgstr "Felhasznált memória:"
+
+msgid "Standard output"
+msgstr "Standard kimenet"
+
+msgid "Standard error"
+msgstr "Standard hibakimenet"
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>leírás</small>"
+
+msgid "no statement available"
+msgstr "nem érhető el feladatleírás"
+
+msgid "Download task statement"
+msgstr "Feladatleírás letöltése"
+
+msgid "The statement for this task is available in multiple versions, in different languages."
+msgstr "A feladatleírás több verzióban, különböző nyelveken is elérhető."
+
+msgid "You can see (and download) all of them using the list on the right."
+msgstr "Mindet megtekintheted (és letöltheted) a jobb oldali lista segítségével."
+
+msgid "Some suggested translations follow."
+msgstr "A javasolt fordítások következnek."
+
+#, python-format
+msgid "Statement in <b>%(lang)s</b>"
+msgstr "Feladatleírás (<b>%(lang)s</b>)"
+
+#, python-format
+msgid "Statement in %(lang)s"
+msgstr "Feladatleírás (%(lang)s)"
+
+#, python-format
+msgid "<b>%(lang)s</b>"
+msgstr "<b>%(lang)s</b>"
+
+#, python-format
+msgid "%(lang)s"
+msgstr "%(lang)s"
+
+msgid "Some details"
+msgstr "Egyéb adatok"
+
+msgid "Compilation commands"
+msgstr "Fordítási parancsok"
+
+#, python-format
+msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
+msgstr "A %(type_pl)s használatára vonatkozó szabályokat a <a href=\"%(contest_root)s\">verseny áttekintő oldalán</a> találod."
+
+msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
+msgstr "Fontos, hogy a beküldés eredményének részletes megtekintéséhez egy verseny-zsetont és egy feladat-zsetont is fel kell használnod."
+
+msgid "Attachments"
+msgstr "Mellékletek"
+
+msgid "unknown"
+msgstr "ismeretlen"
+
+msgid "loading..."
+msgstr "betöltés..."
+
+#, python-format
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>beküldések</small>"
+
+msgid "Score:"
+msgstr "Pontszám:"
+
+msgid "Public score:"
+msgstr "Nyilvános pontszám:"
+
+msgid "Score of tokened submissions:"
+msgstr "Zsetonos beküldések pontszáma:"
+
+msgid "Total score:"
+msgstr "Teljes pontszám:"
+
+msgid "Submit a solution"
+msgstr "Megoldás beküldése"
+
+#, python-format
+msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr "Még %(submissions_left)s alkalommal küldhetsz be megoldást."
+
+msgid "submission.zip"
+msgstr "submission.zip"
+
+msgid "Previous submissions"
+msgstr "Korábbi beküldések"
+
+msgid "Tokens are not allowed on this task."
+msgstr "Nem használhatsz zsetonokat ennél a feladatnál."
+
+msgid "Right now, you have infinite tokens available on this task."
+msgstr "Jelenleg végtelen zsetonod van ehhez a feladathoz."
+
+msgid "Right now, you have one token available on this task."
+msgstr "Jelenleg egy zsetonod van ehhez a feladathoz."
+
+#, python-format
+msgid "Right now, you have %(tokens)s tokens available on this task."
+msgstr "Jelenleg %(tokens)s zsetonod van ehhez a feladathoz."
+
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr "De várnod kell %(expiration_time)s időpontig, hogy használhasd őket."
+
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr "Új zsetont kapsz %(gen_time)s időpontban."
+
+msgid "In the current situation, no more tokens will be generated."
+msgstr "Pillanatnyilag nem kapsz további zsetonokat."
+
+msgid "Right now, you do not have tokens available for this task."
+msgstr "Jelenleg nincs zsetonod ehhez a feladathoz."
+
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr "De várnod kell %(expiration_time)s időpontig, hogy használhasd."
+
+msgid "Unofficial submissions"
+msgstr "Nem hivatalos beküldések"
+
+msgid "Official submissions"
+msgstr "Hivatalos beküldések"
+
+msgid "Submission details"
+msgstr "Beküldés részletei"
+
+msgid "Close"
+msgstr "Bezárás"
+
+msgid "Download"
+msgstr "Letöltés"
+
+msgid "Submit a test"
+msgstr "Teszt beküldése"
+
+#, python-format
+msgid "You can submit %(user_tests_left)s more test(s)."
+msgstr "Még %(user_tests_left)s alkalommal küldhetsz be tesztet."
+
+msgid "input"
+msgstr "bemenet"
+
+msgid "Previous tests"
+msgstr "Korábbi tesztek"
+
+msgid "Input"
+msgstr "Bemenet"
+
+msgid "Output"
+msgstr "Kimenet"
+
+msgid "no tests yet"
+msgstr "nincsenek tesztek"
+
+msgid "Test details"
+msgstr "Teszt részletei"
+
+msgid "Evaluation outcome"
+msgstr "Kiértékelés eredménye"
+
+msgid "Wait..."
+msgstr "Várj..."
+
+msgid "None"
+msgstr "Egyik sem"
+
+msgid "Public score"
+msgstr "Nyilvános pontszám"
+
+msgid "Total score"
+msgstr "Teljes pontszám"
+
+msgid "Score"
+msgstr "Pontszám"
+
+msgid "Token"
+msgstr "Zseton"
+
+msgid "no submissions"
+msgstr "nincsenek beküldések"
+
+msgid "Played"
+msgstr "Felhasználva"
+
+msgid "Play!"
+msgstr "Felhasznál"
+
+msgid "No tokens"
+msgstr "Nincs zseton"
+
+msgid "Invalid file"
+msgstr "Érvénytelen fájl"
+
+msgid "Print job has too many pages"
+msgstr "A nyomtatandó dokumentum túl sok oldalt tartalmaz"
+
+msgid "Sent to printer"
+msgstr "Elküldve a nyomtatónak"
+

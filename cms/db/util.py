@@ -28,12 +28,32 @@ import logging
 
 from sqlalchemy import union
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Query
 
 from cms import ConfigError
-from . import SessionGen, Digest, Contest, Participation, Statement, \
-    Attachment, Task, Manager, Dataset, Testcase, Submission, File, \
-    SubmissionResult, Executable, UserTest, UserTestFile, UserTestManager, \
-    UserTestResult, UserTestExecutable, PrintJob
+from . import (
+    SessionGen,
+    Digest,
+    Contest,
+    Participation,
+    Statement,
+    Attachment,
+    Task,
+    Manager,
+    Dataset,
+    Testcase,
+    Submission,
+    File,
+    SubmissionResult,
+    Executable,
+    UserTest,
+    UserTestFile,
+    UserTestManager,
+    UserTestResult,
+    UserTestExecutable,
+    PrintJob,
+    Session,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -54,19 +74,19 @@ def test_db_connection():
     except OperationalError as e:
         logger.error(e)
         raise ConfigError("Operational error while talking to the DB. "
-                          "Is the connection string in cms.conf correct?")
+                          "Is the connection string in cms.toml correct?")
 
 
-def get_contest_list(session=None):
+def get_contest_list(session: "Session | None" = None) -> list[Contest]:
     """Return all the contest objects available on the database.
 
-    session (Session|None): if specified, use such session for
+    session: if specified, use such session for
         connecting to the database; otherwise, create a temporary one
         and discard it after the operation (this means that no further
         expansion of lazy properties of the returned Contest objects
         will be possible).
 
-    return ([Contest]): the list of contests in the DB.
+    return: the list of contests in the DB.
 
     """
     if session is None:
@@ -76,25 +96,25 @@ def get_contest_list(session=None):
     return session.query(Contest).all()
 
 
-def is_contest_id(contest_id):
+def is_contest_id(contest_id: int) -> bool:
     """Return if there is a contest with the given id in the database.
 
-    contest_id (int): the id to query.
-    return (boolean): True if there is such a contest.
+    contest_id: the id to query.
+    return: True if there is such a contest.
 
     """
     with SessionGen() as session:
         return Contest.get_from_id(contest_id, session) is not None
 
 
-def ask_for_contest(skip=None):
+def ask_for_contest(skip: int | None = None) -> int:
     """Print a greeter that ask the user for a contest, if there is
     not an indication of which contest to use in the command line.
 
-    skip (int|None): how many commandline arguments are already taken
+    skip: how many commandline arguments are already taken
         by other usages (None for no arguments already consumed).
 
-    return (int): a contest_id.
+    return: a contest_id.
 
     """
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
@@ -136,8 +156,13 @@ def ask_for_contest(skip=None):
     return contest_id
 
 
-def get_submissions(session, contest_id=None, participation_id=None,
-                    task_id=None, submission_id=None):
+def get_submissions(
+    session: Session,
+    contest_id: int | None = None,
+    participation_id: int | None = None,
+    task_id: int | None = None,
+    submission_id: int | None = None,
+) -> Query:
     """Search for submissions that match the given criteria
 
     The submissions will be returned as a list, and the last four
@@ -149,15 +174,15 @@ def get_submissions(session, contest_id=None, participation_id=None,
     give them both is useless and could only lead to inconsistencies
     and errors.
 
-    session (Session): the database session to use.
-    contest_id (int|None): id of the contest to filter with, or None.
-    participation_id (int|None): id of the participation to filter
+    session: the database session to use.
+    contest_id: id of the contest to filter with, or None.
+    participation_id: id of the participation to filter
         with, or None.
-    task_id (int|None): id of the task to filter with, or None.
-    submission_id (int|None): id of the submission to filter with, or
+    task_id: id of the task to filter with, or None.
+    submission_id: id of the submission to filter with, or
         None.
 
-    return (Query): a query for the list of submission that match the
+    return: a query for the list of submission that match the
         given criteria
 
     """
@@ -189,8 +214,14 @@ def get_submissions(session, contest_id=None, participation_id=None,
     return query
 
 
-def get_submission_results(session, contest_id=None, participation_id=None,
-                           task_id=None, submission_id=None, dataset_id=None):
+def get_submission_results(
+    session: Session,
+    contest_id: int | None = None,
+    participation_id: int | None = None,
+    task_id: int | None = None,
+    submission_id: int | None = None,
+    dataset_id: int | None = None,
+) -> Query:
     """Search for submission results that match the given criteria
 
     The submission results will be returned as a list, and the last
@@ -202,16 +233,16 @@ def get_submission_results(session, contest_id=None, participation_id=None,
     to). Trying to give them both is useless and could only lead to
     inconsistencies and errors.
 
-    session (Session): the database session to use.
-    contest_id (int|None): id of the contest to filter with, or None.
-    participation_id (int|None): id of the participation to filter with,
+    session: the database session to use.
+    contest_id: id of the contest to filter with, or None.
+    participation_id: id of the participation to filter with,
         or None.
-    task_id (int|None): id of the task to filter with, or None.
-    submission_id (int|None): id of the submission to filter with, or
+    task_id: id of the task to filter with, or None.
+    submission_id: id of the submission to filter with, or
         None.
-    dataset_id (int|None): id of the dataset to filter with, or None.
+    dataset_id: id of the dataset to filter with, or None.
 
-    return (Query): a query for the list of submission results that
+    return: a query for the list of submission results that
         match the given criteria
 
     """
@@ -249,7 +280,7 @@ def get_submission_results(session, contest_id=None, participation_id=None,
     return query
 
 
-def get_datasets_to_judge(task):
+def get_datasets_to_judge(task: Task) -> list[Dataset]:
     """Determine the datasets that ES and SS have to judge.
 
     Return a list of all Dataset objects that are either the
@@ -258,9 +289,9 @@ def get_datasets_to_judge(task):
     by ES and SS, whereas the results on any other dataset has to be
     explicitly requested by the contest admin (by invalidating it).
 
-    task (Task): the task to query.
+    task: the task to query.
 
-    return ([Dataset]): list of datasets to judge.
+    return: list of datasets to judge.
 
     """
     judge = []
@@ -273,14 +304,18 @@ def get_datasets_to_judge(task):
 
 
 def enumerate_files(
-        session, contest=None,
-        skip_submissions=False, skip_user_tests=False, skip_users=False,
-        skip_print_jobs=False, skip_generated=False):
+    session: Session,
+    contest: Contest | None = None,
+    skip_submissions=False,
+    skip_user_tests=False,
+    skip_users=False,
+    skip_print_jobs=False,
+    skip_generated=False,
+) -> set[str]:
     """Enumerate all the files (by digest) referenced by the
     contest.
 
-    return (set): a set of strings, the digests of the file
-                  referenced in the contest.
+    return: the digests of the file referenced in the contest.
 
     """
     contest_q = session.query(Contest)

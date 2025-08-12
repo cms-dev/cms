@@ -11,12 +11,9 @@
     <script src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
     <script src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
     <script src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
-    <script src="{{ url("static", "sh", "shCore.js") }}"></script>
-    <script src="{{ url("static", "sh", "shBrushCpp.js") }}"></script>
-    <script src="{{ url("static", "sh", "shBrushDelphi.js") }}"></script>
     <link rel="stylesheet" type="text/css" href="{{ url("static", "jq", "jquery.jqplot.min.css") }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shCore.css") }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "sh", "shThemeDefault.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ url("static", "prism.css") }}">
+    <script src="{{ url("static", "prism.js") }}" data-manual></script>
 
     {% if contest is none %}
     <title>Admin</title>
@@ -53,6 +50,8 @@ function init()
     $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
     $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
 
+    $(".diff-radio").change(utils.update_diff_ids);
+
     {% block js_init %}{% endblock js_init %}
 }
 
@@ -83,9 +82,9 @@ $(document).ready(init);
           <h1 class="child">{{ contest.name }}</h1>
           {% endif %}
         </div>
-        {% if config.secret_key == config.secret_key_default %}
+        {% if config.web_server.secret_key == config.web_server.DEFAULT_SECRET_KEY %}
         <div class="secret_notice">
-          Change secret_key in cms.conf!<br/>
+          Change secret_key in cms.toml!<br/>
           For example,<br/>
           {{ get_hex_random_key() }}
         </div>
@@ -251,11 +250,10 @@ $(document).ready(init);
       <div id="border"></div>
       <div id="core">
         <div id="notifications" class="notifications"></div>
-        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
-          <div id="subpage_border"></div>
-          <div id="subpage_background"></div>
+        <dialog id="subpage_popup">
+          <button id="subpage_close">x</button>
           <div id="subpage_content"></div>
-        </div>
+        </dialog>
         {% block core %}{% endblock core %}
       </div>
 

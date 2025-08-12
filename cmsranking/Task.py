@@ -24,16 +24,17 @@ class Task(Entity):
     """The entity representing a task.
 
     It consists of the following properties:
-    - name (unicode): the human-readable name of the task
-    - short_name (unicode): a shorter name for the task, usually a
+    - name: the human-readable name of the task
+    - short_name: a shorter name for the task, usually a
         code-name
-    - contest (unicode): the id of the contest the task belongs to
-    - max_score (float): the maximum achievable score for the task
-    - score_precision (int): how many decimal places to show in scores
-    - data_headers ([unicode]): a list with the descriptions of the
+    - contest: the id of the contest the task belongs to
+    - max_score: the maximum achievable score for the task
+    - score_precision: how many decimal places to show in scores
+    - extra_headers: a list with the descriptions of the
         extra fields that will be provided with each submission for the
         task
-    - order (int): the order of the tasks inside of the contest
+    - order: the order of the tasks inside of the contest
+    - score_mode: TODO why no docstring?
 
     """
     def __init__(self):
@@ -41,13 +42,14 @@ class Task(Entity):
 
         """
         Entity.__init__(self)
-        self.name = None
-        self.short_name = None
-        self.contest = None
-        self.max_score = None
-        self.extra_headers = None
-        self.order = None
-        self.score_mode = None
+        self.name: str = None
+        self.short_name: str = None
+        self.contest: str = None
+        self.max_score: float = None
+        self.score_precision: int  # TODO why is this not set here?
+        self.extra_headers: list[str] = None
+        self.order: int = None
+        self.score_mode: str = None
 
     @staticmethod
     def validate(data):

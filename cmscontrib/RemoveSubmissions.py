@@ -26,9 +26,10 @@ import sys
 from cms import utf8_decoder
 from cms.db import Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
+from cms.db.session import Session
 
 
-def ask_and_remove(session, submissions):
+def ask_and_remove(session: Session, submissions: list[Submission]):
     ans = input("This will delete %d submissions. Are you sure? [y/N] "
                 % len(submissions)).strip().lower()
     if ans in ["y", "yes"]:
@@ -40,7 +41,7 @@ def ask_and_remove(session, submissions):
         print("Will not delete.")
 
 
-def remove_submissions_for_user(contest_id, username):
+def remove_submissions_for_user(contest_id: int, username: str):
     with SessionGen() as session:
         user = session.query(User)\
             .filter(User.username == username)\
@@ -61,7 +62,7 @@ def remove_submissions_for_user(contest_id, username):
         ask_and_remove(session, submissions)
 
 
-def remove_submissions_for_task(contest_id, task_name):
+def remove_submissions_for_task(contest_id: int, task_name: str):
     with SessionGen() as session:
         task = session.query(Task)\
             .filter(Task.contest_id == contest_id)\
@@ -75,7 +76,7 @@ def remove_submissions_for_task(contest_id, task_name):
         ask_and_remove(session, submissions)
 
 
-def remove_submission(submission_id):
+def remove_submission(submission_id: int):
     with SessionGen() as session:
         submission = session.query(Submission)\
             .filter(Submission.id == submission_id)\

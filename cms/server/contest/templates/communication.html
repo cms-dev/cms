@@ -22,7 +22,7 @@
         {% endif %}
         <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
         {% if msg.text|length > 0 %}
-        <div class="body">{{ msg.text }}</div>
+        <div class="body">{{ msg.text | markdown }}</div>
         {% endif %}
     </div>
     {% endfor %}
@@ -91,7 +91,7 @@
             {% endif %}
         <span class="timestamp">{{ msg.reply_timestamp|format_datetime_smart }}</span>
             {% if msg.reply_text|length > 0 %}
-        <div class="body">{{ msg.reply_text }}</div>
+        <div class="body">{{ msg.reply_text | markdown }}</div>
             {% endif %}
     </div>
         {% else %}
@@ -118,7 +118,7 @@
         {% endif %}
         <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
         {% if msg.text|length > 0 %}
-        <div class="body">{{ msg.text }}</div>
+        <div class="body">{{ msg.text | markdown }}</div>
         {% endif %}
     </div>
     {% endfor %}

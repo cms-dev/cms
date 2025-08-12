@@ -46,15 +46,17 @@ RPCS_ALLOWED_FOR_ALL = RPCS_ALLOWED_FOR_MESSAGING + [
 ]
 
 
-def rpc_authorization_checker(admin_id, service, unused_shard, method):
+def rpc_authorization_checker(
+    admin_id: int | None, service: str, shard: int, method: str
+) -> bool:
     """Return whether to accept the request.
 
-    admin_id (id): the id of the administrator.
-    service (string): name of the service the RPC is for.
-    unused_shard (int): shard of the service the RPC is for.
-    method (string): method of the service the RPC is calling.
+    admin_id: the id of the administrator.
+    service: name of the service the RPC is for.
+    shard: shard of the service the RPC is for.
+    method: method of the service the RPC is calling.
 
-    return (bool): whether to accept the request or not.
+    return: whether to accept the request or not.
 
     """
     if admin_id is None:
@@ -62,9 +64,7 @@ def rpc_authorization_checker(admin_id, service, unused_shard, method):
 
     with SessionGen() as session:
         # Load admin.
-        admin = session.query(Admin)\
-            .filter(Admin.id == admin_id)\
-            .first()
+        admin: Admin = session.query(Admin).filter(Admin.id == admin_id).first()
         if admin is None:
             return False
 

@@ -179,7 +179,7 @@ class Actor(threading.Thread):
         SLEEP_PERIOD = 0.1
         time_to_wait = self.metrics['time_coeff'] * \
             random.expovariate(self.metrics['time_lambda'])
-        sleep_num = time_to_wait // SLEEP_PERIOD
+        sleep_num = int(time_to_wait // SLEEP_PERIOD)
         remaining_sleep = time_to_wait - (sleep_num * SLEEP_PERIOD)
         for _ in range(sleep_num):
             time.sleep(SLEEP_PERIOD)
@@ -247,12 +247,12 @@ class SubmitActor(Actor):
                 submissions_path=self.submissions_path))
 
 
-def harvest_contest_data(contest_id):
+def harvest_contest_data(contest_id: int) -> tuple[dict[str, dict], list[str]]:
     """Retrieve the couples username, password and the task list for a
     given contest.
 
-    contest_id (int): the id of the contest we want.
-    return (tuple): the first element is a dictionary mapping
+    contest_id: the id of the contest we want.
+    return: the first element is a dictionary mapping
                     usernames to passwords; the second one is the list
                     of the task names.
 
@@ -361,7 +361,7 @@ def main():
     else:
         base_url = "http://%s:%d/" % \
             (get_service_address(ServiceCoord('ContestWebServer', 0))[0],
-             config.contest_listen_port[0])
+             config.contest_web_server.listen_port[0])
 
     metrics = DEFAULT_METRICS
     metrics["time_coeff"] = args.time_coeff

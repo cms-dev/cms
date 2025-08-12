@@ -26,6 +26,9 @@
 """High level functions to perform standardized white-diff comparison."""
 
 import logging
+import typing
+
+from cms.grading.Sandbox import Sandbox
 
 from .evaluation import EVALUATION_MESSAGES
 
@@ -39,7 +42,7 @@ logger = logging.getLogger(__name__)
 _WHITES = [b' ', b'\t', b'\n', b'\x0b', b'\x0c', b'\r']
 
 
-def _white_diff_canonicalize(string):
+def _white_diff_canonicalize(string: bytes) -> bytes:
     """Convert the input string to a canonical form for the white diff
     algorithm; that is, the strings a and b are mapped to the same
     string by _white_diff_canonicalize() if and only if they have to be
@@ -51,8 +54,8 @@ def _white_diff_canonicalize(string):
     consecutive whitespaces into just one copy of one specific
     whitespace.
 
-    string (str): the string to canonicalize.
-    return (str): the canonicalized string.
+    string: the string to canonicalize.
+    return: the canonicalized string.
 
     """
     # Replace all the whitespaces with copies of " ", making the rest
@@ -69,7 +72,7 @@ def _white_diff_canonicalize(string):
     return string
 
 
-def _white_diff(output, res):
+def _white_diff(output: typing.BinaryIO, res: typing.BinaryIO) -> bool:
     """Compare the two output files. Two files are equal if for every
     integer i, line i of first file is equal to line i of second
     file. Two lines are equal if they differ only by number or type of
@@ -80,9 +83,9 @@ def _white_diff(output, res):
     'sequence of characters ending with \n or EOF and beginning right
     after BOF or \n'. In particular, every line has *at most* one \n.
 
-    output (file): the first file to compare.
-    res (file): the second file to compare.
-    return (bool): True if the two file are equal as explained above.
+    output: the first file to compare.
+    res: the second file to compare.
+    return: True if the two file are equal as explained above.
 
     """
 
@@ -110,18 +113,20 @@ def _white_diff(output, res):
                 return False
 
 
-def white_diff_fobj_step(output_fobj, correct_output_fobj):
+def white_diff_fobj_step(
+    output_fobj: typing.BinaryIO, correct_output_fobj: typing.BinaryIO
+) -> tuple[float, list[str]]:
     """Compare user output and correct output with a simple diff.
 
     It gives an outcome 1.0 if the output and the reference output are
     identical (or differ just by white spaces) and 0.0 if they don't. Calling
     this function means that the output file exists.
 
-    output_fobj (fileobj): file for the user output, opened in binary mode.
-    correct_output_fobj (fileobj): file for the correct output, opened in
+    output_fobj: file for the user output, opened in binary mode.
+    correct_output_fobj: file for the correct output, opened in
         binary mode.
 
-    return ((float, [str])): the outcome as above and a description text.
+    return: the outcome as above and a description text.
 
     """
     if _white_diff(output_fobj, correct_output_fobj):
@@ -130,18 +135,20 @@ def white_diff_fobj_step(output_fobj, correct_output_fobj):
         return 0.0, [EVALUATION_MESSAGES.get("wrong").message]
 
 
-def white_diff_step(sandbox, output_filename, correct_output_filename):
+def white_diff_step(
+    sandbox: Sandbox, output_filename: str, correct_output_filename: str
+) -> tuple[float, list[str]]:
     """Compare user output and correct output with a simple diff.
 
     It gives an outcome 1.0 if the output and the reference output are
     identical (or differ just by white spaces) and 0.0 if they don't (or if
     the output doesn't exist).
 
-    sandbox (Sandbox): the sandbox we consider.
-    output_filename (str): the filename of user's output in the sandbox.
-    correct_output_filename (str): the same with reference output.
+    sandbox: the sandbox we consider.
+    output_filename: the filename of user's output in the sandbox.
+    correct_output_filename: the same with reference output.
 
-    return ((float, [str])): the outcome as above and a description text.
+    return: the outcome as above and a description text.
 
     """
     if sandbox.file_exists(output_filename):

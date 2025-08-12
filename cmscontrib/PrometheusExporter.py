@@ -19,15 +19,13 @@
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
-
-from cms.db.contest import Contest
-
 gevent.monkey.patch_all()  # noqa
 
 import argparse
 import logging
 
 from prometheus_client import start_http_server
+from prometheus_client.registry import Collector
 from prometheus_client.core import REGISTRY, CounterMetricFamily, GaugeMetricFamily
 from sqlalchemy import func, distinct
 
@@ -39,30 +37,32 @@ from cms.db import (
     Message,
     Participation,
     Question,
+    Session,
     SessionGen,
     Submission,
     SubmissionResult,
     Task,
 )
 from cms.io.service import Service
-from cms.io.rpc import RPCError
+from cms.io.rpc import RPCError, RemoteServiceClient
 from cms.server.admin.server import AdminWebServer
 
 logger = logging.getLogger(__name__)
 
-class PrometheusExporter(Service):
+
+class PrometheusExporter(Service, Collector):
     def __init__(self, args):
         super().__init__()
 
-        self.host = args.host
-        self.port = args.port
+        self.host: str = args.host
+        self.port: int = args.port
 
         self.export_submissions = not args.no_submissions
         self.export_workers = not args.no_workers
         self.export_queue = not args.no_queue
         self.export_communiactions = not args.no_communications
         self.export_users = not args.no_users
-        self.evaluation_service = None
+        self.evaluation_service: RemoteServiceClient | None = None
 
     def run(self):
         REGISTRY.register(self)
@@ -97,7 +97,7 @@ class PrometheusExporter(Service):
             metric.add_metric([], 1 if self.evaluation_service is not None else 0)
             yield metric
 
-    def _collect_submissions(self, session):
+    def _collect_submissions(self, session: Session):
         # compiling / max_compilations / compilation_fail / evaluating /
         # max_evaluations / scoring / scored / total
         stats = AdminWebServer.submissions_status(None)
@@ -189,7 +189,7 @@ class PrometheusExporter(Service):
             metric.add_metric([], oldest["timestamp"])
         yield metric
 
-    def _collect_communications(self, session):
+    def _collect_communications(self, session: Session):
         metric = CounterMetricFamily(
             "cms_questions",
             "Number of questions",
@@ -225,7 +225,7 @@ class PrometheusExporter(Service):
         metric.add_metric([], data[0][0])
         yield metric
 
-    def _collect_users(self, session):
+    def _collect_users(self, session: Session):
         metric = GaugeMetricFamily(
             "cms_participations",
             "Number of participations grouped by category and contest",
@@ -302,12 +302,12 @@ def main():
     parser.add_argument(
         "--host",
         help="IP address to bind to",
-        default=config.prometheus_listen_address,
+        default=config.prometheus.listen_address,
     )
     parser.add_argument(
         "--port",
         help="Port to use",
-        default=config.prometheus_listen_port,
+        default=config.prometheus.listen_port,
         type=int,
     )
     parser.add_argument(

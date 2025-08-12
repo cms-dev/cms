@@ -2,33 +2,8 @@
 
 {% extends "base.html" %}
 {% import 'macro/submission.html' as macro_submission %}
-
-{% block js %}
-function question_reply_toggle(element, invoker)
-{
-  var obj = document.getElementsByClassName("reply_question")[element];
-  if (obj.style.display != "block")
-    {
-      obj.style.display = "block";
-      invoker.innerHTML = "Hide reply";
-    }
-  else
-    {
-      obj.style.display = "none";
-      invoker.innerHTML = "Reply";
-    }
-  return false;
-}
-
-function update_additional_answer(element, invoker)
-{
-  var obj = document.getElementsByClassName("alternative_answer")[element];
-  if (invoker.selectedIndex == 5)
-    obj.style.display = "block";
-  else
-    obj.style.display = "none";
-}
-{% endblock js %}
+{% import 'macro/question.html' as macro_question with context %}
+{% import 'macro/markdown_input.html' as macro_markdown %}
 
 {% block core %}
 <h1>
@@ -148,44 +123,7 @@ function update_additional_answer(element, invoker)
   {% if participation.questions != [] %}
   <div class="notifications">
     {% for msg in participation.questions %}
-    <div class="notification communication">
-      <div class="notification_msg">
-        <div class="notification_timestamp">{{ msg.question_timestamp }}</div>
-        <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
-        {% if msg.reply_timestamp is not none %}
-        <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
-        <div class="notification_text preserve_line_breaks">{{ msg.reply_text }}</div>
-        {% else %}
-        <div class="notification_subject">Not yet replied.</div>
-        {% endif %}
-        <div class="reply_question_toggle">
-          <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">Reply</a>
-        </div>
-        <div class="reply_question" >
-          <hr/>
-          <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
-            {{ xsrf_form_html|safe }}
-            <input type="hidden" name="ref" value="/contest/{{ contest.id }}/user/{{ selected_user.id }}/edit"/>
-            Precompiled answer:
-            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-              <option value="answered">Answered in task description</option>
-              <option value="invalid">Invalid question</option>
-              <option value="nocomment">No comment</option>
-              <option selected value="other">Other</option>
-            </select>
-            <br/>
-            <div class="alternative_answer">
-              Alternative answer:<br/>
-              <textarea name="reply_question_text"></textarea><br/>
-            </div>
-            <input type="submit" value="Send"/>
-          </form>
-        </div>
-      </div>
-    </div>
+      {{ macro_question.question(msg, selected_user.id) }}
     {% endfor %}
   </div>
 
@@ -211,9 +149,10 @@ function update_additional_answer(element, invoker)
             </div>
             <div class="notification_text">
               Text:
-              <textarea name="message_text" style="width: 100%" ></textarea>
+              {{ macro_markdown.markdown_input("message_text") }}
             </div>
           <input type="submit" value="Send"/>
+          {{ macro_markdown.markdown_preview() }}
           </div>
         </form>
       </div>
@@ -225,7 +164,7 @@ function update_additional_answer(element, invoker)
         <div class="notification_msg">
           <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+          <div class="notification_text">{{ msg.text | markdown }}</div>
           <hr>
           <div class="notification_admin_owner">
             By: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}

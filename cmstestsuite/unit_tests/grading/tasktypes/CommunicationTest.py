@@ -25,6 +25,7 @@ from unittest.mock import MagicMock, call, ANY, patch
 from cms import config
 from cms.db import File, Manager, Executable
 from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import merge_execution_stats
 from cms.grading.tasktypes.Communication import Communication
 from cmstestsuite.unit_tests.filesystemmixin import FileSystemMixin
@@ -338,10 +339,12 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.assertEqual(job.text, text)
         self.assertEqual(job.plus, stats)
 
-    def _set_evaluation_step_return_values(self, sandbox_to_return_value):
+    def _set_evaluation_step_return_values(
+        self, sandbox_to_return_value: dict[Sandbox | MagicMock, object]
+    ):
         """Set the return value of evaluation_step_after_run for each sandbox.
 
-        sandbox_to_return_value ({Sandbox|MagicMock: object}): map from the
+        sandbox_to_return_value: map from the
             sandbox to the return value of evaluation_step_after_run when
             called with that sandbox as first argument.
 
@@ -349,8 +352,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.evaluation_step_after_run.side_effect = \
             lambda sandbox, *args, **kwargs: sandbox_to_return_value[sandbox]
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
-    @patch.object(config, "trusted_sandbox_max_memory_kib", 1234 * 1024)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config.sandbox, "trusted_sandbox_max_memory_kib", 1234 * 1024)
     def test_single_process_success(self):
         tt, job = self.prepare(
             [1, "stub", "fifo_io"],
@@ -402,7 +405,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         sandbox_mgr.cleanup.assert_called_once_with(delete=True)
         sandbox_usr.cleanup.assert_called_once_with(delete=True)
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 1)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 1)
     def test_single_process_success_long_time_limit(self):
         # If the time limit is longer than trusted step default time limit,
         # the manager run should use the task time limit.
@@ -593,8 +596,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                  stdout_redirect="/fifo0/u0_to_m",
                  multiprocess=ANY)])
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 4321)
-    @patch.object(config, "trusted_sandbox_max_memory_kib", 1234 * 1024)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 4321)
+    @patch.object(config.sandbox, "trusted_sandbox_max_memory_kib", 1234 * 1024)
     def test_many_processes_success(self):
         tt, job = self.prepare(
             [2, "stub", "fifo_io"],
@@ -663,7 +666,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         sandbox_usr0.cleanup.assert_called_once_with(delete=True)
         sandbox_usr1.cleanup.assert_called_once_with(delete=True)
 
-    @patch.object(config, "trusted_sandbox_max_time_s", 3)
+    @patch.object(config.sandbox, "trusted_sandbox_max_time_s", 3)
     def test_many_processes_success_long_time_limit(self):
         # If the time limit is longer than trusted step default time limit,
         # the manager run should use the task time limit.

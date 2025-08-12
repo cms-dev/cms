@@ -37,6 +37,7 @@
 
 """
 
+from datetime import datetime
 import logging
 
 from werkzeug.middleware.shared_data import SharedDataMiddleware
@@ -61,25 +62,25 @@ class ContestWebServer(WebService):
     """Service that runs the web server serving the contestants.
 
     """
-    def __init__(self, shard, contest_id=None):
+    def __init__(self, shard: int, contest_id: int | None = None):
         parameters = {
             "static_files": [("cms.server", "static"),
                              ("cms.server.contest", "static")],
-            "cookie_secret": hex_to_bin(config.secret_key),
-            "debug": config.tornado_debug,
-            "is_proxy_used": config.is_proxy_used,
-            "num_proxies_used": config.num_proxies_used,
+            "cookie_secret": hex_to_bin(config.web_server.secret_key),
+            "debug": config.web_server.tornado_debug,
+            "is_proxy_used": None,
+            "num_proxies_used": config.contest_web_server.num_proxies_used,
             "xsrf_cookies": True,
         }
 
         try:
-            listen_address = config.contest_listen_address[shard]
-            listen_port = config.contest_listen_port[shard]
+            listen_address = config.contest_web_server.listen_address[shard]
+            listen_port = config.contest_web_server.listen_port[shard]
         except IndexError:
             raise ConfigError("Wrong shard number for %s, or missing "
                               "address/port configuration. Please check "
-                              "contest_listen_address and contest_listen_port "
-                              "in cms.conf." % __name__)
+                              "listen_address and listen_port "
+                              "in cms.toml." % __name__)
 
         self.contest_id = contest_id
 
@@ -100,7 +101,8 @@ class ContestWebServer(WebService):
             listen_address=listen_address)
 
         self.wsgi_app = SharedDataMiddleware(
-            self.wsgi_app, {"/docs": config.docs_path or config.stl_path},
+            self.wsgi_app, {"/docs": config.contest_web_server.docs_path
+                            or config.contest_web_server.stl_path},
             cache=True, cache_timeout=SECONDS_IN_A_YEAR,
             fallback_mimetype="application/octet-stream")
 
@@ -110,8 +112,8 @@ class ContestWebServer(WebService):
         # notification. Things like "Yay, your submission went
         # through.", not things like "Your question has been replied",
         # that are handled by the db. Each username points to a list
-        # of tuples (timestamp, subject, text).
-        self.notifications = {}
+        # of tuples (timestamp, subject, text, level).
+        self.notifications: dict[str, list[tuple[datetime, str, str, str]]] = {}
 
         # Retrieve the available translations.
         self.translations = get_translations()
@@ -121,25 +123,27 @@ class ContestWebServer(WebService):
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 
-        ranking_enabled = len(config.rankings) > 0
+        ranking_enabled = len(config.proxy_service.rankings) > 0
         self.proxy_service = self.connect_to(
             ServiceCoord("ProxyService", 0),
             must_be_present=ranking_enabled)
 
-        printing_enabled = config.printer is not None
+        printing_enabled = config.printing.printer is not None
         self.printing_service = self.connect_to(
             ServiceCoord("PrintingService", 0),
             must_be_present=printing_enabled)
 
-    def add_notification(self, username, timestamp, subject, text, level):
+    def add_notification(
+        self, username: str, timestamp: datetime, subject: str, text: str, level: str
+    ):
         """Store a new notification to send to a user at the first
         opportunity (i.e., at the first request fot db notifications).
 
-        username (string): the user to notify.
-        timestamp (datetime): the time of the notification.
-        subject (string): subject of the notification.
-        text (string): body of the notification.
-        level (string): one of NOTIFICATION_* (defined above)
+        username: the user to notify.
+        timestamp: the time of the notification.
+        subject: subject of the notification.
+        text: body of the notification.
+        level: one of NOTIFICATION_* (defined above)
 
         """
         if username not in self.notifications:

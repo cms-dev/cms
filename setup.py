@@ -32,7 +32,7 @@ import os
 import re
 
 from setuptools import setup, find_packages
-from setuptools.command.build_py import build_py
+from setuptools.command.build import build
 
 
 PACKAGE_DATA = {
@@ -59,6 +59,9 @@ PACKAGE_DATA = {
     "cms.locale": [
         "*/LC_MESSAGES/*.*",
     ],
+    "cmscontrib": [
+        "loaders/polygon/testlib.h",
+    ],
     "cmsranking": [
         "static/img/*.*",
         "static/lib/*.*",
@@ -66,6 +69,8 @@ PACKAGE_DATA = {
     ],
     "cmstestsuite": [
         "code/*.*",
+        "tasks/batch_and_output/code/*",
+        "tasks/batch_and_output/data/*",
         "tasks/batch_stdio/data/*.*",
         "tasks/batch_fileio/data/*.*",
         "tasks/batch_fileio_managed/code/*",
@@ -102,30 +107,19 @@ def find_version():
     raise RuntimeError("Unable to find version string.")
 
 
-# We piggyback the translation catalogs compilation onto build_py since
+# We piggyback the translation catalogs compilation onto build since
 # the po and mofiles will be part of the package data for cms.locale,
 # which is collected at this stage.
-class build_py_and_l10n(build_py):
-    def run(self):
-        self.run_command("compile_catalog")
-        # The build command of distutils/setuptools searches the tree
-        # and compiles a list of data files before run() is called and
-        # then stores that value. Hence we need to refresh it.
-        self.data_files = self._get_data_files()
-        super().run()
+class build_with_l10n(build):
+    sub_commands = [('compile_catalog', None)] + build.sub_commands
 
 
 setup(
     name="cms",
     version=find_version(),
-    author="The CMS development team",
-    author_email="contestms@googlegroups.com",
-    url="https://github.com/cms-dev/cms",
-    download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
-    description="A contest management system and grader for IOI-like programming competitions",
     packages=find_packages(),
     package_data=PACKAGE_DATA,
-    cmdclass={"build_py": build_py_and_l10n},
+    cmdclass={"build": build_with_l10n},
     scripts=[
         "scripts/cmsLogService",
         "scripts/cmsScoringService",
@@ -174,6 +168,7 @@ setup(
         ],
         "cms.grading.tasktypes": [
             "Batch=cms.grading.tasktypes.Batch:Batch",
+            "BatchAndOutput=cms.grading.tasktypes.BatchAndOutput:BatchAndOutput",
             "Communication=cms.grading.tasktypes.Communication:Communication",
             "OutputOnly=cms.grading.tasktypes.OutputOnly:OutputOnly",
             "TwoSteps=cms.grading.tasktypes.TwoSteps:TwoSteps",
@@ -200,13 +195,4 @@ setup(
             "Rust=cms.grading.languages.rust:Rust",
         ],
     },
-    keywords="ioi programming contest grader management system",
-    license="Affero General Public License v3",
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Natural Language :: English",
-        "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.9",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-    ],
 )

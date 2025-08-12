@@ -48,14 +48,19 @@ class Browser:
         self.read_xsrf_token(login_request.base_url)
         login_request.execute()
 
-    def do_request(self, url, data=None, file_names=None):
+    def do_request(
+        self,
+        url: str,
+        data: dict | None = None,
+        file_names: list[tuple[str, str]] | None = None,
+    ):
         """Open an URL, optionally passing the specified data and files as
            POST arguments.
 
-        url (string): the URL to open.
-        data (dict): a dictionary of parameters to pass as POST
+        url: the URL to open.
+        data: a dictionary of parameters to pass as POST
             arguments.
-        file_names ([(str, str)]): a list of files to pass as POST
+        file_names: a list of files to pass as POST
             arguments. Each entry is a tuple containing two strings:
             the field name and the name of the file to send.
 

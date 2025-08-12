@@ -26,17 +26,18 @@ import sys
 from cms.db import Contest, SessionGen, ask_for_contest
 
 
-def ask(contest):
+def ask(contest: Contest):
     ans = input("This will delete contest `%s' (with id %s) and all related "
                 "data, including submissions. Are you sure? [y/N] "
                 % (contest.name, contest.id)).strip().lower()
     return ans in ["y", "yes"]
 
 
-def remove_contest(contest_id):
+def remove_contest(contest_id: int):
     with SessionGen() as session:
-        contest = session.query(Contest)\
-            .filter(Contest.id == contest_id).first()
+        contest: Contest | None = (
+            session.query(Contest).filter(Contest.id == contest_id).first()
+        )
         if not contest:
             print("No contest with id %s found." % contest_id)
             return False

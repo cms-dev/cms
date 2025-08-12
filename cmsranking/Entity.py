@@ -17,6 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import typing
+
+if typing.TYPE_CHECKING:
+    from cmsranking.Store import Store
+
+
 class InvalidKey(Exception):
     """Exception raised in case of invalid key."""
     pass
@@ -33,12 +39,14 @@ class Entity:
     Provide some virtual methods that other classes should implement.
 
     """
-    def set(self, data):
+    key: str  # Will be set by the Store managing this entity
+
+    def set(self, data: dict):
         """Set all properties using the given data.
 
         Accept the data format used on the HTTP interface.
 
-        data (dict): the properties of the entity, in the "external"
+        data: the properties of the entity, in the "external"
             format
 
         Raise InvalidData if not able to parse the data argument.
@@ -46,27 +54,27 @@ class Entity:
         """
         pass
 
-    def get(self):
+    def get(self) -> dict:
         """Get all properties.
 
         Produce the data format used on the HTTP interface.
 
-        return (dict): the properties of the entity, in the "external"
+        return: the properties of the entity, in the "external"
             format
 
         """
         pass
 
-    def consistent(self, stores):
+    def consistent(self, stores: dict[str, "Store"]) -> bool:
         """Check if the entity is consistent.
 
         Verify that all references to other entities are correct (i.e.
         those entities actually exist).
 
-        stores ({str: Store}): a dict of Stores that can be used to
+        stores: a dict of Stores that can be used to
             validate references to other entities.
 
-        return (bool): the result of this check
+        return: the result of this check
 
         """
         return True

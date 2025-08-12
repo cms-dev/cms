@@ -32,7 +32,14 @@ compilation and the evaluation are contained in the task type class.
 import re
 from abc import ABCMeta, abstractmethod
 
-from cms.grading.Job import CompilationJob, EvaluationJob
+import typing
+
+if typing.TYPE_CHECKING:
+    from tornado.web import RequestHandler
+
+from cms.db.filecacher import FileCacher
+from cms.grading.Job import CompilationJob, EvaluationJob, Job
+from cms.grading.ParameterTypes import ParameterType
 
 
 class TaskType(metaclass=ABCMeta):
@@ -54,23 +61,25 @@ class TaskType(metaclass=ABCMeta):
 
     # If ALLOW_PARTIAL_SUBMISSION is True, then we allow the user to
     # submit only some of the required files; moreover, we try to fill
-    # the non-provided files with the one in the previous submission.
+    # the non-provided files with the one in the previous submission if
+    # REUSE_PREVIOUS_SUBMISSION is True.
     ALLOW_PARTIAL_SUBMISSION = False
+    REUSE_PREVIOUS_SUBMISSION = True
 
     # A list of all the accepted parameters for this task type.
     # Each item is an instance of TaskTypeParameter.
-    ACCEPTED_PARAMETERS = []
+    ACCEPTED_PARAMETERS: list[ParameterType] = []
 
     @classmethod
-    def parse_handler(cls, handler, prefix):
+    def parse_handler(cls, handler: "RequestHandler", prefix: str) -> list:
         """Ensure that the parameters list template agrees with the
         parameters actually passed.
 
-        handler (type): the Tornado handler with the parameters.
-        prefix (string): the prefix of the parameter names in the
+        handler: the Tornado handler with the parameters.
+        prefix: the prefix of the parameter names in the
             handler.
 
-        return (list): parameters list correctly formatted, or
+        return: parameters list correctly formatted, or
             ValueError if the parameters are not correct.
 
         """
@@ -84,10 +93,10 @@ class TaskType(metaclass=ABCMeta):
                                  % (parameter.name, error))
         return new_parameters
 
-    def __init__(self, parameters):
+    def __init__(self, parameters: list):
         """Instantiate a new TaskType with the given parameters.
 
-        parameters (list): a list of data structures that matches the
+        parameters: a list of data structures that matches the
             format described in ACCEPTED_PARAMETERS (they often come
             from Dataset.task_type_parameters and, in that case, they
             have to be already decoded from JSON).
@@ -117,13 +126,13 @@ class TaskType(metaclass=ABCMeta):
             parameter.validate(value)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Returns the name of the TaskType.
 
         Returns a human-readable name that is shown to the user in CWS
         to describe this TaskType.
 
-        return (str): the name
+        return: the name
 
         """
         # de-CamelCase the name, capitalize it and return it
@@ -135,15 +144,17 @@ class TaskType(metaclass=ABCMeta):
     testable = True
 
     @abstractmethod
-    def get_compilation_commands(self, submission_format):
+    def get_compilation_commands(
+        self, submission_format: list[str]
+    ) -> dict[str, list[list[str]]] | None:
         """Return the compilation commands for all supported languages
 
-        submission_format ([string]): the list of files provided by the
+        submission_format: the list of files provided by the
             user that have to be compiled (the compilation command may
             contain references to other files like graders, stubs, etc...);
             they may contain the string ".%l" as a language-wildcard.
 
-        return ({string: [[string]]}|None): for each language (indexed
+        return: for each language (indexed
             by its name) provide a list of commands, each as a list of
             tokens. That is because some languages may require
             multiple operations to compile or because some task types
@@ -155,30 +166,30 @@ class TaskType(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_user_managers(self):
+    def get_user_managers(self) -> list[str]:
         """Return the managers that must be provided by the user when
         requesting a user test.
 
-        return (list of str): a list of filenames (they may include a
-                              '%l' as a "language wildcard").
+        return: a list of filenames (they may include a
+                '%l' as a "language wildcard").
 
         """
         pass
 
     @abstractmethod
-    def get_auto_managers(self):
+    def get_auto_managers(self) -> list[str]:
         """Return the managers that must be provided by the
         EvaluationService (picking them from the Task) when compiling
         or evaluating a user test.
 
-        return (list of str): a list of filenames (they may include a
-                             '%l' as a "language wildcard").
+        return: a list of filenames (they may include a
+                '%l' as a "language wildcard").
 
         """
         pass
 
     @abstractmethod
-    def compile(self, job, file_cacher):
+    def compile(self, job: CompilationJob, file_cacher: FileCacher):
         """Try to compile the given CompilationJob.
 
         Set job.success to True when *our infrastracture* is successful
@@ -187,18 +198,18 @@ class TaskType(metaclass=ABCMeta):
         again to compile the same submission in a sane environment
         should lead to True).
 
-        job (CompilationJob): the data structure that contains details
-                              about the work that has to be done and
-                              that will hold its results.
-        file_cacher (FileCacher): the file cacher to use to obtain the
-                                  required files and to store the ones
-                                  that are produced.
+        job: the data structure that contains details
+             about the work that has to be done and
+             that will hold its results.
+        file_cacher: the file cacher to use to obtain the
+                     required files and to store the ones
+                     that are produced.
 
         """
         pass
 
     @abstractmethod
-    def evaluate(self, job, file_cacher):
+    def evaluate(self, job: EvaluationJob, file_cacher: FileCacher):
         """Try to evaluate the given EvaluationJob.
 
         Set job.success to True when *our infrastracture* is successful
@@ -207,17 +218,17 @@ class TaskType(metaclass=ABCMeta):
         again to compile the same submission in a sane environment
         should lead to True).
 
-        job (EvaluationJob): the data structure that contains details
-                             about the work that has to be done and
-                             that will hold its results.
-        file_cacher (FileCacher): the file cacher to use to obtain the
-                                  required files and to store the ones
-                                  that are produced.
+        job: the data structure that contains details
+             about the work that has to be done and
+             that will hold its results.
+        file_cacher: the file cacher to use to obtain the
+                     required files and to store the ones
+                     that are produced.
 
         """
         pass
 
-    def execute_job(self, job, file_cacher):
+    def execute_job(self, job: Job, file_cacher: FileCacher):
         """Call compile() or execute() depending on the job passed
         when constructing the TaskType.
 

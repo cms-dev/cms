@@ -19,6 +19,11 @@
 
 from abc import ABCMeta, abstractmethod
 
+from cms.db.contest import Contest
+from cms.db.filecacher import FileCacher
+from cms.db.task import Task
+from cms.db.user import Team, User
+
 LANGUAGE_MAP = {
     'afrikaans': 'af',
     'arabic': 'ar',
@@ -55,6 +60,7 @@ LANGUAGE_MAP = {
     'kyrgyz': 'ky',
     'latvian': 'lv',
     'lithuanian': 'lt',
+    'luxembourgish': 'lb',
     'macedonian': 'mk',
     'malay': 'ms',
     'mongolian': 'mn',
@@ -99,13 +105,12 @@ class BaseLoader(metaclass=ABCMeta):
     # Description of this loader, meant to be human readable.
     description = None
 
-    def __init__(self, path, file_cacher):
+    def __init__(self, path: str, file_cacher: FileCacher):
         """Initialize the Loader.
 
-        path (str): the filesystem location given by the user.
-        file_cacher (FileCacher): the file cacher to use to store
-                                  files (i.e. statements, managers,
-                                  testcases, etc.).
+        path: the filesystem location given by the user.
+        file_cacher: the file cacher to use to store files (i.e. statements,
+            managers, testcases, etc.).
 
         """
         self.path = path
@@ -113,16 +118,15 @@ class BaseLoader(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def detect(path):
+    def detect(path: str) -> bool:
         """Detect whether this loader is able to interpret a path.
 
         If the loader chooses to not support autodetection, just
         always return False.
 
-        path (string): the path to scan.
+        path: the path to scan.
 
-        return (bool): True if the loader is able to interpret the
-                       given path.
+        return: True if the loader is able to interpret the given path.
 
         """
         pass
@@ -141,22 +145,22 @@ class TaskLoader(BaseLoader):
 
     """
 
-    def __init__(self, path, file_cacher):
+    def __init__(self, path: str, file_cacher: FileCacher):
         super().__init__(path, file_cacher)
 
     @abstractmethod
-    def get_task(self, get_statement):
+    def get_task(self, get_statement: bool) -> Task | None:
         """Produce a Task object.
 
-        get_statement (boolean): whether the statement should be imported.
+        get_statement: whether the statement should be imported.
 
-        return (Task): the Task object.
+        return: the Task object.
 
         """
         pass
 
     @abstractmethod
-    def task_has_changed(self):
+    def task_has_changed(self) -> bool:
         """Detect if the task has been changed since its last import.
 
         This is expected to happen by saving, at every import, some
@@ -170,7 +174,7 @@ class TaskLoader(BaseLoader):
         TaskLoader decides not to support changes detection, just return
         True.
 
-        return (bool): True if the task was changed, False otherwise.
+        return: True if the task was changed, False otherwise.
 
         """
         pass
@@ -189,20 +193,20 @@ class UserLoader(BaseLoader):
 
     """
 
-    def __init__(self, path, file_cacher):
+    def __init__(self, path: str, file_cacher: FileCacher):
         super().__init__(path, file_cacher)
 
     @abstractmethod
-    def get_user(self):
+    def get_user(self) -> User | None:
         """Produce a User object.
 
-        return (User): the User object.
+        return: the User object.
 
         """
         pass
 
     @abstractmethod
-    def user_has_changed(self):
+    def user_has_changed(self) -> bool:
         """Detect if the user has been changed since its last import.
 
         This is expected to happen by saving, at every import, some
@@ -216,7 +220,7 @@ class UserLoader(BaseLoader):
         UserLoader decides not to support changes detection, just return
         True.
 
-        return (bool): True if the user was changed, False otherwise.
+        return: True if the user was changed, False otherwise.
 
         """
         pass
@@ -235,20 +239,20 @@ class TeamLoader(BaseLoader):
 
     """
 
-    def __init__(self, path, file_cacher):
+    def __init__(self, path: str, file_cacher: FileCacher):
         super().__init__(path, file_cacher)
 
     @abstractmethod
-    def get_team(self):
+    def get_team(self) -> Team | None:
         """Produce a Team object.
 
-        return (Team): the Team object.
+        return: the Team object.
 
         """
         pass
 
     @abstractmethod
-    def team_has_changed(self):
+    def team_has_changed(self) -> bool:
         """Detect if the team has been changed since its last import.
 
         This is expected to happen by saving, at every import, some
@@ -262,7 +266,7 @@ class TeamLoader(BaseLoader):
         TeamLoader decides not to support changes detection, just return
         True.
 
-        return (bool): True if the team was changed, False otherwise.
+        return: True if the team was changed, False otherwise.
 
         """
         pass
@@ -281,11 +285,11 @@ class ContestLoader(BaseLoader):
 
     """
 
-    def __init__(self, path, file_cacher):
+    def __init__(self, path: str, file_cacher: FileCacher):
         super().__init__(path, file_cacher)
 
     @abstractmethod
-    def get_contest(self):
+    def get_contest(self) -> tuple[Contest, list[str] | None, list[dict] | None]:
         """Produce a Contest object.
 
         Do what is needed (i.e. search directories and explore files
@@ -296,14 +300,13 @@ class ContestLoader(BaseLoader):
         participations in the contest (each participation should have
         at least the "username" field).
 
-        return (tuple): the Contest object and the two lists described
-                        above.
+        return: the Contest object and the two lists described above.
 
         """
         pass
 
     @abstractmethod
-    def contest_has_changed(self):
+    def contest_has_changed(self) -> bool:
         """Detect if the contest has been changed since its last import.
 
         This is expected to happen by saving, at every import, some
@@ -317,18 +320,18 @@ class ContestLoader(BaseLoader):
         ContestLoader decides not to support changes detection, just
         return True.
 
-        return (bool): True if the contset was changed, False otherwise.
+        return: True if the contset was changed, False otherwise.
 
         """
         pass
 
     @abstractmethod
-    def get_task_loader(self, taskname):
+    def get_task_loader(self, taskname: str) -> TaskLoader:
         """Return a loader class for the task with the given name.
 
-        taskname (string): name of the task.
+        taskname: name of the task.
 
-        return (TaskLoader): loader for the task with name taskname.
+        return: loader for the task with name taskname.
 
         """
         pass

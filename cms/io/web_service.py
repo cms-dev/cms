@@ -28,10 +28,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.wsgi as tornado_wsgi
-except ImportError:
-    import tornado.wsgi as tornado_wsgi
+import tornado.wsgi
 from gevent.pywsgi import WSGIServer
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
@@ -54,18 +51,23 @@ class WebService(Service):
 
     """
 
-    def __init__(self, listen_port, handlers, parameters, shard=0,
-                 listen_address=""):
+    def __init__(
+        self,
+        listen_port: int,
+        handlers: list,
+        parameters: dict,
+        shard: int = 0,
+        listen_address: str = "",
+    ):
         super().__init__(shard)
 
         static_files = parameters.pop('static_files', [])
         rpc_enabled = parameters.pop('rpc_enabled', False)
         rpc_auth = parameters.pop('rpc_auth', None)
         auth_middleware = parameters.pop('auth_middleware', None)
-        is_proxy_used = parameters.pop('is_proxy_used', None)
         num_proxies_used = parameters.pop('num_proxies_used', None)
 
-        self.wsgi_app = tornado_wsgi.WSGIApplication(handlers, **parameters)
+        self.wsgi_app = tornado.wsgi.WSGIApplication(handlers, **parameters)
         self.wsgi_app.service = self
 
         for entry in static_files:
@@ -98,10 +100,7 @@ class WebService(Service):
         # were allowed to directlty communicate with the server they
         # could fake their IP and compromise the security of IP lock).
         if num_proxies_used is None:
-            if is_proxy_used:
-                num_proxies_used = 1
-            else:
-                num_proxies_used = 0
+            num_proxies_used = 0
 
         if num_proxies_used > 0:
             self.wsgi_app = ProxyFix(self.wsgi_app, num_proxies_used)

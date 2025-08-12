@@ -100,16 +100,38 @@ class UserListHandler(SimpleHandler("users.html")):
 
     @require_permission(BaseHandler.AUTHENTICATED)
     def post(self):
-        user_id = self.get_argument("user_id")
-        operation = self.get_argument("operation")
+        user_id: str = self.get_argument("user_id")
+        operation: str = self.get_argument("operation")
 
         if operation == self.REMOVE:
             asking_page = self.url("users", user_id, "remove")
-            # Open asking for remove page
             self.redirect(asking_page)
         else:
             self.service.add_notification(
                 make_datetime(), "Invalid operation %s" % operation, "")
+            self.redirect(self.url("contests"))
+
+
+class TeamListHandler(SimpleHandler("teams.html")):
+    """Get returns the list of all teams, post perform operations on
+    a specific team (removing them from CMS).
+
+    """
+
+    REMOVE = "Remove"
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def post(self):
+        team_id: str = self.get_argument("team_id")
+        operation: str = self.get_argument("operation")
+
+        if operation == self.REMOVE:
+            asking_page = self.url("teams", team_id, "remove")
+            self.redirect(asking_page)
+        else:
+            self.service.add_notification(
+                make_datetime(), "Invalid operation %s" % operation, ""
+            )
             self.redirect(self.url("contests"))
 
 
@@ -143,6 +165,47 @@ class RemoveUserHandler(BaseHandler):
 
         # Maybe they'll want to do this again (for another user)
         self.write("../../users")
+
+
+class RemoveTeamHandler(BaseHandler):
+    """Get returns a page asking for confirmation, delete actually removes
+    the team from CMS.
+
+    """
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self, team_id):
+        team = self.safe_get_item(Team, team_id)
+        participation_query = self.sql_session.query(Participation).filter(
+            Participation.team == team
+        )
+
+        self.r_params = self.render_params()
+        self.r_params["team"] = team
+        self.r_params["participation_count"] = participation_query.count()
+        self.render("team_remove.html", **self.r_params)
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def delete(self, team_id):
+        team = self.safe_get_item(Team, team_id)
+        try:
+
+            # Remove associations
+            self.sql_session.query(Participation).filter(
+                Participation.team_id == team_id
+            ).update({Participation.team_id: None})
+
+            # delete the team
+            self.sql_session.delete(team)
+            if self.try_commit():
+                self.service.proxy_service.reinitialize()
+        except Exception as fallback_error:
+            self.service.add_notification(
+                make_datetime(), "Error removing team", repr(fallback_error)
+            )
+
+        # Maybe they'll want to do this again (for another team)
+        self.write("../../teams")
 
 
 class TeamHandler(BaseHandler):
@@ -268,7 +331,7 @@ class AddParticipationHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
 
         try:
-            contest_id = self.get_argument("contest_id")
+            contest_id: str = self.get_argument("contest_id")
             assert contest_id != "null", "Please select a valid contest"
         except Exception as error:
             self.service.add_notification(
@@ -305,8 +368,8 @@ class EditParticipationHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
 
         try:
-            contest_id = self.get_argument("contest_id")
-            operation = self.get_argument("operation")
+            contest_id: str = self.get_argument("contest_id")
+            operation: str = self.get_argument("operation")
             assert contest_id != "null", "Please select a valid contest"
             assert operation in (
                 "Remove",

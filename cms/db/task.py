@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,10 +37,16 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
     Interval, Enum, BigInteger
 
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
-    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+    FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 from . import Codename, Filename, FilenameSchemaArray, Digest, Base, Contest
+
+import typing
+if typing.TYPE_CHECKING:
+    from cms.grading.scoretypes import ScoreType
+    from cms.grading.tasktypes import TaskType
+    from . import Submission, UserTest
 
 
 class Task(Base):
@@ -64,7 +71,7 @@ class Task(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True,
         # Needed to enable autoincrement on integer primary keys that
@@ -72,43 +79,49 @@ class Task(Base):
         autoincrement='ignore_fk')
 
     # Number of the task for sorting.
-    num = Column(
+    num: int | None = Column(
         Integer,
         nullable=True)
 
     # Contest (id and object) owning the task.
-    contest_id = Column(
+    contest_id: int | None = Column(
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=True,
         index=True)
-    contest = relationship(
+    contest: Contest | None = relationship(
         Contest,
         back_populates="tasks")
 
     # Short name and long human readable title of the task.
-    name = Column(
+    name: str = Column(
         Codename,
         nullable=False,
         unique=True)
-    title = Column(
+    title: str = Column(
         Unicode,
         nullable=False)
 
     # The names of the files that the contestant needs to submit (with
     # language-specific extensions replaced by "%l").
-    submission_format = Column(
+    submission_format: list[str] = Column(
         FilenameSchemaArray,
         nullable=False,
         default=[])
 
     # The language codes of the statements that will be highlighted to
     # all users for this task.
-    primary_statements = Column(
+    primary_statements: list[str] = Column(
         ARRAY(String),
         nullable=False,
         default=[])
+
+    # The list of names of programming languages allowed for this task.
+    # If null, all contest languages are allowed.
+    allowed_languages: list[str] | None = Column(
+        ARRAY(String), nullable=True, default=None
+    )
 
     # The parameters that control task-tokens follow. Note that their
     # effect during the contest depends on the interaction with the
@@ -121,7 +134,7 @@ class Task(Base):
     #   be all available at start, but given periodically during the
     #   contest instead.
     # - infinite: The user will always be able to use a token.
-    token_mode = Column(
+    token_mode: str = Column(
         Enum(TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE,
              name="token_mode"),
         nullable=False,
@@ -129,14 +142,14 @@ class Task(Base):
 
     # The maximum number of tokens a contestant is allowed to use
     # during the whole contest (on this tasks).
-    token_max_number = Column(
+    token_max_number: int | None = Column(
         Integer,
         CheckConstraint("token_max_number > 0"),
         nullable=True)
 
     # The minimum interval between two successive uses of tokens for
     # the same user (on this task).
-    token_min_interval = Column(
+    token_min_interval: timedelta = Column(
         Interval,
         CheckConstraint("token_min_interval >= '0 seconds'"),
         nullable=False,
@@ -145,22 +158,22 @@ class Task(Base):
     # The parameters that control generation (if mode is "finite"):
     # the user starts with "initial" tokens and receives "number" more
     # every "interval", but their total number is capped to "max".
-    token_gen_initial = Column(
+    token_gen_initial: int = Column(
         Integer,
         CheckConstraint("token_gen_initial >= 0"),
         nullable=False,
         default=2)
-    token_gen_number = Column(
+    token_gen_number: int = Column(
         Integer,
         CheckConstraint("token_gen_number >= 0"),
         nullable=False,
         default=2)
-    token_gen_interval = Column(
+    token_gen_interval: timedelta = Column(
         Interval,
         CheckConstraint("token_gen_interval > '0 seconds'"),
         nullable=False,
         default=timedelta(minutes=30))
-    token_gen_max = Column(
+    token_gen_max: int | None = Column(
         Integer,
         CheckConstraint("token_gen_max > 0"),
         nullable=True)
@@ -168,22 +181,22 @@ class Task(Base):
     # Maximum number of submissions or user_tests allowed for each user
     # on this task during the whole contest or None to not enforce
     # this limitation.
-    max_submission_number = Column(
+    max_submission_number: int | None = Column(
         Integer,
         CheckConstraint("max_submission_number > 0"),
         nullable=True)
-    max_user_test_number = Column(
+    max_user_test_number: int | None = Column(
         Integer,
         CheckConstraint("max_user_test_number > 0"),
         nullable=True)
 
     # Minimum interval between two submissions or user_tests for this
     # task, or None to not enforce this limitation.
-    min_submission_interval = Column(
+    min_submission_interval: timedelta | None = Column(
         Interval,
         CheckConstraint("min_submission_interval > '0 seconds'"),
         nullable=True)
-    min_user_test_interval = Column(
+    min_user_test_interval: timedelta | None = Column(
         Interval,
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
@@ -191,22 +204,23 @@ class Task(Base):
     # What information users can see about the evaluations of their
     # submissions. Offering full information might help some users to
     # reverse engineer task data.
-    feedback_level = Column(
+    feedback_level: str = Column(
         Enum(FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED,
+             FEEDBACK_LEVEL_OI_RESTRICTED,
              name="feedback_level"),
         nullable=False,
         default=FEEDBACK_LEVEL_RESTRICTED)
 
     # The scores for this task will be rounded to this number of
     # decimal places.
-    score_precision = Column(
+    score_precision: int = Column(
         Integer,
         CheckConstraint("score_precision >= 0"),
         nullable=False,
         default=0)
 
     # Score mode for the task.
-    score_mode = Column(
+    score_mode: str = Column(
         Enum(SCORE_MODE_MAX_TOKENED_LAST,
              SCORE_MODE_MAX,
              SCORE_MODE_MAX_SUBTASK,
@@ -216,10 +230,10 @@ class Task(Base):
 
     # Active Dataset (id and object) currently being used for scoring.
     # The ForeignKeyConstraint for this column is set at table-level.
-    active_dataset_id = Column(
+    active_dataset_id: int | None = Column(
         Integer,
         nullable=True)
-    active_dataset = relationship(
+    active_dataset: "Dataset | None" = relationship(
         'Dataset',
         foreign_keys=[active_dataset_id],
         # Use an UPDATE query *after* an INSERT query (and *before* a
@@ -230,21 +244,21 @@ class Task(Base):
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    statements = relationship(
+    statements: dict[str, "Statement"] = relationship(
         "Statement",
         collection_class=attribute_mapped_collection("language"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
 
-    attachments = relationship(
+    attachments: dict[str, "Attachment"] = relationship(
         "Attachment",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
 
-    datasets = relationship(
+    datasets: list["Dataset"] = relationship(
         "Dataset",
         # Due to active_dataset_id, SQLAlchemy cannot unambiguously
         # figure out by itself which foreign key to use.
@@ -253,17 +267,32 @@ class Task(Base):
         passive_deletes=True,
         back_populates="task")
 
-    submissions = relationship(
+    submissions: list["Submission"] = relationship(
         "Submission",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
 
-    user_tests = relationship(
+    user_tests: list["UserTest"] = relationship(
         "UserTest",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="task")
+
+    def get_allowed_languages(self) -> list[str] | None:
+        """Get the list of allowed languages for this task.
+
+        If the task has specific allowed languages configured, return those.
+        Otherwise, return the contest's allowed languages.
+
+        return: list of allowed language names, or None if no contest is set
+        """
+        # If task has specific language restrictions, use those
+        if self.allowed_languages is not None:
+            return self.allowed_languages
+
+        # Otherwise, use contest language restrictions
+        return self.contest.languages if self.contest else None
 
 
 class Statement(Base):
@@ -276,18 +305,18 @@ class Statement(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Task (id and object) the statement is for.
-    task_id = Column(
+    task_id: int = Column(
         Integer,
         ForeignKey(Task.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task: Task = relationship(
         Task,
         back_populates="statements")
 
@@ -296,12 +325,12 @@ class Statement(Base):
     # it will be rendered appropriately on the interface (i.e. "English" and
     # "English (United States of America)"). These codes need to be taken from
     # ISO 639-1 and ISO 3166-1 respectively.
-    language = Column(
+    language: str = Column(
         Unicode,
         nullable=False)
 
     # Digest of the file.
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -317,26 +346,26 @@ class Attachment(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Task (id and object) owning the attachment.
-    task_id = Column(
+    task_id: int = Column(
         Integer,
         ForeignKey(Task.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    task = relationship(
+    task: Task = relationship(
         Task,
         back_populates="attachments")
 
     # Filename and digest of the provided attachment.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -354,75 +383,75 @@ class Dataset(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Task (id and object) owning the dataset.
-    task_id = Column(
+    task_id: int = Column(
         Integer,
         ForeignKey(Task.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False)
-    task = relationship(
+    task: Task = relationship(
         Task,
         foreign_keys=[task_id],
         back_populates="datasets")
 
     # A human-readable text describing the dataset.
-    description = Column(
+    description: str = Column(
         Unicode,
         nullable=False)
 
     # Whether this dataset will be automatically judged by ES and SS
     # "in background", together with the active dataset of each task.
-    autojudge = Column(
+    autojudge: bool = Column(
         Boolean,
         nullable=False,
         default=False)
 
     # Time and memory limits (in seconds and bytes) for every testcase.
-    time_limit = Column(
+    time_limit: float | None = Column(
         Float,
         CheckConstraint("time_limit > 0"),
         nullable=True)
-    memory_limit = Column(
+    memory_limit: int | None = Column(
         BigInteger,
-        CheckConstraint("memory_limit > 0"),
-        CheckConstraint("MOD(memory_limit, 1048576) = 0"),
+        CheckConstraint("memory_limit > 0", name='datasets_memory_limit_check'),
+        CheckConstraint("MOD(memory_limit, 1048576) = 0", name='datasets_memory_limit_check1'),
         nullable=True)
 
     # Name of the TaskType child class suited for the task.
-    task_type = Column(
+    task_type: str = Column(
         String,
         nullable=False)
 
     # Parameters for the task type class.
-    task_type_parameters = Column(
+    task_type_parameters: object = Column(
         JSONB,
         nullable=False)
 
     # Name of the ScoreType child class suited for the task.
-    score_type = Column(
+    score_type: str = Column(
         String,
         nullable=False)
 
     # Parameters for the score type class.
-    score_type_parameters = Column(
+    score_type_parameters: object = Column(
         JSONB,
         nullable=False)
 
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
-    managers = relationship(
+    managers: dict[str, "Manager"] = relationship(
         "Manager",
         collection_class=attribute_mapped_collection("filename"),
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="dataset")
 
-    testcases = relationship(
+    testcases: dict[str, "Testcase"] = relationship(
         "Testcase",
         collection_class=attribute_mapped_collection("codename"),
         cascade="all, delete-orphan",
@@ -430,17 +459,17 @@ class Dataset(Base):
         back_populates="dataset")
 
     @property
-    def active(self):
+    def active(self) -> bool:
         """Shorthand for detecting if the dataset is active.
 
-        return (bool): True if this dataset is the active one for its
+        return: True if this dataset is the active one for its
             task.
 
         """
         return self is self.task.active_dataset
 
     @property
-    def task_type_object(self):
+    def task_type_object(self) -> "TaskType":
         if not hasattr(self, "_cached_task_type_object") \
                 or self.task_type != self._cached_task_type \
                 or (self.task_type_parameters
@@ -459,7 +488,7 @@ class Dataset(Base):
         return self._cached_task_type_object
 
     @property
-    def score_type_object(self):
+    def score_type_object(self) -> "ScoreType":
         public_testcases = {k: tc.public
                             for k, tc in self.testcases.items()}
         if not hasattr(self, "_cached_score_type_object") \
@@ -481,14 +510,14 @@ class Dataset(Base):
             self._cached_public_testcases = public_testcases
         return self._cached_score_type_object
 
-    def clone_from(self, old_dataset, clone_managers=True,
-                   clone_testcases=True, clone_results=False):
+    def clone_from(self, old_dataset: "Dataset", clone_managers: bool = True,
+                   clone_testcases: bool = True, clone_results: bool = False):
         """Overwrite the data with that in dataset.
 
-        old_dataset (Dataset): original dataset to copy from.
-        clone_managers (bool): copy dataset managers.
-        clone_testcases (bool): copy dataset testcases.
-        clone_results (bool): copy submission results (will also copy
+        old_dataset: original dataset to copy from.
+        clone_managers: copy dataset managers.
+        clone_testcases: copy dataset testcases.
+        clone_results: copy submission results (will also copy
             managers and testcases).
 
         """
@@ -541,26 +570,26 @@ class Manager(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Dataset (id and object) owning the manager.
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset,
         back_populates="managers")
 
     # Filename and digest of the provided manager.
-    filename = Column(
+    filename: str = Column(
         Filename,
         nullable=False)
-    digest = Column(
+    digest: str = Column(
         Digest,
         nullable=False)
 
@@ -575,37 +604,37 @@ class Testcase(Base):
     )
 
     # Auto increment primary key.
-    id = Column(
+    id: int = Column(
         Integer,
         primary_key=True)
 
     # Dataset (id and object) owning the testcase.
-    dataset_id = Column(
+    dataset_id: int = Column(
         Integer,
         ForeignKey(Dataset.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    dataset = relationship(
+    dataset: Dataset = relationship(
         Dataset,
         back_populates="testcases")
 
     # Codename identifying the testcase.
-    codename = Column(
+    codename: str = Column(
         Codename,
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
     # without playing a token).
-    public = Column(
+    public: bool = Column(
         Boolean,
         nullable=False,
         default=False)
 
     # Digests of the input and output files.
-    input = Column(
+    input: str = Column(
         Digest,
         nullable=False)
-    output = Column(
+    output: str = Column(
         Digest,
         nullable=False)

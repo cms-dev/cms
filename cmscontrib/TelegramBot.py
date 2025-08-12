@@ -17,9 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
+from collections.abc import Awaitable, Callable
+from typing import Any
 from sqlalchemy.orm import Query
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyParameters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyParameters, Update
+
+from cms.db.base import Base
 
 try:
     collections.MutableMapping
@@ -45,6 +49,7 @@ from cms.util import contest_id_from_args
 
 from telegram.ext import (
     ApplicationBuilder,
+    CallbackContext,
     CallbackQueryHandler,
     CommandHandler,
 )
@@ -91,14 +96,15 @@ ends at the end of the first line.
 """
 
 
-def sqlalchemy_to_dict(obj):
+def sqlalchemy_to_dict(obj: Base) -> dict:
     d = obj.get_attrs()
     d["id"] = obj.id
     return d
 
 
 class TelegramBot:
-    def __init__(self, chat_id, token, contest_id) -> None:
+
+    def __init__(self, chat_id: str, token: str, contest_id: int | None) -> None:
         self.chat_id = int(chat_id)
         self.contest_id = contest_id
         self.application = (
@@ -123,10 +129,10 @@ class TelegramBot:
         self.application.add_handler(CallbackQueryHandler(self.answer))
 
         self.question_storage_dir = os.path.join(
-            config.data_dir, "telegram", "question"
+            config.global_.data_dir, "telegram", "question"
         )
         self.announcement_storage_dir = os.path.join(
-            config.data_dir, "telegram", "announcement"
+            config.global_.data_dir, "telegram", "announcement"
         )
         os.makedirs(self.question_storage_dir, exist_ok=True)
         os.makedirs(self.announcement_storage_dir, exist_ok=True)
@@ -161,7 +167,7 @@ class TelegramBot:
     def file_name(self, id):
         return f"{id}.yaml"
 
-    async def send_help_message(self, update, context):
+    async def send_help_message(self, update: Update, context: CallbackContext):
         del update
         if self.contest_id is None:
             await context.bot.send_message(
@@ -174,7 +180,7 @@ class TelegramBot:
                 parse_mode="HTML",
             )
 
-    async def custom_answer(self, update, context):
+    async def custom_answer(self, update: Update, context: CallbackContext):
         if update.effective_chat.id != self.chat_id:
             logging.warning(
                 f"answer from unknown chat {update.effective_chat.id}")
@@ -213,7 +219,7 @@ class TelegramBot:
             ses.add(question)
             ses.commit()
 
-    async def answer(self, update, context):
+    async def answer(self, update: Update, context: CallbackContext):
         if update.effective_chat.id != self.chat_id:
             logging.warning(
                 f"reply from unknown chat {update.effective_chat.id}")
@@ -241,7 +247,7 @@ class TelegramBot:
             ses.commit()
         await update.callback_query.answer()
 
-    async def send_announcement(self, update, context):
+    async def send_announcement(self, update: Update, context: CallbackContext):
         if update.effective_chat.id != self.chat_id:
             logging.warning(
                 f"announcement from unknown chat {update.effective_chat.id}"
@@ -283,7 +289,13 @@ class TelegramBot:
                 await self.application.updater.stop()
                 await self.application.stop()
 
-    async def _store(self, obj, store, directory, callback):
+    async def _store(
+        self,
+        obj: dict,
+        store: dict,
+        directory: str,
+        callback: Callable[[dict, dict], Awaitable[dict]],
+    ):
         existing = store.get(obj["id"], dict())
         has_changed = False
         for (k, v) in obj.items():
@@ -297,12 +309,18 @@ class TelegramBot:
             with open(os.path.join(directory, self.file_name(obj_id)), "w") as f:
                 f.write(yaml.safe_dump(obj))
 
-    async def store_question(self, question, changed_callback):
+    async def store_question(
+        self, question: dict, changed_callback: Callable[[dict, dict], Awaitable[dict]]
+    ):
         await self._store(
             question, self.question_status, self.question_storage_dir, changed_callback
         )
 
-    async def store_announcement(self, announcement, changed_callback):
+    async def store_announcement(
+        self,
+        announcement: dict,
+        changed_callback: Callable[[dict, dict], Awaitable[dict]],
+    ):
         await self._store(
             announcement,
             self.announcement_status,
@@ -310,7 +328,7 @@ class TelegramBot:
             changed_callback,
         )
 
-    async def question_callback(self, old, new):
+    async def question_callback(self, old: dict, new: dict) -> dict:
         subject = html.escape(new["subject"])
         text = html.escape(new["text"])
         qid = new["id"]
@@ -377,7 +395,7 @@ class TelegramBot:
         self.msg_id_to_qid[msg_id] = qid
         return new
 
-    async def announcement_callback(self, old, new):
+    async def announcement_callback(self, old: dict, new: dict) -> dict:
         subject = html.escape(new["subject"])
         text = html.escape(new["text"])
         text = f"<b>New announcement</b>\nSubject: <i>{subject}</i>\n\n{text}"
@@ -404,7 +422,7 @@ class TelegramBot:
                     query = query.filter(
                         Participation.contest_id == self.contest_id)
 
-                def q_to_dict(q):
+                def q_to_dict(q) -> dict:
                     d = sqlalchemy_to_dict(q)
                     d["username"] = q.participation.user.username
                     return d
@@ -446,12 +464,12 @@ def main():
     if contest_id == "ALL":
         contest_id = None
 
-    if config.telegram_bot_token is None or config.telegram_bot_chat_id is None:
+    if config.telegram_bot is None:
         raise ConfigError(
             "Need to configure the Telegram bot before starting it")
 
     bot = TelegramBot(
-        config.telegram_bot_chat_id, config.telegram_bot_token, contest_id
+        config.telegram_bot.chat_id, config.telegram_bot.bot_token, contest_id
     )
 
     asyncio.run(bot.run())

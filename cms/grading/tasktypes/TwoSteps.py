@@ -22,7 +22,9 @@
 
 import logging
 import os
+import subprocess
 import tempfile
+import typing
 
 from cms import config
 from cms.db import Executable
@@ -93,7 +95,7 @@ class TwoSteps(TaskType):
 
     def __init__(self, parameters):
         super().__init__(parameters)
-        self.output_eval = self.parameters[0]
+        self.output_eval: str = self.parameters[0]
 
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
@@ -133,7 +135,7 @@ class TwoSteps(TaskType):
         """See TaskType.get_auto_managers."""
         return []
 
-    def _uses_checker(self):
+    def _uses_checker(self) -> bool:
         return self.output_eval == TwoSteps.OUTPUT_EVAL_CHECKER
 
     def compile(self, job, file_cacher):
@@ -208,7 +210,7 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox, job.success, job.keep_sandbox)
+        delete_sandbox(sandbox, job)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -223,7 +225,7 @@ class TwoSteps(TaskType):
         job.sandboxes.append(first_sandbox.get_root_path())
         job.sandboxes.append(second_sandbox.get_root_path())
 
-        fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        fifo_dir = tempfile.mkdtemp(dir=config.global_.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
         os.chmod(fifo_dir, 0o755)
@@ -278,7 +280,8 @@ class TwoSteps(TaskType):
             wait=False)
 
         # Consume output.
-        wait_without_std([second, first])
+        processes = typing.cast(list[subprocess.Popen], [second, first])
+        wait_without_std(processes)
 
         box_success_first, evaluation_success_first, first_stats = \
             evaluation_step_after_run(first_sandbox)
@@ -343,5 +346,5 @@ class TwoSteps(TaskType):
         job.text = text
         job.plus = stats
 
-        delete_sandbox(first_sandbox, job.success, job.keep_sandbox)
-        delete_sandbox(second_sandbox, job.success, job.keep_sandbox)
+        delete_sandbox(first_sandbox, job)
+        delete_sandbox(second_sandbox, job)

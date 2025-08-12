@@ -34,16 +34,16 @@ import traceback
 from datetime import datetime, timedelta
 
 import collections
+
+from cms.db.user import Participation
+
 try:
     collections.MutableMapping
 except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 from werkzeug.datastructures import LanguageAccept
 from werkzeug.http import parse_accept_header
 
@@ -51,6 +51,10 @@ from cms.db import Contest
 from cms.locale import DEFAULT_TRANSLATION, choose_language_code
 from cms.server import CommonRequestHandler
 from cmscommon.datetime import utc as utc_tzinfo
+import typing
+
+if typing.TYPE_CHECKING:
+    from cms.server.contest.server import ContestWebServer
 
 
 logger = logging.getLogger(__name__)
@@ -62,6 +66,9 @@ class BaseHandler(CommonRequestHandler):
     This will also handle the contest list on the homepage.
 
     """
+    current_user: Participation | None
+    service: "ContestWebServer"
+    api_request: bool
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -77,6 +84,8 @@ class BaseHandler(CommonRequestHandler):
         self.translation = DEFAULT_TRANSLATION
         self._ = self.translation.gettext
         self.n_ = self.translation.ngettext
+        # Is this a request on an API endpoint?
+        self.api_request = False
 
     def render(self, template_name, **params):
         t = self.service.jinja2_environment.get_template(template_name)
@@ -118,10 +127,10 @@ class BaseHandler(CommonRequestHandler):
 
         self.set_header("Content-Language", chosen_lang)
 
-    def render_params(self):
+    def render_params(self) -> dict:
         """Return the default render params used by almost all handlers.
 
-        return (dict): default render params
+        return: default render params
 
         """
         ret = {}
@@ -148,7 +157,7 @@ class BaseHandler(CommonRequestHandler):
 
     def write_error(self, status_code, **kwargs):
         if "exc_info" in kwargs and \
-                kwargs["exc_info"][0] != tornado_web.HTTPError:
+                kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
             logger.error(
                 "Uncaught exception (%r) while processing a request: %s",
@@ -168,6 +177,24 @@ class BaseHandler(CommonRequestHandler):
         """Return whether CWS serves all contests."""
         return self.service.contest_id is None
 
+    def is_api(self):
+        """Return whether it's an API request."""
+        return self.api_request
+
+    def get_boolean_argument(self, name: str, default: bool) -> bool:
+        """Parse a Boolean request argument."""
+
+        arg = self.get_argument(name, "")
+        if arg == "":
+            return default
+
+        if arg == '0':
+            return False
+        elif arg == '1':
+            return True
+        else:
+            raise ValueError(f"Cannot parse boolean argument {name}")
+
 
 class ContestListHandler(BaseHandler):
     def get(self):
@@ -182,5 +209,6 @@ class ContestListHandler(BaseHandler):
             seven_days_ahead = today + timedelta(days=7)
             if contest.start < seven_days_ahead and contest.stop > seven_days_ago:
                 contest_list[contest.name] = contest
+                
         self.render("contest_list.html", contest_list=contest_list,
                     **self.r_params)

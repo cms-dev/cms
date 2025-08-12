@@ -51,11 +51,11 @@ Finally you have to create the database schema for CMS, by running:
 Configuring CMS
 ===============
 
-There are two configuration files, one for CMS itself and one for the rankings. Samples for both files are in the directory :gh_tree:`config/`. You want to copy them to the same file names but without the ``.sample`` suffix (that is, to :file:`config/cms.conf` and :file:`config/cms.ranking.conf`) before modifying them.
+There are two configuration files, one for CMS itself and one for the rankings. Samples for both files are in the directory :gh_tree:`config/`. To modify them, first install CMS (using, for example, ``./install.py cms``) and then modify the files in :samp:`{install_dir}/etc/`.
 
-* :file:`cms.conf` is intended to be the same on all machines; all configurations options are explained in the file; of particular importance is the definition of ``core_services``, that specifies where and how many services are going to be run, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
+* :file:`cms.toml` is intended to be the same on all machines; all configurations options are explained in the file; of particular importance is the definition of ``core_services``, that specifies where and how many services are going to be run, and the connecting line for the database, in which you need to specify the name of the user created above and its password.
 
-* :file:`cms.ranking.conf` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
+* :file:`cms_ranking.toml` is not necessarily meant to be the same on each server that will host a ranking, since it just controls settings relevant for one single server. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.toml`.
 
 These files are a pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
 
@@ -63,22 +63,20 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * if you are running low on disk space, you may want to make sure ``keep_sandbox`` is set to ``false``;
 
-If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, using non-trivial username and password.
+If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.toml`, and :file:`cms_ranking.toml`, using non-trivial username and password.
 
 .. warning::
 
    As the name implies, the value of ``secret_key`` must be kept confidential. If a contestant knows it (for example because you are using the default value), they may be easily able to log in as another contestant.
 
-The configuration files get copied automatically by the ``prerequisites.py`` script, so you can either run ``sudo ./prerequisites.py install`` again (answering "Y" when questioned about overwriting old configuration files) or you could simply edit the previously installed configuration files (which are usually found in ``/usr/local/etc/`` or ``/etc/``), if you do not plan on running that command ever again.
-
 Running CMS
 ===========
 
-Here we will assume you installed CMS. If not, you should replace all commands path with the appropriate local versions (for example, ``cmsLogService`` becomes :gh_blob:`./scripts/cmsLogService`).
+You must install CMS (using, for example, ``./install.py cms``) before continuing. Note that if you didn't activate CMS's virtual environment, you need to prefix all commands with :samp:`{install_dir}/bin/`.
 
 At this point, you should have CMS installed on all the machines you want run services on, with the same configuration file, and a running PostgreSQL instance. To run CMS, you need a contest in the database. To create a contest, follow :doc:`these instructions <Creating a contest>`.
 
-CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can start all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.conf for LogService, this command:
+CMS is composed of a number of services, potentially replicated several times, and running on several machines. You can start all the services by hand, but this is a tedious task. Luckily, there is a service (ResourceService) that takes care of starting all the services on the machine it is running, limiting thus the number of binaries you have to run. Services started by ResourceService do not show their logs to the standard output; so it is expected that you run LogService to inspect the logs as they arrive (logs are also saved to disk). To start LogService, you need to issue, in the machine specified in cms.toml for LogService, this command:
 
 .. sourcecode:: bash
 
@@ -106,9 +104,37 @@ You should now be able to start exploring the admin interface, by default at htt
 
     cmsAddAdmin name
 
-CMS will create an admin account with username "name" and a random password that will be printed by the command. You can log in with this credentials, and then use the admin interface to modify the account or add other accounts.
+CMS will create an admin account with username "name" and a random password that will be printed by the command. You can log in with these credentials, and then use the admin interface to modify the account or add other accounts.
 
 .. _running-cms_recommended-setup:
+
+
+Starting CMS by systemd
+=======================
+
+If your system runs ``systemd``, you can start parts of CMS as systemd services.
+They are usually managed by the user instance of systemd for the ``cmsuser`` account.
+
+:samp:`./install.py --dir={install_dir} systemd` installs the following
+services under ``~/.config/systemd/user/``:
+
+* ``cms-logging.service`` that starts the ``cmsLogService``.
+
+* :samp:`cms@{id}.service` that starts the ``cmsResourceService`` for the contest number *id*
+  (which could be ``ALL`` if you want a common Contest Web Server for all contests).
+  The resource service then manages all other services.
+
+* ``cms-ranking.service`` that starts the ``cmsRankingWebServer``.
+
+You can start a service by ``systemctl --user start cms-logging`` and make it start
+automatically when the system is booted up by ``systemctl --user enable cms-logging``.
+Other useful operations include ``status``, ``stop``, and ``disable``.
+
+Most Linux systems require ``sudo loginctl enable-linger cmsuser`` to allow user
+services running when the user is not logged in. (Beware that the lingering user
+instance of systemd does not automatically gain new privileges when you add the
+to a new group. You might need to ``sudo loginctl terminate-user ...``.)
+
 
 Recommended setup
 =================

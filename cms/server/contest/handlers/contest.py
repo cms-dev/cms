@@ -30,22 +30,24 @@
 """
 
 import ipaddress
+import json
 import logging
 
 import collections
+
+from cms.db.user import Participation
+from cms.server.util import Url
+
 try:
     collections.MutableMapping
 except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest
+from cms.db import Contest, Submission, Task, UserTest, contest
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -69,9 +71,12 @@ class ContestHandler(BaseHandler):
     child of this class.
 
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.contest_url = None
+        self.contest_url: Url = None
+        self.contest: Contest
+        self.impersonated_by_admin = False
 
     def prepare(self):
         self.choose_contest()
@@ -118,13 +123,13 @@ class ContestHandler(BaseHandler):
                 # the one from the base class is enough to display a 404 page.
                 super().prepare()
                 self.r_params = super().render_params()
-                raise tornado_web.HTTPError(404)
+                raise tornado.web.HTTPError(404)
         else:
             # Select the contest specified on the command line
             self.contest = Contest.get_from_id(
                 self.service.contest_id, self.sql_session)
 
-    def get_current_user(self):
+    def get_current_user(self) -> Participation | None:
         """Return the currently logged in participation.
 
         The name is get_current_user because tornado requires that
@@ -134,6 +139,9 @@ class ContestHandler(BaseHandler):
         - if IP autologin is enabled, the remote IP address is matched
           with the participation IP address; if a match is found, that
           participation is returned; in case of errors, None is returned;
+        - if username/password authentication is enabled, and a
+          "X-CMS-Authorization" header is present and valid, the
+          corresponding participation is returned.
         - if username/password authentication is enabled, and the cookie
           is valid, the corresponding participation is returned, and the
           cookie is refreshed.
@@ -144,12 +152,17 @@ class ContestHandler(BaseHandler):
         In case of any error, or of a login by other sources, the
         cookie is deleted.
 
-        return (Participation|None): the participation object for the
+        return: the participation object for the
             user logged in for the running contest.
 
         """
         cookie_name = self.contest.name + "_login"
         cookie = self.get_secure_cookie(cookie_name)
+        authorization_header = self.request.headers.get(
+            "X-CMS-Authorization", None)
+        if authorization_header is not None:
+            authorization_header = tornado.web.decode_signed_value(self.application.settings["cookie_secret"],
+                                                                   cookie_name, authorization_header)
 
         try:
             ip_address = ipaddress.ip_address(self.request.remote_ip)
@@ -158,14 +171,23 @@ class ContestHandler(BaseHandler):
                            self.request.remote_ip)
             return None
 
-        participation, cookie = authenticate_request(
-            self.sql_session, self.contest, self.timestamp, cookie, ip_address)
+        participation, cookie, impersonated = authenticate_request(
+            self.sql_session, self.contest,
+            self.timestamp, cookie,
+            authorization_header,
+            ip_address)
 
         if cookie is None:
             self.clear_cookie(cookie_name)
         elif self.refresh_cookie:
-            self.set_secure_cookie(cookie_name, cookie, expires_days=None)
+            self.set_secure_cookie(
+                cookie_name,
+                cookie,
+                expires_days=None,
+                max_age=config.contest_web_server.cookie_duration,
+            )
 
+        self.impersonated_by_admin = impersonated
         return participation
 
     def render_params(self):
@@ -178,7 +200,7 @@ class ContestHandler(BaseHandler):
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
-        ret["printing_enabled"] = (config.printer is not None)
+        ret["printing_enabled"] = (config.printing.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
         ret["testing_enabled"] = self.contest.allow_user_tests
 
@@ -224,12 +246,12 @@ class ContestHandler(BaseHandler):
         """
         return self.contest_url()
 
-    def get_task(self, task_name):
+    def get_task(self, task_name: str) -> Task | None:
         """Return the task in the contest with the given name.
 
-        task_name (str): the name of the task we are interested in.
+        task_name: the name of the task we are interested in.
 
-        return (Task|None): the corresponding task object, if found.
+        return: the corresponding task object, if found.
 
         """
         return self.sql_session.query(Task) \
@@ -237,13 +259,13 @@ class ContestHandler(BaseHandler):
             .filter(Task.name == task_name) \
             .one_or_none()
 
-    def get_submission(self, task, submission_num):
+    def get_submission(self, task: Task, opaque_id: str | int) -> Submission | None:
         """Return the num-th contestant's submission on the given task.
 
-        task (Task): a task for the contest that is being served.
-        submission_num (str): a positive number, in decimal encoding.
+        task: a task for the contest that is being served.
+        submission_num: a positive number, in decimal encoding.
 
-        return (Submission|None): the submission_num-th submission
+        return: the submission_num-th submission
             (1-based), in chronological order, that was sent by the
             currently logged in contestant on the given task (None if
             not found).
@@ -252,17 +274,16 @@ class ContestHandler(BaseHandler):
         return self.sql_session.query(Submission) \
             .filter(Submission.participation == self.current_user) \
             .filter(Submission.task == task) \
-            .order_by(Submission.timestamp) \
-            .offset(int(submission_num) - 1) \
+            .filter(Submission.opaque_id == int(opaque_id)) \
             .first()
 
-    def get_user_test(self, task, user_test_num):
+    def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
         """Return the num-th contestant's test on the given task.
 
-        task (Task): a task for the contest that is being served.
-        user_test_num (str): a positive number, in decimal encoding.
+        task: a task for the contest that is being served.
+        user_test_num: a positive number, in decimal encoding.
 
-        return (UserTest|None): the user_test_num-th user test, in
+        return: the user_test_num-th user test, in
             chronological order, that was sent by the currently logged
             in contestant on the given task (None if not found).
 
@@ -274,7 +295,9 @@ class ContestHandler(BaseHandler):
             .offset(int(user_test_num) - 1) \
             .first()
 
-    def add_notification(self, subject, text, level, text_params=None):
+    def add_notification(
+        self, subject: str, text: str, level: str, text_params: object | None = None
+    ):
         subject = self._(subject)
         text = self._(text)
         if text_params is not None:
@@ -282,14 +305,31 @@ class ContestHandler(BaseHandler):
         self.service.add_notification(self.current_user.user.username,
                                       self.timestamp, subject, text, level)
 
-    def notify_success(self, subject, text, text_params=None):
+    def notify_success(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_SUCCESS, text_params)
 
-    def notify_warning(self, subject, text, text_params=None):
+    def notify_warning(
+        self, subject: str, text: str, text_params: object | None = None
+    ):
         self.add_notification(subject, text, NOTIFICATION_WARNING, text_params)
 
-    def notify_error(self, subject, text, text_params=None):
+    def notify_error(self, subject: str, text: str, text_params: object | None = None):
         self.add_notification(subject, text, NOTIFICATION_ERROR, text_params)
+
+    def json(self, data, status_code=200):
+        self.set_header("Content-type", "application/json; charset=utf-8")
+        self.set_status(status_code)
+        self.write(json.dumps(data))
+
+    def check_xsrf_cookie(self):
+        # We don't need to check for xsrf if the request came with a custom
+        # header, as those are not set by the browser.
+        if "X-CMS-Authorization" in self.request.headers:
+            pass
+        else:
+            super().check_xsrf_cookie()
 
 
 class FileHandler(ContestHandler, FileHandlerMixin):

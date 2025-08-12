@@ -33,28 +33,39 @@ the current situation. Also include some support functions, which are
 exported as they may be of general interest.
 
 """
-
+from datetime import datetime, timedelta
 from sqlalchemy import desc, func
+from sqlalchemy.orm import Query
 
 from cms.db import Task, Submission
+from cms.db.contest import Contest
+from cms.db.session import Session
+from cms.db.user import Participation
+from cms.db.usertest import UserTest
 
 
-def _filter_submission_query(q, participation, contest, task, cls):
+def _filter_submission_query(
+    q: Query,
+    participation: Participation,
+    contest: Contest | None,
+    task: Task | None,
+    cls: type[Submission | UserTest],
+) -> Query:
     """Filter a query for submissions by participation, contest, task.
 
     Apply to the given query some filters that narrow down the set of
     results to the submissions that were sent in by the given
     contestant on the given contest or task.
 
-    q (Query): a SQLAlchemy query, assumed to select from either
+    q: a SQLAlchemy query, assumed to select from either
         submissions or user tests (as specified by cls).
-    participation (Participation): the contestant to filter for.
-    contest (Contest|None): the contest to filter for.
-    task (Task|None): the task to filter for.
-    cls (type): either Submission or UserTest, specifies which class
+    participation: the contestant to filter for.
+    contest: the contest to filter for.
+    task: the task to filter for.
+    cls: either Submission or UserTest, specifies which class
         the query selects from.
 
-    return (Query): the original query with the filters applied.
+    return: the original query with the filters applied.
 
     """
     if task is not None:
@@ -71,20 +82,25 @@ def _filter_submission_query(q, participation, contest, task, cls):
 
 
 def get_submission_count(
-        sql_session, participation, contest=None, task=None, cls=Submission):
+    sql_session: Session,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> int:
     """Return the number of submissions the contestant sent in.
 
     Count the submissions (or user tests) for the given participation
     on the given task or contest (that is, on all the contest's tasks).
 
-    sql_session (Session): the SQLAlchemy session to use.
-    participation (Participation): the participation to fetch data for.
-    contest (Contest|None): if given count on all the contest's tasks.
-    task (Task|None): if given count only on this task (trumps contest).
-    cls (type): if the UserTest class is given, count user tests rather
+    sql_session: the SQLAlchemy session to use.
+    participation: the participation to fetch data for.
+    contest: if given count on all the contest's tasks.
+    task: if given count only on this task (trumps contest).
+    cls: if the UserTest class is given, count user tests rather
         than submissions.
 
-    return (int): the count.
+    return: the count.
 
     """
     q = sql_session.query(func.count(cls.id))
@@ -93,8 +109,13 @@ def get_submission_count(
 
 
 def check_max_number(
-        sql_session, max_number, participation, contest=None, task=None,
-        cls=Submission):
+    sql_session: Session,
+    max_number: int | None,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> bool:
     """Check whether user already sent in given number of submissions.
 
     Verify whether the given participation did already hit the given
@@ -102,16 +123,16 @@ def check_max_number(
     submitted at least as many submissions as the limit) and return the
     *opposite*, that is, return whether they are allowed to send more.
 
-    sql_session (Session): the SQLAlchemy session to use.
-    max_number (int|None): the constraint; None means no constraint has
+    sql_session: the SQLAlchemy session to use.
+    max_number: the constraint; None means no constraint has
         to be enforced and thus True is always returned.
-    participation (Participation): the participation to fetch data for.
-    contest (Contest|None): if given count on all the contest's tasks.
-    task (Task|None): if given count only on this task (trumps contest).
-    cls (type): if the UserTest class is given, count user tests rather
+    participation: the participation to fetch data for.
+    contest: if given count on all the contest's tasks.
+    task: if given count only on this task (trumps contest).
+    cls: if the UserTest class is given, count user tests rather
         than submissions.
 
-    return (bool): whether the contestant can submit more.
+    return: whether the contestant can submit more.
 
     """
     if max_number is None or participation.unrestricted:
@@ -122,21 +143,26 @@ def check_max_number(
 
 
 def get_latest_submission(
-        sql_session, participation, contest=None, task=None, cls=Submission):
+    sql_session: Session,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> Submission | UserTest | None:
     """Return the most recent submission the contestant sent in.
 
     Retrieve the submission (or user test) with the latest timestamp
     among the ones for the given participation on the given task or
     contest (that is, on all the contest's tasks).
 
-    sql_session (Session): the SQLAlchemy session to use.
-    participation (Participation): the participation to fetch data for.
-    contest (Contest|None): if given look at all the contest's tasks.
-    task (Task|None): if given look only at this task (trumps contest).
-    cls (type): if the UserTest class is given, fetch user tests rather
+    sql_session: the SQLAlchemy session to use.
+    participation: the participation to fetch data for.
+    contest: if given look at all the contest's tasks.
+    task: if given look only at this task (trumps contest).
+    cls: if the UserTest class is given, fetch user tests rather
         than submissions.
 
-    return (Submission|UserTest|None): the latest submission/user test,
+    return: the latest submission/user test,
         if any.
 
     """
@@ -147,24 +173,30 @@ def get_latest_submission(
 
 
 def check_min_interval(
-        sql_session, min_interval, timestamp, participation, contest=None,
-        task=None, cls=Submission):
+    sql_session: Session,
+    min_interval: timedelta | None,
+    timestamp: datetime,
+    participation: Participation,
+    contest: Contest | None = None,
+    task: Task | None = None,
+    cls: type[Submission | UserTest] = Submission,
+) -> bool:
     """Check whether user sent in latest submission long enough ago.
 
     Verify whether at least the given amount of time has passed since
     the given participation last sent in a submission (or user test).
 
-    sql_session (Session): the SQLAlchemy session to use.
-    min_interval (timedelta|None): the constraint; None means no
+    sql_session: the SQLAlchemy session to use.
+    min_interval: the constraint; None means no
         constraint has to be enforced and thus True is always returned.
-    timestamp (datetime): the current timestamp.
-    participation (Participation): the participation to fetch data for.
-    contest (Contest|None): if given look at all the contest's tasks.
-    task (Task|None): if given look only at this task (trumps contest).
-    cls (type): if the UserTest class is given, fetch user tests rather
+    timestamp: the current timestamp.
+    participation: the participation to fetch data for.
+    contest: if given look at all the contest's tasks.
+    task: if given look only at this task (trumps contest).
+    cls: if the UserTest class is given, fetch user tests rather
         than submissions.
 
-    return (bool): whether the contestant's "cool down" period has
+    return: whether the contestant's "cool down" period has
         expired and they can submit again.
 
     """
@@ -174,3 +206,26 @@ def check_min_interval(
         sql_session, participation, contest=contest, task=task, cls=cls)
     return (submission is None
             or timestamp - submission.timestamp >= min_interval)
+
+
+def is_last_minutes(timestamp: datetime, participation: Participation):
+    """
+    timestamp: the current timestamp.
+    participation: the participation to be checked.
+
+    return: whether the participation is in its last minutes of contest.
+    """
+
+    if participation.unrestricted \
+            or participation.contest.min_submission_interval_grace_period is None:
+        return False
+
+    if participation.contest.per_user_time is None:
+        end_time = participation.contest.stop
+    else:
+        end_time = participation.starting_time + participation.contest.per_user_time
+
+    end_time += participation.delay_time + participation.extra_time
+    time_left = end_time - timestamp
+    return time_left <= \
+        participation.contest.min_submission_interval_grace_period

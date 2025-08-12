@@ -34,9 +34,11 @@ import os
 import shutil
 
 from cms import config
+from cms.db.filecacher import FileCacher
 from cms.grading import JobException
-from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Job import CompilationJob, EvaluationJob, Job
 from cms.grading.Sandbox import Sandbox
+from cms.grading.language import Language
 from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
     white_diff_fobj_step
 
@@ -47,13 +49,13 @@ logger = logging.getLogger(__name__)
 EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
 
-def create_sandbox(file_cacher, name=None):
+def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
     """Create a sandbox, and return it.
 
-    file_cacher (FileCacher): a file cacher instance.
-    name (str): name to include in the path of the sandbox.
+    file_cacher: a file cacher instance.
+    name: name to include in the path of the sandbox.
 
-    return (Sandbox): a sandbox.
+    return: a sandbox.
 
     raise (JobException): if the sandbox cannot be created.
 
@@ -67,21 +69,30 @@ def create_sandbox(file_cacher, name=None):
     return sandbox
 
 
-def delete_sandbox(sandbox, success=True, keep_sandbox=False):
+def delete_sandbox(sandbox: Sandbox, job: Job, success: bool | None = None):
     """Delete the sandbox, if the configuration and job was ok.
 
-    sandbox (Sandbox): the sandbox to delete.
-    success (boolean): if the job succeeded (no system errors).
-    keep_sandbox (bool): whether to keep the sandbox regardless of other
-        conditions.
+    sandbox: the sandbox to delete.
+    job: the job currently running.
+    success: if the job succeeded (no system errors). If not provided,
+        job.success is used.
 
     """
+    if success is None:
+        success = job.success
+
+    # Archive the sandbox if required
+    if job.archive_sandbox:
+        sandbox_digest = sandbox.archive()
+        if sandbox_digest is not None:
+            job.sandbox_digests[sandbox.get_root_path()] = sandbox_digest
+
     # If the job was not successful, we keep the sandbox around.
     if not success:
         logger.warning("Sandbox %s kept around because job did not succeed.",
                        sandbox.get_root_path())
 
-    delete = success and not config.keep_sandbox and not keep_sandbox
+    delete = success and not config.worker.keep_sandbox and not job.keep_sandbox
     try:
         sandbox.cleanup(delete=delete)
     except OSError:
@@ -89,15 +100,15 @@ def delete_sandbox(sandbox, success=True, keep_sandbox=False):
         logger.warning(err_msg, exc_info=True)
 
 
-def is_manager_for_compilation(filename, language):
+def is_manager_for_compilation(filename: str, language: Language) -> bool:
     """Return whether a manager should be copied in the compilation sandbox.
 
     Only return true for managers required by the language of the submission.
 
-    filename (str): filename of the manager.
-    language (Language): the programming language of the submission.
+    filename: filename of the manager.
+    language: the programming language of the submission.
 
-    return (bool): whether the manager is required for the compilation.
+    return: whether the manager is required for the compilation.
 
     """
     return (
@@ -109,12 +120,12 @@ def is_manager_for_compilation(filename, language):
                for obj in language.object_extensions))
 
 
-def set_configuration_error(job, msg, *args):
+def set_configuration_error(job: Job, msg: str, *args: object):
     """Log a configuration error and set the correct results in the job.
 
-    job (CompilationJob|EvaluationJob): the job currently executing
-    msg (str): the message to log.
-    args ([object]): formatting parameters for msg.
+    job: the job currently executing
+    msg: the message to log.
+    args: formatting parameters for msg.
 
     """
     logger.error("Configuration error: " + msg, *args,
@@ -130,7 +141,7 @@ def set_configuration_error(job, msg, *args):
         raise ValueError("Unexpected type of job: %s.", job.__class__)
 
 
-def check_executables_number(job, n_executables):
+def check_executables_number(job: Job, n_executables: int) -> bool:
     """Check that the required number of executables were generated.
 
     Since it depends only on the task type being correct, a mismatch here
@@ -140,10 +151,10 @@ def check_executables_number(job, n_executables):
     If there is a mismatch, log and store a configuration error in the job. In
     this case, callers should terminate immediately the current operation.
 
-    job (Job): the job currently running.
-    n_executables (int): the required number of executables.
+    job: the job currently running.
+    n_executables: the required number of executables.
 
-    return (bool): whether there is the right number of executables in the job.
+    return: whether there is the right number of executables in the job.
 
     """
     if len(job.executables) != n_executables:
@@ -154,7 +165,7 @@ def check_executables_number(job, n_executables):
     return True
 
 
-def check_files_number(job, n_files, or_more=False):
+def check_files_number(job: Job, n_files: int, or_more: bool = False) -> bool:
     """Check that the required number of files were provided by the user.
 
     A mismatch here is likely caused by having had, at submission time, a wrong
@@ -163,11 +174,11 @@ def check_files_number(job, n_files, or_more=False):
     If there is a mismatch, log and store a configuration error in the job. In
     this case, callers should terminate immediately the current operation.
 
-    job (Job): the job currently running.
-    n_files (int): the required number of files.
-    or_more (bool): whether more than the required number is also fine.
+    job: the job currently running.
+    n_files: the required number of files.
+    or_more: whether more than the required number is also fine.
 
-    return (bool): whether there is the right number of files in the job.
+    return: whether there is the right number of files in the job.
 
     """
     if or_more and len(job.files) < n_files:
@@ -183,16 +194,16 @@ def check_files_number(job, n_files, or_more=False):
     return True
 
 
-def check_manager_present(job, codename):
+def check_manager_present(job: Job, codename: str) -> bool:
     """Check that the required manager was provided in the dataset.
 
     If not provided, log and store a configuration error in the job. In this
     case, callers should terminate immediately the current operation.
 
-    job (Job): the job currently running.
-    codename (str): the codename of the required manager.
+    job: the job currently running.
+    codename: the codename of the required manager.
 
-    return (bool): whether the required manager is in the job's managers.
+    return: whether the required manager is in the job's managers.
 
     """
     if codename not in job.managers:
@@ -202,23 +213,30 @@ def check_manager_present(job, codename):
     return True
 
 
-def eval_output(file_cacher, job, checker_codename,
-                user_output_path=None, user_output_digest=None,
-                user_output_filename=""):
+def eval_output(
+    file_cacher: FileCacher,
+    job: Job,
+    checker_codename: str | None,
+    user_output_path: str | None = None,
+    user_output_digest: str | None = None,
+    user_output_filename: str = "",
+    extra_args: list[str] | None = None
+) -> tuple[bool, float | None, list[str] | None]:
     """Evaluate ("check") a user output using a white diff or a checker.
 
-    file_cacher (FileCacher): file cacher to use to get files.
-    job (Job): the job triggering this checker run.
-    checker_codename (str|None): codename of the checker amongst the manager,
+    file_cacher: file cacher to use to get files.
+    job: the job triggering this checker run.
+    checker_codename: codename of the checker amongst the manager,
         or None to use white diff.
-    user_output_path (str|None): full path of the user output file, None if
+    user_output_path: full path of the user output file, None if
         using the digest (exactly one must be non-None).
-    user_output_digest (str|None): digest of the user output file, None if
+    user_output_digest: digest of the user output file, None if
         using the path (exactly one must be non-None).
-    user_output_filename (str): the filename the user was expected to write to,
+    user_output_filename: the filename the user was expected to write to,
         or empty if stdout (used to return an error to the user).
+    extra_args: additional arguments to pass to the checker
 
-    return (bool, float|None, [str]|None): success (true if the checker was
+    return: tuple of success (true if the checker was
         able to check the solution successfully), outcome and text (both None
         if success is False).
 
@@ -249,6 +267,9 @@ def eval_output(file_cacher, job, checker_codename,
             shutil.copyfile(user_output_path,
                             sandbox.relative_path(EVAL_USER_OUTPUT_FILENAME))
         else:
+            # this assertion is verified by the check at the start of the
+            # function, but the type checker isn't smart enough for that
+            assert user_output_digest is not None
             sandbox.create_file_from_storage(EVAL_USER_OUTPUT_FILENAME,
                                              user_output_digest)
 
@@ -256,9 +277,9 @@ def eval_output(file_cacher, job, checker_codename,
             if checker_codename in job.managers else None
         success, outcome, text = checker_step(
             sandbox, checker_digest, job.input, job.output,
-            EVAL_USER_OUTPUT_FILENAME)
+            EVAL_USER_OUTPUT_FILENAME, extra_args)
 
-        delete_sandbox(sandbox, success, job.keep_sandbox)
+        delete_sandbox(sandbox, job, success)
         return success, outcome, text
 
     else:

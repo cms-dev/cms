@@ -37,10 +37,7 @@ except:
     # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
     collections.MutableMapping = collections.abc.MutableMapping
 
-try:
-    import tornado4.web as tornado_web
-except ImportError:
-    import tornado.web as tornado_web
+import tornado.web
 
 from cms.server import multi_contest
 from cmscommon.mimetypes import get_type_for_file_name
@@ -55,13 +52,13 @@ class TaskDescriptionHandler(ContestHandler):
     """Shows the data of a task in the contest.
 
     """
-    @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @tornado.web.authenticated
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         self.render("task_description.html", task=task, **self.r_params)
 
@@ -70,42 +67,42 @@ class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
 
     """
-    @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @tornado.web.authenticated
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
-    def get(self, task_name, lang_code):
+    def get(self, task_name: str, lang_code: str):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         if lang_code not in task.statements:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         statement = task.statements[lang_code].digest
         self.sql_session.close()
 
         if len(lang_code) > 0:
-            filename = "%s (%s).pdf" % (task.name, lang_code)
+            filename = "%s.%s.pdf" % (task.name, lang_code)
         else:
             filename = "%s.pdf" % task.name
 
-        self.fetch(statement, "application/pdf", filename)
+        self.fetch(statement, "application/pdf", filename=filename, disposition="inline")
 
 
 class TaskAttachmentViewHandler(FileHandler):
     """Shows an attachment file of a task in the contest.
 
     """
-    @tornado_web.authenticated
-    @actual_phase_required(0, 3)
+    @tornado.web.authenticated
+    @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
-    def get(self, task_name, filename):
+    def get(self, task_name: str, filename: str):
         task = self.get_task(task_name)
         if task is None:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         if filename not in task.attachments:
-            raise tornado_web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
 
         attachment = task.attachments[filename].digest
         self.sql_session.close()

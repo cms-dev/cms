@@ -44,22 +44,31 @@ class FakeIsolateSandbox(IsolateSandbox):
         assert isinstance(content, bytes)
         self._fake_files[path] = content
 
-    def fake_execute_data(self, success, stdout, stderr,
-                          time, wall_time, memory, exit_status,
-                          signal=None, message=None):
+    def fake_execute_data(
+        self,
+        success: bool,
+        stdout: bytes,
+        stderr: bytes,
+        time: float,
+        wall_time: float,
+        memory: int,
+        exit_status: str,
+        signal: int | None = None,
+        message: str | None = None,
+    ):
         """Set the fake data for the corresponding execution.
 
         Can be called multiple times, and this allows the system under test
         to call execute_without_std multiple times.
 
-        success (bool): return value for execute_without_std.
-        stdout (bytes): content of the sandbox stdout_file.
-        stderr (bytes): content of the sandbox stderr_file.
-        time (float): CPU time in seconds.
-        memory (int): memory used in KiB.
-        exit_status (str): isolate's two-letter exit status.
-        signal (int|None): terminating signal if not None
-        message (str|None): message from isolate
+        success: return value for execute_without_std.
+        stdout: content of the sandbox stdout_file.
+        stderr: content of the sandbox stderr_file.
+        time: CPU time in seconds.
+        memory: memory used in KiB.
+        exit_status: isolate's two-letter exit status.
+        signal: terminating signal if not None
+        message: message from isolate
 
         """
         data = {}

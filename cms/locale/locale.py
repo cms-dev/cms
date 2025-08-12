@@ -29,10 +29,10 @@
 
 """
 
+from collections.abc import Iterable
 import copy
 import logging
 import math
-import os
 
 import babel.core
 import babel.dates
@@ -40,16 +40,17 @@ import babel.lists
 import babel.numbers
 import babel.support
 import babel.units
-import pkg_resources
+import importlib.resources
 
-from cms import config
 from cmscommon.datetime import utc
+from cmscommon.mimetypes import get_name_for_type
+from datetime import datetime, tzinfo, timedelta
 
 
 logger = logging.getLogger(__name__)
 
 
-def N_(msgid):
+def N_(msgid: str):
     return msgid
 
 
@@ -68,60 +69,59 @@ class Translation:
             self.translation = babel.support.Translations(mofile, domain="cms")
         else:
             self.translation = babel.support.NullTranslations()
-        self.mimetype_translation = babel.support.Translations.load(
-            os.path.join(config.shared_mime_info_prefix, "share", "locale"),
-            [self.locale], "shared-mime-info")
 
     @property
-    def identifier(self):
+    def identifier(self) -> str:
         return babel.core.get_locale_identifier(
             (self.locale.language, self.locale.territory,
              self.locale.script, self.locale.variant), sep="-")
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.locale.display_name
 
-    def gettext(self, msgid):
+    def gettext(self, msgid: str) -> str:
         return self.translation.gettext(msgid)
 
-    def ngettext(self, msgid1, msgid2, n):
+    def ngettext(self, msgid1: str, msgid2: str, n: int) -> str:
         return self.translation.ngettext(msgid1, msgid2, n)
 
-    def format_datetime(self, dt, timezone):
+    def format_datetime(self, dt: datetime, timezone: tzinfo) -> str:
         """Return the date and time of dt.
 
-        dt (datetime): a datetime.
-        timezone (tzinfo): the timezone the output should be in.
+        dt: a datetime.
+        timezone: the timezone the output should be in.
 
-        return (str): the formatted date and time of the datetime.
+        return: the formatted date and time of the datetime.
 
         """
         return babel.dates.format_datetime(dt, tzinfo=timezone,
                                            locale=self.locale)
 
-    def format_time(self, dt, timezone):
+    def format_time(self, dt: datetime, timezone: tzinfo) -> str:
         """Return the time of dt.
 
-        dt (datetime): a datetime.
-        timezone (tzinfo): the timezone the output should be in.
+        dt: a datetime.
+        timezone: the timezone the output should be in.
 
-        return (str): the formatted time of the datetime.
+        return: the formatted time of the datetime.
 
         """
         return babel.dates.format_time(dt, tzinfo=timezone, locale=self.locale)
 
-    def format_datetime_smart(self, dt, now, timezone):
+    def format_datetime_smart(
+        self, dt: datetime, now: datetime, timezone: tzinfo
+    ) -> str:
         """Return dt formatted as '[date] time'.
 
         Date is present in the output if it is not today.
 
-        dt (datetime): a datetime.
-        now (datetime): a datetime representing the moment in time at
+        dt: a datetime.
+        now: a datetime representing the moment in time at
             which the previous parameter (dt) is being formatted.
-        timezone (tzinfo): the timezone the output should be in.
+        timezone: the timezone the output should be in.
 
-        return (str): the formatted [date and] time of the datetime.
+        return: the formatted [date and] time of the datetime.
 
         """
         dt_date = dt.replace(tzinfo=utc).astimezone(timezone).date()
@@ -134,7 +134,7 @@ class Translation:
     SECONDS_PER_HOUR = 60 * 60
     SECONDS_PER_MINUTE = 60
 
-    def format_timedelta(self, td):
+    def format_timedelta(self, td: timedelta) -> str:
         """Return the timedelta formatted to high precision.
 
         The result will be formatted as 'A days, B hours, C minutes and D
@@ -143,9 +143,9 @@ class Translation:
         Unlike Babel's built-in format_timedelta, no approximation or
         rounding is performed.
 
-        td (timedelta): a timedelta.
+        td: a timedelta.
 
-        return (string): the formatted timedelta.
+        return: the formatted timedelta.
 
         """
         td = abs(td)
@@ -177,16 +177,16 @@ class Translation:
 
         return babel.lists.format_list(res, locale=self.locale)
 
-    def format_duration(self, d, length="short"):
+    def format_duration(self, d: float, length: str = "short") -> str:
         """Format a duration in seconds.
 
         Format the duration, usually of an operation performed in the
         sandbox (compilation, evaluation, ...), given as a number of
         seconds, always using a millisecond precision.
 
-        d (float): a duration, as a number of seconds.
+        d: a duration, as a number of seconds.
 
-        returns (str): the formatted duration.
+        returns: the formatted duration.
 
         """
         d = abs(d)
@@ -199,7 +199,7 @@ class Translation:
     PREFIX_FACTOR = 1024
     SIZE_UNITS = [None, N_("%s KiB"), N_("%s MiB"), N_("%s GiB"), N_("%s TiB")]
 
-    def format_size(self, n):
+    def format_size(self, n: int) -> str:
         """Format the given number of bytes.
 
         Format the size of a file, a memory allocation, etc. which is
@@ -209,9 +209,9 @@ class Translation:
         significant digits in total, except when this would mean showing
         sub-byte values (happens only for less than 100 bytes).
 
-        n (int): a size, as number of bytes.
+        n: a size, as number of bytes.
 
-        return (str): the formatted size.
+        return: the formatted size.
 
         """
         n = abs(n)
@@ -232,28 +232,28 @@ class Translation:
         return (self.gettext(self.SIZE_UNITS[-1])
                 % babel.numbers.format_decimal(round(n), locale=self.locale))
 
-    def format_decimal(self, n):
+    def format_decimal(self, n: float) -> str:
         """Format a (possibly decimal) number
 
-        n (float): the number to format.
+        n: the number to format.
 
-        returns (str): the formatted number.
+        returns: the formatted number.
 
         """
         return babel.numbers.format_decimal(n, locale=self.locale)
 
-    def format_locale(self, code):
+    def format_locale(self, code: str) -> str:
         """Format a locale identifier.
 
         Return a natural language description of the locale specified
         by the given identifier, e.g., "American English" for "en_US".
 
-        code (str): a locale identifier, consisting of identifiers for
+        code: a locale identifier, consisting of identifiers for
             the language (as for ISO 639), the script, the territory
             (as for ISO 3166) and the variant, joined by underscores,
             with undefined components suppressed.
 
-        return (str): the formatted locale description.
+        return: the formatted locale description.
 
         """
         try:
@@ -261,36 +261,51 @@ class Translation:
         except (ValueError, babel.core.UnknownLocaleError):
             return code
 
-    def translate_mimetype(self, mimetype):
-        return self.mimetype_translation.gettext(mimetype)
+    def translate_mimetype(self, mimetype: str) -> str:
+        lang_code = self.identifier
+        alt_lang_code = babel.core.get_locale_identifier(
+            (self.locale.language, self.locale.territory), sep="_"
+        )
+        return get_name_for_type(mimetype, lang_code, alt_lang_code)
 
 
 DEFAULT_TRANSLATION = Translation("en")
 
 
-def get_translations():
+def get_translations() -> dict[str, Translation]:
     """Return the translations for all the languages we support.
 
     Search for the message catalogs that were installed and load them.
 
-    return ({string: Translation}): for each language its message
-        catalog
+    return: for each language its message catalog
 
     """
     result = {DEFAULT_TRANSLATION.identifier: DEFAULT_TRANSLATION}
 
-    for lang_code in sorted(pkg_resources.resource_listdir("cms.locale", "")):
-        mofile_path = os.path.join(lang_code, "LC_MESSAGES", "cms.mo")
-        if pkg_resources.resource_exists("cms.locale", mofile_path):
-            with pkg_resources.resource_stream("cms.locale", mofile_path) as f:
-                t = Translation(lang_code, f)
-                logger.info("Found translation %s", t.identifier)
-                result[t.identifier] = t
+    try:
+        locale_pkg = importlib.resources.files("cms.locale")
+        for lang_dir in locale_pkg.iterdir():
+            if lang_dir.is_dir() and not lang_dir.name.startswith('_'):
+                lang_code = lang_dir.name
+                try:
+                    mofile_path = lang_dir / "LC_MESSAGES" / "cms.mo"
+                    with mofile_path.open("rb") as f:
+                        t = Translation(lang_code, f)
+                        logger.info("Found translation %s", t.identifier)
+                        result[t.identifier] = t
+                except Exception:
+                    logger.warning(
+                        "Failed to load translation for %s",
+                        lang_code,
+                        exc_info=True,
+                    )
+    except Exception:
+        logger.warning("Failed to scan locale directory", exc_info=True)
 
     return result
 
 
-def filter_language_codes(lang_codes, prefixes):
+def filter_language_codes(lang_codes: list[str], prefixes: list[str]) -> list[str]:
     """Keep only codes that begin with one of the given prefixes.
 
     Filter the given list of language codes (i.e., locale identifiers)
@@ -304,10 +319,10 @@ def filter_language_codes(lang_codes, prefixes):
     The returned language codes will be in the same relative order as
     they were given.
 
-    lang_codes ([string]): list of language codes
-    prefixes ([string]): whitelist of prefix
+    lang_codes: list of language codes
+    prefixes: whitelist of prefix
 
-    return ([string]): the codes that match one of the prefixes
+    return: the codes that match one of the prefixes
 
     """
     parsed_lang_codes = list()
@@ -354,5 +369,7 @@ def filter_language_codes(lang_codes, prefixes):
     return filtered_lang_codes
 
 
-def choose_language_code(preferred, available):
+def choose_language_code(
+    preferred: Iterable[str], available: Iterable[str]
+) -> str | None:
     return babel.core.negotiate_locale(preferred, available, sep="-")

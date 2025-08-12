@@ -22,7 +22,6 @@ import unittest
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
-# Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms import config
@@ -231,7 +230,7 @@ class TestStoreLocalCopy(DatabaseMixin, FileSystemMixin, unittest.TestCase):
 
     def test_success_with_data_dir(self):
         content = self.generate_content()
-        with patch.object(config, "data_dir", self.base_dir):
+        with patch.object(config.global_, "data_dir", self.base_dir):
             store_local_copy("%s/bar", self.participation, self.task,
                              self.timestamp, {"foo.%l": content})
         self.assertSomeFileContains(content,

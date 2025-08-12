@@ -27,6 +27,7 @@ import logging
 import re
 import sys
 import time
+import tomllib
 
 from cmstestsuite import CONFIG, TestException, sh
 from cmstestsuite.web import Browser
@@ -73,7 +74,7 @@ class FunctionalTestFramework:
         return FunctionalTestFramework.__instance
 
     def __init__(self):
-        # This holds the decoded-JSON of the cms.conf configuration file.
+        # This holds the decoded-TOML of the cms.toml configuration file.
         # Lazily loaded, to be accessed through the getter method.
         self._cms_config = None
 
@@ -111,13 +112,13 @@ class FunctionalTestFramework:
             self._cws_browser.login(lr)
         return self._cws_browser
 
-    def initialize_aws(self):
+    def initialize_aws(self) -> str:
         """Create an admin.
 
         The username will be admin_<suffix>, where <suffix> will be the first
         integer (from 1) for which an admin with that name doesn't yet exist.
 
-        return (str): the suffix.
+        return: the suffix.
 
         """
         logger.info("Creating admin...")
@@ -141,19 +142,19 @@ class FunctionalTestFramework:
 
     def get_cms_config(self):
         if self._cms_config is None:
-            with open("%(CONFIG_PATH)s" % CONFIG, "rt", encoding="utf-8") as f:
-                self._cms_config = json.load(f)
+            with open("%(CONFIG_PATH)s" % CONFIG, "rb") as f:
+                self._cms_config = tomllib.load(f)
         return self._cms_config
 
     def admin_req(self, path, args=None, files=None):
         browser = self.get_aws_browser()
         return browser.do_request(self.AWS_BASE_URL + '/' + path, args, files)
 
-    def get_tasks(self):
+    def get_tasks(self) -> dict[str, dict[str, str]]:
         """Return the existing tasks
 
-        return ({string: {id: string, title: string}}): the tasks, as a
-            dictionary with the task name as key.
+        return: the tasks, as a dictionary with the task name as key.
+            Each entry is a dict with keys 'title' and 'id'.
 
         """
         r = self.admin_req('tasks')
@@ -172,11 +173,11 @@ class FunctionalTestFramework:
             }
         return tasks
 
-    def get_users(self, contest_id):
+    def get_users(self, contest_id: str) -> dict[str, dict[str, str]]:
         """Return the existing users
 
-        return ({string: {id: string, firstname: string, lastname: string}):
-            the users, as a dictionary with the username as key.
+        return: the users, as a dictionary with the username as key.
+            Each entry is a dict with keys 'firstname', 'lastname' and 'id'.
 
         """
         r = self.admin_req('contest/%s/users' % contest_id)

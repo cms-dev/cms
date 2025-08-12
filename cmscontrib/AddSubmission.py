@@ -28,7 +28,8 @@ from cms import utf8_decoder, ServiceCoord
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
-from cms.grading.languagemanager import filename_to_language
+from cms.grading.language import Language
+from cms.grading.languagemanager import filename_to_language, get_language
 from cms.io import RemoteServiceClient
 from cmscommon.datetime import make_datetime
 
@@ -36,21 +37,22 @@ from cmscommon.datetime import make_datetime
 logger = logging.getLogger(__name__)
 
 
-def maybe_send_notification(submission_id):
+def maybe_send_notification(submission_id: int):
     """Non-blocking attempt to notify a running ES of the submission"""
     rs = RemoteServiceClient(ServiceCoord("EvaluationService", 0))
     rs.connect()
+    rs.wait_for_connection(timeout=1)
     rs.new_submission(submission_id=submission_id)
     rs.disconnect()
 
 
-def language_from_submitted_files(files):
+def language_from_submitted_files(files: dict[str, str], contest_languages: list[Language]) -> Language | None:
     """Return the language inferred from the submitted files.
 
-    files ({str: str}): dictionary mapping the expected filename to a path in
+    files: dictionary mapping the expected filename to a path in
         the file system.
 
-    return (Language|None): the language inferred from the files.
+    return: the language inferred from the files.
 
     raise (ValueError): if different files point to different languages, or if
         it is impossible to extract the language from a file when it should be.
@@ -59,7 +61,7 @@ def language_from_submitted_files(files):
     # TODO: deduplicate with the code in SubmitHandler.
     language = None
     for filename in files.keys():
-        this_language = filename_to_language(files[filename])
+        this_language = filename_to_language(files[filename], contest_languages)
         if this_language is None and ".%l" in filename:
             raise ValueError(
                 "Cannot recognize language for file `%s'." % filename)
@@ -71,23 +73,34 @@ def language_from_submitted_files(files):
     return language
 
 
-def add_submission(contest_id, username, task_name, timestamp, files):
+def add_submission(
+    contest_id: int,
+    username: str,
+    task_name: str,
+    timestamp: float,
+    files: dict[str, str],
+    given_language: str | None,
+):
     file_cacher = FileCacher()
     with SessionGen() as session:
 
-        participation = session.query(Participation)\
-            .join(Participation.user)\
-            .filter(Participation.contest_id == contest_id)\
-            .filter(User.username == username)\
+        participation: Participation | None = (
+            session.query(Participation)
+            .join(Participation.user)
+            .filter(Participation.contest_id == contest_id)
+            .filter(User.username == username)
             .first()
+        )
         if participation is None:
             logging.critical("User `%s' does not exists or "
                              "does not participate in the contest.", username)
             return False
-        task = session.query(Task)\
-            .filter(Task.contest_id == contest_id)\
-            .filter(Task.name == task_name)\
+        task: Task | None = (
+            session.query(Task)
+            .filter(Task.contest_id == contest_id)
+            .filter(Task.name == task_name)
             .first()
+        )
         if task is None:
             logging.critical("Unable to find task `%s'.", task_name)
             return False
@@ -110,7 +123,14 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         need_lang = any(element.find(".%l") != -1 for element in elements)
         if need_lang:
             try:
-                language = language_from_submitted_files(files)
+                if given_language is not None:
+                    language = get_language(given_language)
+                else:
+                    contest_languages = [
+                        get_language(language)
+                        for language in task.contest.languages
+                    ]
+                    language = language_from_submitted_files(files, contest_languages)
             except ValueError as e:
                 logger.critical(e)
                 return False
@@ -121,7 +141,7 @@ def add_submission(contest_id, username, task_name, timestamp, files):
         language_name = None if language is None else language.name
 
         # Store all files from the arguments, and obtain their digests..
-        file_digests = {}
+        file_digests: dict[str, str] = {}
         try:
             for file_ in files:
                 digest = file_cacher.put_file_from_path(
@@ -134,8 +154,14 @@ def add_submission(contest_id, username, task_name, timestamp, files):
             return False
 
         # Create objects in the DB.
-        submission = Submission(make_datetime(timestamp), language_name,
-                                participation=participation, task=task)
+
+        submission = Submission(
+            timestamp=make_datetime(timestamp),
+            language=language_name,
+            participation=participation,
+            task=task,
+            opaque_id=Submission.generate_opaque_id(session, participation.id)
+        )
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))
         session.add(submission)
@@ -145,10 +171,10 @@ def add_submission(contest_id, username, task_name, timestamp, files):
     return True
 
 
-def main():
+def main() -> int:
     """Parse arguments and launch process.
 
-    return (int): exit code of the program.
+    return: exit code of the program.
 
     """
     parser = argparse.ArgumentParser(
@@ -167,6 +193,11 @@ def main():
     parser.add_argument("-t", "--timestamp", action="store", type=int,
                         help="timestamp of the submission in seconds from "
                         "epoch, e.g. `date +%%s` (now if not set)")
+    parser.add_argument("-l", "--language",
+                        help="programming language (e.g., 'C++17 / g++'), "
+                        "default is to guess from file name extension. "
+                        "It is also possible to specify languages not enabled "
+                        "in the contest.")
 
     args = parser.parse_args()
 
@@ -177,12 +208,13 @@ def main():
         import time
         args.timestamp = time.time()
 
-    split_files = [file_.split(":", 1) for file_ in args.file]
+    split_files: list[tuple[str, str]] = [
+        file_.split(":", 1) for file_ in args.file]
     if any(len(file_) != 2 for file_ in split_files):
         parser.error("Invalid value for the file argument: format is "
                      "<name>:<file>.")
         return 1
-    files = {}
+    files: dict[str, str] = {}
     for name, filename in split_files:
         if name in files:
             parser.error("Duplicate assignment for file `%s'." % name)
@@ -193,7 +225,8 @@ def main():
                              username=args.username,
                              task_name=args.task_name,
                              timestamp=args.timestamp,
-                             files=files)
+                             files=files,
+                             given_language=args.language)
     return 0 if success is True else 1
 
 

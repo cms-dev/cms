@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 from werkzeug.exceptions import HTTPException, NotFound, ServiceUnavailable
 from werkzeug.wrappers import Response, Request
 from werkzeug.wsgi import responder, wrap_file
@@ -45,12 +46,13 @@ class FileServerMiddleware:
 
     DIGEST_HEADER = "X-CMS-File-Digest"
     FILENAME_HEADER = "X-CMS-File-Filename"
+    DISPOSITION_HEADER = "X-CMS-File-Disposition"
 
-    def __init__(self, file_cacher, app):
+    def __init__(self, file_cacher: FileCacher, app: Callable):
         """Create an instance.
 
-        file_cacher (FileCacher): the cacher to retrieve files from.
-        app (function): the WSGI application to wrap.
+        file_cacher: the cacher to retrieve files from.
+        app: the WSGI application to wrap.
 
         """
         self.file_cacher = file_cacher
@@ -83,6 +85,7 @@ class FileServerMiddleware:
 
         digest = original_response.headers.pop(self.DIGEST_HEADER)
         filename = original_response.headers.pop(self.FILENAME_HEADER, None)
+        disposition = original_response.headers.pop(self.DISPOSITION_HEADER, "attachment")
         mimetype = original_response.mimetype
 
         try:
@@ -101,7 +104,7 @@ class FileServerMiddleware:
         response.mimetype = mimetype
         if filename is not None:
             response.headers.add(
-                "Content-Disposition", "attachment", filename=filename)
+                "Content-Disposition", disposition, filename=filename)
         response.set_etag(digest)
         response.cache_control.no_cache = True
         response.cache_control.private = True

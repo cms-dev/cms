@@ -25,7 +25,6 @@ import unittest
 from datetime import timedelta
 from unittest.mock import patch
 
-# Needs to be first to allow for monkey patching the DB connection string.
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
 from cms import config
@@ -50,7 +49,15 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.participation = self.add_participation(
             contest=self.contest, user=self.user)
 
-    def assertSuccess(self, username, password, ip_address):
+        # Set up a temporary admin token
+        patcher = patch.object(
+            config.contest_web_server, "contest_admin_token", "admin-token"
+        )
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
+
+    def assertSuccess(self, username, password, ip_address, admin_token=""):
         # We had an issue where due to a misuse of contains_eager we ended up
         # with the wrong user attached to the participation. This only happens
         # if the correct user isn't already in the identity map, which is what
@@ -61,7 +68,8 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 
         authenticated_participation, cookie = validate_login(
             self.session, self.contest, self.timestamp,
-            username, password, ipaddress.ip_address(ip_address))
+            username, password, ipaddress.ip_address(ip_address),
+            admin_token)
 
         self.assertIsNotNone(authenticated_participation)
         self.assertIsNotNone(cookie)
@@ -69,10 +77,11 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
         self.assertIs(authenticated_participation.user, self.user)
         self.assertIs(authenticated_participation.contest, self.contest)
 
-    def assertFailure(self, username, password, ip_address):
+    def assertFailure(self, username, password, ip_address, admin_token=""):
         authenticated_participation, cookie = validate_login(
             self.session, self.contest, self.timestamp,
-            username, password, ipaddress.ip_address(ip_address))
+            username, password, ipaddress.ip_address(ip_address),
+            admin_token)
 
         self.assertIsNone(authenticated_participation)
         self.assertIsNone(cookie)
@@ -150,6 +159,30 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
 
         self.assertSuccess("myuser", "mypass", "10.0.1.1")
 
+    def test_successful_impersonation(self):
+        self.assertSuccess("myuser", "", "127.0.0.1", "admin-token")
+
+    def test_unsuccessful_impersonation(self):
+        self.assertFailure("myuser", "", "127.0.0.1", "bad-admin-token")
+
+    def test_impersonation_overrides_unallowed_password_authentication(self):
+        self.contest.allow_password_authentication = False
+
+        self.assertSuccess("myuser", "", "127.0.0.1", "admin-token")
+
+    def test_impersonation_overrides_unallowed_hidden_participation(self):
+        self.contest.block_hidden_participations = True
+        self.participation.hidden = True
+
+        self.assertSuccess("myuser", "", "127.0.0.1", "admin-token")
+
+    def test_impersonation_overrides_ip_lock(self):
+        self.contest.ip_restriction = True
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
+
+        self.assertSuccess("myuser", "mypass", "10.0.0.1", "admin-token")
+        self.assertSuccess("myuser", "mypass", "10.0.1.1", "admin-token")
+
 
 class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
 
@@ -158,7 +191,6 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.timestamp = make_datetime()
         self.add_contest()
         self.contest = self.add_contest()
-        self.add_user(username="otheruser")
         self.user = self.add_user(
             username="myuser", password=build_password("mypass"))
         self.participation = self.add_participation(
@@ -167,7 +199,28 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
             self.session, self.contest, self.timestamp, self.user.username,
             "mypass", ipaddress.ip_address("10.0.0.1"))
 
-    def attempt_authentication(self, **kwargs):
+        # For testing impersonation by admin token
+        self.impersonated_user = self.add_user(username="otheruser")
+        self.impersonated_participation = self.add_participation(
+            contest=self.contest, user=self.impersonated_user)
+        with patch.object(
+            config.contest_web_server, "contest_admin_token", "admin-token"
+        ):
+            _, self.impersonated_cookie = validate_login(
+                self.session, self.contest, self.timestamp, "otheruser",
+                "", ipaddress.ip_address("10.0.0.2"), "admin-token")
+
+    def attempt_authentication(self, db_flush=True, **kwargs):
+        # We had an issue where due to a misuse of contains_eager we ended up
+        # with the wrong user attached to the participation. This only happens
+        # if the correct user isn't already in the identity map, which is what
+        # these lines trigger.
+        if db_flush:
+            self.session.flush()
+            self.session.expire(self.user)
+            self.session.expire(self.impersonated_user)
+            self.session.expire(self.contest)
+
         # The arguments need to be passed as keywords and are timestamp, cookie
         # and ip_address. A missing argument means the default value is used
         # instead. An argument passed as None means that None will be used.
@@ -175,29 +228,18 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
             self.session, self.contest,
             kwargs.get("timestamp", self.timestamp),
             kwargs.get("cookie", self.cookie),
+            kwargs.get("authorization", None),
             ipaddress.ip_address(kwargs.get("ip_address", "10.0.0.1")))
 
     def assertSuccess(self, **kwargs):
-        # Assert that the authentication succeeds in any way (be it through IP
-        # autologin or thanks to the cookie) and return the cookie that should
-        # be set (or None, if it should be cleared/left unset).
-        # The arguments are the same as those of attempt_authentication.
-
-        # We had an issue where due to a misuse of contains_eager we ended up
-        # with the wrong user attached to the participation. This only happens
-        # if the correct user isn't already in the identity map, which is what
-        # these lines trigger.
-        self.session.flush()
-        self.session.expire(self.user)
-        self.session.expire(self.contest)
-
-        authenticated_participation, cookie = \
+        authenticated_participation, cookie, impersonated = \
             self.attempt_authentication(**kwargs)
 
         self.assertIsNotNone(authenticated_participation)
         self.assertIs(authenticated_participation, self.participation)
         self.assertIs(authenticated_participation.user, self.user)
         self.assertIs(authenticated_participation.contest, self.contest)
+        self.assertIs(impersonated, False)
 
         return cookie
 
@@ -219,15 +261,31 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         cookie = self.assertSuccess(**kwargs)
         self.assertIsNone(cookie)
 
+    def assertImpersonationSuccess(self, **kwargs):
+        # Assert that the impersonation succeeds.
+        # The arguments are the same as those of attempt_authentication.
+
+        authenticated_participation, cookie, impersonated = \
+            self.attempt_authentication(cookie=self.impersonated_cookie, **kwargs)
+
+        self.assertIsNotNone(authenticated_participation)
+        self.assertIs(authenticated_participation, self.impersonated_participation)
+        self.assertIs(authenticated_participation.user, self.impersonated_user)
+        self.assertIs(authenticated_participation.contest, self.contest)
+        self.assertIs(impersonated, True)
+
+        return cookie
+
     def assertFailure(self, **kwargs):
         # Assert that the authentication fails.
         # The arguments are the same as those of attempt_authentication.
-        authenticated_participation, cookie = \
+        authenticated_participation, cookie, impersonated = \
             self.attempt_authentication(**kwargs)
         self.assertIsNone(authenticated_participation)
         self.assertIsNone(cookie)
+        self.assertIs(impersonated, False)
 
-    @patch.object(config, "cookie_duration", 10)
+    @patch.object(config.contest_web_server, "cookie_duration", 10)
     def test_cookie_contains_timestamp(self):
         self.contest.ip_autologin = False
         self.contest.allow_password_authentication = True
@@ -327,9 +385,14 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
         self.assertFailure(cookie=None)
         self.assertFailure(cookie="not a valid cookie")
 
+    def test_authorization_header(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = True
+        self.assertSuccess(cookie=None, authorization=self.cookie)
+
     def test_no_user(self):
         self.session.delete(self.user)
-        self.assertFailure()
+        self.assertFailure(db_flush=False)
 
     def test_no_participation_for_user_in_contest(self):
         self.session.delete(self.participation)
@@ -363,6 +426,30 @@ class TestAuthenticateRequest(DatabaseMixin, unittest.TestCase):
 
         self.participation.ip = None
         self.assertSuccessAndCookieRefreshed()
+
+    def test_impersonate(self):
+        self.contest.ip_autologin = False
+        self.contest.allow_password_authentication = False
+        self.assertImpersonationSuccess()
+
+    def test_impersonate_overridden_by_ip_autologin(self):
+        self.contest.ip_autologin = True
+        self.contest.allow_password_authentication = False
+
+        self.participation.ip = [ipaddress.ip_network("10.0.0.1/32")]
+        self.assertSuccessAndCookieCleared(cookie=self.impersonated_cookie)
+
+    def test_impersonation_overrides_unallowed_hidden_participation(self):
+        self.contest.block_hidden_participations = True
+        self.participation.hidden = True
+        self.assertImpersonationSuccess()
+
+    def test_impersonation_overrides_ip_lock(self):
+        self.contest.ip_restriction = True
+        self.participation.ip = [ipaddress.ip_network("10.0.0.0/24")]
+
+        self.assertImpersonationSuccess(ip_address="10.0.0.1")
+        self.assertImpersonationSuccess(ip_address="10.0.1.1")
 
 
 if __name__ == "__main__":

@@ -27,14 +27,20 @@
 
 import logging
 import random
-from datetime import timedelta
+from datetime import datetime, timedelta
+import typing
 
 import gevent.lock
 from gevent.event import Event
 
+from cms.conf import ServiceCoord
 from cms.db import SessionGen
 from cms.grading.Job import JobGroup
 from cmscommon.datetime import make_datetime, make_timestamp
+from cms.service.esoperations import ESOperation
+
+if typing.TYPE_CHECKING:
+    from cms.service.EvaluationService import EvaluationService
 
 
 logger = logging.getLogger(__name__)
@@ -52,9 +58,9 @@ class WorkerPool:
     # Seconds after which we declare a worker stale.
     WORKER_TIMEOUT = timedelta(seconds=600)
 
-    def __init__(self, service):
-        """service (Service): the EvaluationService using this
-        WorkerPool.
+    def __init__(self, service: "EvaluationService"):
+        """
+        service: the EvaluationService using this WorkerPool.
 
         """
         self._service = service
@@ -68,16 +74,11 @@ class WorkerPool:
         # worker should be discarded. Operations is the list of
         # operations currently executing. Operations to ignore is the
         # list of operations to ignore in the next batch of results.
-        # Type: {int: [ESOperation]}
-        self._operations = {}
-        # Type: {int: [ESOperation]}
-        self._operations_to_ignore = {}
-        # Type: {int: Datetime|None}
-        self._start_time = {}
-        # Type: {int: bool}
-        self._schedule_disabling = {}
-        # Type: {int: bool}
-        self._ignore = {}
+        self._operations: dict[int, list[ESOperation]] = {}
+        self._operations_to_ignore: dict[int, list[ESOperation]] = {}
+        self._start_time: dict[int, datetime | None] = {}
+        self._schedule_disabling: dict[int, bool] = {}
+        self._ignore: dict[int, bool] = {}
 
         # TODO: given the number of pieces data associated to each
         # worker, this class could be simplified by creating a new
@@ -88,8 +89,7 @@ class WorkerPool:
         # should take that into account.
 
         # A reverse lookup dictionary mapping operations to shards.
-        # Type: {ESOperation: int}
-        self._operations_reverse = dict()
+        self._operations_reverse: dict[ESOperation, int] = {}
 
         # A lock to ensure that the reverse lookup stays in sync with
         # the operations lists.
@@ -107,12 +107,12 @@ class WorkerPool:
     def __contains__(self, operation):
         return operation in self._operations_reverse
 
-    def _remove_operations(self, shard, new_operation):
+    def _remove_operations(self, shard: int, new_operation: str | None):
         """Safely remove operations from a worker, assigning a new status.
 
-        shard (int): the worker from which to remove operations.
-        new_operations (unicode|None): the new operation, which can be
-            INACTIVE or DISABLED.
+        shard: the worker from which to remove operations.
+        new_operations: the new operation, which can be
+            WORKER_INACTIVE or WORKER_DISABLED.
 
         """
         with self._operation_lock:
@@ -122,11 +122,11 @@ class WorkerPool:
                 for operation in operations:
                     del self._operations_reverse[operation]
 
-    def _add_operations(self, shard, operations):
+    def _add_operations(self, shard: int, operations: list[ESOperation]):
         """Assigns new operations to a currently inactive worker.
 
-        shard (int): shard of the worker.
-        operations ([ESOperation]) operations to assign to the worker.
+        shard: shard of the worker.
+        operations: operations to assign to the worker.
 
         """
         if self._operations[shard] != WorkerPool.WORKER_INACTIVE:
@@ -140,10 +140,10 @@ class WorkerPool:
         """Wait until a worker might be available."""
         self._workers_available_event.wait()
 
-    def add_worker(self, worker_coord):
+    def add_worker(self, worker_coord: ServiceCoord):
         """Add a new worker to the worker pool.
 
-        worker_coord (ServiceCoord): the coordinates of the worker.
+        worker_coord: the coordinates of the worker.
 
         """
         shard = worker_coord.shard
@@ -161,13 +161,13 @@ class WorkerPool:
         self._workers_available_event.set()
         logger.debug("Worker %s added.", shard)
 
-    def on_worker_connected(self, worker_coord):
+    def on_worker_connected(self, worker_coord: ServiceCoord):
         """To be called when a worker comes alive after being
         offline. We use this callback to instruct the worker to
         precache all files concerning the contest.
 
-        worker_coord (ServiceCoord): the coordinates of the worker
-                                     that came online.
+        worker_coord: the coordinates of the worker
+                      that came online.
 
         """
         shard = worker_coord.shard
@@ -183,14 +183,14 @@ class WorkerPool:
         # so we wake up the consumers.
         self._workers_available_event.set()
 
-    def acquire_worker(self, operations):
+    def acquire_worker(self, operations: list[ESOperation]) -> int | None:
         """Tries to assign an operation to an available worker. If no workers
         are available then this returns None, otherwise this returns
         the chosen worker.
 
-        operations ([ESOperation]): the operations to assign to a worker.
+        operations: the operations to assign to a worker.
 
-        return (int|None): None if no workers are available, the worker
+        return: None if no workers are available, the worker
             assigned to the operation otherwise.
 
         """
@@ -222,7 +222,7 @@ class WorkerPool:
             plus=shard)
         return shard
 
-    def release_worker(self, shard):
+    def release_worker(self, shard: int) -> bool | list[ESOperation]:
         """To be called by ES when it receives a notification that an
         operation finished.
 
@@ -230,11 +230,10 @@ class WorkerPool:
         disable it, and notify the ES to discard the outcome obtained
         by the worker.
 
-        shard (int): the worker to release.
+        shard: the worker to release.
 
-        return (bool|[ESOperation]): if boolean, whether the result is
-            to be ignored; if a list, the list of operation for which
-            the results should be ignored.
+        return: if boolean, whether the result is to be ignored; if a list,
+            the list of operation for which the results should be ignored.
 
         """
         if self._operations[shard] == WorkerPool.WORKER_INACTIVE:
@@ -266,22 +265,26 @@ class WorkerPool:
         else:
             return ret
 
-    def find_worker(self, operation, require_connection=False,
-                    random_worker=False):
+    def find_worker(
+        self,
+        operation: ESOperation | str | None,
+        require_connection: bool = False,
+        random_worker: bool = False,
+    ) -> int:
         """Return a worker whose assigned operation is operation.
 
         Remember that there is a placeholder operation to signal that the
         worker is not doing anything (or disabled).
 
-        operation (ESOperation|unicode|None): the operation we are
+        operation: the operation we are
             looking for, or WorkerPool.WORKER_*.
-        require_connection (bool): True if we want to find a worker
+        require_connection: True if we want to find a worker
             doing the operation and that is actually connected to us
             (i.e., did not die).
-        random_worker (bool): if True, choose uniformly amongst all
+        random_worker: if True, choose uniformly amongst all
             workers doing the operation.
 
-        returns (int): the shard of a worker working on operation.
+        returns: the shard of a worker working on operation.
 
         raise (LookupError): if nothing has been found.
 
@@ -298,10 +301,10 @@ class WorkerPool:
         else:
             return random.choice(pool)
 
-    def ignore_operation(self, operation):
+    def ignore_operation(self, operation: ESOperation):
         """Mark the operation to be ignored.
 
-        operation (ESOperation): the operation to ignore.
+        operation: the operation to ignore.
 
         raise (LookupError): if operation is not found.
 
@@ -315,11 +318,11 @@ class WorkerPool:
                          "that cannot be found.", operation)
             raise
 
-    def get_status(self):
+    def get_status(self) -> dict:
         """Returns a dict with info about the current status of all
         workers.
 
-        return (dict): dict of info: current operation, starting time,
+        return: dict of info: current operation, starting time,
             number of errors, and additional data specified in the
             operation.
 
@@ -338,13 +341,13 @@ class WorkerPool:
                 'start_time': s_time}
         return result
 
-    def check_timeouts(self):
+    def check_timeouts(self) -> list[ESOperation]:
         """Check if some worker is not responding in too much time. If
         this is the case, the worker is scheduled for disabling, and
         we send it a message trying to shut it down.
 
-        return ([ESOperation]): list of operations assigned to worker
-            that timeout.
+        return: list of operations assigned to the worker
+            that timed out.
 
         """
         now = make_datetime()
@@ -384,12 +387,12 @@ class WorkerPool:
 
         return lost_operations
 
-    def disable_worker(self, shard):
+    def disable_worker(self, shard: int) -> list[ESOperation]:
         """Disable a worker.
 
-        shard (int): which worker to disable.
+        shard: which worker to disable.
 
-        return ([ESOperation]): list of non-ignored operations
+        return: list of non-ignored operations
             assigned to the worker.
 
         raise (ValueError): if worker is already disabled.
@@ -425,10 +428,10 @@ class WorkerPool:
         logger.info("Worker %s disabled.", shard)
         return lost_operations
 
-    def enable_worker(self, shard):
+    def enable_worker(self, shard: int):
         """Enable a worker that previously was disabled.
 
-        shard (int): which worker to enable.
+        shard: which worker to enable.
 
         raise (ValueError): if worker is not disabled.
 
@@ -444,11 +447,11 @@ class WorkerPool:
         self._workers_available_event.set()
         logger.info("Worker %s enabled.", shard)
 
-    def check_connections(self):
+    def check_connections(self) -> list[ESOperation]:
         """Check if a worker we assigned an operation to disconnects. In this
         case, requeue the operation.
 
-        return ([ESOperation]): list of operations assigned to worker
+        return: list of operations assigned to worker
             that disconnected.
 
         """

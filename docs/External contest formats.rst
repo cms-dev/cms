@@ -19,7 +19,7 @@ As for the second set of needs, the philosophy is that CMS should not force upon
 At the moment, CMS comes with two loaders pre-installed:
 
 * :file:`italy_yaml`, for tasks/users stored in the "Italian Olympiad" format.
-* :file:`polygon_xml`, for tasks made with `Polygon <https://polygon.codeforces.com/>`_.
+* :file:`polygon_xml`, for tasks made with `Polygon <https://polygon.codeforces.com/>`__.
 
 The first one is not particularly suited for general use (see below for more details), so, if you don't want to migrate to one of the aforementioned formats then we encourage you to **write a loader** for your favorite format and then get in touch with CMS authors to have it accepted in CMS. See the file :gh_blob:`cmscontrib/loaders/base_loader.py` for some hints.
 
@@ -171,7 +171,7 @@ The following are optional keys that must be present for some task type or score
 Polygon format
 ==============
 
-`Polygon <https://polygon.codeforces.com>`_ is a popular platform for the creation of tasks, and a task format, used among others by Codeforces.
+`Polygon <https://polygon.codeforces.com>`__ is a popular platform for the creation of tasks, and a task format, used among others by Codeforces.
 
 Since Polygon doesn't support CMS directly, some task parameters cannot be set using the standard Polygon configuration. The importer reads from an optional file :file:`cms_conf.py` additional configuration specifics to CMS. Additionally, user can add file named contestants.txt to allow importing some set of users.
 

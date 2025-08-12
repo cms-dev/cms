@@ -1,6 +1,6 @@
 body {
     /* FIXME: I'd suggest putting a 0.75em font-size */
-    font: 1em/1.5em sans-serif;
+    font: .85em/1.3em sans-serif;
 
     color: black;
 
@@ -25,7 +25,7 @@ a {
 }
 
 abbr {
-    border-bottom: 1px dotted black;
+    text-decoration: none;
 }
 
 /******************************************************************************\
@@ -37,15 +37,20 @@ abbr {
 
 #LogoPanel {
     position: absolute;
-    top: 24px;
+    top: 65px;
     left: 24px;
     width: 200px;
+}
+
+#LogoPanel img {
+    width: 160px;
+    margin-left: 10px;
 }
 
 #UpperPanel {
     position: absolute;
     top: 0;
-    left: 248px;
+    left: 0;
     right: 0;
     height: 3em;
     border-width: 0 0 2px 2px;
@@ -217,7 +222,7 @@ abbr {
 
 #TimeView.pre_cont + #SidePanel,
 #TimeView.cont + #SidePanel {
-    top: 280px;
+    top: 260px;
 }
 
 
@@ -258,6 +263,10 @@ abbr {
     font: inherit;
     background-color: #FFFFFF;
     outline: 0;
+}
+
+.teams-hidden #TeamSearch_input {
+    display: none;
 }
 
 #TeamSearch_bg {
@@ -374,7 +383,7 @@ abbr {
 #Scoreboard {
     width: 100%;
     table-layout: fixed;
-    margin: 3em 0;
+    margin: 20px 0;
 }
 
 #Scoreboard_cols col.sel {
@@ -382,6 +391,10 @@ abbr {
 }
 
 #Scoreboard_cols col.rank {
+    width: 48px;
+}
+
+#Scoreboard_cols col.user_id {
     width: 48px;
 }
 
@@ -393,6 +406,10 @@ abbr {
     width: -webkit-calc(2em + 20px);
     width:    -moz-calc(2em + 20px);
     width:         calc(2em + 20px);
+}
+
+.teams-hidden #Scoreboard .team {
+    display: none;
 }
 
 #Scoreboard_head tr {
@@ -423,7 +440,6 @@ abbr {
     max-width: 40px;
     max-height: 20px;
     margin: 0 auto;
-    box-shadow: 0 0 2px 0 gray;
 }
 
 #Scoreboard_head tr th,
@@ -431,6 +447,7 @@ abbr {
     text-align: center;
 }
 
+#Scoreboard_body tr td.user_id,
 #Scoreboard_body tr td.f_name,
 #Scoreboard_body tr td.l_name {
     text-align: left;
@@ -448,6 +465,7 @@ abbr {
     cursor: pointer;
 }
 
+#Scoreboard_body tr:hover td.user_id,
 #Scoreboard_body tr:hover td.f_name,
 #Scoreboard_body tr:hover td.l_name,
 #Scoreboard_body tr:hover td.team {
@@ -455,6 +473,7 @@ abbr {
     border-radius: 5px;
 }
 
+#Scoreboard_body tr.selected td.user_id,
 #Scoreboard_body tr.selected td.f_name,
 #Scoreboard_body tr.selected td.l_name {
     font-weight: bold;
@@ -802,63 +821,51 @@ abbr {
 }
 
 .score_0 {
-    background-color: #F40000;
-    /*background-image: linear-gradient(rgb(204, 0, 0), rgb(244, 0, 0));*/
+    color: #666;
 }
 
 .score_0_10 {
-    background-color: #EB1D00;
-    /*background-image: linear-gradient(rgb(210, 38, 0), rgb(235, 29, 0));*/
+    background-color: hsl(120, 30%, 87%);
 }
 
 .score_10_20 {
-    background-color: #E23A00;
-    /*background-image: linear-gradient(rgb(216, 77, 0), rgb(226, 58, 0));*/
+    background-color: hsl(120, 30%, 84%);
 }
 
 .score_20_30 {
-    background-color: #D95700;
-    /*background-image: linear-gradient(rgb(222, 115, 0), rgb(217, 87, 0));*/
+    background-color: hsl(120, 30%, 81%);
 }
 
 .score_30_40 {
-    background-color: #D17400;
-    /*background-image: linear-gradient(rgb(228, 154, 0), rgb(209, 116, 0));*/
+    background-color: hsl(120, 30%, 78%);
 }
 
 .score_40_50 {
-    background-color: #C89100;
-    /*background-image: linear-gradient(rgb(234, 192, 0), rgb(200, 145, 0));*/
+    background-color: hsl(120, 30%, 75%);
 }
 
 .score_50_60 {
-    background-color: #B99F00;
-    /*background-image: linear-gradient(rgb(225, 211, 2), rgb(185, 159, 0));*/
+    background-color: hsl(120, 30%, 72%);
 }
 
 .score_60_70 {
-    background-color: #A39E01;
-    /*background-image: linear-gradient(rgb(203, 211, 6), rgb(163, 158, 1));*/
+    background-color: hsl(120, 30%, 69%);
 }
 
 .score_70_80 {
-    background-color: #8E9D02;
-    /*background-image: linear-gradient(rgb(181, 211, 10), rgb(142, 157, 2));*/
+    background-color: hsl(120, 30%, 66%);
 }
 
 .score_80_90 {
-    background-color: #789C03;
-    /*background-image: linear-gradient(rgb(159, 210, 14), rgb(120, 156, 3));*/
+    background-color: hsl(120, 30%, 63%);
 }
 
 .score_90_100 {
-    background-color: #639B04;
-    /*background-image: linear-gradient(rgb(137, 210, 18), rgb(99, 155, 4));*/
+    background-color: hsl(120, 30%, 60%);
 }
 
 .score_100 {
-    background-color: #4E9A05;
-    /*background-image: linear-gradient(rgb(115, 210, 22), rgb(78, 154, 5));*/
+    background-color: hsl(120, 30%, 55%);
 }
 
 
@@ -914,43 +921,31 @@ abbr {
     min-height: 242px;
 }
 
-#UserDetail_f_name,
-#UserDetail_l_name,
-#UserDetail_team,
-#UserDetail_flag {
-    position: absolute;
-    right: 470px;
+#UserDetail_summary {
+    display: flex;
+    flex-direction: column;
     font-size: 2em;
     line-height: 1.5em;
+    text-align: center;
 }
 
-#UserDetail_f_name {
-    top: 0;
-}
-
-#UserDetail_l_name {
-    top: 1.5em;
-}
-
-#UserDetail_team {
-    bottom: 100px;
+#UserDetail_spacer {
+    flex-grow: 1;
+    min-height: 2em;
 }
 
 #UserDetail_flag {
-    bottom: 0;
+    max-width: 144px;
+    max-height: 96px;
+    object-fit: contain;
+    align-self: center;
 }
 
 #UserDetail_face {
-    position: absolute;
-    top: 0;
-    left: 0;
     max-width: 160px;
     max-height: 240px;
-}
-
-#UserDetail_flag {
-    margin: -1px;
-    border: 1px solid gray;
+    object-fit: contain;
+    align-self: center;
 }
 
 #UserDetail_flag.hidden {
@@ -959,7 +954,6 @@ abbr {
 
 #UserDetail_navigator {
     width: 450px;
-    margin-left: 470px;
 }
 
 #UserDetail_navigator table {
@@ -1108,9 +1102,8 @@ abbr {
 #ConnectionStatus_label {
     display: inline-block;
     position: relative;
-    height: 1.5em;
+    height: 1.3em;
     padding: 0.25em 20px;
-    margin: -1px 0;
     z-index: 2;
     border-width: 1px;
     border-style: solid;

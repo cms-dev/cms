@@ -1,0 +1,10 @@
+[Unit]
+Description=Contest Management System Ranking Service
+
+[Service]
+Type=simple
+WorkingDirectory=@CMS_DIR@
+ExecStart=@CMS_DIR@/bin/cmsRankingWebServer
+
+[Install]
+WantedBy=default.target

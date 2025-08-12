@@ -50,6 +50,7 @@ class HomepageRequest(GenericRequest):
     """Load the main page of CWS.
 
     """
+
     def __init__(self, browser, username, loggedin, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = self.base_url
@@ -76,6 +77,7 @@ class TaskRequest(GenericRequest):
     """Load a task page in CWS.
 
     """
+
     def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%s/tasks/%s/description" % (self.base_url, task_id)
@@ -89,6 +91,7 @@ class TaskStatementRequest(GenericRequest):
     """Load a task statement in CWS.
 
     """
+
     def __init__(self, browser, task_id, language_code, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%s/tasks/%s/statements/%s" % (self.base_url,
@@ -106,6 +109,7 @@ class SubmitRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
+
     def __init__(self, browser, task, submission_format,
                  filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
@@ -127,7 +131,8 @@ class SubmitRequest(GenericRequest):
 
     def _prepare(self):
         GenericRequest._prepare(self)
-        self.files = list(zip(self.submission_format, self.filenames))
+        self.files = [
+            (sf, fn) for sf, fn in zip(self.submission_format, self.filenames) if fn is not None]
 
     def describe(self):
         return "submit sources %s for task %s (ID %d) %s" % \
@@ -157,7 +162,7 @@ class SubmitRequest(GenericRequest):
             return None
         try:
             submission_id = decrypt_number(query["submission_id"][0],
-                                           config.secret_key)
+                                           config.web_server.secret_key)
         except Exception:
             logger.warning("Unable to decrypt submission id from page: `%s'",
                            self.redirected_to)
@@ -167,6 +172,7 @@ class SubmitRequest(GenericRequest):
 
 class SubmitUserTestRequest(GenericRequest):
     """Submit a user test in CWS."""
+
     def __init__(self, browser, task, submission_format,
                  filenames, language=None, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
@@ -223,7 +229,7 @@ class SubmitUserTestRequest(GenericRequest):
             return None
         try:
             user_test_id = decrypt_number(query["user_test_id"][0],
-                                          config.secret_key)
+                                          config.web_server.secret_key)
         except Exception:
             logger.warning("Unable to decrypt user test id from page: `%s'",
                            self.redirected_to)
@@ -235,6 +241,7 @@ class TokenRequest(GenericRequest):
     """Release test a submission.
 
     """
+
     def __init__(self, browser, task, submission_num, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.url = "%s/tasks/%s/submissions/%s/token" % (self.base_url,
@@ -258,6 +265,7 @@ class SubmitRandomRequest(GenericRequest):
     """Submit a solution in CWS.
 
     """
+
     def __init__(self, browser, task, base_url=None,
                  submissions_path=None):
         GenericRequest.__init__(self, browser, base_url)

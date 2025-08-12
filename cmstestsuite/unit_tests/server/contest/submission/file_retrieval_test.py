@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
 import io
+import sys
 import tarfile
 import unittest
 import zipfile
 from collections import namedtuple
 from unittest.mock import patch
+import zlib
 
 from cms.server.contest.submission import ReceivedFile, InvalidArchive, \
     extract_files_from_archive, extract_files_from_tornado
@@ -92,17 +95,8 @@ class TestExtractFilesFromArchive(unittest.TestCase):
             extract_files_from_archive(archive_data.getvalue()),
             [ReceivedFile(None, "foo", b"some content")])
 
-    # The behavior documented in this test actually only happens when
-    # patool uses 7z (which happens if it is found installed). Otherwise
-    # it falls back on Python's zipfile module which outright fails.
-    # Due to this difference we do not run this test.
-    @unittest.skip("Depends on what is installed in the system.")
+    @unittest.skipIf(sys.version_info < (3, 12), "this archive crashes zipfile before py3.12")
     def test_empty_filename(self):
-        # This is a quite unexpected behavior: luckily in practice it
-        # should have no effect as the elements of the submission format
-        # aren't allowed to be empty and thus the submission would be
-        # rejected later on anyways. It also shouldn't leak any private
-        # information.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
             # Need ZipInfo because of "bug" in writestr.
@@ -111,9 +105,7 @@ class TestExtractFilesFromArchive(unittest.TestCase):
         self.assertEqual(len(res), 1)
         f = res[0]
         self.assertIsNone(f.codename)
-        # The extracted file is named like the temporary file where the
-        # archive's contents were copied to, plus a trailing tilde.
-        self.assertRegex(f.filename, "tmp[a-z0-9_]+~")
+        self.assertEqual(f.filename, "")
         self.assertEqual(f.content, b"some content")
 
     def test_multiple_slashes_are_compressed(self):
@@ -137,18 +129,81 @@ class TestExtractFilesFromArchive(unittest.TestCase):
                 extract_files_from_archive(archive_data.getvalue()),
                 [ReceivedFile(None, "bar", b"some content")])
 
-    def test_conflicting_filenames(self):
-        # This is an unnecessary limitation due to the fact that patool
-        # does extract files to the actual filesystem. We could avoid it
-        # by using zipfile, tarfile, etc. directly but it would be too
-        # burdensome to support the same amount of archive types as
-        # patool does.
+    def test_zip_bomb_size_tarbz(self):
+        # this test should finish almost instantly, instead of trying to
+        # decompress the entire archive.
+
+        # This data is a tar.bz2 file that contains one file, with 64GB of null
+        # bytes.
+        data = zlib.decompress(base64.b64decode("""
+eJztyu9rzHEAAODPjHabezHaSSm+Yy1WlHKxpI5km1d34/vi9uaKKeUNI8kL2khRy3UK+XG1ue4uKaF
+TvNBerNTe2isvpDVLFNNaebMS/4Q3z+vnOTR0unf3wXz3sXw1f6625kqyMDpTzDStzGUy2bAQfcqGKJ
+GIQql1R9/4wLcT4XL5SbTlaaIycWe2pTK8Zzpc+vm98PXRQO54fLgex6nc3h/PHkfbTlYbcS5e3/5y8
+OaHdFv/pq2T6za8qBzp6Xo+9+vLvpmR97W29JkD2dr4cmNt5u61d1dfLS1/XNjfe33jjULLxbe333R2
+FUv9fUsdqdKpdPFzeedi6vd8SIYQxkJzYvXscM+qoWK99TznnHPOOeecc84555xzzjnnnHPOOeecc84
+555xzzjnnnHPOOeecc84555xzzjnnnHPOOeecc84555xzzjnnnHPOOeecc84555xzzjnnnHPOOeecc8
+4555xzzjnnnHPOOeecc84555xzzjnnnHPOOeecc845/w/+sD79erF5pfzX2/+N5NSD6v3JpsZgtHnX/
+K2zE53bL9w7+gctbrLz"""))
+
+        with self.assertRaises(InvalidArchive) as exc:
+            extract_files_from_archive(data, 1_000_000, None)
+
+        self.assertTrue(exc.exception.too_big)
+
+
+    def test_zip_bomb_count_tarbz(self):
+        # this test should finish almost instantly, instead of trying to
+        # decompress the entire archive.
+
+        # This data is a tar.bz2 file that contains 120 million empty files,
+        # all named "x". (the decompressed tar file would be 6GB.)
+        block = base64.b64decode("""
+MUFZJlNZFfIt8gXzb9uAyIBAAHcAAADgAB5ACAAwAVgAUyYmQZGFMmJkGRgUqmo2poaD1GgVKm4FSpg
+CRQ7gqVPYKlTwCpUyBUqdgKlTIKlTIJFDYBUqbAqVOAVKmAJFDAKlTYCiSuQVKmAUSVgFSpyCpU8gqV
+OAVKmAVKnIKlTqCpU3BIofQVKnwFSpoFSpoFSpoFSp+BUqZBUqfw==""")
+        data = b"BZh9" + 1000*block + bytes.fromhex("1772453850905d4ab55d")
+
+        with self.assertRaises(InvalidArchive) as exc:
+            extract_files_from_archive(data, None, 1000)
+
+        self.assertTrue(exc.exception.too_many_files)
+
+    def test_zip_bomb_size_zip(self):
+        # Similar to test_zip_bomb_size_tarbz. This test uses zip's
+        # (little-used?) bzip2 mode, because bzip2 is the most efficient at
+        # compressing large amounts of null bytes. It should be fine for the
+        # test though, we care more about zipfile's API here than the
+        # underlying compression algorithm.
+
+        # This data is a zip file with one file containing 16GB of null bytes.
+        data = zlib.decompress(base64.b64decode("""
+eJzt2r9qwlAUx/Fzm1hUpEixm4MKCi6pbi1d/IdLEIJOyeKojxA3FScHkVBwdejSZ3Ap4t7JUQQHVx9
+Bk6LgUDfH7+9wzzmXzyscy9R0Q0Ri8vG8cpLbWvp4jpKEuEriEkT338H4W6XidN+LZTvXsp8iu61qT0
+ryIxJOSaHfqFfm2e9of4bjOI7jOI7jOI7jOI7jOI7jOI7jOI7jOI7jOI7jOI7jOI7j9/Pxb+9FOutrX
+3vT/Gcz9Lbw8svRcLMvupapHgzt9o38JV+DoP97MW+ZocdgKr+q/sy8Br8TACk9vA=="""))
+
+        with self.assertRaises(InvalidArchive) as exc:
+            extract_files_from_archive(data, 1_000_000, None)
+
+        self.assertTrue(exc.exception.too_big)
+
+    def test_zip_bomb_count_zip(self):
+        # This test is not as extreme as the other zip-bomb ones, because zip
+        # does not have metadata compression. Once we have a zip in memory (as
+        # returned by tornado), constructing the file list is quite cheap, so
+        # zipfile doesn't even have an API to not construct the entire file
+        # list.
         archive_data = io.BytesIO()
         with zipfile.ZipFile(archive_data, "w") as f:
-            f.writestr("foo", b"some content")
-            f.writestr("foo/bar", b"more content")
-        with self.assertRaises(InvalidArchive):
-            extract_files_from_archive(archive_data.getvalue())
+            for i in range(1000):
+                f.writestr(f"{i}", b"x")
+
+        with self.assertRaises(InvalidArchive) as exc:
+            extract_files_from_archive(archive_data.getvalue(), 500, 50)
+
+        # size limit 500 vs total file size 1000 (1 byte per file) means we
+        # will hit both limits, but the file count limit should be hit first.
+        self.assertTrue(exc.exception.too_many_files)
 
 
 MockHTTPFile = namedtuple("MockHTTPFile", ["filename", "body"])
@@ -202,7 +257,7 @@ class TestExtractFilesFromTornado(unittest.TestCase):
         self.assertIs(extract_files_from_tornado(tornado_files),
                       self.extract_files_from_archive.return_value)
         self.extract_files_from_archive.assert_called_once_with(
-            b"this is an archive")
+            b"this is an archive", None, None)
 
     def test_bad_archive(self):
         tornado_files = {
@@ -212,7 +267,7 @@ class TestExtractFilesFromTornado(unittest.TestCase):
         with self.assertRaises(InvalidArchive):
             extract_files_from_tornado(tornado_files)
         self.extract_files_from_archive.assert_called_once_with(
-            b"this is not a valid archive")
+            b"this is not a valid archive", None, None)
 
 
 if __name__ == "__main__":

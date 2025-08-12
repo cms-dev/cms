@@ -20,11 +20,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 import functools
 import json
 import logging
 import socket
 import traceback
+from typing import Any
+import typing
 import uuid
 from weakref import WeakSet
 
@@ -33,7 +36,11 @@ import gevent.event
 import gevent.lock
 import gevent.socket
 
-from cms import Address, get_service_address
+from cms.conf import Address, ServiceCoord
+from cms.util import get_service_address
+
+if typing.TYPE_CHECKING:
+    from cms.io.service import Service
 
 
 logger = logging.getLogger(__name__)
@@ -44,13 +51,16 @@ class RPCError(Exception):
     pass
 
 
-def rpc_method(func):
+_T = typing.TypeVar("_T", bound=Callable)
+
+
+def rpc_method(func: _T) -> _T:
     """Decorator for a method that other services are allowed to call.
 
     Does not do a lot, just defines the right method's attribute.
 
-    func (function): the method to make RPC callable.
-    return (function): the decorated method.
+    func: the method to make RPC callable.
+    return: the decorated method.
 
     """
     func.rpc_callable = True
@@ -78,10 +88,10 @@ class RemoteServiceBase:
     # attacks. XXX Check that this size is sensible.
     MAX_MESSAGE_SIZE = 1024 * 1024
 
-    def __init__(self, remote_address):
+    def __init__(self, remote_address: Address):
         """Prepare to handle a connection with the given remote address.
 
-        remote_address (Address): the address of the other end of the
+        remote_address: the address of the other end of the
             connection (origin or target, depending on its direction).
 
         """
@@ -89,8 +99,8 @@ class RemoteServiceBase:
         self.remote_address = remote_address
         self._connection_event = gevent.event.Event()
 
-        self._on_connect_handlers = list()
-        self._on_disconnect_handlers = list()
+        self._on_connect_handlers: list[Callable[[object], Any]] = list()
+        self._on_disconnect_handlers: list[Callable[[object], Any]] = list()
 
         self._socket = None
         self._reader = None
@@ -100,50 +110,60 @@ class RemoteServiceBase:
         self._write_lock = gevent.lock.RLock()
 
     @property
-    def connected(self):
+    def connected(self) -> bool:
         """Return whether we're connected to the other endpoint.
 
-        return (bool): the status of the connection.
+        return: the status of the connection.
 
         """
         return self._connection_event.is_set()
 
-    def add_on_connect_handler(self, handler):
+    def wait_for_connection(self, timeout: float | None = None) -> bool:
+        """Wait for a limited time until the connection comes up.
+
+        timeout: maximum waiting time in seconds.
+
+        result: the status of the connection.
+
+        """
+        return self._connection_event.wait(timeout)
+
+    # TODO: the types here are not precise
+    def add_on_connect_handler(self, handler: Callable[[object], Any]):
         """Register a callback for connection establishment.
 
-        handler (function): a no-args callable that gets notified when
+        handler: a no-args(?) callable that gets notified when
             a new connection has been established.
 
         """
         self._on_connect_handlers.append(handler)
 
-    def add_on_disconnect_handler(self, handler):
+    def add_on_disconnect_handler(self, handler: Callable[[object], Any]):
         """Register a callback for connection termination.
 
-        handler (function): a no-args callable that gets notified when
+        handler: a no-args callable that gets notified when
             a connection has been closed.
 
         """
         self._on_disconnect_handlers.append(handler)
 
-    def _repr_remote(self):
+    def _repr_remote(self) -> str:
         """Describe the other end of the connection.
 
-        return (unicode): a human-readable sensible identifier for the
+        return: a human-readable sensible identifier for the
             remote address, for use in log messages and exceptions.
 
         """
-        return "%s:%d" % (self.remote_address)
+        return str(self.remote_address)
 
-    def initialize(self, sock, plus):
+    def initialize(self, sock: socket.socket, plus: object):
         """Activate the communication on the given socket.
 
         Put this class in its "connected" state, setting up all needed
         attributes. Call the on_connect callback.
 
-        sock (socket): the socket acting as low-level communication
-            channel.
-        plus (object): object to pass to the on_connect callbacks.
+        sock: the socket acting as low-level communication channel.
+        plus: object to pass to the on_connect callbacks.
 
         """
         if self.connected:
@@ -164,13 +184,13 @@ class RemoteServiceBase:
         for handler in self._on_connect_handlers:
             gevent.spawn(handler, plus)
 
-    def finalize(self, reason=""):
+    def finalize(self, reason: str = ""):
         """Deactivate the communication on the current socket.
 
         Take the class back to the disconnected state and call the
         on_disconnect callback.
 
-        reason (unicode): the human-readable reason for closing the
+        reason: the human-readable reason for closing the
             connection, to be put in log messages and exceptions.
 
         """
@@ -191,10 +211,10 @@ class RemoteServiceBase:
         for handler in self._on_disconnect_handlers:
             gevent.spawn(handler)
 
-    def disconnect(self, reason="Disconnection requested."):
+    def disconnect(self, reason: str = "Disconnection requested.") -> bool:
         """Gracefully close the connection.
 
-        return (bool): True if the service was connected.
+        return: True if the service was connected.
 
         """
         if not self.connected:
@@ -210,13 +230,13 @@ class RemoteServiceBase:
             self.finalize(reason=reason)
         return True
 
-    def _read(self):
+    def _read(self) -> bytes:
         """Receive a message from the socket.
 
         Read from the socket until a "\\r\\n" is found. That is what we
         consider a "message" in the communication protocol.
 
-        return (bytes): the retrieved message.
+        return: the retrieved message.
 
         raise (OSError): if reading fails.
 
@@ -251,12 +271,12 @@ class RemoteServiceBase:
 
         return data
 
-    def _write(self, data):
+    def _write(self, data: bytes):
         """Send a message to the socket.
 
         Automatically append "\\r\\n" to make it a correct message.
 
-        data (bytes): the message to transmit.
+        data: the message to transmit.
 
         raise (OSError): if writing fails.
 
@@ -296,10 +316,10 @@ class RemoteServiceServer(RemoteServiceBase):
     the reader loop should be started by calling run.
 
     """
-    def __init__(self, local_service, remote_address):
+    def __init__(self, local_service: "Service", remote_address: Address):
         """Create a responder for the given service.
 
-        local_service (Service): the object whose methods should be
+        local_service: the object whose methods should be
             called via RPC.
 
         For other arguments see RemoteServiceBase.
@@ -319,7 +339,7 @@ class RemoteServiceServer(RemoteServiceBase):
 
         self.pending_incoming_requests_threads.clear()
 
-    def handle(self, socket_):
+    def handle(self, socket_: socket.socket):
         self.initialize(socket_, self.remote_address)
         self.run()
 
@@ -344,13 +364,13 @@ class RemoteServiceServer(RemoteServiceBase):
 
             gevent.spawn(self.process_data, data)
 
-    def process_data(self, data):
+    def process_data(self, data: bytes):
         """Handle the message.
 
         JSON-decode it and forward it to process_incoming_request
         (unconditionally!).
 
-        data (bytes): the message read from the socket.
+        data: the message read from the socket.
 
         """
         # Decode the incoming data.
@@ -363,13 +383,13 @@ class RemoteServiceServer(RemoteServiceBase):
 
         self.process_incoming_request(message)
 
-    def process_incoming_request(self, request):
+    def process_incoming_request(self, request: dict):
         """Handle the request.
 
         Parse the request, execute the method it asks for, format the
         result and send the response.
 
-        request (dict): the JSON-decoded request.
+        request: the JSON-decoded request.
 
         """
         # Validate the request.
@@ -435,12 +455,14 @@ class RemoteServiceClient(RemoteServiceBase):
     the reader loop should be started by calling run.
 
     """
-    def __init__(self, remote_service_coord, auto_retry=None):
+    def __init__(
+        self, remote_service_coord: ServiceCoord, auto_retry: float | None = None
+    ):
         """Create a caller for the service at the given coords.
 
-        remote_service_coord (ServiceCoord): the coordinates (i.e. name
+        remote_service_coord: the coordinates (i.e. name
             and shard) of the service to which to send RPC requests.
-        auto_retry (float|None): if a number is given then it's the
+        auto_retry: if a number is given then it's the
             interval (in seconds) between attempts to reconnect to the
             remote service in case the connection is lost; if not given
             no automatic reconnection attempts will occur.
@@ -461,8 +483,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
     def _repr_remote(self):
         """See RemoteServiceBase._repr_remote."""
-        return "%s:%d (%r)" % (self.remote_address +
-                               (self.remote_service_coord,))
+        return f"{self.remote_address} ({self.remote_service_coord})"
 
     def finalize(self, reason=""):
         """See RemoteServiceBase.finalize."""
@@ -551,13 +572,13 @@ class RemoteServiceClient(RemoteServiceBase):
 
             gevent.spawn(self.process_data, data)
 
-    def process_data(self, data):
+    def process_data(self, data: bytes):
         """Handle the message.
 
         JSON-decode it and forward it to process_incoming_response
         (unconditionally!).
 
-        data (bytes): the message read from the socket.
+        data: the message read from the socket.
 
         """
         # Decode the incoming data.
@@ -570,13 +591,13 @@ class RemoteServiceClient(RemoteServiceBase):
 
         self.process_incoming_response(message)
 
-    def process_incoming_response(self, response):
+    def process_incoming_response(self, response: dict):
         """Handle the response.
 
         Parse the response, determine the request it's for and its
         associated result and fill it.
 
-        response (dict): the JSON-decoded response.
+        response: the JSON-decoded response.
 
         """
         # Validate the response.
@@ -604,13 +625,13 @@ class RemoteServiceClient(RemoteServiceBase):
         else:
             result.set(response["__data"])
 
-    def execute_rpc(self, method, data):
+    def execute_rpc(self, method: str, data: dict) -> gevent.event.AsyncResult:
         """Send an RPC request to the remote service.
 
-        method (string): the name of the method to call.
-        data (dict): keyword arguments to pass to the methods.
+        method: the name of the method to call.
+        data: keyword arguments to pass to the methods.
 
-        return (AsyncResult): an object that holds (or will hold) the
+        return: an object that holds (or will hold) the
             result of the call, either the value or the error that
             prevented successful completion.
 
@@ -627,7 +648,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         # Encode it.
         try:
-            data = json.dumps(request).encode('utf-8')
+            data_encoded = json.dumps(request).encode("utf-8")
         except (TypeError, ValueError):
             logger.error("JSON encoding failed.", exc_info=True)
             result.set_exception(RPCError("JSON encoding failed."))
@@ -635,7 +656,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         # Send it.
         try:
-            self._write(data)
+            self._write(data_encoded)
         except OSError:
             result.set_exception(RPCError("Write failed."))
             return result
@@ -646,7 +667,7 @@ class RemoteServiceClient(RemoteServiceBase):
 
         return result
 
-    def __getattr__(self, method):
+    def __getattr__(self, method: str):
         """Syntactic sugar to enable a transparent proxy.
 
         All unresolved attributes on this object are interpreted as
@@ -660,20 +681,23 @@ class RemoteServiceClient(RemoteServiceBase):
         (optionally) the plus object as positional args and the error
         as a keyword arg. It will be run in a dedicated greenlet.
 
-        method (string): the name of the accessed method.
+        method: the name of the accessed method.
         return (function): a proxy to a RPC.
 
         """
-        def run_callback(func, plus, result):
+
+        def run_callback(
+            func: Callable, plus: object, result: gevent.event.AsyncResult
+        ):
             """Execute the given callback safely.
 
             Get data and/or error from result and call func passing it
             data, plus (if needed) and error. Catch, log and suppress
             all exceptions.
 
-            func (function): the callback to invoke.
-            plus (object): optional additional data.
-            result (AsyncResult): the result of a (finished) RPC call.
+            func: the callback to invoke.
+            plus: optional additional data.
+            result: the result of a (finished) RPC call.
 
             """
             data = result.value
@@ -714,7 +738,7 @@ class FakeRemoteServiceClient(RemoteServiceClient):
     RemoteServiceClient that will never be able to connect.
 
     """
-    def __init__(self, remote_service_coord, auto_retry=None):
+    def __init__(self, remote_service_coord: ServiceCoord, auto_retry=None):
         """Initialization.
 
         This constructor does not call the parent constructor, because

@@ -22,6 +22,7 @@ import os.path
 import sys
 import time
 from traceback import format_tb
+import typing
 
 import gevent.lock
 
@@ -54,17 +55,17 @@ class FileHandler(logging.FileHandler):
         self.lock = gevent.lock.RLock()
 
 
-def has_color_support(stream):
+def has_color_support(stream: typing.IO) -> bool:
     """Try to determine if the given stream supports colored output.
 
     Return True only if the stream declares to be a TTY, if it has a
     file descriptor on which ncurses can initialize a terminal and if
     that terminal's entry in terminfo declares support for colors.
 
-    stream (fileobj): a file-like object (that adheres to the API
+    stream: a file-like object (that adheres to the API
         declared in the `io' package).
 
-    return (bool): True if we're sure that colors are supported, False
+    return: True if we're sure that colors are supported, False
         if they aren't or if we can't tell.
 
     """
@@ -233,7 +234,10 @@ class CustomFormatter(logging.Formatter):
         if record.exc_info:
             result += "\n\n%s" % self.formatException(record.exc_info).strip()
 
-        return result.replace("\n", "\n    ") + '\n'
+        if result[-1] == '\n':
+            result = result[:-1]
+
+        return result.replace("\n", "\n    ")
 
 
 # Create a global reference to the root logger.
@@ -242,16 +246,16 @@ root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)
 
 # Define the stream handler to output on stderr.
-shell_handler = StreamHandler(sys.stdout)
+shell_handler = StreamHandler(sys.stderr)
 shell_handler.setLevel(logging.INFO)
-shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
+shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stderr)))
 root_logger.addHandler(shell_handler)
 
 
-def add_file_handler(log_dir):
+def add_file_handler(log_dir: str):
     """Install a handler that writes in files in the given directory.
 
-    log_dir (str): a path to a directory.
+    log_dir: a path to a directory.
 
     """
     log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")

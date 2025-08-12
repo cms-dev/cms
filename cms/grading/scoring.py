@@ -27,7 +27,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms.db import Submission
+from cms.db import Submission, Dataset, Participation, Task
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
 
@@ -44,14 +44,16 @@ SubmissionScoreDelta = namedtuple(
      'old_ranking_score_details', 'new_ranking_score_details'])
 
 
-def compute_changes_for_dataset(old_dataset, new_dataset):
+def compute_changes_for_dataset(
+    old_dataset: Dataset, new_dataset: Dataset
+) -> list[SubmissionScoreDelta]:
     """This function will compute the differences expected when changing from
     one dataset to another.
 
-    old_dataset (Dataset): the original dataset, typically the active one.
-    new_dataset (Dataset): the dataset to compare against.
+    old_dataset: the original dataset, typically the active one.
+    new_dataset: the dataset to compare against.
 
-    returns (list): a list of tuples of SubmissionScoreDelta tuples
+    returns: a list of SubmissionScoreDelta tuples
         where they differ. Those entries that do not differ will have
         None in the pair of respective tuple entries.
 
@@ -100,23 +102,29 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
 
 # Computing global scores (for ranking).
 
-def task_score(participation, task,
-               public=False, only_tokened=False, rounded=False):
+
+def task_score(
+    participation: Participation,
+    task: Task,
+    public: bool = False,
+    only_tokened: bool = False,
+    rounded: bool = False,
+) -> tuple[float, bool]:
     """Return the score of a contest's user on a task.
 
-    participation (Participation): the user and contest for which to
+    participation: the user and contest for which to
         compute the score.
-    task (Task): the task for which to compute the score.
-    public (bool): if True, compute the public score (that is, the one
+    task: the task for which to compute the score.
+    public: if True, compute the public score (that is, the one
         discoverable looking only at the results of public testcases) instead
         of the full score.
-    only_tokened (bool): if True, compute the score discoverable only looking
+    only_tokened: if True, compute the score discoverable only looking
         at the results of tokened submissions (that is, the score that the user
         would obtain if all non-tokened submissions scored 0.0, or equivalently
         had not been scored yet).
-    rounded (bool): if True, round the score to the task's score_precision.
+    rounded: if True, round the score to the task's score_precision.
 
-    return ((float, bool)): the score of user on task, and True if not
+    return: the score of user on task, and True if not
         all submissions of the participation in the task have been scored.
 
     """
@@ -174,18 +182,20 @@ def task_score(participation, task,
     return score, partial
 
 
-def _task_score_max_tokened_last(score_details_tokened):
+def _task_score_max_tokened_last(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max tokened last" score mode.
 
     This was used in IOI 2010-2012. The score of a participant on a task is
     the maximum score amongst all tokened submissions and the last submission
     (not yet computed scores count as 0.0).
 
-    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
-        submission of the user in the task, containing score, score details
-        (each None if not scored yet) and if the submission was tokened.
+    score_details_tokened: a tuple for each submission of the user in the task,
+        containing score, score details (each None if not scored yet) and if
+        the submission was tokened.
 
-    return (float): the score.
+    return: the score.
 
     """
 
@@ -206,7 +216,9 @@ def _task_score_max_tokened_last(score_details_tokened):
     return max(last_score, max_tokened_score)
 
 
-def _task_score_max_subtask(score_details_tokened):
+def _task_score_max_subtask(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max subtask" score mode.
 
     This has been used in IOI since 2017. The score of a participant on a
@@ -218,11 +230,11 @@ def _task_score_max_subtask(score_details_tokened):
     this is not true, the score mode will work as if the task had a single
     subtask.
 
-    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
-        submission of the user in the task, containing score, score details
-        (each None if not scored yet) and if the submission was tokened.
+    score_details_tokened: a tuple for each submission of the user in the task,
+        containing score, score details (each None if not scored yet) and if
+        the submission was tokened.
 
-    return (float): the score.
+    return: the score.
 
     """
     # Maximum score for each subtask (not yet computed scores count as 0.0).
@@ -239,7 +251,7 @@ def _task_score_max_subtask(score_details_tokened):
         try:
             subtask_scores = dict(
                 (subtask["idx"],
-                 subtask["score_fraction"] * subtask["max_score"])
+                 subtask["score"])
                 for subtask in details)
         except Exception:
             subtask_scores = None
@@ -254,18 +266,20 @@ def _task_score_max_subtask(score_details_tokened):
     return sum(max_scores.values())
 
 
-def _task_score_max(score_details_tokened):
+def _task_score_max(
+    score_details_tokened: list[tuple[float | None, object | None, bool]],
+) -> float:
     """Compute score using the "max" score mode.
 
     This was used in IOI 2013-2016. The score of a participant on a task is
     the maximum score amongst all submissions (not yet computed scores count
     as 0.0).
 
-    score_details_tokened ([(float|None, object|None, bool)]): a tuple for each
-        submission of the user in the task, containing score, score details
-        (each None if not scored yet) and if the submission was tokened.
+    score_details_tokened: a tuple for each submission of the user in the task,
+        containing score, score details (each None if not scored yet) and if
+        the submission was tokened.
 
-    return (float): the score.
+    return: the score.
 
     """
     max_score = 0.0

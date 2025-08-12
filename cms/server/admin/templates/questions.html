@@ -1,31 +1,5 @@
 {% extends "base.html" %}
-
-{% block js %}
-function question_reply_toggle(element, invoker)
-{
-  var obj = document.getElementsByClassName("reply_question")[element];
-  if (obj.style.display != "block")
-    {
-      obj.style.display = "block";
-      invoker.innerHTML = "Hide reply";
-    }
-  else
-    {
-      obj.style.display = "none";
-      invoker.innerHTML = "Reply";
-    }
-  return false;
-}
-
-function update_additional_answer(element, invoker)
-{
-  var obj = document.getElementsByClassName("alternative_answer")[element];
-  if (invoker.selectedIndex == 5)
-    obj.style.display = "block";
-  else
-    obj.style.display = "none";
-}
-{% endblock js %}
+{% import 'macro/question.html' as macro_question with context %}
 
 {% block js_init %}
 
@@ -43,92 +17,7 @@ utils.show_page("questions", 1);
   <div id="page_selector_questions"></div>
   <div id="paged_content_questions">
   {% for msg in questions %}
-  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not none else ("ignored" if msg.ignored else "")) }}">
-    <div class="notification_msg">
-      <div class="notification_timestamp">
-        <a href="{{ url("contest", contest.id, "user", msg.participation.user.id, "edit") }}" title="{{ msg.participation.user.first_name }} {{ msg.participation.user.last_name }}">{{ msg.participation.user.username }}</a> &mdash; {{ msg.question_timestamp }}
-      </div>
-      <div class="notification_subject">{{ msg.subject }}</div>
-      <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
-      {% if msg.reply_timestamp is not none %}
-      <hr>
-      <div class="notification_subject">Reply: {{ msg.reply_subject }}</div>
-      <div class="notification_text preserve_line_breaks">{{ msg.reply_text }}</div>
-      <hr>
-      <div class="notification_admin_owner">
-        Reply from: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}</div>
-      {% else %}
-      <hr>
-      <div class="notification_subject">Not yet replied.</div>
-      <hr>
-        {% if msg.admin is not none %}
-      <div class="notification_admin_owner">
-        {{ "Ignored" if msg.ignored else "Claimed" }} by: {{ msg.admin.name }}
-      </div>
-        {% endif %}
-      {% endif %}
-{% if admin.permission_all or admin.permission_messaging %}
-      {% if msg.reply_timestamp is none %}
-        {% if not msg.ignored %}
-      <div class="claim_reply">
-        <form class="claim_question_form" action="{{ url("contest", contest.id, "question", msg.id, "claim") }}" name="claim{{ msg.id }}" method="POST">
-          {{ xsrf_form_html|safe }}
-          {% if msg.admin is none %}
-          <input type="hidden" name="claim" value="yes"/>
-          <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Claim</a>
-          {% else %}
-          <input type="hidden" name="claim" value="no"/>
-          <a href="javascript:void(0);" onclick="document.claim{{ msg.id }}.submit();">Unclaim</a>
-          {% endif %}
-        </form>
-      </div>
-        {% endif %}
-      <div class="ignore_reply">
-        <form class="ignore_question_form" action="{{ url("contest", contest.id, "question", msg.id, "ignore") }}" name="ignore{{ msg.id }}" method="POST">
-          {{ xsrf_form_html|safe }}
-          {% if not msg.ignored %}
-          <input type="hidden" name="ignore" value="yes"/>
-          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
-          {% else %}
-          <input type="hidden" name="ignore" value="no"/>
-          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
-          {% endif %}
-        </form>
-      </div>
-      {% endif %}
-      <div class="reply_question_toggle">
-        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ loop.index0 }}, this);">
-      {% if msg.reply_timestamp is none %}
-          Reply
-      {% else %}
-          Edit reply
-      {% endif %}
-        </a>
-      </div>
-      <div class="reply_question" >
-        <hr/>
-        <form class="reply_question_form" action="{{ url("contest", contest.id, "question", msg.id, "reply") }}" method="POST">
-          {{ xsrf_form_html|safe }}
-          Precompiled answer:
-          <select name="reply_question_quick_answer" onchange="update_additional_answer({{ loop.index0 }}, this);">
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-            <option value="answered">Answered in task description</option>
-            <option value="invalid">Invalid question</option>
-            <option value="nocomment">No comment</option>
-            <option selected value="other">Other</option>
-          </select>
-          <br/>
-          <div class="alternative_answer">
-            Alternative answer:<br/>
-            <textarea name="reply_question_text"></textarea><br/>
-          </div>
-          <input type="submit" value="Send"/>
-        </form>
-      </div>
-{% endif %}
-    </div>
-  </div>
+    {{ macro_question.question(msg, none) }}
   {% endfor %}
   </div>
 </div>

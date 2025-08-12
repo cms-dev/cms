@@ -44,9 +44,19 @@ from cmscommon.crypto import build_password, hash_password
 logger = logging.getLogger(__name__)
 
 
-def add_participation(username, contest_id, ip, delay_time, extra_time,
-                      password, method, is_hashed, team_code, hidden,
-                      unrestricted):
+def add_participation(
+    username: str,
+    contest_id: int,
+    ip: str | None,
+    delay_time: int | None,
+    extra_time: int | None,
+    password: str,
+    method: str,
+    is_hashed: bool,
+    team_code: str | None,
+    hidden: bool,
+    unrestricted: bool,
+):
     logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
     extra_time = extra_time if extra_time is not None else 0
@@ -58,8 +68,9 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
 
     try:
         with SessionGen() as session:
-            user = \
+            user: User | None = (
                 session.query(User).filter(User.username == username).first()
+            )
             if user is None:
                 logger.error("No user with username `%s' found.", username)
                 return False
@@ -67,7 +78,7 @@ def add_participation(username, contest_id, ip, delay_time, extra_time,
             if contest is None:
                 logger.error("No contest with id `%s' found.", contest_id)
                 return False
-            team = None
+            team: Team | None = None
             if team_code is not None:
                 team = \
                     session.query(Team).filter(Team.code == team_code).first()

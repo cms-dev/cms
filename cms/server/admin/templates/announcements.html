@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import 'macro/markdown_input.html' as macro_markdown %}
 
 {% block core %}
 <div class="core_title">
@@ -23,11 +24,12 @@
             </datalist>
           </div>
           <div class="notification_text">
-            <label for="new_text">Text</label>
-            <textarea name="text" id="new_text" style="width: 100%" ></textarea>
+            <label for="text">Text</label>
+            {{ macro_markdown.markdown_input("text") }}
           </div>
           <input type="submit"
                  value="Add announcement" />
+          {{ macro_markdown.markdown_preview() }}
         </form>
       </div>
     </div>
@@ -42,7 +44,7 @@
           </div>
           <div class="notification_timestamp">{{ msg.timestamp }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text preserve_line_breaks">{{ msg.text }}</div>
+          <div class="notification_text">{{ msg.text | markdown }}</div>
           <hr>
           <div class="notification_admin_owner">
             By: {{ msg.admin.name if msg.admin is not none else "<unknown>" }}

@@ -60,8 +60,10 @@ ENTITY_TYPES = ['contest',
                 ]
 
 
-def get_url(shard, entity_type, entity_id):
-    return urljoin(config.rankings[shard], '%ss/%s' % (entity_type, entity_id))
+def get_url(shard: int, entity_type: str, entity_id: str):
+    return urljoin(
+        config.proxy_service.rankings[shard], "%ss/%s" % (entity_type, entity_id)
+    )
 
 
 def main():
@@ -72,9 +74,15 @@ def main():
     # FIXME It would be nice to use '--rankings' with action='store'
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
-        '-r', '--ranking', dest='rankings', action='append', type=int,
-        choices=list(range(len(config.rankings))), metavar='shard',
-        help="select which RWS to connect to (omit for 'all')")
+        "-r",
+        "--ranking",
+        dest="rankings",
+        action="append",
+        type=int,
+        choices=list(range(len(config.proxy_service.rankings))),
+        metavar="shard",
+        help="select which RWS to connect to (omit for 'all')",
+    )
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
         help='what to ask the RWS to do with the entity')
@@ -124,7 +132,7 @@ def main():
     if args.rankings is not None:
         shards = args.rankings
     else:
-        shards = list(range(len(config.rankings)))
+        shards = list(range(len(config.proxy_service.rankings)))
 
     s = Session()
     had_error = False
@@ -154,7 +162,7 @@ def main():
             logger.info("Sending request")
 
         try:
-            res = s.send(req, verify=config.https_certfile)
+            res = s.send(req, verify=config.proxy_service.https_certfile)
         except RequestException:
             logger.error("Failed", exc_info=True)
             had_error = True
@@ -169,7 +177,7 @@ def main():
             continue
 
         if args.action == "get":
-            print(res.content)
+            print(res.content.decode('utf-8'))
 
     if had_error:
         return 1

@@ -21,20 +21,23 @@ on notifications and sweeper loops.
 
 """
 
+from datetime import datetime
 import logging
 import time
 from abc import ABCMeta, abstractmethod
+import typing
 
 import gevent
 from gevent.event import Event
 
 from cms.io import PriorityQueue, Service, rpc_method
+from cms.io.priorityqueue import QueueEntry, QueueEntryDict, QueueItemT
 
 
 logger = logging.getLogger(__name__)
 
 
-class Executor(metaclass=ABCMeta):
+class Executor(typing.Generic[QueueItemT], metaclass=ABCMeta):
 
     """A class taking care of executing operations.
 
@@ -47,10 +50,10 @@ class Executor(metaclass=ABCMeta):
 
     """
 
-    def __init__(self, batch_executions=False):
+    def __init__(self, batch_executions: bool = False):
         """Create an executor.
 
-        batch_executions (bool): if True, the executor will receive a
+        batch_executions: if True, the executor will receive a
             list of operations in the queue instead of one operation
             at a time.
 
@@ -58,58 +61,63 @@ class Executor(metaclass=ABCMeta):
         super().__init__()
 
         self._batch_executions = batch_executions
-        self._operation_queue = PriorityQueue()
+        self._operation_queue: PriorityQueue[QueueItemT] = PriorityQueue()
 
-    def __contains__(self, item):
+    def __contains__(self, item: QueueItemT) -> bool:
         """Return whether the item is in the queue.
 
-        item (QueueItem): the item to look for.
+        item: the item to look for.
 
-        return (bool): whether operation is in the queue.
+        return: whether operation is in the queue.
 
         """
         return item in self._operation_queue
 
-    def get_status(self):
+    def get_status(self) -> list[QueueEntryDict]:
         """Return a the status of the queues.
 
         More precisely, a list of entries in the executor's queue. The
         first item is the top item, the others are not in order.
 
-        return ([QueueEntry]): the list with the queued elements.
+        return: the list with the queued elements.
 
         """
         return self._operation_queue.get_status()
 
-    def enqueue(self, item, priority=None, timestamp=None):
+    def enqueue(
+        self,
+        item: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> bool:
         """Add an item to the queue.
 
-        item (QueueItem): the item to add.
-        priority (int|None) the priority, or None to use default.
-        timestamp (datetime|None) the timestamp of the first request
+        item: the item to add.
+        priority: the priority, or None to use default.
+        timestamp: the timestamp of the first request
             for the operation, or None to use now.
 
-        return (bool): True if successfully enqueued.
+        return: True if successfully enqueued.
 
         """
         return self._operation_queue.push(item, priority, timestamp)
 
-    def dequeue(self, item):
+    def dequeue(self, item: QueueItemT) -> QueueEntry[QueueItemT]:
         """Remove an item from the queue.
 
-        item (QueueItem): the item to remove.
+        item: the item to remove.
 
-        return (QueueEntry): the corresponding queue entry.
+        return: the corresponding queue entry.
 
         """
         return self._operation_queue.remove(item)
 
-    def _pop(self, wait=False):
+    def _pop(self, wait: bool = False) -> QueueEntry[QueueItemT]:
         """Extract (and return) the first element in the queue.
 
-        wait (bool): if True, block until an element is present.
+        wait: if True, block until an element is present.
 
-        return (QueueEntry): first element in the queue.
+        return: first element in the queue.
 
         raise (LookupError): on empty queue, if wait was false.
 
@@ -163,26 +171,26 @@ class Executor(metaclass=ABCMeta):
                         "Unexpected error when executing operation `%s'.",
                         to_execute[0].item, exc_info=True)
 
-    def max_operations_per_batch(self):
+    def max_operations_per_batch(self) -> int:
         """Return the maximum number of operations in a batch.
 
         If the service has batch executions, this method returns the
         maximum size of a batch (the batch might be smaller if not
         enough operations are present in the queue).
 
-        return (int): the maximum number of operations, or 0 to
+        return: the maximum number of operations, or 0 to
             indicate no limits.
 
         """
         return 0
 
     @abstractmethod
-    def execute(self, entry):
+    def execute(self, entry: QueueEntry[QueueItemT] | list[QueueEntry[QueueItemT]]):
         """Perform a single operation.
 
         Must be implemented if batch_execution is false.
 
-        entry (QueueEntry|[QueueEntry]): the top element of the queue,
+        entry: the top element of the queue,
             in case batch_executions is false, or the list of all
             currently available elements, in case it is true - in any
             case, each element contains both the operations and the
@@ -193,7 +201,12 @@ class Executor(metaclass=ABCMeta):
         pass
 
 
-class TriggeredService(Service):
+# The correct bound here is Executor[QueueItemT], but expressing that would
+# require higher-kinded types, which python's typechecking does not support.
+ExecutorT = typing.TypeVar("ExecutorT", bound=Executor)
+
+
+class TriggeredService(Service, typing.Generic[QueueItemT, ExecutorT]):
 
     """A service receiving notifications to perform an operation.
 
@@ -226,22 +239,22 @@ class TriggeredService(Service):
 
     """
 
-    def __init__(self, shard):
+    def __init__(self, shard: int):
         """Initialize the sweeper loop.
 
-        shard (int): which service shard to run.
+        shard: which service shard to run.
 
         """
         Service.__init__(self, shard)
 
-        self._executors = []
+        self._executors: list[ExecutorT] = []
 
         self._sweeper_start = None
         self._sweeper_event = Event()
         self._sweeper_started = False
         self._sweeper_timeout = None
 
-    def add_executor(self, executor):
+    def add_executor(self, executor: ExecutorT):
         """Add an executor for the service.
 
         """
@@ -251,23 +264,28 @@ class TriggeredService(Service):
         self._executors.append(executor)
         gevent.spawn(executor.run)
 
-    def get_executor(self):
+    def get_executor(self) -> ExecutorT:
         """Return the first executor (without checking it is unique).
 
-        return (Executor): the first executor.
+        return: the first executor.
 
         """
         return self._executors[0]
 
-    def enqueue(self, operation, priority=None, timestamp=None):
+    def enqueue(
+        self,
+        operation: QueueItemT,
+        priority: int | None = None,
+        timestamp: datetime | None = None,
+    ) -> int:
         """Add an operation to the queue of each executor.
 
-        operation (QueueItem): the operation to enqueue.
-        priority (int|None) the priority, or None to use default.
-        timestamp (datetime|None) the timestamp of the first request
+        operation: the operation to enqueue.
+        priority the priority, or None to use default.
+        timestamp the timestamp of the first request
             for the operation, or None to use now.
 
-        return (int): the number of executors that successfully added
+        return: the number of executors that successfully added
             the operation to their queue.
 
         """
@@ -277,19 +295,19 @@ class TriggeredService(Service):
                 ret += 1
         return ret
 
-    def dequeue(self, operation):
+    def dequeue(self, operation: QueueItemT):
         """Remove an operation from the queue of each executor.
 
-        operation (QueueItem): the operation to dequeue.
+        operation: the operation to dequeue.
 
         """
         for executor in self._executors:
             executor.dequeue(operation)
 
-    def start_sweeper(self, timeout):
+    def start_sweeper(self, timeout: float):
         """Start sweeper loop with given timeout.
 
-        timeout (float): timeout in seconds.
+        timeout: timeout in seconds.
 
         """
         if not self._sweeper_started:
@@ -341,13 +359,13 @@ class TriggeredService(Service):
         logger.info("Found %d missed operation(s) in %d ms.",
                     counter, (time.time() - start_time) * 1000)
 
-    def _missing_operations(self):
+    def _missing_operations(self) -> int:
         """Enqueue missed operations, and return their number.
 
         The service is suppose to enqueue all operations that needs to
         be done, and return the number of operations enqueued.
 
-        return (int): the number of operations enqueued.
+        return: the number of operations enqueued.
 
         """
         return 0
@@ -358,14 +376,14 @@ class TriggeredService(Service):
         self._sweeper_event.set()
 
     @rpc_method
-    def queue_status(self):
+    def queue_status(self) -> list[list[QueueEntryDict]]:
         """Return the status of the queues.
 
         More precisely, a list indexed by each executor, whose
         elements are the list of entries in the executor's queue. The
         first item is the top item, the others are not in order.
 
-        return ([[QueueEntry]]): the list with the queued elements.
+        return: the list with the queued elements.
 
         """
         return [executor.get_status() for executor in self._executors]

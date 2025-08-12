@@ -17,31 +17,42 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import re
+import typing
 import zipfile
 
-from cms.db import Testcase
+from cms.db import Testcase, Dataset
+from cms.db.filecacher import FileCacher
+from sqlalchemy.orm import Session
 
 
 logger = logging.getLogger(__name__)
 
 
 def import_testcases_from_zipfile(
-        session, file_cacher, dataset,
-        archive, input_re, output_re, overwrite, public):
+    session: Session,
+    file_cacher: FileCacher,
+    dataset: Dataset,
+    archive: str | typing.BinaryIO,
+    input_re: re.Pattern,
+    output_re: re.Pattern,
+    overwrite: bool,
+    public: bool,
+) -> tuple[str, str]:
     """Import testcases from a zipped archive
 
-    session (Session): session to use to add the testcases.
-    file_cacher (FileCacher): interface to access the files in the DB.
-    dataset (Dataset): dataset where to add the testcases.
-    archive (File): file-like object representing a zip file.
-    input_re (_sre.SRE_Pattern): regular expression matching the input
+    session: session to use to add the testcases.
+    file_cacher: interface to access the files in the DB.
+    dataset: dataset where to add the testcases.
+    archive: file-like object representing a zip file.
+    input_re: regular expression matching the input
         filenames (e.g., re.compile(r"input_(.*).txt)).
-    output_re (_sre.SRE_Pattern): regular expression matching the output
+    output_re: regular expression matching the output
         filenames (e.g., re.compile(r"output_(.*).txt)).
-    overwrite (bool): whether to overwrite existing testcases.
-    public (bool): whether to mark the new testcases as public.
+    overwrite: whether to overwrite existing testcases.
+    public: whether to mark the new testcases as public.
 
-    return ((unicode, unicode)): subject and text of a message describing
+    return: subject and text of a message describing
         the outcome of the operation.
 
     """

@@ -29,22 +29,25 @@ logger = logging.getLogger(__name__)
 class Language(metaclass=ABCMeta):
     """A supported programming language"""
 
+    def __repr__(self) -> str:
+        return f'Language({self.name})'
+
     @property
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
         """Returns the name of the language.
 
         Should be uniquely describing the language and the
         version/compiler used, for example "C++11 / g++" better than "C++",
         or "Java 1.5 / JDK" better than "Java".
 
-        return (str): the name
+        return: the name
 
         """
         pass
 
     @property
-    def source_extensions(self):
+    def source_extensions(self) -> list[str]:
         """Extensions used for sources for this language (including the dot).
 
         The first one is the canonical one, used by CMS. Any of these
@@ -54,26 +57,26 @@ class Language(metaclass=ABCMeta):
         return []
 
     @property
-    def source_extension(self):
+    def source_extension(self) -> str:
         """Default source extension for the language."""
         return self.source_extensions[0] \
             if len(self.source_extensions) > 0 else None
 
     @property
-    def header_extensions(self):
+    def header_extensions(self) -> list[str]:
         """Extensions used for headers for this language (including the dot).
 
         """
         return []
 
     @property
-    def header_extension(self):
+    def header_extension(self) -> str | None:
         """Default header extension for the language."""
         return self.header_extensions[0] \
             if len(self.header_extensions) > 0 else None
 
     @property
-    def object_extensions(self):
+    def object_extensions(self) -> list[str]:
         """Extensions used for object files for this language (including the
         dot).
 
@@ -81,7 +84,7 @@ class Language(metaclass=ABCMeta):
         return []
 
     @property
-    def requires_multithreading(self):
+    def requires_multithreading(self) -> bool:
         """Whether the language requires multithreading
 
         If any of the language allowed in the contest requires it
@@ -93,20 +96,23 @@ class Language(metaclass=ABCMeta):
         return False
 
     @property
-    def object_extension(self):
+    def object_extension(self) -> str | None:
         """Default object extension for the language."""
         return self.object_extensions[0] \
             if len(self.object_extensions) > 0 else None
 
     @property
-    def executable_extension(self):
+    def executable_extension(self) -> str:
         """Executable file extension for this language (including the dot)."""
         return ""
 
     @abstractmethod
-    def get_compilation_commands(self,
-                                 source_filenames, executable_filename,
-                                 for_evaluation=True):
+    def get_compilation_commands(
+        self,
+        source_filenames: list[str],
+        executable_filename: str,
+        for_evaluation: bool = True,
+    ) -> list[list[str]]:
         """Return the compilation commands.
 
         The compilation commands are for the specified language,
@@ -114,16 +120,16 @@ class Language(metaclass=ABCMeta):
         list of strings, suitable to be passed to the methods in
         subprocess package.
 
-        source_filenames ([string]): a list of the string that are the
+        source_filenames: a list of the string that are the
             filenames of the source files to compile; the order is
             relevant: the first file must be the one that contains the
             program entry point (with some langages, e.g. Pascal, only
             the main file must be passed to the compiler).
-        executable_filename (string): the output file.
-        for_evaluation (bool): if True, define EVAL during the
+        executable_filename: the output file.
+        for_evaluation: if True, define EVAL during the
             compilation; defaults to True.
 
-        return ([[string]]): a list of commands, each a list of
+        return: a list of commands, each a list of
             strings to be passed to subprocess.
 
         """
@@ -131,16 +137,20 @@ class Language(metaclass=ABCMeta):
 
     @abstractmethod
     def get_evaluation_commands(
-            self, executable_filename, main=None, args=None):
+        self,
+        executable_filename: str,
+        main: str | None = None,
+        args: list[str] | None = None,
+    ) -> list[list[str]]:
         """Return the evaluation commands.
 
         executable_filename: the name of the "executable" (does not
             need to be executable per se).
-        main (string|None): The name of the main file, or none to use
+        main: The name of the main file, or none to use
             executable_filename (this is required by Java).
-        args ([string]|None): If not None, a list of arguments to be
+        args: If not None, a list of arguments to be
             passed to the executable.
-        return ([[string]]): a list of commands, each a list of
+        return: a list of commands, each a list of
             strings to be passed to subprocess.
 
         """
@@ -152,7 +162,7 @@ class Language(metaclass=ABCMeta):
     # singletons, it's very easy to make them hashable.
 
     @classmethod
-    def __eq__(cls, other):
+    def __eq__(cls, other) -> bool:
         return type(other) is cls
 
     @classmethod

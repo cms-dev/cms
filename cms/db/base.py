@@ -21,6 +21,7 @@
 
 import ipaddress
 from datetime import datetime, timedelta
+import typing
 
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR, JSONB, OID
 from sqlalchemy.ext.declarative import as_declarative
@@ -31,6 +32,8 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, Enum, DateTime, Interval, \
     BigInteger
+
+from cms.db.session import Session
 
 from . import engine, metadata, CastingArray, Codename, Filename, \
     FilenameSchema, FilenameSchemaArray, Digest
@@ -59,7 +62,8 @@ _TYPE_MAP = {
 }
 
 
-@as_declarative(bind=engine, metadata=metadata, constructor=None)
+# this has an @as_declarative, but to ease type checking it's applied manually
+# after the class definition, only when not type-checking (i.e. at runtime).
 class Base:
     """Base class for all classes managed by SQLAlchemy. Extending the
     base class given by SQLAlchemy.
@@ -70,7 +74,7 @@ class Base:
         return object_mapper(self)
 
     @property
-    def sa_session(self):
+    def sa_session(self) -> Session:
         return object_session(self)
 
     @property
@@ -187,20 +191,20 @@ class Base:
             raise
 
     @classmethod
-    def get_from_id(cls, id_, session):
+    def get_from_id(cls, id_: tuple | int | str, session: Session) -> typing.Self | None:
         """Retrieve an object from the database by its ID.
 
         Use the given session to fetch the object of this class with
         the given ID, and return it. If it doesn't exist return None.
 
-        cls (type): the class to which the method is attached.
-        id_ (tuple, int or string): the ID of the object we want; in
+        cls: the class to which the method is attached.
+        id_: the ID of the object we want; in
             general it will be a tuple (one int for each of the columns
             that make up the primary key) but if there's only one then
             a single int (even encoded as unicode or bytes) will work.
-        session (Session): the session to query.
+        session: the session to query.
 
-        return (Base|None): the desired object, or None if not found.
+        return: the desired object, or None if not found.
 
         """
         try:
@@ -213,26 +217,26 @@ class Base:
         except ObjectDeletedError:
             return None
 
-    def clone(self):
+    def clone(self) -> typing.Self:
         """Copy all the column properties into a new object
 
         Create a new object of this same type and set the values of all
         its column properties to the ones of this "old" object. Leave
         the relationship properties unset.
 
-        return (object): a clone of this object
+        return: a clone of this object
 
         """
         cls = type(self)
         args = list(getattr(self, prp.key) for prp in self._col_props)
         return cls(*args)
 
-    def get_attrs(self):
+    def get_attrs(self) -> dict[str, object]:
         """Return self.__dict__.
 
         Limited to SQLAlchemy column properties.
 
-        return ({string: object}): the properties of this object.
+        return: the properties of this object.
 
         """
         attrs = dict()
@@ -241,14 +245,14 @@ class Base:
                 attrs[prp.key] = getattr(self, prp.key)
         return attrs
 
-    def set_attrs(self, attrs, fill_with_defaults=False):
+    def set_attrs(self, attrs: typing.Mapping[str, object], fill_with_defaults: bool = False):
         """Do self.__dict__.update(attrs) with validation.
 
         Limited to SQLAlchemy column and relationship properties.
 
-        attrs ({string: object}): the new properties we want to set on
+        attrs: the new properties we want to set on
             this object.
-        fill_with_defaults (bool): whether to explicitly reset the
+        fill_with_defaults: whether to explicitly reset the
             attributes that were not provided in attrs to their default
             value.
 
@@ -318,3 +322,9 @@ class Base:
                 "set_attrs() got an unexpected keyword argument '%s'" %
                 attrs.popitem()[0])
 
+# don't apply the decorator when type checking, as as_declarative doesn't have
+# enough type hints for pyright to consider it valid. This means that pyright
+# doesn't consider Base to be a valid base class, and thus all derived classes
+# will be missing the methods from Base.
+if not typing.TYPE_CHECKING:
+    Base = as_declarative(bind=engine, metadata=metadata, constructor=None)(Base)

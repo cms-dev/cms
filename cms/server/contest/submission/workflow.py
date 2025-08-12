@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,12 +28,27 @@
 
 """Procedures used by CWS to accept submissions and user tests."""
 
+from datetime import datetime
 import logging
+import typing
+
+if typing.TYPE_CHECKING:
+    from tornado.httputil import HTTPFile
 
 from cms import config
-from cms.db import Submission, File, UserTestManager, UserTestFile, UserTest
+from cms.db import (
+    Submission,
+    File,
+    UserTestManager,
+    UserTestFile,
+    UserTest,
+    Task,
+    Participation,
+    Session,
+)
+from cms.db.filecacher import FileCacher
 from cmscommon.datetime import make_timestamp
-from .check import check_max_number, check_min_interval
+from .check import check_max_number, check_min_interval, is_last_minutes
 from .file_matching import InvalidFilesOrLanguage, match_files_and_language
 from .file_retrieval import InvalidArchive, extract_files_from_tornado
 from .utils import fetch_file_digests_from_previous_submission, StorageFailed, \
@@ -48,7 +64,8 @@ def N_(msgid):
 
 
 class UnacceptableSubmission(Exception):
-    def __init__(self, subject, text, text_params=None):
+
+    def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
@@ -61,28 +78,40 @@ class UnacceptableSubmission(Exception):
         return self.text % self.text_params
 
 
-def accept_submission(sql_session, file_cacher, participation, task, timestamp,
-                      tornado_files, language_name, official):
+def accept_submission(
+    sql_session: Session,
+    file_cacher: FileCacher,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    tornado_files: dict[str, list["HTTPFile"]],
+    language_name: str | None,
+    official: bool,
+    override_max_number: bool = False,
+    override_min_interval: bool = False,
+) -> Submission:
     """Process a contestant's request to submit a submission.
 
     Parse and validate the data that a contestant sent for a submission
     and, if all checks and operations succeed, add the result to the
     database and return it.
 
-    sql_session (Session): the DB session to use to fetch and add data.
-    file_cacher (FileCacher): the file cacher to use to store the files.
-    participation (Participation): the contestant who is submitting.
-    task (Task): the task on which they are submitting.
-    timestamp (datetime): the moment in time they submitted at.
-    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
+    sql_session: the DB session to use to fetch and add data.
+    file_cacher: the file cacher to use to store the files.
+    participation: the contestant who is submitting.
+    task: the task on which they are submitting.
+    timestamp: the moment in time they submitted at.
+    tornado_files: the files they
         sent in.
-    language_name (str|None): the language they declared their files are
+    language_name: the language they declared their files are
         in (None means unknown and thus auto-detect).
-    official (bool): whether the submission was sent in during a regular
+    official: whether the submission was sent in during a regular
         contest phase (and should be counted towards the score/rank) or
         during the analysis mode.
+    override_max_number: skip checks for the maximum number of submissions
+    override_min_interval: skip checks for the minimum interval between submissions
 
-    return (Submission): the resulting submission, if all went well.
+    return: the resulting submission, if all went well.
 
     raise (UnacceptableSubmission): if the contestant wasn't allowed to
         hand in a submission, if the provided data was invalid, if there
@@ -94,83 +123,123 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
 
     # Check whether the contestant is allowed to submit.
 
-    if not check_max_number(sql_session, contest.max_submission_number,
-                            participation, contest=contest):
-        raise UnacceptableSubmission(
-            N_("Too many submissions!"),
-            N_("You have reached the maximum limit of "
-               "at most %d submissions among all tasks."),
-            contest.max_submission_number)
+    if not override_max_number:
+        if not check_max_number(sql_session, contest.max_submission_number,
+                                participation, contest=contest):
+            raise UnacceptableSubmission(
+                N_("Too many submissions!"),
+                N_("You have reached the maximum limit of "
+                   "at most %d submissions among all tasks."),
+                contest.max_submission_number)
 
-    if not check_max_number(sql_session, task.max_submission_number,
-                            participation, task=task):
-        raise UnacceptableSubmission(
-            N_("Too many submissions!"),
-            N_("You have reached the maximum limit of "
-               "at most %d submissions on this task."),
-            task.max_submission_number)
+        if not check_max_number(sql_session, task.max_submission_number,
+                                participation, task=task):
+            raise UnacceptableSubmission(
+                N_("Too many submissions!"),
+                N_("You have reached the maximum limit of "
+                   "at most %d submissions on this task."),
+                task.max_submission_number)
 
-    if not check_min_interval(sql_session, contest.min_submission_interval,
-                              timestamp, participation, contest=contest):
-        raise UnacceptableSubmission(
-            N_("Submissions too frequent!"),
-            N_("Among all tasks, you can submit again "
-               "after %d seconds from last submission."),
-            contest.min_submission_interval.total_seconds())
+    if not override_min_interval and not is_last_minutes(timestamp, participation):
+        if not check_min_interval(sql_session, contest.min_submission_interval,
+                                  timestamp, participation, contest=contest):
+            raise UnacceptableSubmission(
+                N_("Submissions too frequent!"),
+                N_("Among all tasks, you can submit again "
+                   "after %d seconds from last submission."),
+                contest.min_submission_interval.total_seconds())
 
-    if not check_min_interval(sql_session, task.min_submission_interval,
-                              timestamp, participation, task=task):
-        raise UnacceptableSubmission(
-            N_("Submissions too frequent!"),
-            N_("For this task, you can submit again "
-               "after %d seconds from last submission."),
-            task.min_submission_interval.total_seconds())
+        if not check_min_interval(sql_session, task.min_submission_interval,
+                                  timestamp, participation, task=task):
+            raise UnacceptableSubmission(
+                N_("Submissions too frequent!"),
+                N_("For this task, you can submit again "
+                   "after %d seconds from last submission."),
+                task.min_submission_interval.total_seconds())
 
     # Process the data we received and ensure it's valid.
 
     required_codenames = set(task.submission_format)
 
+    # To protect against zip bombs, we raise an error if the archive's contents
+    # are too big even before extracting everything. The largest "reasonable"
+    # archive size is with every submission file provided, and every file being
+    # the largest allowed. Since we don't yet know which files from the archive
+    # are used and which are extraneous, this size limit applies to the entire
+    # archive in total.
+    archive_size_limit = config.contest_web_server.max_submission_length * len(
+        required_codenames
+    )
+    # Honest users never need to submit more than required_codenames files, but
+    # we are a bit lenient to allow .DS_Store or other hidden files that might
+    # accidentally end up in an archive.
+    archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files)
-    except InvalidArchive:
-        raise UnacceptableSubmission(
-            N_("Invalid archive format!"),
-            N_("The submitted archive could not be opened."))
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
+    except InvalidArchive as e:
+        if e.too_big:
+            raise UnacceptableSubmission(
+                N_("Submission too big!"),
+                N_("Each source file must be at most %d bytes long."),
+                config.contest_web_server.max_submission_length)
+        if e.too_many_files:
+            raise UnacceptableSubmission(
+                N_("Submission too big!"),
+                N_("The submission should contain at most %d files."),
+                len(required_codenames))
+        else:
+            raise UnacceptableSubmission(
+                N_("Invalid archive format!"),
+                N_("The submitted archive could not be opened."))
 
     try:
         files, language = match_files_and_language(
-            received_files, language_name, required_codenames,
-            contest.languages)
-    except InvalidFilesOrLanguage:
+            received_files,
+            language_name,
+            required_codenames,
+            task.get_allowed_languages(),
+        )
+    except InvalidFilesOrLanguage as err:
+        logger.info(f'Submission rejected: {err}')
         raise UnacceptableSubmission(
             N_("Invalid submission format!"),
             N_("Please select the correct file and ensure that it has the correct file extension. For example, in C++, you should submit a .cpp file."))
 
-    digests = dict()
+    digests: dict[str, str] = dict()
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-            digests = fetch_file_digests_from_previous_submission(
-                sql_session, participation, task, language,
-                missing_codenames)
+            if task.active_dataset.task_type_object.REUSE_PREVIOUS_SUBMISSION:
+                digests = fetch_file_digests_from_previous_submission(
+                    sql_session, participation, task, language,
+                    missing_codenames)
         else:
             raise UnacceptableSubmission(
                 N_("Invalid submission format!"),
                 N_("Please select the correct file and ensure that it has the correct file extension. For example, in C++, you should submit a .cpp file."))
 
-    if any(len(content) > config.max_submission_length
-           for content in files.values()):
+    if any(
+        len(content) > config.contest_web_server.max_submission_length
+        for content in files.values()
+    ):
         raise UnacceptableSubmission(
             N_("Submission too big!"),
             N_("Each source file must be at most %d bytes long."),
-            config.max_submission_length)
+            config.contest_web_server.max_submission_length)
 
     # All checks done, submission accepted.
 
-    if config.submit_local_copy:
+    if config.contest_web_server.submit_local_copy:
         try:
-            store_local_copy(config.submit_local_copy_path, participation,
-                             task, timestamp, files)
+            store_local_copy(
+                config.contest_web_server.submit_local_copy_path,
+                participation,
+                task,
+                timestamp,
+                files,
+            )
         except StorageFailed:
             logger.error("Submission local copy failed.", exc_info=True)
 
@@ -195,11 +264,17 @@ def accept_submission(sql_session, file_cacher, participation, task, timestamp,
     logger.info("All files stored for submission sent by %s",
                 participation.user.username)
 
+    # Use the filenames of the contestant as a default submission comment
+    received_filenames_joined = ",".join(
+        [file.filename for file in received_files])
+
     submission = Submission(
         timestamp=timestamp,
+        opaque_id=Submission.generate_opaque_id(sql_session, participation.id),
         language=language.name if language is not None else None,
         task=task,
         participation=participation,
+        comment=received_filenames_joined,
         official=official)
     sql_session.add(submission)
 
@@ -218,7 +293,8 @@ class TestingNotAllowed(Exception):
 
 
 class UnacceptableUserTest(Exception):
-    def __init__(self, subject, text, text_params=None):
+
+    def __init__(self, subject: str, text: str, text_params: object = None):
         super().__init__(subject, text, text_params)
         self.subject = subject
         self.text = text
@@ -231,21 +307,27 @@ class UnacceptableUserTest(Exception):
         return self.text % self.text_params
 
 
-def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
-                     tornado_files, language_name):
+def accept_user_test(
+    sql_session: Session,
+    file_cacher: FileCacher,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    tornado_files: dict[str, list["HTTPFile"]],
+    language_name: str | None,
+) -> UserTest:
     """Process a contestant's request to submit a user test.
 
-    sql_session (Session): the DB session to use to fetch and add data.
-    file_cacher (FileCacher): the file cacher to use to store the files.
-    participation (Participation): the contestant who is submitting.
-    task (Task): the task on which they are submitting.
-    timestamp (datetime): the moment in time they submitted at.
-    tornado_files ({str: [tornado.httputil.HTTPFile]}): the files they
-        sent in.
-    language_name (str|None): the language they declared their files are
+    sql_session: the DB session to use to fetch and add data.
+    file_cacher: the file cacher to use to store the files.
+    participation: the contestant who is submitting.
+    task: the task on which they are submitting.
+    timestamp: the moment in time they submitted at.
+    tornado_files: the files they sent in.
+    language_name: the language they declared their files are
         in (None means unknown and thus auto-detect).
 
-    return (UserTest): the resulting user test, if all went well.
+    return: the resulting user test, if all went well.
 
     raise (TestingNotAllowed): if the task doesn't allow for any tests.
     raise (UnacceptableUserTest): if the contestant wasn't allowed to
@@ -304,8 +386,15 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
     required_codenames.update(task_type.get_user_managers())
     required_codenames.add("input")
 
+    # See accept_submission() for these variables.
+    archive_size_limit = config.contest_web_server.max_submission_length * len(
+        required_codenames
+    )
+    archive_max_files = 2 * len(required_codenames)
     try:
-        received_files = extract_files_from_tornado(tornado_files)
+        received_files = extract_files_from_tornado(
+            tornado_files, archive_size_limit, archive_max_files
+        )
     except InvalidArchive:
         raise UnacceptableUserTest(
             N_("Invalid archive format!"),
@@ -313,20 +402,25 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
 
     try:
         files, language = match_files_and_language(
-            received_files, language_name, required_codenames,
-            contest.languages)
-    except InvalidFilesOrLanguage:
+            received_files,
+            language_name,
+            required_codenames,
+            task.get_allowed_languages(),
+        )
+    except InvalidFilesOrLanguage as err:
+        logger.info(f'Test rejected: {err}')
         raise UnacceptableUserTest(
             N_("Invalid test format!"),
             N_("Please select the correct files."))
 
-    digests = dict()
+    digests: dict[str, str] = dict()
     missing_codenames = required_codenames.difference(files.keys())
     if len(missing_codenames) > 0:
         if task.active_dataset.task_type_object.ALLOW_PARTIAL_SUBMISSION:
-            digests = fetch_file_digests_from_previous_submission(
-                sql_session, participation, task, language,
-                missing_codenames, cls=UserTest)
+            if task.active_dataset.task_type_object.REUSE_PREVIOUS_SUBMISSION:
+                digests = fetch_file_digests_from_previous_submission(
+                    sql_session, participation, task, language,
+                    missing_codenames, cls=UserTest)
         else:
             raise UnacceptableUserTest(
                 N_("Invalid test format!"),
@@ -337,25 +431,35 @@ def accept_user_test(sql_session, file_cacher, participation, task, timestamp,
             N_("Invalid test format!"),
             N_("Please select the correct files."))
 
-    if any(len(content) > config.max_submission_length
-           for codename, content in files.items()
-           if codename != "input"):
+    if any(
+        len(content) > config.contest_web_server.max_submission_length
+        for codename, content in files.items()
+        if codename != "input"
+    ):
         raise UnacceptableUserTest(
             N_("Test too big!"),
             N_("Each source file must be at most %d bytes long."),
-            config.max_submission_length)
-    if "input" in files and len(files["input"]) > config.max_input_length:
+            config.contest_web_server.max_submission_length)
+    if (
+        "input" in files
+        and len(files["input"]) > config.contest_web_server.max_input_length
+    ):
         raise UnacceptableUserTest(
             N_("Input too big!"),
             N_("The input file must be at most %d bytes long."),
-            config.max_input_length)
+            config.contest_web_server.max_input_length)
 
     # All checks done, submission accepted.
 
-    if config.tests_local_copy:
+    if config.contest_web_server.tests_local_copy:
         try:
-            store_local_copy(config.tests_local_copy_path, participation, task,
-                             timestamp, files)
+            store_local_copy(
+                config.contest_web_server.tests_local_copy_path,
+                participation,
+                task,
+                timestamp,
+                files,
+            )
         except StorageFailed:
             logger.error("Test local copy failed.", exc_info=True)
 

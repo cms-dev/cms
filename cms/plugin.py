@@ -21,13 +21,13 @@
 
 import logging
 
-import pkg_resources
+from importlib.metadata import entry_points
 
 
 logger = logging.getLogger(__name__)
 
 
-def plugin_list(entry_point_group):
+def plugin_list(entry_point_group: str) -> list[type]:
     """Return the list of plugin classes of the given group.
 
     The aspects of CMS that require the largest flexibility in behavior
@@ -41,22 +41,25 @@ def plugin_list(entry_point_group):
     installed, CMS will be able to automatically discover and use those
     classes.
 
-    entry_point_group (str): the name of the group of entry points that
+    entry_point_group: the name of the group of entry points that
         should be returned, typically one of cms.grading.tasktypes,
         scoretypes or languages.
 
-    return ([type]): the requested plugin classes.
+    return: the requested plugin classes.
 
     """
     classes = []
-    for entry_point in pkg_resources.iter_entry_points(entry_point_group):
+    for entry_point in entry_points(group=entry_point_group):
         try:
             classes.append(entry_point.load())
-        except (pkg_resources.UnknownExtra, ImportError):
+        except Exception:
             logger.warning(
-                "Failed to load entry point %s for group %s from %s:%s, "
-                "provided by distribution %s, requiring extras %s.",
-                entry_point.name, entry_point_group, entry_point.module_name,
-                ".".join(entry_point.attrs), entry_point.dist,
-                ", ".join(entry_point.extras), exc_info=True)
+                "Failed to load entry point %s for group %s from %s, "
+                "provided by distribution %s.",
+                entry_point.name,
+                entry_point_group,
+                entry_point.value,
+                entry_point.dist.name if entry_point.dist else "unknown",
+                exc_info=True,
+            )
     return classes

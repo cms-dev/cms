@@ -27,23 +27,27 @@ interact with SQLAlchemy objects.
 """
 
 import logging
+import typing
 
 import psycopg2
-from sqlalchemy.engine.url import make_url
+import sqlalchemy.orm
+from sqlalchemy.engine.url import URL, make_url
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from cms import config
+from cms.conf import config
 from . import engine
 
 
 logger = logging.getLogger(__name__)
 
-
-Session = sessionmaker(engine, twophase=config.twophase_commit)
+_session = sessionmaker(engine, twophase=config.database.twophase_commit)
+if typing.TYPE_CHECKING:
+    # the type checker doesn't understand sessionmaker, so for type hints
+    # define Session as the sqlalchemy class directly.
+    Session = sqlalchemy.orm.Session
+else:
+    Session = _session
 ScopedSession = scoped_session(Session)
-
-# For two-phases transactions:
-# Session = sessionmaker(db, twophase=True)
 
 
 class SessionGen:
@@ -58,9 +62,9 @@ class SessionGen:
 
     """
     def __init__(self):
-        self.session = None
+        self.session: Session = None
 
-    def __enter__(self):
+    def __enter__(self) -> Session:
         self.session = Session()
         return self.session
 
@@ -69,7 +73,7 @@ class SessionGen:
         self.session.close()
 
 
-def custom_psycopg2_connection(**kwargs):
+def custom_psycopg2_connection(**kwargs: dict[str, str]):
     """Establish a new psycopg2.connection to the database.
 
     The returned connection won't be in the SQLAlchemy pool and has to
@@ -78,7 +82,7 @@ def custom_psycopg2_connection(**kwargs):
     All psycopg2-specific code in CMS is supposed to obtain a function
     this way.
 
-    kwargs (dict): additional values to use as query parameters in the
+    kwargs: additional values to use as query parameters in the
         connection URL.
 
     return (connection): a new, shiny connection object.
@@ -87,7 +91,7 @@ def custom_psycopg2_connection(**kwargs):
         configured to use psycopg2 as the DB-API driver.
 
     """
-    database_url = make_url(config.database)
+    database_url: URL = make_url(config.database.url)
     assert database_url.get_dialect().driver == "psycopg2"
     # For Unix-domain socket we don't have a port nor a host and that's fine.
     if database_url.port is None and database_url.host is not None:

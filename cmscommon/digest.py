@@ -33,24 +33,24 @@ class Digester:
     def __init__(self):
         self._hasher = hashlib.sha1()
 
-    def update(self, b):
+    def update(self, b: bytes):
         """Add the bytes b to the hasher."""
         self._hasher.update(b)
 
-    def digest(self):
+    def digest(self) -> str:
         """Return the digest as an hex string."""
         return bin_to_hex(self._hasher.digest())
 
 
-def bytes_digest(b):
+def bytes_digest(b: bytes) -> str:
     """Return the digest for the passed bytes.
 
     Currently CMS uses SHA1, but this should be treated as an implementation
     detail.
 
-    b (bytes): some bytes.
+    b: some bytes.
 
-    return (str): digest of the bytes.
+    return: digest of the bytes.
 
     """
     d = Digester()
@@ -58,12 +58,12 @@ def bytes_digest(b):
     return d.digest()
 
 
-def path_digest(path):
+def path_digest(path: str) -> str:
     """Return the digest of the content of a file, given by its path.
 
-    path (str): path of the file we are interested in.
+    path: path of the file we are interested in.
 
-    return (str): digest of the content of the file in path.
+    return: digest of the content of the file in path.
 
     """
     with open(path, 'rb') as fin:

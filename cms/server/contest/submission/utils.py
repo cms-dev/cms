@@ -29,16 +29,27 @@
 
 """
 
+from datetime import datetime
 import os.path
 import pickle
 
 from cms import config
 from cms.db import Submission, UserTest
+from cms.db.session import Session
+from cms.db.task import Task
+from cms.db.user import Participation
+from cms.grading.language import Language
 from .check import get_latest_submission
 
 
 def fetch_file_digests_from_previous_submission(
-        sql_session, participation, task, language, codenames, cls=Submission):
+    sql_session: Session,
+    participation: Participation,
+    task: Task,
+    language: Language | None,
+    codenames: set[str],
+    cls: type[Submission | UserTest] = Submission,
+) -> dict[str, str]:
     """Retrieve digests of files with given codenames from latest submission.
 
     Get the most recent submission of the given contestant on the given
@@ -46,17 +57,17 @@ def fetch_file_digests_from_previous_submission(
     files that correspond to the given codenames. In case of UserTests
     lookup also among the user-provided managers.
 
-    sql_session (Session): the SQLAlchemy session to use.
-    participation (Participation): the participation whose submissions
+    sql_session: the SQLAlchemy session to use.
+    participation: the participation whose submissions
         should be considered.
-    task (Task): the task whose submissions should be considered.
-    language (Language|None): the language the submission has to be in
+    task: the task whose submissions should be considered.
+    language: the language the submission has to be in
         for the lookup to be allowed.
-    codenames ({str}): the filenames-with-%l that need to be retrieved.
-    cls (type): if the UserTest class is given, lookup user tests rather
+    codenames: the filenames-with-%l that need to be retrieved.
+    cls: if the UserTest class is given, lookup user tests rather
         than submissions.
 
-    return ({str: str}): for every codename, the digest of the file of
+    return: for every codename, the digest of the file of
         that codename in the previous submission; if the previous
         submission didn't have that file it won't be included in the
         result; if there is no previous submission or if it isn't in the
@@ -81,6 +92,7 @@ def fetch_file_digests_from_previous_submission(
         if codename in latest_submission.files:
             digests[codename] = latest_submission.files[codename].digest
         elif cls is UserTest:
+            assert isinstance(latest_submission, UserTest)  # for type checking
             if codename == "input":
                 digests["input"] = latest_submission.input
             else:
@@ -103,7 +115,13 @@ class StorageFailed(Exception):
     pass
 
 
-def store_local_copy(path, participation, task, timestamp, files):
+def store_local_copy(
+    path: str,
+    participation: Participation,
+    task: Task,
+    timestamp: datetime,
+    files: dict[str, bytes],
+):
     """Write the files plus some metadata to a local backup
 
     Add a new file to the local backup storage (rooted in the given
@@ -115,20 +133,20 @@ def store_local_copy(path, participation, task, timestamp, files):
     first three elements are the contest ID, the user ID and the task ID
     and whose fourth element is a dict describing the files.
 
-    path (str): the directory in which to build the archive; it will be
+    path: the directory in which to build the archive; it will be
         created if it doesn't exist; if it contains `%s` it will be
         replaced with the data_dir specified in the config.
-    participation (Participation): the participation that submitted.
-    task (Task): the task on which they submitted.
-    timestamp (datetime): when the submission happened.
-    files ({str: bytes}): the files that were sent in: the keys are the
+    participation: the participation that submitted.
+    task: the task on which they submitted.
+    timestamp: when the submission happened.
+    files: the files that were sent in: the keys are the
         codenames (filenames-with-%l), the values are the contents.
 
     raise (StorageFailed): in case of problems.
 
     """
     try:
-        path = os.path.join(path.replace("%s", config.data_dir),
+        path = os.path.join(path.replace("%s", config.global_.data_dir),
                             participation.user.username)
         if not os.path.exists(path):
             os.makedirs(path)

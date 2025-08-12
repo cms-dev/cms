@@ -87,16 +87,16 @@ STATS_RE = {
 class TaskTypeTestMixin:
     """A test mixin to make it easier to test task types."""
 
-    def setUpMocks(self, tasktype):
+    def setUpMocks(self, tasktype: str):
         """To be called on the test's setUp.
 
-        tasktype (str): the name of the task type we are testing.
+        tasktype: the name of the task type we are testing.
 
         """
         self.tasktype = tasktype
 
         # Ensure we don't retain all sandboxes so we can verify delete().
-        patcher = patch.object(config, "keep_sandbox", False)
+        patcher = patch.object(config.worker, "keep_sandbox", False)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -130,14 +130,14 @@ class TaskTypeTestMixin:
         self.extract_outcome_and_text = self._maybe_patch(
             "extract_outcome_and_text")
 
-    def _maybe_patch(self, name, *args, **kwargs):
+    def _maybe_patch(self, name: str, *args, **kwargs) -> MagicMock | None:
         """Patch name inside the task type if it exists.
 
-        name (str): name of the symbol to patch.
-        args (list): additional positional arguments passed to patch.
-        kwargs (dict): additional keyword arguments passed to patch.
+        name: name of the symbol to patch.
+        args: additional positional arguments passed to patch.
+        kwargs: additional keyword arguments passed to patch.
 
-        return (MagicMock|None): the mock that replaced the symbol, or None if
+        return: the mock that replaced the symbol, or None if
             the symbol did not exist in the task type.
 
         """

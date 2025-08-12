@@ -21,9 +21,14 @@
 
 """
 
+from abc import ABCMeta, abstractmethod
+from collections.abc import Generator, Iterable
 import os
 import shutil
+import tarfile
 import tempfile
+import typing
+import zipfile
 
 import patoolib
 from patoolib.util import PatoolError
@@ -51,12 +56,12 @@ class Archive:
     """
 
     @staticmethod
-    def is_supported(path):
+    def is_supported(path: str) -> bool:
         """Return whether the file at path is supported by patoolib.
 
-        path (string): the path to test.
+        path: the path to test.
 
-        return (bool): whether path is supported.
+        return: whether path is supported.
 
         """
         try:
@@ -66,11 +71,11 @@ class Archive:
             return False
 
     @staticmethod
-    def create_from_dir(from_dir, archive_path):
+    def create_from_dir(from_dir: str, archive_path: str):
         """Create a new archive containing all files in from_dir.
 
-        from_dir (string): directory with the files to archive.
-        archive_path (string): the new archive's path.
+        from_dir: directory with the files to archive.
+        archive_path: the new archive's path.
 
         """
         files = tuple(os.listdir(from_dir))
@@ -80,17 +85,17 @@ class Archive:
         os.chdir(cwd)
 
     @staticmethod
-    def extract_to_dir(archive_path, to_dir):
+    def extract_to_dir(archive_path: str, to_dir: str):
         """Extract the content of an archive in to_dir.
 
-        archive_path (string): path of the archive to extract.
-        to_dir (string): destination directory.
+        archive_path: path of the archive to extract.
+        to_dir: destination directory.
 
         """
         patoolib.extract_archive(archive_path, outdir=to_dir, interactive=False)
 
     @staticmethod
-    def from_raw_data(raw_data):
+    def from_raw_data(raw_data: bytes) -> "Archive | None":
         """Create an Archive object out of raw archive data.
 
         This method treats the given string as archive data: it dumps it
@@ -99,13 +104,13 @@ class Archive:
         called the temporary file should be deleted as well as unpacked
         data.
 
-        raw_data (bytes): the actual bytes that form the archive.
+        raw_data: the actual bytes that form the archive.
 
-        return (Archive|None): an object that represents the new
+        return: an object that represents the new
             archive or None, if raw_data doesn't represent an archive.
 
         """
-        temp_file, temp_filename = tempfile.mkstemp(dir=config.temp_dir)
+        temp_file, temp_filename = tempfile.mkstemp(dir=config.global_.temp_dir)
         with open(temp_file, "wb") as temp_file:
             temp_file.write(raw_data)
 
@@ -115,11 +120,11 @@ class Archive:
             os.remove(temp_filename)
             return None
 
-    def __init__(self, path, delete_source=False):
+    def __init__(self, path: str, delete_source: bool = False):
         """Init.
 
-        path (string): the path of the archive.
-        delete_source (bool): whether the source archive should be
+        path: the path of the archive.
+        delete_source: whether the source archive should be
             deleted at cleanup or not.
 
         """
@@ -129,22 +134,22 @@ class Archive:
         self.path = path
         self.temp_dir = None
 
-    def unpack(self):
+    def unpack(self) -> str:
         """Extract archive's content to a temporary directory.
 
-        return (string): the path of the temporary directory.
+        return: the path of the temporary directory.
 
         """
-        self.temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        self.temp_dir = tempfile.mkdtemp(dir=config.global_.temp_dir)
         patoolib.extract_archive(self.path, outdir=self.temp_dir,
                                  interactive=False)
         return self.temp_dir
 
-    def repack(self, target):
+    def repack(self, target: str):
         """Repack to a new archive all the files which were unpacked in
         self.temp_dir.
 
-        target (string): the new archive path.
+        target: the new archive path.
 
         """
         if self.temp_dir is None:
@@ -165,10 +170,10 @@ class Archive:
                 # Cannot delete source, it is not a big problem.
                 pass
 
-    def namelist(self):
+    def namelist(self) -> list[str]:
         """Returns all pathnames for this archive.
 
-        return ([string]): list of files in the archive.
+        return: list of files in the archive.
 
         raise (NotImplementedError): when the archive was unpacked
             first.
@@ -183,16 +188,18 @@ class Archive:
             names = []
             for path, _, filenames in os.walk(self.temp_dir):
                 for filename in filenames:
-                    names.append(os.path.relpath(os.path.join(path, filename),
-                                                 self.temp_dir))
+                    filepath = os.path.join(path, filename)
+                    if os.path.islink(filepath) or not os.path.isfile(filepath):
+                        continue
+                    names.append(os.path.relpath(filepath, self.temp_dir))
             return names
 
-    def read(self, file_path):
+    def read(self, file_path: str) -> typing.BinaryIO:
         """Read a single file and return its file object.
 
-        file_path (string): path of the file in the archive.
+        file_path: path of the file in the archive.
 
-        return (file): handler for the file.
+        return: handler for the file.
 
         raise (NotImplementedError): when the archive was unpacked
             first.
@@ -204,11 +211,11 @@ class Archive:
         else:
             return open(os.path.join(self.temp_dir, file_path), "rb")
 
-    def write(self, file_path, file_object):
+    def write(self, file_path: str, file_object):
         """Writes a file in the archive in place.
 
-        file_path (string): new path in the archive.
-        file_object (object): file-like object.
+        file_path: new path in the archive.
+        file_object: file-like object.
 
         raise (NotImplementedError): always; this method is not yet
             implemented.
@@ -222,3 +229,80 @@ class Archive:
                 "You should write the file directly, in the "
                 "folder returned by unpack(), and then "
                 "call the repack() method.")
+
+class ArchiveBase(metaclass=ABCMeta):
+    """Base class for archive reader implementations."""
+
+    @abstractmethod
+    def iter_regular_files(self) -> Iterable[tuple[str, int, object]]:
+        """Yields tuples of (filepath, decompressed size, handle),
+        regular files only.
+
+        filepath will always be /-separated.
+        handle can be passed to open_file.
+        """
+        pass
+
+    @abstractmethod
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        """Open a member of the archive for reading."""
+        pass
+
+    def get_file_bytes(self, handle: object) -> bytes:
+        """Read an archive member into bytes."""
+        with self.open_file(handle) as f:
+            return f.read()
+
+
+class ArchiveZipfile(ArchiveBase):
+    """Archive reader using `zipfile`, see ArchiveBase for method descriptions."""
+
+    def __init__(self, inner: zipfile.ZipFile):
+        self.inner = inner
+
+    def iter_regular_files(self) -> list[tuple[str, int, zipfile.ZipInfo]]:
+        return [
+            (x.filename, x.file_size, x)
+            for x in self.inner.infolist()
+            if not x.is_dir()
+        ]
+
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        assert isinstance(handle, zipfile.ZipInfo)
+        return self.inner.open(handle, "r")
+
+
+class ArchiveTarfile(ArchiveBase):
+    """Archive reader using `tarfile`, see ArchiveBase for method descriptions."""
+
+    def __init__(self, inner: tarfile.TarFile):
+        self.inner = inner
+
+    def iter_regular_files(self) -> Generator[tuple[str, int, tarfile.TarInfo]]:
+        while (member := self.inner.next()) is not None:
+            if member.isfile():
+                yield (member.path, member.size, member)
+
+    def open_file(self, handle: object) -> typing.IO[bytes]:
+        assert isinstance(handle, tarfile.TarInfo)
+        fobj = self.inner.extractfile(handle)
+        if fobj is None:
+            raise ValueError("not a regular file")
+        return fobj
+
+
+def open_archive(input: typing.IO[bytes]) -> ArchiveBase:
+    """Open an archive for reading.
+
+    input: the archive, opened for reading in binary mode.
+    """
+    # Order is not entirely arbitrary here: is_zipfile is a very lenient check
+    # that will also return True when the file is an uncompressed tar file that
+    # happens to contain a zip file inside it. So check is_tarfile first (which
+    # only reads the very start of the file).
+    if tarfile.is_tarfile(input):
+        return ArchiveTarfile(tarfile.open(fileobj=input))
+    elif zipfile.is_zipfile(input):
+        return ArchiveZipfile(zipfile.ZipFile(input))
+    else:
+        raise ValueError("not a known archive format")

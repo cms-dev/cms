@@ -52,6 +52,10 @@ strong, .bold {
     font-weight: bold;
 }
 
+em {
+    font-style: italic;
+}
+
 .login_error {
     color: #F31313;
 }
@@ -258,32 +262,20 @@ ul.normal_list {
 }
 
 
-#subpage {
+#subpage_popup {
     position: fixed;
-    left: 345px;
-    top: 0px;
-    bottom: 0px;
-    display: none;
-    margin-bottom: 1em;
-    padding: 1.5em 1em 0 1em;
-    z-index: 10;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    max-width: min(100% - 2em, 1000px);
+    max-height: calc(100% - 2em);
+    margin-right: 1em;
+    overflow-y: scroll;
 }
-
-#subpage_background {
-    position: fixed;
-    left: 345px;
-    top:0px;
-    bottom: 0px;
-    right: 0px;
-    background: white;
-    z-index: -1;
-}
-
-#subpage_content {
-    background:white;
-    overflow: auto;
-    z-index: 2;
-    height: 100%;
+#subpage_close {
+    position: absolute;
+    right: 1em;
+    top: 1em;
 }
 
 #subpage h1 {
@@ -390,8 +382,21 @@ table td.wrapping-options label {
     margin-right: 15px;
 }
 
+.language-item label {
+    display: block;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.language-item input[type="checkbox"] {
+    margin-right: 6px;
+}
 table td.partial::after {
     content: "*";
+}
+
+table td#latency {
+    text-align: right;
 }
 
 table.sortable th {
@@ -416,7 +421,7 @@ th .column-sort {
   text-decoration: underline;
 }
 
-.reply_question textarea {
+.markdown_input {
     width: 100%;
 }
 
@@ -745,4 +750,11 @@ a.button-link {
 
 a.button-link:hover {
     background-color: #EEF3EA;
+}
+
+th.diff-only, td.diff-only {
+    display: none;
+}
+table.diff-open th.diff-only, table.diff-open td.diff-only {
+    display: table-cell;
 }

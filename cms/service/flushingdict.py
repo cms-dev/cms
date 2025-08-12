@@ -17,8 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections.abc import Callable
 import logging
 import time
+import typing
 
 import gevent
 from gevent.lock import RLock
@@ -27,7 +29,11 @@ from gevent.lock import RLock
 logger = logging.getLogger(__name__)
 
 
-class FlushingDict:
+KeyT = typing.TypeVar("KeyT")
+ValueT = typing.TypeVar("ValueT")
+
+
+class FlushingDict(typing.Generic[KeyT, ValueT]):
     """A dict that periodically flushes its content to a callback.
 
     The dict flushes after a specified time since the latest entry
@@ -38,7 +44,12 @@ class FlushingDict:
 
     """
 
-    def __init__(self, size, flush_latency_seconds, callback):
+    def __init__(
+        self,
+        size: int,
+        flush_latency_seconds: float,
+        callback: Callable[[list[tuple[KeyT, ValueT]]], typing.Any],
+    ):
         # Elements contained in the dict that force a flush.
         self.size = size
 
@@ -50,10 +61,10 @@ class FlushingDict:
 
         # This contains all the key-values received and not yet
         # flushed.
-        self.d = dict()
+        self.d: dict[KeyT, ValueT] = dict()
 
         # This contains all the key-values that are currently being flushed
-        self.fd = dict()
+        self.fd: dict[KeyT, ValueT] = dict()
 
         # The greenlet that checks if the dict should be flushed or not
         # TODO: do something if the FlushingDict is deleted
@@ -67,7 +78,7 @@ class FlushingDict:
         # Time when an item was last inserted in the dict
         self.last_insert = time.monotonic()
 
-    def add(self, key, value):
+    def add(self, key: KeyT, value: ValueT):
         logger.debug("Adding item %s", key)
         with self.d_lock:
             self.d[key] = value
