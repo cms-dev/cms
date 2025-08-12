@@ -334,7 +334,6 @@ class BaseHandler(CommonRequestHandler):
         if self.current_user is not None:
             params["admin"] = self.current_user
         if self.contest is not None:
-            params["phase"] = self.contest.phase(params["timestamp"])
             params["unanswered"] = self.sql_session.query(Question)\
                 .join(Participation)\
                 .filter(Participation.contest_id == self.contest.id)\

@@ -306,6 +306,7 @@ class Contest(Base):
 
         timestamp: the time we are iterested in.
         """
+        # NOTE: this logic is duplicated in aws_utils.js.
         if timestamp < self.start:
             return -1
         if timestamp <= self.stop:
