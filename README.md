@@ -6,8 +6,9 @@ Homepage: <http://cms-dev.github.io/>
 [![Build Status](https://github.com/cms-dev/cms/actions/workflows/main.yml/badge.svg)](https://github.com/cms-dev/cms/actions)
 [![Codecov](https://codecov.io/gh/cms-dev/cms/branch/main/graph/badge.svg)](https://codecov.io/gh/cms-dev/cms)
 [![Get support on Telegram](https://img.shields.io/badge/Questions%3F-Join%20the%20Telegram%20group!-%2326A5E4?style=flat&logo=telegram)](https://t.me/contestms)
+[![Translation status](https://hosted.weblate.org/widget/cms/svg-badge.svg)](https://hosted.weblate.org/engage/cms/)
 
-[🌍 Help translate CMS in your language!](https://cms-dev.oneskyapp.com/collaboration/project?id=392655)
+[🌍 Help translate CMS in your language!](https://hosted.weblate.org/engage/cms/)
 
 Introduction
 ------------
