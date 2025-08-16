@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: uk\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: uk TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "N/A"
 
-msgid "Correct"
-msgstr "Правильно"
-
 msgid "Not correct"
 msgstr "Неправильно"
+
+msgid "Correct"
+msgstr "Правильно"
 
 msgid "Partially correct"
 msgstr "Частково правильно"
 
-msgid "Outcome"
-msgstr "Результат"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "Результат"
 
 msgid "Details"
 msgstr "Деталі"
@@ -107,11 +110,20 @@ msgstr "Час очікування минув (перевищено ліміт 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Ваша спроба використала забагато загального часу. Це може бути викликано, наприклад, невизначеним кодом або переповненням буфера. Зауважте, що в цьому випадку час процесора, видимий у деталях спроби, може бути набагато меншим за обмеження часу."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "Виконання припинено (може бути викликано порушенням обмежень пам’яті)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "Обмеження пам'яті"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "Оцінювання було знищено сигналом. Серед іншого це може бути спричинено перевищенням ліміту пам’яті. Зауважте, що якщо це причина, використання пам’яті, видиме в деталях спроби, є використанням до розподілу, який спричинив сигнал."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "Ваша спроба використала забагато процесорного часу."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "Час запуску минув"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Помилка виконання, оскільки код повернення був ненульовим"
@@ -194,15 +206,15 @@ msgstr[1] "до максимум двох %(type_s)s. "
 msgstr[2] "до максимум %(gen_max)d %(type_s)s. "
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Ви не отримуєте інших %(type_pl)s."
-
-#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "ви отримуєте інший %(type_s)s."
 msgstr[1] "ви отримуєте інші два %(type_s)s."
 msgstr[2] "ви отримуєте інших %(gen_number)d %(type_s)s."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Ви не отримуєте інших %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -234,41 +246,6 @@ msgstr[2] "Загалом ви можете використовувати не 
 
 msgid "You have no limitations on how you use them."
 msgstr "Ви не маєте обмежень щодо того, як ви їх використовуєте."
-
-msgid "Too many print jobs!"
-msgstr "Забагато завдань для друку!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Ви досягли максимальної кількості завдань для друку (%d)."
-
-msgid "Invalid format!"
-msgstr "Недійсний формат!"
-
-msgid "Please select the correct files."
-msgstr "Виберіть правильні файли."
-
-msgid "File too big!"
-msgstr "Файл завеликий!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Довжина кожного файлу не повинна перевищувати %d байтів."
-
-msgid "Print job storage failed!"
-msgstr "Не вдалося зберегти завдання для друку!"
-
-msgid "Please try again."
-msgstr "Будь ласка спробуйте ще раз."
-
-msgid "Token request discarded"
-msgstr "Запит токена відхилено"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Ваш запит відхилено, оскільки у вас немає доступних токенів."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Ваш запит відхилено, оскільки ви вже використали токен для цієї спроби."
 
 msgid "Question received"
 msgstr "Питання отримано"
@@ -303,11 +280,11 @@ msgstr "Оцінено"
 msgid "status"
 msgstr "статус"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Ваш запит отримано та застосовано до спроби."
-
 msgid "Token request received"
 msgstr "Отримано запит на токен"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Ваш запит отримано та застосовано до спроби."
 
 msgid "Test received"
 msgstr "Тест отримано"
@@ -323,6 +300,32 @@ msgstr "Виконання..."
 
 msgid "Executed"
 msgstr "Виконано"
+
+msgid "Too many print jobs!"
+msgstr "Забагато завдань для друку!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Ви досягли максимальної кількості завдань для друку (%d)."
+
+msgid "Invalid format!"
+msgstr "Недійсний формат!"
+
+msgid "Please select the correct files."
+msgstr "Виберіть правильні файли."
+
+msgid "File too big!"
+msgstr "Файл завеликий!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Довжина кожного файлу не повинна перевищувати %d байтів."
+
+msgid "Print job storage failed!"
+msgstr "Не вдалося зберегти завдання для друку!"
+
+msgid "Please try again."
+msgstr "Будь ласка спробуйте ще раз."
 
 msgid "Too many submissions!"
 msgstr "Забагато спроб!"
@@ -346,6 +349,17 @@ msgstr "Серед усіх завдань ви можете надіслати 
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "Це завдання можна надіслати знову через %d секунд після останньої спроби."
 
+msgid "Submission too big!"
+msgstr "Спроба занадто велика!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Довжина кожного вихідного файлу не повинна перевищувати %d байтів."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "Невірний формат архіву!"
 
@@ -354,13 +368,6 @@ msgstr "Не вдалося відкрити надісланий архів."
 
 msgid "Invalid submission format!"
 msgstr "Недійсний формат спроби!"
-
-msgid "Submission too big!"
-msgstr "Спроба занадто велика!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Довжина кожного вихідного файлу не повинна перевищувати %d байтів."
 
 msgid "Submission storage failed!"
 msgstr "Помилка зберігання даних!"
@@ -484,11 +491,11 @@ msgstr "%d непрочитаних"
 msgid "Until contest starts:"
 msgstr "До початку змагання:"
 
-msgid "Until analysis starts:"
-msgstr "До початку аналізу:"
-
 msgid "Until contest ends:"
 msgstr "До закінчення змагання:"
+
+msgid "Until analysis starts:"
+msgstr "До початку аналізу:"
 
 msgid "Until analysis ends:"
 msgstr "До закінчення аналізу:"
@@ -532,9 +539,6 @@ msgstr "Виберіть змагання"
 msgid "Programming languages and libraries"
 msgstr "Мови програмування та бібліотеки"
 
-msgid "Standard Template Library"
-msgstr "Стандартна бібліотека шаблонів"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Основний клас Java рішення повинен мати точно таке ж ім’я, як і завдання."
 
@@ -562,6 +566,30 @@ msgstr "Зауважте, що спроби підробити систему к
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "Якщо ви зіткнулися з цією помилкою під час звичайного використання, повідомте про це адміністраторів змагання."
+
+msgid "Public score"
+msgstr "Публічний бал"
+
+msgid "Total score"
+msgstr "Сумарний бал"
+
+msgid "Score"
+msgstr "Бал"
+
+msgid "Token"
+msgstr "Токен"
+
+msgid "no submissions"
+msgstr "немає спроб"
+
+msgid "Played"
+msgstr "Зіграно"
+
+msgid "Play!"
+msgstr "Грати!"
+
+msgid "No tokens"
+msgstr "Немає токенів"
 
 msgid "General information"
 msgstr "Загальна інформація"
@@ -996,29 +1024,14 @@ msgstr "Чекайте..."
 msgid "None"
 msgstr "Немає"
 
-msgid "Public score"
-msgstr "Публічний бал"
+msgid "Token request discarded"
+msgstr "Запит токена відхилено"
 
-msgid "Total score"
-msgstr "Сумарний бал"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Ваш запит відхилено, оскільки у вас немає доступних токенів."
 
-msgid "Score"
-msgstr "Бал"
-
-msgid "Token"
-msgstr "Токен"
-
-msgid "no submissions"
-msgstr "немає спроб"
-
-msgid "Played"
-msgstr "Зіграно"
-
-msgid "Play!"
-msgstr "Грати!"
-
-msgid "No tokens"
-msgstr "Немає токенів"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Ваш запит відхилено, оскільки ви вже використали токен для цієї спроби."
 
 msgid "Invalid file"
 msgstr "Неправильний файл"
@@ -1028,4 +1041,13 @@ msgstr "Завдання для друку містить забагато ст�
 
 msgid "Sent to printer"
 msgstr "Відправлено на принтер"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "Виконання припинено (може бути викликано порушенням обмежень пам’яті)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "Оцінювання було знищено сигналом. Серед іншого це може бути спричинено перевищенням ліміту пам’яті. Зауважте, що якщо це причина, використання пам’яті, видиме в деталях спроби, є використанням до розподілу, який спричинив сигнал."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "Стандартна бібліотека шаблонів"
 

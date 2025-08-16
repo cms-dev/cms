@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: lt_LT\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: lt_LT TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "Nėra"
 
-msgid "Correct"
-msgstr "Teisingai"
-
 msgid "Not correct"
 msgstr "Neteisingai"
+
+msgid "Correct"
+msgstr "Teisingai"
 
 msgid "Partially correct"
 msgstr "Dalinai teisingai"
 
-msgid "Outcome"
-msgstr "Rezultatas"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "Rezultatas"
 
 msgid "Details"
 msgstr "Detalės"
@@ -107,11 +110,20 @@ msgstr "Vykdymas užtruko per ilgai (viršytas sieninio laikrodžio ribojimas)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Tavo sprendimo vykdymas užtruko per ilgai neišnaudodamas procesoriaus laiko. Tai galėjo įvykti, pavyzdžiui, dėl neapibrėžto kodo ar buferio perpildymo. Įvykus šiai klaidai, sprendimo informacijos lange rodomas panaudoto procesoriaus laiko kiekis gali būti gerokai mažesnis už laiko ribojimą."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "Vykdymas nutrauktas (tai galėjo įvykti viršijus atminties ribojimus)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "Atminties limitas"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "Tavo sprendimo vykdymas buvo nutrauktas signalu. Viena iš galimų priežasčių yra atminties ribojimo viršijimas. Sprendimo informacijos lange rodomas panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą sukėlusį veiksmą."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "Tavo sprendimo vykdymas panaudojo per daug procesoriaus laiko."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "Vykdymas viršijo laiko ribojimą"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Vykdymas nesėkmingas, nes grąžintas kodas buvo ne nulis"
@@ -171,7 +183,6 @@ msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "Pradžioje turi vieną %(type_s)s."
 msgstr[1] "Pradžioje turi %(gen_initial)d %(type_pl)s."
 msgstr[2] "Pradžioje turi %(gen_initial)d %(type_pl)s."
-msgstr[3] ""
 
 #, python-format
 msgid "Every minute "
@@ -179,7 +190,6 @@ msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Kas minutę "
 msgstr[1] "Kas %(gen_interval)g minutes "
 msgstr[2] "Kas %(gen_interval)g minučių "
-msgstr[3] ""
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -187,7 +197,6 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "gausi po vieną %(type_s)s, "
 msgstr[1] "gausi po %(gen_number)d %(type_pl)s, "
 msgstr[2] "gausi po %(gen_number)d %(type_pl)s, "
-msgstr[3] ""
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
@@ -195,11 +204,6 @@ msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "kol pasieksi vieną %(type_s)s."
 msgstr[1] "kol pasieksi %(gen_max)d %(type_pl)s."
 msgstr[2] "kol pasieksi %(gen_max)d %(type_pl)s."
-msgstr[3] ""
-
-#, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Daugiau %(type_pl)s negausi."
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -207,7 +211,10 @@ msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "gausi po vieną %(type_s)s."
 msgstr[1] "gausi po %(gen_number)d %(type_pl)s."
 msgstr[2] "gausi po %(gen_number)d %(type_pl)s."
-msgstr[3] ""
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Daugiau %(type_pl)s negausi."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -215,7 +222,6 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Gali naudoti %(type_s)s kartą per sekundę "
 msgstr[1] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundes "
 msgstr[2] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundžių "
-msgstr[3] ""
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
@@ -223,7 +229,6 @@ msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "ir ne daugiau nei vieną %(type_s)s iš viso."
 msgstr[1] "ir ne daugiau nei %(max_number)d %(type_pl)s iš viso."
 msgstr[2] "ir ne daugiau nei %(max_number)d %(type_pl)s iš viso."
-msgstr[3] ""
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
@@ -231,7 +236,6 @@ msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Gali naudoti %(type_s)s kartą per sekundę."
 msgstr[1] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundes."
 msgstr[2] "Gali naudoti %(type_s)s kartą per %(min_interval)g sekundžių."
-msgstr[3] ""
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
@@ -239,45 +243,9 @@ msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Iš viso gali naudoti ne daugiau nei vieną %(type_s)s."
 msgstr[1] "Iš viso gali naudoti ne daugiau nei %(max_number)d %(type_pl)s."
 msgstr[2] "Iš viso gali naudoti ne daugiau nei %(max_number)d %(type_pl)s."
-msgstr[3] ""
 
 msgid "You have no limitations on how you use them."
 msgstr "Neturi apribojimų jų naudojimui."
-
-msgid "Too many print jobs!"
-msgstr "Per daug spausdinimo darbų!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Pasiekei %d spausdinimo darbų limitą."
-
-msgid "Invalid format!"
-msgstr "Netinkamas formatas!"
-
-msgid "Please select the correct files."
-msgstr "Pasirink teisingus failus."
-
-msgid "File too big!"
-msgstr "Failas per didelis!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Kiekvienas failas turi būti ne didesnis nei %d baitų."
-
-msgid "Print job storage failed!"
-msgstr "Nepavyko išsaugoti spausdinimo darbo!"
-
-msgid "Please try again."
-msgstr "Bandyk dar kartą."
-
-msgid "Token request discarded"
-msgstr "Žetono užklausa atmesta"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
 
 msgid "Question received"
 msgstr "Klausimas gautas"
@@ -309,11 +277,15 @@ msgstr "Skaičiuojami taškai..."
 msgid "Evaluated"
 msgstr "Įvertinta"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Tavo užklausa gauta ir įvykdyta pateiktam sprendimui."
+#, fuzzy
+msgid "status"
+msgstr "Būsena"
 
 msgid "Token request received"
 msgstr "Žetono užklausa gauta"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Tavo užklausa gauta ir įvykdyta pateiktam sprendimui."
 
 msgid "Test received"
 msgstr "Testas gautas"
@@ -329,6 +301,32 @@ msgstr "Vykdoma..."
 
 msgid "Executed"
 msgstr "Įvykdyta"
+
+msgid "Too many print jobs!"
+msgstr "Per daug spausdinimo darbų!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Pasiekei %d spausdinimo darbų limitą."
+
+msgid "Invalid format!"
+msgstr "Netinkamas formatas!"
+
+msgid "Please select the correct files."
+msgstr "Pasirink teisingus failus."
+
+msgid "File too big!"
+msgstr "Failas per didelis!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Kiekvienas failas turi būti ne didesnis nei %d baitų."
+
+msgid "Print job storage failed!"
+msgstr "Nepavyko išsaugoti spausdinimo darbo!"
+
+msgid "Please try again."
+msgstr "Bandyk dar kartą."
 
 msgid "Too many submissions!"
 msgstr "Per daug pateiktų sprendimų!"
@@ -352,6 +350,17 @@ msgstr "Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio bet
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "Dar kartą pateikti sprendimą gali po %d sekundžių nuo paskutinio šios užduoties sprendimo pateikimo."
 
+msgid "Submission too big!"
+msgstr "Pateiktas sprendimas per didelis!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Kiekvienas pirminio teksto failas turi būti nedidesnis nei %d baitų."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "Netinkamas archyvo formatas!"
 
@@ -360,13 +369,6 @@ msgstr "Nepavyksta atverti pateikto archyvo."
 
 msgid "Invalid submission format!"
 msgstr "Netinkamas pateikimo formatas!"
-
-msgid "Submission too big!"
-msgstr "Pateiktas sprendimas per didelis!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Kiekvienas pirminio teksto failas turi būti nedidesnis nei %d baitų."
 
 msgid "Submission storage failed!"
 msgstr "Nepavyko išsaugoti pateikto sprendimo!"
@@ -468,6 +470,13 @@ msgstr "Slaptažodis"
 msgid "Login"
 msgstr "Prisijungti"
 
+msgid "Don't have an account?"
+msgstr ""
+
+#, fuzzy
+msgid "Register"
+msgstr "Atstatyti"
+
 msgid "New message"
 msgstr "Nauja žinutė"
 
@@ -484,11 +493,11 @@ msgstr "%d neskaityti"
 msgid "Until contest starts:"
 msgstr "Iki varžybų pradžios:"
 
-msgid "Until analysis starts:"
-msgstr "Iki analizės pradžios:"
-
 msgid "Until contest ends:"
 msgstr "Iki varžybų pabaigos:"
+
+msgid "Until analysis starts:"
+msgstr "Iki analizės pradžios:"
 
 msgid "Until analysis ends:"
 msgstr "Iki analizės pabaigos:"
@@ -532,9 +541,6 @@ msgstr "Pasirink varžybas"
 msgid "Programming languages and libraries"
 msgstr "Programavimo kalbos ir bibliotekos"
 
-msgid "Standard Template Library"
-msgstr "Standartinė šablonų biblioteka"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Pagrindinė sprendimo klasė turi vadintis taip pat kaip užduotis."
 
@@ -562,6 +568,31 @@ msgstr "Atkreipkite dėmesį, jog bandymas gadinti Varžybų aptarnavimo sistem�
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "Jeigu šią klaidą gavote normaliai naudodamiesi sistema, prašome pranešti varžybų administratoriams."
+
+msgid "Public score"
+msgstr "Vieši taškai"
+
+msgid "Total score"
+msgstr "Visi taškai"
+
+msgid "Score"
+msgstr "Taškai"
+
+msgid "Token"
+msgstr "Žetonas"
+
+#, fuzzy
+msgid "no submissions"
+msgstr "Pateikti sprendimai"
+
+msgid "Played"
+msgstr "Panaudotas"
+
+msgid "Play!"
+msgstr "Naudoti!"
+
+msgid "No tokens"
+msgstr "Žetonų nėra"
 
 msgid "General information"
 msgstr "Bendra informacija"
@@ -748,6 +779,76 @@ msgstr "Paruošiama..."
 msgid "no print jobs yet"
 msgstr "spausdinimo darbų dar nėra"
 
+msgid "The passwords do not match!"
+msgstr ""
+
+msgid "This username is already taken, please choose a different one."
+msgstr ""
+
+msgid "This user is already registered in the contest."
+msgstr ""
+
+msgid "No such user."
+msgstr ""
+
+msgid "The password is not correct."
+msgstr ""
+
+msgid "Registration"
+msgstr ""
+
+msgid "Please fill in the fields to register"
+msgstr ""
+
+#, fuzzy
+msgid "New user"
+msgstr "Naujas atsakymas"
+
+#, fuzzy
+msgid "Join contest"
+msgstr "Pasirink varžybas"
+
+#, fuzzy
+msgid "First name"
+msgstr "Failo vardas"
+
+#, fuzzy
+msgid "Last name"
+msgstr "Failo vardas"
+
+#, fuzzy
+msgid "E-mail"
+msgstr "išsamiai"
+
+#, fuzzy
+msgid "Representing"
+msgstr "Spausdinimas"
+
+#, python-format
+msgid "Must be one character or more."
+msgid_plural "Must be %(min_length)s characters or more."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, fuzzy
+msgid "Confirm password"
+msgstr "Slaptažodis"
+
+msgid "Registered in the contest successfully!"
+msgstr ""
+
+#, fuzzy
+msgid "Your username is:"
+msgstr "Vartotojo vardas"
+
+msgid "Your password is stored securely."
+msgstr ""
+
+#, fuzzy
+msgid "Back to login"
+msgstr "Prisijungti nepavyko."
+
 msgid "Compilation output"
 msgstr "Kompiliavimo išvestis"
 
@@ -886,6 +987,14 @@ msgstr "Šiuo metu neturi žetonų šiam uždaviniui."
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Tačiau turi palaukti iki %(expiration_time)s, kad galėtum jį naudoti."
 
+#, fuzzy
+msgid "Unofficial submissions"
+msgstr "Pateikti sprendimai"
+
+#, fuzzy
+msgid "Official submissions"
+msgstr "Pateikti sprendimai"
+
 msgid "Submission details"
 msgstr "Pateikto sprendimo detalės"
 
@@ -929,24 +1038,32 @@ msgstr "Laukite..."
 msgid "None"
 msgstr "Nėra"
 
-msgid "Public score"
-msgstr "Vieši taškai"
+msgid "Token request discarded"
+msgstr "Žetono užklausa atmesta"
 
-msgid "Total score"
-msgstr "Visi taškai"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
 
-msgid "Score"
-msgstr "Taškai"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
 
-msgid "Token"
-msgstr "Žetonas"
+#, fuzzy
+msgid "Invalid file"
+msgstr "Netinkamas formatas!"
 
-msgid "Played"
-msgstr "Panaudotas"
+#, fuzzy
+msgid "Print job has too many pages"
+msgstr "Nepavyko išsaugoti spausdinimo darbo!"
 
-msgid "Play!"
-msgstr "Naudoti!"
+msgid "Sent to printer"
+msgstr ""
 
-msgid "No tokens"
-msgstr "Žetonų nėra"
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "Vykdymas nutrauktas (tai galėjo įvykti viršijus atminties ribojimus)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "Tavo sprendimo vykdymas buvo nutrauktas signalu. Viena iš galimų priežasčių yra atminties ribojimo viršijimas. Sprendimo informacijos lange rodomas panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą sukėlusį veiksmą."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "Standartinė šablonų biblioteka"
 

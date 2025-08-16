@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: es_CL\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: es_CL TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "N/A"
 
-msgid "Correct"
-msgstr "Correcto"
-
 msgid "Not correct"
 msgstr "Incorrecto"
+
+msgid "Correct"
+msgstr "Correcto"
 
 msgid "Partially correct"
 msgstr "Parcialmente correcto"
 
-msgid "Outcome"
-msgstr "Resultado"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "Resultado"
 
 msgid "Details"
 msgstr "Detalles"
@@ -107,11 +110,20 @@ msgstr "Tiempo límite excedido (tiempo físico total)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "El envío utilizó demasiado tiempo en total. Esto podría ser el resultado de código con comportamiento indefinido o desbordamientos (buffer overflow). Notar que en este caso, el tiempo de CPU que se muestra en los detalles podría ser muy inferior al tiempo máximo permitido."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "La ejecución fue terminada abruptamente (podría deberse a un exceso en el uso de memoria)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "Límite de memoria"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "La evaluación fue terminada mediante una señal del sistema operativo. Entre otras cosas, esto podría deberse a un exceso en el uso de memoria. Notar que si esta fuera la razón, la memoria utilizada mostrada en los detalles de envío sería la memoria utilizada antes de la reserva de memoria que generó la señal."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "El envío utilizó demasiado tiempo de CPU."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "Tiempo límite excedido"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Ejecución fallida por código de retorno distinto de cero"
@@ -190,14 +202,14 @@ msgstr[0] "hasta un máximo de un %(type_s)s."
 msgstr[1] "hasta un máximo de %(gen_max)d %(type_pl)s."
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "No recibes %(type_pl)s adicionales."
-
-#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "recibes otro %(type_s)s."
 msgstr[1] "recibes %(gen_number)d %(type_pl)s adicionales."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "No recibes %(type_pl)s adicionales."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -225,41 +237,6 @@ msgstr[1] "No puedes utilizar más de %(max_number)d %(type_pl)s en total."
 
 msgid "You have no limitations on how you use them."
 msgstr "No hay limitaciones en cuanto a su utilización."
-
-msgid "Too many print jobs!"
-msgstr "¡Demasiados trabajos de impresión!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Ha alcanzado el límite máximo de %d trabajos de impresión."
-
-msgid "Invalid format!"
-msgstr "¡Formato inválido!"
-
-msgid "Please select the correct files."
-msgstr "Por favor seleccione los archivos correctos."
-
-msgid "File too big!"
-msgstr "¡El archivo es demasiado grande!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Cada archivo debe tener un tamaño de a lo sumo %d bytes."
-
-msgid "Print job storage failed!"
-msgstr "¡No se pudo almacenar el trabajo de impresión!"
-
-msgid "Please try again."
-msgstr "Por favor, intente nuevamente."
-
-msgid "Token request discarded"
-msgstr "Pedido de token descartado"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Su pedido ha sido descartado porque no posee tokens disponibles."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Su pedido ha sido descartado porque ya ha utilizado un token sobre ese envío."
 
 msgid "Question received"
 msgstr "Pregunta recibida"
@@ -294,11 +271,11 @@ msgstr "Evaluado"
 msgid "status"
 msgstr "estado"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Su pedido ha sido recibido y aplicado al envío."
-
 msgid "Token request received"
 msgstr "Pedido de token recibido"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Su pedido ha sido recibido y aplicado al envío."
 
 msgid "Test received"
 msgstr "Test recibido"
@@ -314,6 +291,32 @@ msgstr "Ejecutando..."
 
 msgid "Executed"
 msgstr "Ejecutado"
+
+msgid "Too many print jobs!"
+msgstr "¡Demasiados trabajos de impresión!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Ha alcanzado el límite máximo de %d trabajos de impresión."
+
+msgid "Invalid format!"
+msgstr "¡Formato inválido!"
+
+msgid "Please select the correct files."
+msgstr "Por favor seleccione los archivos correctos."
+
+msgid "File too big!"
+msgstr "¡El archivo es demasiado grande!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Cada archivo debe tener un tamaño de a lo sumo %d bytes."
+
+msgid "Print job storage failed!"
+msgstr "¡No se pudo almacenar el trabajo de impresión!"
+
+msgid "Please try again."
+msgstr "Por favor, intente nuevamente."
 
 msgid "Too many submissions!"
 msgstr "¡Demasiados envíos!"
@@ -337,6 +340,17 @@ msgstr "Entre todos los problemas, puede realizar un envío nuevamente pasados %
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "En este problema, puede realizar un envío nuevamente pasados %d segundos desde último envío."
 
+msgid "Submission too big!"
+msgstr "¡Envío demasiado grande!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Cada archivo de código fuente debe tener un tamaño de a lo sumo %d bytes."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "¡El formato del archivo comprimido es inválido!"
 
@@ -345,13 +359,6 @@ msgstr "No se pudo abrir el archivo comprimido enviado."
 
 msgid "Invalid submission format!"
 msgstr "¡El formato del envío es inválido!"
-
-msgid "Submission too big!"
-msgstr "¡Envío demasiado grande!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Cada archivo de código fuente debe tener un tamaño de a lo sumo %d bytes."
 
 msgid "Submission storage failed!"
 msgstr "¡No se pudo almacenar el envío!"
@@ -475,11 +482,11 @@ msgstr "%d sin leer"
 msgid "Until contest starts:"
 msgstr "Tiempo restante hasta el comienzo de la competencia:"
 
-msgid "Until analysis starts:"
-msgstr "Tiempo restante hasta el inicio de la fase de análisis:"
-
 msgid "Until contest ends:"
 msgstr "Tiempo restante hasta el final de la competencia:"
+
+msgid "Until analysis starts:"
+msgstr "Tiempo restante hasta el inicio de la fase de análisis:"
 
 msgid "Until analysis ends:"
 msgstr "Tiempo restante el final de la fase de análisis:"
@@ -523,9 +530,6 @@ msgstr "Seleccionar una competencia"
 msgid "Programming languages and libraries"
 msgstr "Lenguajes de programación y librerías"
 
-msgid "Standard Template Library"
-msgstr "Standrad Template Library"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "La class principal en Java debe llamarse igual que el nombre del problema"
 
@@ -553,6 +557,30 @@ msgstr "Notar que cualquier intento de afectar el funcionamiento del sistema (co
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "Si encuentra este error durante el uso normal del sistema, por favor contacte a un administrador."
+
+msgid "Public score"
+msgstr "Puntaje público"
+
+msgid "Total score"
+msgstr "Puntaje total"
+
+msgid "Score"
+msgstr "Puntaje"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "no submissions"
+msgstr "no hay envíos"
+
+msgid "Played"
+msgstr "Token utilizado"
+
+msgid "Play!"
+msgstr "¡Usar token!"
+
+msgid "No tokens"
+msgstr "Sin tokens"
 
 msgid "General information"
 msgstr "Información general"
@@ -986,29 +1014,14 @@ msgstr "Espere..."
 msgid "None"
 msgstr "Ninguno"
 
-msgid "Public score"
-msgstr "Puntaje público"
+msgid "Token request discarded"
+msgstr "Pedido de token descartado"
 
-msgid "Total score"
-msgstr "Puntaje total"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Su pedido ha sido descartado porque no posee tokens disponibles."
 
-msgid "Score"
-msgstr "Puntaje"
-
-msgid "Token"
-msgstr "Token"
-
-msgid "no submissions"
-msgstr "no hay envíos"
-
-msgid "Played"
-msgstr "Token utilizado"
-
-msgid "Play!"
-msgstr "¡Usar token!"
-
-msgid "No tokens"
-msgstr "Sin tokens"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Su pedido ha sido descartado porque ya ha utilizado un token sobre ese envío."
 
 msgid "Invalid file"
 msgstr "Archivo inválido"
@@ -1018,4 +1031,13 @@ msgstr "El trabajo de impresión tiene demasiadas páginas"
 
 msgid "Sent to printer"
 msgstr "Enviado a la impresora"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "La ejecución fue terminada abruptamente (podría deberse a un exceso en el uso de memoria)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "La evaluación fue terminada mediante una señal del sistema operativo. Entre otras cosas, esto podría deberse a un exceso en el uso de memoria. Notar que si esta fuera la razón, la memoria utilizada mostrada en los detalles de envío sería la memoria utilizada antes de la reserva de memoria que generó la señal."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "Standrad Template Library"
 
