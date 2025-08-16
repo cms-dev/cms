@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: et_EE\n"
-"Language-Team: et_EE TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"PO-Revision-Date: 2025-08-16 15:53+0000\n"
+"Last-Translator: \"p. randla\" <prandla@r9.pm>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/cms/main/et/>\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -27,7 +27,7 @@ msgid "Partially correct"
 msgstr "Osaliselt õige vastus"
 
 msgid "#"
-msgstr ""
+msgstr "#"
 
 msgid "Outcome"
 msgstr "Tulemus"
@@ -110,20 +110,17 @@ msgstr "Programmi tööaja limiit ületatud"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Programmi tööaeg ületas lubatud piiri. Selle kõige tõenäolisem põhjus on katse lugeda rohkem sisendit, kui seda on. Aga mõnikord võivad seda põhjustada ka mitmesugused määramatused programmis, sealhulgas ka massiivide piiridest väljumine. Kuna lahendus jääb ootele, võib selle kasutatud protsessoriaeg olla protsessori ajalimiidist märksa väiksem."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Mälulimiit"
+msgstr "Mälulimiit ületatud"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "Lahenduse jooksmiseks kulus liiga palju protsessori aega."
+msgstr "Lahendus kasutas liiga palju mälu."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Programmi protsessori ajalimiit ületatud"
+msgstr "Programmi täitmine katkes signaali tagajärjel"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "Lahenduse täitmine katkes signaali tagajärjel."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Programmi täitmine ebaõnnestus, nullist erinev veakood"
@@ -349,7 +346,7 @@ msgstr "Iga lähteteksti fail võib olla ülimalt %d baiti pikk."
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "Lahendus võib sisaldada ülimalt %d faili."
 
 msgid "Invalid archive format!"
 msgstr "Vigases vormingus arhiiv!"
@@ -519,7 +516,7 @@ msgid "Contest Management System"
 msgstr "Contest Management System"
 
 msgid "is released under the"
-msgstr "kasutamine on lubatud vastavalt "
+msgstr "kasutamine on lubatud vastavalt"
 
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License tingimustele"
@@ -570,19 +567,17 @@ msgstr "Punktid"
 msgid "Token"
 msgstr "Pilet"
 
-#, fuzzy
 msgid "no submissions"
-msgstr "Esitatud lahendused"
+msgstr "pole ühtegi esitust"
 
 msgid "Played"
-msgstr ""
+msgstr "Kasutatud"
 
 msgid "Play!"
-msgstr ""
+msgstr "Kasuta!"
 
-#, fuzzy
 msgid "No tokens"
-msgstr "Piletid"
+msgstr "Pileteid pole"
 
 msgid "General information"
 msgstr "Üldinfo"
@@ -888,9 +883,9 @@ msgstr "Üksikasjad"
 msgid "Compilation commands"
 msgstr "Kompileerimise käsurida"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
-msgstr "Te saate iga ülesande kirjelduse lehel teada, milliste reeglite järgi %(type_pl)seid kasutada saab."
+msgstr "<a href=\"%(contest_root)s\">Võistluse ülevaate lehel</a> leiate reeglid, mille järgi saab kasutada %(type_pl)seid."
 
 msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Pane tähele, et esitatud lahenduse tulemuste detailvaate nägemiseks pead kasutama nii ühe võistluspileti kui ka ühe ülesandepileti."
@@ -1025,16 +1020,14 @@ msgstr "Päring on tühistatud, kuna Teil pole ühtegi piletit."
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Päring on tühistatud, kuna selle jaoks on juba piletit kasutatud."
 
-#, fuzzy
 msgid "Invalid file"
-msgstr "Vigane vorming!"
+msgstr "Vigane fail"
 
-#, fuzzy
 msgid "Print job has too many pages"
-msgstr "Printimistöö salvestamine ebaõnnestus!"
+msgstr "Prinditaval dokumendil on liiga mitu lehekülge"
 
 msgid "Sent to printer"
-msgstr ""
+msgstr "Printerile saadetud"
 
 #~ msgid "Execution killed (could be triggered by violating memory limits)"
 #~ msgstr "Programmi täitmine katkes signaali tagajärjel (võib olla tingitud mälupiirangute ületamisest)"
@@ -1044,4 +1037,3 @@ msgstr ""
 
 #~ msgid "Standard Template Library"
 #~ msgstr "Standard Template Library"
-
