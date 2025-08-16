@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: lv_LV\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: lv_LV TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "Nav pieejams"
 
-msgid "Correct"
-msgstr "Pareizs"
-
 msgid "Not correct"
 msgstr "Nepareizs"
+
+msgid "Correct"
+msgstr "Pareizs"
 
 msgid "Partially correct"
 msgstr "Daļēji pareizs"
 
-msgid "Outcome"
-msgstr "Iznākums"
-
 msgid "#"
 msgstr "Nr."
+
+msgid "Outcome"
+msgstr "Iznākums"
 
 msgid "Details"
 msgstr "Detaļas"
@@ -107,11 +110,20 @@ msgstr "Pārsniegts izpildes laiks (pārsniegts reālā laika ierobežojums)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Jūsu iesūtījums kopumā ir patērējis pārāk daudz laika. Tas var būt noticis, piemēram, nedefinētas koda uzvedības vai bufera pārpildīšanās dēļ. Šādos gadījumos iesūtījuma detaļās norādītais procesora laiks var būt ievērojami mazāks nekā izpildes laika ierobežojums."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "Izpilde pārtraukta (to var būt izraisījusi atmiņas ierobežojumu neievērošana)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "Atmiņas ierobežojums"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "Izpilde tika pārtraukta ar signālu. Citu iemeslu starpā, to varētu būt izraisījusi atmiņas ierobežojuma pārsniegšana. Šajā gadījumā atmiņas patēriņš, kas ir redzams iesūtījuma detaļās, atbilst stāvoklim pirms signālu izraisījušās atmiņas iedalīšanas."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "Jūsu iesūtījums izmantojis pārāk daudz procesora laika."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "Pārsniegts izpildes laiks"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Izpilde ir nesekmīga, jo atgriešanās kods nav nulle"
@@ -194,15 +206,15 @@ msgstr[1] "līdz ne vairāk kā %(gen_max)d %(type_pl)s."
 msgstr[2] "līdz ne vairāk kā %(gen_max)d %(type_pl)s."
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Jums netiek piešķirti citi %(type_pl)s."
-
-#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "jums tiek piešķirts vēl %(gen_number)d %(type_s)s."
 msgstr[1] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s."
 msgstr[2] "jums tiek piešķirti vēl %(gen_number)d %(type_pl)s."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Jums netiek piešķirti citi %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -234,41 +246,6 @@ msgstr[2] "Kopumā jūs varat lietot ne vairāk kā %(max_number)d %(type_pl)s."
 
 msgid "You have no limitations on how you use them."
 msgstr "Jūs varat izmantot tos bez ierobežojumiem."
-
-msgid "Too many print jobs!"
-msgstr "Pārāk daudz drukas uzdevumu!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Jūs esat sasniedzis maksimāli pieļaujamo drukas uzdevumu ierobežojumu (%d)."
-
-msgid "Invalid format!"
-msgstr "Nepareizs formāts!"
-
-msgid "Please select the correct files."
-msgstr "Lūdzu, izvēlieties pareizās datnes."
-
-msgid "File too big!"
-msgstr "Datne pārāk liela!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Katras datnes lielums nedrīkst pārsniegt %d baitus."
-
-msgid "Print job storage failed!"
-msgstr "Drukas uzdevumu glabātuvē ir radusies kļūme!"
-
-msgid "Please try again."
-msgstr "Lūdzu, mēģiniet vēlreiz."
-
-msgid "Token request discarded"
-msgstr "Žetona pieprasījums noraidīts"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Jūsu pieprasījums ir noraidīts, jo jums nav žetonu."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Jūsu pieprasījums ir noraidīts, jo jūs jau izmantojāt žetonu šim iesūtījumam."
 
 msgid "Question received"
 msgstr "Jautājums saņemts"
@@ -303,11 +280,11 @@ msgstr "Izpildīts"
 msgid "status"
 msgstr "statuss"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Jūsu pieprasījums ir saņemts un pielietots iesūtījumam."
-
 msgid "Token request received"
 msgstr "Žetona pieprasījums saņemts"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Jūsu pieprasījums ir saņemts un pielietots iesūtījumam."
 
 msgid "Test received"
 msgstr "Tests saņemts"
@@ -323,6 +300,32 @@ msgstr "Izpilda…"
 
 msgid "Executed"
 msgstr "Izpildīts"
+
+msgid "Too many print jobs!"
+msgstr "Pārāk daudz drukas uzdevumu!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Jūs esat sasniedzis maksimāli pieļaujamo drukas uzdevumu ierobežojumu (%d)."
+
+msgid "Invalid format!"
+msgstr "Nepareizs formāts!"
+
+msgid "Please select the correct files."
+msgstr "Lūdzu, izvēlieties pareizās datnes."
+
+msgid "File too big!"
+msgstr "Datne pārāk liela!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Katras datnes lielums nedrīkst pārsniegt %d baitus."
+
+msgid "Print job storage failed!"
+msgstr "Drukas uzdevumu glabātuvē ir radusies kļūme!"
+
+msgid "Please try again."
+msgstr "Lūdzu, mēģiniet vēlreiz."
 
 msgid "Too many submissions!"
 msgstr "Pārāk daudz iesūtījumu!"
@@ -346,6 +349,17 @@ msgstr "Jebkura uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc i
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "Šī uzdevuma risinājumu jūs drīkstat iesūtīt %d sekundes pēc iepriekšējā iesūtījuma."
 
+msgid "Submission too big!"
+msgstr "Iesūtījums pārāk liels!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Katra pirmkoda datne drīkst būt ne vairāk kā %d baitus liela."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "Nepareizs arhīva formāts!"
 
@@ -354,13 +368,6 @@ msgstr "Iesūtīto arhīvu nav iespējams atvērt."
 
 msgid "Invalid submission format!"
 msgstr "Nepareizs iesūtījuma formāts!"
-
-msgid "Submission too big!"
-msgstr "Iesūtījums pārāk liels!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Katra pirmkoda datne drīkst būt ne vairāk kā %d baitus liela."
 
 msgid "Submission storage failed!"
 msgstr "Iesūtījumu glabātuvē ir radusies kļūme!"
@@ -484,11 +491,11 @@ msgstr "%d nelasītas"
 msgid "Until contest starts:"
 msgstr "Līdz sacensību sākumam:"
 
-msgid "Until analysis starts:"
-msgstr "Līdz analīzes režīma sākumam:"
-
 msgid "Until contest ends:"
 msgstr "Līdz sacensību beigām:"
+
+msgid "Until analysis starts:"
+msgstr "Līdz analīzes režīma sākumam:"
 
 msgid "Until analysis ends:"
 msgstr "Līdz analīzes režīma beigām:"
@@ -532,9 +539,6 @@ msgstr "Izvēlieties sacensības"
 msgid "Programming languages and libraries"
 msgstr "Programmēšanas valodas un bibliotēkas"
 
-msgid "Standard Template Library"
-msgstr "Standarta šablonu bibliotēka (STL)"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "Risinājuma galvenās Java klases nosaukumam ir jāsakrīt ar uzdevuma nosaukumu."
 
@@ -562,6 +566,30 @@ msgstr "Iedarbošanās uz testēšanas sistēmu neatļautā veidā (piemēram, m
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "Ja jūs saskārāties ar šo kļūdu parastā situācijā, lūdzu, informējiet sacensību administratorus."
+
+msgid "Public score"
+msgstr "Publiski redzamais rezultāts"
+
+msgid "Total score"
+msgstr "Kopējais rezultāts"
+
+msgid "Score"
+msgstr "Rezultāts"
+
+msgid "Token"
+msgstr "Žetons"
+
+msgid "no submissions"
+msgstr "nav iesūtījumu"
+
+msgid "Played"
+msgstr "Izmantots"
+
+msgid "Play!"
+msgstr "Izmantot!"
+
+msgid "No tokens"
+msgstr "Nav žetonu"
 
 msgid "General information"
 msgstr "Vispārīga informācija"
@@ -996,29 +1024,14 @@ msgstr "Gaidiet…"
 msgid "None"
 msgstr "Nav"
 
-msgid "Public score"
-msgstr "Publiski redzamais rezultāts"
+msgid "Token request discarded"
+msgstr "Žetona pieprasījums noraidīts"
 
-msgid "Total score"
-msgstr "Kopējais rezultāts"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Jūsu pieprasījums ir noraidīts, jo jums nav žetonu."
 
-msgid "Score"
-msgstr "Rezultāts"
-
-msgid "Token"
-msgstr "Žetons"
-
-msgid "no submissions"
-msgstr "nav iesūtījumu"
-
-msgid "Played"
-msgstr "Izmantots"
-
-msgid "Play!"
-msgstr "Izmantot!"
-
-msgid "No tokens"
-msgstr "Nav žetonu"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Jūsu pieprasījums ir noraidīts, jo jūs jau izmantojāt žetonu šim iesūtījumam."
 
 msgid "Invalid file"
 msgstr "Nepareiza datne"
@@ -1028,4 +1041,13 @@ msgstr "Drukas uzdevumam ir pārāk daudz lappušu"
 
 msgid "Sent to printer"
 msgstr "Nosūtīts drukāšanai"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "Izpilde pārtraukta (to var būt izraisījusi atmiņas ierobežojumu neievērošana)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "Izpilde tika pārtraukta ar signālu. Citu iemeslu starpā, to varētu būt izraisījusi atmiņas ierobežojuma pārsniegšana. Šajā gadījumā atmiņas patēriņš, kas ir redzams iesūtījuma detaļās, atbilst stāvoklim pirms signālu izraisījušās atmiņas iedalīšanas."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "Standarta šablonu bibliotēka (STL)"
 

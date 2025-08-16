@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: th\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: th TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "N/A"
 
-msgid "Correct"
-msgstr "ถูกต้อง"
-
 msgid "Not correct"
 msgstr "ไม่ถูกต้อง"
+
+msgid "Correct"
+msgstr "ถูกต้อง"
 
 msgid "Partially correct"
 msgstr "ได้คะแนนบางส่วน"
 
-msgid "Outcome"
-msgstr "ผลลัพธ์"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "ผลลัพธ์"
 
 msgid "Details"
 msgstr "รายละเอียด"
@@ -107,11 +110,20 @@ msgstr "Execution timed out (wall clock limit exceeded)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "โปรแกรมของคุณใช้เวลาประมวลผลนานเกินไป อาจเป็นเพราะโค้ด undefined หรือเกิด buffer overflow"
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "การคอมไพล์ถูกหยุด (อาจเป็นเพราะใช้หน่วยความจำมากเกินไป)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "ข้อจำกัดหน่วยความจำ"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "การส่งของคุณถูกหยุด ซึ่งอาจเป็นเพราะใช้หน่วยความจำในการคอมไพล์มากเกินไป ซึ่งหากใช้หน่วยความจำมากเกินไปจริง โปรแกรมจะแสดงผลขนาดหน่วยความจำก่อนที่จะเกินหน่วยความจำสูงสุด"
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "การส่งของคุณใช้เวลาประมวลของ CPU ผลนานเกินไป"
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "ใช้เวลาประมวลผลนานเกินไป"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "การรันไม่สำเร็จ เพราะโปรแกรมคืนค่าที่ไม่ใช่ศูนย์"
@@ -153,9 +165,17 @@ msgstr "โทเค็น"
 msgid "tokens"
 msgstr "โทเค็น"
 
+#, fuzzy, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "คุณไม่เหลือโทเคนสำหรับโจทย์นี้แล้ว"
+
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "คุณมี %(type_pl)s จำนวนไม่จำกัดสำหรับโจทย์นี้"
+
+#, fuzzy, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
@@ -167,21 +187,48 @@ msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "ทุก %(gen_interval)g นาที "
 
-msgid "Invalid format!"
-msgstr "รูปแบบไม่ถูกต้อง!"
-
-msgid "Please select the correct files."
-msgstr "กรุณาเลือกไฟล์ที่ถูกต้อง"
-
-msgid "File too big!"
-msgstr "ไฟล์ใหญ่เกิน!"
+#, fuzzy, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
 
 #, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "ไฟล์ใหญ่ได้สูงสุด %d ไบต์"
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
+msgstr[0] ""
 
-msgid "Please try again."
-msgstr "กรุณาลองใหม่อีกครั้ง"
+#, fuzzy, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+
+#, fuzzy, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
+msgstr[0] ""
+
+#, fuzzy, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] ""
+
+#, fuzzy, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
+msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+
+#, fuzzy
+msgid "You have no limitations on how you use them."
+msgstr "คุณต้องรอจนถึง %(expiration_time)s เพื่อสามารถใช้โทเคนได้"
 
 msgid "Question received"
 msgstr "ได้รับคำถามแล้ว"
@@ -216,8 +263,20 @@ msgstr "ประเมินผลแล้ว"
 msgid "status"
 msgstr "สถานะ"
 
+#, fuzzy
+msgid "Token request received"
+msgstr "ได้รับชุดทดสอบแล้ว"
+
+#, fuzzy
+msgid "Your request has been received and applied to the submission."
+msgstr "ได้รับคำถามของคุณแล้ว, เราจะแจ้งเตือนคุณเมื่อได้รับคำตอบ"
+
 msgid "Test received"
 msgstr "ได้รับชุดทดสอบแล้ว"
+
+#, fuzzy
+msgid "Your test has been received and is currently being executed."
+msgstr "ได้รับการส่งของคุณแล้วและตอนนี้กำลังประมวลผลอยู่"
 
 msgid "details"
 msgstr "รายละเอียด"
@@ -227,6 +286,34 @@ msgstr "กำลังรัน..."
 
 msgid "Executed"
 msgstr "รันแล้ว"
+
+#, fuzzy
+msgid "Too many print jobs!"
+msgstr "ชุดทดสอบเยอะเกินไป!"
+
+#, fuzzy, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "สำหรับการแข่งขันนี้ คุณได้ทดสอบครบ %d ครั้งแล้ว"
+
+msgid "Invalid format!"
+msgstr "รูปแบบไม่ถูกต้อง!"
+
+msgid "Please select the correct files."
+msgstr "กรุณาเลือกไฟล์ที่ถูกต้อง"
+
+msgid "File too big!"
+msgstr "ไฟล์ใหญ่เกิน!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "ไฟล์ใหญ่ได้สูงสุด %d ไบต์"
+
+#, fuzzy
+msgid "Print job storage failed!"
+msgstr "สั่งปริ้นท์แล้ว"
+
+msgid "Please try again."
+msgstr "กรุณาลองใหม่อีกครั้ง"
 
 msgid "Too many submissions!"
 msgstr "การส่งมากเกินไป!"
@@ -250,6 +337,17 @@ msgstr "สำหรับการแข่งขันนี้ คุณส�
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "สำหรับโจทย์ข้อนี้ คุณสามารถส่งได้ทุก ๆ %d วินาที"
 
+msgid "Submission too big!"
+msgstr "การส่งใหญ่เกินไป"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "ขนาดไฟล์แต่ละไฟล์ที่ส่งมาจะต้องมีขนาดไม่เกิน %d ไบท์"
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "ไฟล์ archive เสีย"
 
@@ -259,12 +357,9 @@ msgstr "ไฟล์ archive เปิดไม่ได้"
 msgid "Invalid submission format!"
 msgstr "การส่งไม่ตรงตาม Format"
 
-msgid "Submission too big!"
+#, fuzzy
+msgid "Submission storage failed!"
 msgstr "การส่งใหญ่เกินไป"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "ขนาดไฟล์แต่ละไฟล์ที่ส่งมาจะต้องมีขนาดไม่เกิน %d ไบท์"
 
 msgid "Too many tests!"
 msgstr "ชุดทดสอบเยอะเกินไป!"
@@ -300,6 +395,10 @@ msgstr "ข้อมูลนำเข้าใหญ่เกินไป"
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr "ข้อมูลนำเข้าต้องมีขนาดไม่เกิน %d ไบท์"
+
+#, fuzzy
+msgid "Test storage failed!"
+msgstr "การทดสอบใหญ่เกินไป"
 
 msgid "Communication"
 msgstr "การสื่อสาร"
@@ -382,11 +481,11 @@ msgstr "ยังไม่ได้อ่าน %d ข้อความ"
 msgid "Until contest starts:"
 msgstr "การแข่งขันจะเริ่มเวลา"
 
-msgid "Until analysis starts:"
-msgstr "โหมดการวิเคราะห์จะเริ่มเวลา"
-
 msgid "Until contest ends:"
 msgstr "การแข่งขันจะจบเวลา"
+
+msgid "Until analysis starts:"
+msgstr "โหมดการวิเคราะห์จะเริ่มเวลา"
 
 msgid "Until analysis ends:"
 msgstr "โหมดการวิเคราะห์จะจบเวลา"
@@ -430,9 +529,6 @@ msgstr "เลือกการแข่งขัน"
 msgid "Programming languages and libraries"
 msgstr "ภาษาโปรแกรมและไลบรารี่"
 
-msgid "Standard Template Library"
-msgstr "STL"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "คลาส main ของภาษา Java จะต้องใช้ชื่อเดียวกับชื่อโจทย์เท่านั้น"
 
@@ -460,6 +556,30 @@ msgstr "การพยายามแฮคระบบ Contest Management Syst
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "หากคุณพบข้อผิดพลาดนี้ระหว่างการใช้งาน โปรดแจ้งให้ผู้ดูแลการแข่งขันทราบ"
+
+msgid "Public score"
+msgstr "คะแนนสาธารณะ"
+
+msgid "Total score"
+msgstr "คะแนนรวม"
+
+msgid "Score"
+msgstr "คะแนน"
+
+msgid "Token"
+msgstr "โทเค็น"
+
+msgid "no submissions"
+msgstr "ไม่มีการส่ง"
+
+msgid "Played"
+msgstr "เล่น"
+
+msgid "Play!"
+msgstr "เล่น!"
+
+msgid "No tokens"
+msgstr "ไม่มีโทเค็น"
 
 msgid "General information"
 msgstr "ข้อมูลทั่วไป"
@@ -739,6 +859,9 @@ msgstr "โจทย์ในข้อนี้มีหลายเวอร์
 msgid "You can see (and download) all of them using the list on the right."
 msgstr "คุณสามารถดู (และดาวน์โหลด) ทั้งหมดโดยการใช้แถบด้านขวา"
 
+msgid "Some suggested translations follow."
+msgstr ""
+
 #, python-format
 msgid "Statement in <b>%(lang)s</b>"
 msgstr "รายละเอียดโจทย์ในภาษา <b>%(lang)s</b>"
@@ -889,29 +1012,14 @@ msgstr "รอ..."
 msgid "None"
 msgstr "ไม่มี"
 
-msgid "Public score"
-msgstr "คะแนนสาธารณะ"
+msgid "Token request discarded"
+msgstr ""
 
-msgid "Total score"
-msgstr "คะแนนรวม"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr ""
 
-msgid "Score"
-msgstr "คะแนน"
-
-msgid "Token"
-msgstr "โทเค็น"
-
-msgid "no submissions"
-msgstr "ไม่มีการส่ง"
-
-msgid "Played"
-msgstr "เล่น"
-
-msgid "Play!"
-msgstr "เล่น!"
-
-msgid "No tokens"
-msgstr "ไม่มีโทเค็น"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr ""
 
 msgid "Invalid file"
 msgstr "ไฟล์ไม่ถูกต้อง"
@@ -921,4 +1029,13 @@ msgstr "การปริ้นท์มีจำนวนหน้ามาก
 
 msgid "Sent to printer"
 msgstr "ส่งปริ้นท์"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "การคอมไพล์ถูกหยุด (อาจเป็นเพราะใช้หน่วยความจำมากเกินไป)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "การส่งของคุณถูกหยุด ซึ่งอาจเป็นเพราะใช้หน่วยความจำในการคอมไพล์มากเกินไป ซึ่งหากใช้หน่วยความจำมากเกินไปจริง โปรแกรมจะแสดงผลขนาดหน่วยความจำก่อนที่จะเกินหน่วยความจำสูงสุด"
+
+#~ msgid "Standard Template Library"
+#~ msgstr "STL"
 

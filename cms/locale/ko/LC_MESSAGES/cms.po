@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: ko\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: ko TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "없음"
 
-msgid "Correct"
-msgstr "맞았습니다"
-
 msgid "Not correct"
 msgstr "틀렸습니다"
+
+msgid "Correct"
+msgstr "맞았습니다"
 
 msgid "Partially correct"
 msgstr "일부 맞았습니다"
 
-msgid "Outcome"
-msgstr "출력결과"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "출력결과"
 
 msgid "Details"
 msgstr "세부사항"
@@ -61,14 +64,18 @@ msgid "Compilation timed out"
 msgstr "컴파일 제한 시간 초과"
 
 msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
-msgstr "제출한 파일을 컴파일하는 과정에서 제한 시간을 초과하였습니다.\n C++ 템플릿을 너무 많이 사용했을 수도 있습니다."
+msgstr ""
+"제출한 파일을 컴파일하는 과정에서 제한 시간을 초과하였습니다.\n"
+" C++ 템플릿을 너무 많이 사용했을 수도 있습니다."
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
 msgstr "%s 오류로 컴파일 취소 (메모리제한 초과 등)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr "오류가 발생하여 채점이 취소되었습니다.\n 컴파일 과정에서 메모리제한을 초과했거나, C++ 템플릿을 너무 많이 사용한 경우에 주로 발생합니다."
+msgstr ""
+"오류가 발생하여 채점이 취소되었습니다.\n"
+" 컴파일 과정에서 메모리제한을 초과했거나, C++ 템플릿을 너무 많이 사용한 경우에 주로 발생합니다."
 
 msgid "Output is correct"
 msgstr "맞았습니다"
@@ -105,13 +112,25 @@ msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "실행 시간 초과 (CPU 클록 제한 초과 등)"
 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
-msgstr "제출한 프로그램이 너무 많은 시간을 사용했습니다.\n 정의되지 않은 코드, 버퍼 오버플로 등에 의해 발생할 수 있습니다.\n 그렇지만, 채점 세부사항에 나타나는 CPU 시간은 프로그램 실행 제한시간보다 작게 나타날 수 있습니다."
+msgstr ""
+"제출한 프로그램이 너무 많은 시간을 사용했습니다.\n"
+" 정의되지 않은 코드, 버퍼 오버플로 등에 의해 발생할 수 있습니다.\n"
+" 그렇지만, 채점 세부사항에 나타나는 CPU 시간은 프로그램 실행 제한시간보다 작게 나타날 수 있습니다."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "프로그램 실행 중단 (메모리제한 초과 등)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "메모리 제한"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "오류가 발생하여 채점이 중단되었습니다.\n 주로 메모리사용 제한 초과로 발생합니다.\n 메모리제한 초과로 오류가 발생한 경우, 채점 세부사항에 나타나는 메모리사용량은 메모리사용 제한 초과가 발생하기 전의 사용량입니다."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "제출한 프로그램이 너무 많은 CPU 시간을 사용했습니다."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "시간 초과"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "실행 파일이 0을 return하지 않았습니다."
@@ -155,15 +174,24 @@ msgstr "토큰"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "이 문제는 %(type_pl)s을 더 이상 사용할 수 없습니다.\n\n "
+msgstr ""
+"이 문제는 %(type_pl)s을 더 이상 사용할 수 없습니다.\n"
+"\n"
+" "
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "이 문제는 %(type_pl)s을 무한히 사용할 수 있습니다.\n\n "
+msgstr ""
+"이 문제는 %(type_pl)s을 무한히 사용할 수 있습니다.\n"
+"\n"
+" "
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "0 개의 %(type_pl)s을 가지고 시작합니다.\n\n "
+msgstr ""
+"0 개의 %(type_pl)s을 가지고 시작합니다.\n"
+"\n"
+" "
 
 #, python-format
 msgid "You start with one %(type_s)s."
@@ -186,13 +214,13 @@ msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] ""
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "%(type_pl)s을 더 받을 수 없습니다."
-
-#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] ""
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "%(type_pl)s을 더 받을 수 없습니다."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -215,42 +243,10 @@ msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] ""
 
 msgid "You have no limitations on how you use them."
-msgstr "무제한으로 사용할 수 있습니다.\n\n "
-
-msgid "Too many print jobs!"
-msgstr "프린트 불가능!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "최대 프린트 횟수(%d)를 모두 사용했습니다."
-
-msgid "Invalid format!"
-msgstr "파일 오류!"
-
-msgid "Please select the correct files."
-msgstr "정확한 파일들을 선택하세요."
-
-msgid "File too big!"
-msgstr "파일 크기 초과!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "각 파일의 최대 크기는 %d bytes 입니다."
-
-msgid "Print job storage failed!"
-msgstr "프린트 작업 전송 실패!"
-
-msgid "Please try again."
-msgstr "다시 시도해보세요."
-
-msgid "Token request discarded"
-msgstr "토큰 제출 실패"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "토큰이 없기 때문에, 제출할 수 없습니다."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "해당 채점에 대해서 이미 토큰을 사용했기 때문에, 제출할 수 없습니다."
+msgstr ""
+"무제한으로 사용할 수 있습니다.\n"
+"\n"
+" "
 
 msgid "Question received"
 msgstr "질문 전송 완료"
@@ -285,11 +281,11 @@ msgstr "채점 완료"
 msgid "status"
 msgstr "결과"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "토큰을 사용해서 채점을 제출했습니다."
-
 msgid "Token request received"
 msgstr "토큰 제출 완료"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "토큰을 사용해서 채점을 제출했습니다."
 
 msgid "Test received"
 msgstr "테스트 제출 완료"
@@ -305,6 +301,32 @@ msgstr "실행 중..."
 
 msgid "Executed"
 msgstr "실행 완료"
+
+msgid "Too many print jobs!"
+msgstr "프린트 불가능!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "최대 프린트 횟수(%d)를 모두 사용했습니다."
+
+msgid "Invalid format!"
+msgstr "파일 오류!"
+
+msgid "Please select the correct files."
+msgstr "정확한 파일들을 선택하세요."
+
+msgid "File too big!"
+msgstr "파일 크기 초과!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "각 파일의 최대 크기는 %d bytes 입니다."
+
+msgid "Print job storage failed!"
+msgstr "프린트 작업 전송 실패!"
+
+msgid "Please try again."
+msgstr "다시 시도해보세요."
 
 msgid "Too many submissions!"
 msgstr "더 이상 제출할 수 없습니다!"
@@ -328,6 +350,17 @@ msgstr "누적 마지막 제출 시각을 기준으로 %d 초 이후에 다시 �
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "이 문제에 대해서, 마지막 제출 시각을 기준으로 %d 초 이후에 다시 제출할 수 있습니다."
 
+msgid "Submission too big!"
+msgstr "제출 파일 용량 초과 "
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "제출 파일의 최대 크기는 %d bytes 입니다."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "압축 파일 오류!"
 
@@ -336,13 +369,6 @@ msgstr "압축 파일을 열 수 없습니다."
 
 msgid "Invalid submission format!"
 msgstr "제출 파일 오류!"
-
-msgid "Submission too big!"
-msgstr "제출 파일 용량 초과 "
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "제출 파일의 최대 크기는 %d bytes 입니다."
 
 msgid "Submission storage failed!"
 msgstr "제출 파일 저장 실패!"
@@ -466,11 +492,11 @@ msgstr "미확인 메시지 %d 개"
 msgid "Until contest starts:"
 msgstr "대회 시작까지 남은 시간:"
 
-msgid "Until analysis starts:"
-msgstr "리뷰 시작까지 남은 시간:"
-
 msgid "Until contest ends:"
 msgstr "대회 종료까지 남은 시간:"
+
+msgid "Until analysis starts:"
+msgstr "리뷰 시작까지 남은 시간:"
 
 msgid "Until analysis ends:"
 msgstr "리뷰 종료까지 남은 시간:"
@@ -514,9 +540,6 @@ msgstr "대회 선택"
 msgid "Programming languages and libraries"
 msgstr "프로그래밍 언어 및 라이브러리"
 
-msgid "Standard Template Library"
-msgstr "STL(Standard Template Library)"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "답안 제출시 Java main class 의 이름은 해당 문제와 일치해야 합니다."
 
@@ -545,6 +568,30 @@ msgstr "(접속 URL 주소를 바꿔가며 대회 운영과 관련된 페이지�
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "정상적인 사용 과정에서 이 메시지를 받는 경우에는 반드시 대회 운영진에게 알려주세요."
 
+msgid "Public score"
+msgstr "공식 점수"
+
+msgid "Total score"
+msgstr "총점"
+
+msgid "Score"
+msgstr "점수"
+
+msgid "Token"
+msgstr "토큰"
+
+msgid "no submissions"
+msgstr "채점 기록 없음"
+
+msgid "Played"
+msgstr "확인함"
+
+msgid "Play!"
+msgstr "확인하기!"
+
+msgid "No tokens"
+msgstr "토큰 없음"
+
 msgid "General information"
 msgstr "일반 사항"
 
@@ -553,48 +600,63 @@ msgstr "대회 시작전입니다."
 
 #, python-format
 msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회는 %(start_time)s 에 시작되어\n %(stop_time)s 에 종료될 예정입니다."
+msgstr ""
+"대회는 %(start_time)s 에 시작되어\n"
+" %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The contest is currently running."
 msgstr "대회가 진행중입니다."
 
 #, python-format
 msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료될 예정입니다."
+msgstr ""
+"대회가 %(start_time)s 에 시작되었으며\n"
+" %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The contest has already ended."
 msgstr "대회가 종료되었습니다."
 
 #, python-format
 msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
-msgstr "대회가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료되었습니다."
+msgstr ""
+"대회가 %(start_time)s 에 시작되었으며\n"
+" %(stop_time)s 에 종료되었습니다."
 
 msgid "The analysis mode hasn't started yet."
 msgstr "대회 리뷰 시작전입니다."
 
 #, python-format
 msgid "The analysis mode will start at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회 리뷰는 %(start_time)s 에 시작되어\n %(stop_time)s 에 종료될 예정입니다."
+msgstr ""
+"대회 리뷰는 %(start_time)s 에 시작되어\n"
+" %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The analysis mode is currently running."
 msgstr "대회 리뷰가 진행중입니다."
 
 #, python-format
 msgid "The analysis mode started at %(start_time)s and will end at %(stop_time)s."
-msgstr "대회 리뷰가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료될 예정입니다."
+msgstr ""
+"대회 리뷰가 %(start_time)s 에 시작되었으며\n"
+" %(stop_time)s 에 종료될 예정입니다."
 
 msgid "The analysis mode has already ended."
 msgstr "대회 리뷰가 종료되었습니다."
 
 #, python-format
 msgid "The analysis mode started at %(start_time)s and ended at %(stop_time)s."
-msgstr "대회 리뷰가 %(start_time)s 에 시작되었으며\n %(stop_time)s 에 종료되었습니다."
+msgstr ""
+"대회 리뷰가 %(start_time)s 에 시작되었으며\n"
+" %(stop_time)s 에 종료되었습니다."
 
 msgid "You have an infinite number of tokens."
 msgstr "토큰을 무한히 가지고 있습니다."
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr "토큰을 1개 사용해서, 채점 결과에 대한 세부사항을 자세히 살펴볼 수 있습니다.\n\n "
+msgstr ""
+"토큰을 1개 사용해서, 채점 결과에 대한 세부사항을 자세히 살펴볼 수 있습니다.\n"
+"\n"
+" "
 
 msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
 msgstr "각 문제에 대한 득점은, 토큰을 사용해서 제출한 채점 결과 중에서 가장 높은 점수로서 가장 마지막에 채점된 점수로 계산됩니다."
@@ -607,13 +669,22 @@ msgid "You can find the rules for the %(type_pl)s on each task's description pag
 msgstr "%(type_pl)s에 대한 규칙들은 각 문제의 설명 페이지에서 찾아볼 수 있습니다."
 
 msgid "You have a set of tokens shared among all tasks."
-msgstr "모든 문제에 같은 토큰을 사용합니다.\n\n "
+msgstr ""
+"모든 문제에 같은 토큰을 사용합니다.\n"
+"\n"
+" "
 
 msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr "2 종류의 토큰을 사용합니다.: <em>대회-토큰</em>은 모든 문제들에 대해 공통으로 사용하고, <em>문제-토큰</em>은 각 문제별로 따로 사용합니다.\n\n "
+msgstr ""
+"2 종류의 토큰을 사용합니다.: <em>대회-토큰</em>은 모든 문제들에 대해 공통으로 사용하고, <em>문제-토큰</em>은 각 문제별로 따로 사용합니다.\n"
+"\n"
+" "
 
 msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
-msgstr "2 종류의 토큰을 각각 1개씩 사용해서, 채점 결과에 대한 세부사항을 자세히 살펴볼 수 있습니다.\n\n "
+msgstr ""
+"2 종류의 토큰을 각각 1개씩 사용해서, 채점 결과에 대한 세부사항을 자세히 살펴볼 수 있습니다.\n"
+"\n"
+" "
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -634,11 +705,17 @@ msgid "Once you start, you can submit solutions until the end of the time frame 
 msgstr "자신의 타임 프레임을 시작해야만 채점을 제출할 수 있습니다. 하지만, 자신의 타임 프레임이 남아있다고 하더라도 대회 종료전까지만 채점을 제출할 수 있습니다."
 
 msgid "By clicking on the button below you can start your time frame."
-msgstr "아래의 대회 참가 버튼을 누르면 자신의 타임 프레임이 시작됩니다.\n\n "
+msgstr ""
+"아래의 대회 참가 버튼을 누르면 자신의 타임 프레임이 시작됩니다.\n"
+"\n"
+" "
 
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr "타임 프레임을 %(start_time)s 에 시작시켰습니다.\n\n "
+msgstr ""
+"타임 프레임을 %(start_time)s 에 시작시켰습니다.\n"
+"\n"
+" "
 
 msgid "You can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
 msgstr "자신에게 주어진 타임 프레임 이내에서만 채점을 제출할 수 있습니다. 하지만, 자신의 타임 프레임이 남아있다고 하더라도 대회 종료전까지만 채점을 제출할 수 있습니다."
@@ -976,29 +1053,14 @@ msgstr "대기..."
 msgid "None"
 msgstr "없음"
 
-msgid "Public score"
-msgstr "공식 점수"
+msgid "Token request discarded"
+msgstr "토큰 제출 실패"
 
-msgid "Total score"
-msgstr "총점"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "토큰이 없기 때문에, 제출할 수 없습니다."
 
-msgid "Score"
-msgstr "점수"
-
-msgid "Token"
-msgstr "토큰"
-
-msgid "no submissions"
-msgstr "채점 기록 없음"
-
-msgid "Played"
-msgstr "확인함"
-
-msgid "Play!"
-msgstr "확인하기!"
-
-msgid "No tokens"
-msgstr "토큰 없음"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "해당 채점에 대해서 이미 토큰을 사용했기 때문에, 제출할 수 없습니다."
 
 msgid "Invalid file"
 msgstr "파일 오류"
@@ -1008,4 +1070,16 @@ msgstr "프린트 할 페이지가 너무 많습니다."
 
 msgid "Sent to printer"
 msgstr "프린터 전송 완료"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "프로그램 실행 중단 (메모리제한 초과 등)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr ""
+#~ "오류가 발생하여 채점이 중단되었습니다.\n"
+#~ " 주로 메모리사용 제한 초과로 발생합니다.\n"
+#~ " 메모리제한 초과로 오류가 발생한 경우, 채점 세부사항에 나타나는 메모리사용량은 메모리사용 제한 초과가 발생하기 전의 사용량입니다."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "STL(Standard Template Library)"
 
