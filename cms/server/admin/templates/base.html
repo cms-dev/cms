@@ -26,22 +26,18 @@
 function init()
 {
     {% if contest is none %}
-    utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }}, 0, 0, 0, 0, -1);
-    utils.update_notifications();
-    setInterval(function() { utils.update_notifications(); }, 15000);
+    utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }}, 0, 0, 0, 0, 0);
     {% else %}
     utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }},
         {{ contest.start|make_timestamp }}, {{ contest.stop|make_timestamp }},
         {{ contest.analysis_start|make_timestamp }}, {{ contest.analysis_stop|make_timestamp }},
-        {{ phase }});
+        {{ contest.analysis_enabled | int }});
 
-    {% if phase < 3 %}
     utils.update_remaining_time();
-    var timer = setInterval(function() { utils.update_remaining_time(timer); }, 1000);
+    setInterval(function() { utils.update_remaining_time(); }, 1000);
     {% endif %}
     utils.update_notifications();
     setInterval(function() { utils.update_notifications(); }, 15000);
-    {% endif %}
 
     $(document).click(utils.hide_subpage);
 
