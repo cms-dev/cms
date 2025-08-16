@@ -1,33 +1,36 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
-"POT-Creation-Date: 2025-06-06 09:35+0000\n"
+"Project-Id-Version:  VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-16 14:52+0300\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE TEAM <EMAIL@ADDRESS>\n"
 "Language: nl_NL\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: nl_NL TEAM <EMAIL@ADDRESS>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
 msgstr "Niet beschikbaar"
 
-msgid "Correct"
-msgstr "Correct"
-
 msgid "Not correct"
 msgstr "Niet correct"
+
+msgid "Correct"
+msgstr "Correct"
 
 msgid "Partially correct"
 msgstr "Deels correct"
 
-msgid "Outcome"
-msgstr "Uitkomst"
-
 msgid "#"
 msgstr "#"
+
+msgid "Outcome"
+msgstr "Uitkomst"
 
 msgid "Details"
 msgstr "Details"
@@ -107,11 +110,20 @@ msgstr "Time-out bij uitvoering (harde tijdslimiet overschreden)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Je inzending gebruikte teveel tijd in totaal. Dit kan het gevolg zijn van, bijvoorbeeld, ongedefinieerde code of buffer overflow. Merk op dat in dit geval de CPU-tijd die zichtbaar is bij de details van de inzending veel kleiner kan zijn dan de tijdslimiet."
 
-msgid "Execution killed (could be triggered by violating memory limits)"
-msgstr "Uitvoering beëindigt (kan veroorzaakt woorden voor geheugenlimieten te overschrijden)"
+#, fuzzy
+msgid "Memory limit exceeded"
+msgstr "Geheugenlimiet"
 
-msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-msgstr "De uitvoering werd beëindigd door een signaal. Dit kan onder andere veroorzaakt worden door het overschrijden van de geheugenlimiet. Als dit de reden is, is het geheugengebruik, voor de allocatie die het signaal veroorzaakte, zichtbaar in de details van de inzending."
+#, fuzzy
+msgid "Your submission used too much memory."
+msgstr "Je inzending gebruikte teveel CPU tijd."
+
+#, fuzzy
+msgid "Execution killed by signal"
+msgstr "Time-out bij uitvoering"
+
+msgid "The evaluation was killed by a signal."
+msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Uitvoering mislukt omdat de return code niet nul was"
@@ -190,14 +202,14 @@ msgstr[0] "tot een maximum van een %(type_s)s."
 msgstr[1] "tot een maximum van %(gen_max)d %(type_pl)s."
 
 #, python-format
-msgid "You don't get other %(type_pl)s."
-msgstr "Je krijgt geen andere %(type_pl)s."
-
-#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "krijg je nog een %(type_s)s."
 msgstr[1] "krijg je %(gen_number)d %(type_pl)s erbij."
+
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Je krijgt geen andere %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
@@ -225,41 +237,6 @@ msgstr[1] "Je kan niet meer dan %(max_number)d %(type_pl)s in totaal gebruiken."
 
 msgid "You have no limitations on how you use them."
 msgstr "Er zijn geen beperkingen op hoe je ze gebruikt."
-
-msgid "Too many print jobs!"
-msgstr "Te veel printopdrachten!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Je hebt de maximumlimiet van %d printopdrachten bereikt."
-
-msgid "Invalid format!"
-msgstr "Ongeldig formaat!"
-
-msgid "Please select the correct files."
-msgstr "Selecteer de correcte bestanden aub."
-
-msgid "File too big!"
-msgstr "Bestand te groot!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Elk bestand mag maximaal %d bytes groot zijn."
-
-msgid "Print job storage failed!"
-msgstr "Kon de printopdracht niet registreren!"
-
-msgid "Please try again."
-msgstr "Probeer opnieuw aub."
-
-msgid "Token request discarded"
-msgstr "Aanvraag token afgewezen"
-
-msgid "Your request has been discarded because you have no tokens available."
-msgstr "Je aanvraag werd afgewezen omdat je geen tokens beschikbaar hebt."
-
-msgid "Your request has been discarded because you already used a token on that submission."
-msgstr "Je aanvraag werd afgewezen omdat je al een token gebruikte voor deze inzending."
 
 msgid "Question received"
 msgstr "Vraag ontvangen"
@@ -294,11 +271,11 @@ msgstr "Geëvalueerd"
 msgid "status"
 msgstr "status"
 
-msgid "Your request has been received and applied to the submission."
-msgstr "Je aanvraag werd ontvangen en toegepast op de inzending."
-
 msgid "Token request received"
 msgstr "Aanvraag token ontvangen"
+
+msgid "Your request has been received and applied to the submission."
+msgstr "Je aanvraag werd ontvangen en toegepast op de inzending."
 
 msgid "Test received"
 msgstr "Test ontvangen"
@@ -314,6 +291,32 @@ msgstr "Bezig met uitvoeren..."
 
 msgid "Executed"
 msgstr "Uitgevoerd"
+
+msgid "Too many print jobs!"
+msgstr "Te veel printopdrachten!"
+
+#, python-format
+msgid "You have reached the maximum limit of at most %d print jobs."
+msgstr "Je hebt de maximumlimiet van %d printopdrachten bereikt."
+
+msgid "Invalid format!"
+msgstr "Ongeldig formaat!"
+
+msgid "Please select the correct files."
+msgstr "Selecteer de correcte bestanden aub."
+
+msgid "File too big!"
+msgstr "Bestand te groot!"
+
+#, python-format
+msgid "Each file must be at most %d bytes long."
+msgstr "Elk bestand mag maximaal %d bytes groot zijn."
+
+msgid "Print job storage failed!"
+msgstr "Kon de printopdracht niet registreren!"
+
+msgid "Please try again."
+msgstr "Probeer opnieuw aub."
 
 msgid "Too many submissions!"
 msgstr "Te veel inzendingen!"
@@ -337,6 +340,17 @@ msgstr "Voor alle taken samen, kan je opnieuw indienen na %d seconden na je laat
 msgid "For this task, you can submit again after %d seconds from last submission."
 msgstr "Voor deze taak kan je opnieuw indienen na %d seconden na je laatste inzending."
 
+msgid "Submission too big!"
+msgstr "Inzending te groot!"
+
+#, python-format
+msgid "Each source file must be at most %d bytes long."
+msgstr "Elk bronbestand mag maximaal %d bytes lang zijn."
+
+#, python-format
+msgid "The submission should contain at most %d files."
+msgstr ""
+
 msgid "Invalid archive format!"
 msgstr "Ongeldig formaat voor archief!"
 
@@ -345,13 +359,6 @@ msgstr "Het ingediende archief kon niet worden geopend."
 
 msgid "Invalid submission format!"
 msgstr "Ongeldig formaat voor inzending!"
-
-msgid "Submission too big!"
-msgstr "Inzending te groot!"
-
-#, python-format
-msgid "Each source file must be at most %d bytes long."
-msgstr "Elk bronbestand mag maximaal %d bytes lang zijn."
 
 msgid "Submission storage failed!"
 msgstr "Opslag van inzending mislukt!"
@@ -475,11 +482,11 @@ msgstr "%d ongelezen"
 msgid "Until contest starts:"
 msgstr "Totdat de wedstrijd start:"
 
-msgid "Until analysis starts:"
-msgstr "Totdat de analyse start:"
-
 msgid "Until contest ends:"
 msgstr "Totdat de wedstrijd eindigt:"
+
+msgid "Until analysis starts:"
+msgstr "Totdat de analyse start:"
 
 msgid "Until analysis ends:"
 msgstr "Totdat de analyse eindigt:"
@@ -523,9 +530,6 @@ msgstr "Kies een wedstrijd"
 msgid "Programming languages and libraries"
 msgstr "Programmeertalen en -libraries"
 
-msgid "Standard Template Library"
-msgstr "Standard Template Library"
-
 msgid "The main Java class of the solution should have exactly the same name as the task."
 msgstr "De main Java class van de oplossing moet exact dezelfde naam hebben als de opdracht."
 
@@ -553,6 +557,30 @@ msgstr "Elke poging om het Wedstrijdbeheersysteem te beïnvloeden (zoals het stu
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "Als je deze fout tegenkomt bij normaal gebruik, verwittig dan de begeleiders van de wedstrijd."
+
+msgid "Public score"
+msgstr "Publieke score"
+
+msgid "Total score"
+msgstr "Totaalscore"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "no submissions"
+msgstr "geen inzendingen"
+
+msgid "Played"
+msgstr "Afgespeeld"
+
+msgid "Play!"
+msgstr "Afspelen!"
+
+msgid "No tokens"
+msgstr "Geen tokens"
 
 msgid "General information"
 msgstr "Algemene informatie"
@@ -986,29 +1014,14 @@ msgstr "Wachten..."
 msgid "None"
 msgstr "Geen"
 
-msgid "Public score"
-msgstr "Publieke score"
+msgid "Token request discarded"
+msgstr "Aanvraag token afgewezen"
 
-msgid "Total score"
-msgstr "Totaalscore"
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "Je aanvraag werd afgewezen omdat je geen tokens beschikbaar hebt."
 
-msgid "Score"
-msgstr "Score"
-
-msgid "Token"
-msgstr "Token"
-
-msgid "no submissions"
-msgstr "geen inzendingen"
-
-msgid "Played"
-msgstr "Afgespeeld"
-
-msgid "Play!"
-msgstr "Afspelen!"
-
-msgid "No tokens"
-msgstr "Geen tokens"
+msgid "Your request has been discarded because you already used a token on that submission."
+msgstr "Je aanvraag werd afgewezen omdat je al een token gebruikte voor deze inzending."
 
 msgid "Invalid file"
 msgstr "Ongeldig bestand"
@@ -1018,4 +1031,13 @@ msgstr "Printopdracht heeft de veel paginas"
 
 msgid "Sent to printer"
 msgstr "Naar de printer verzonden"
+
+#~ msgid "Execution killed (could be triggered by violating memory limits)"
+#~ msgstr "Uitvoering beëindigt (kan veroorzaakt woorden voor geheugenlimieten te overschrijden)"
+
+#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
+#~ msgstr "De uitvoering werd beëindigd door een signaal. Dit kan onder andere veroorzaakt worden door het overschrijden van de geheugenlimiet. Als dit de reden is, is het geheugengebruik, voor de allocatie die het signaal veroorzaakte, zichtbaar in de details van de inzending."
+
+#~ msgid "Standard Template Library"
+#~ msgstr "Standard Template Library"
 
