@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: fr_FR\n"
-"Language-Team: fr_FR TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"PO-Revision-Date: 2025-08-17 17:02+0000\n"
+"Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/cms/main/fr/>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -77,7 +77,7 @@ msgid "Output is correct"
 msgstr "Sortie correcte"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr "Votre soumission a été exécutée et a donné la réponse correcte."
+msgstr "Votre soumission a été exécutée et a donné la réponse correcte"
 
 msgid "Output is partially correct"
 msgstr "La sortie est partiellement correcte"
@@ -89,7 +89,7 @@ msgid "Output isn't correct"
 msgstr "Sortie incorrecte"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr "Votre soumission a été exécutée mais donne une réponse incorrecte."
+msgstr "Votre soumission a été exécutée mais donne une réponse incorrecte"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
@@ -102,7 +102,7 @@ msgid "Execution timed out"
 msgstr "Durée maximale d'exécution dépassée"
 
 msgid "Your submission used too much CPU time."
-msgstr "Votre soumission a utilisé trop de temps CPU (processeur)"
+msgstr "Votre soumission a utilisé trop de temps CPU (processeur)."
 
 msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "Temps d'exécution dépassé (durée maximale dépassée)"
@@ -110,23 +110,20 @@ msgstr "Temps d'exécution dépassé (durée maximale dépassée)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Votre soumission a pris trop de temps. Cela peut être causé, par exemple, par un code indéfini ou une écriture hors mémoire allouée. Notez que dans ce cas, le temps CPU (processeur) visible dans les détails de la soumission peut être bien plus petit que la limite de temps."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Limite de mémoire"
+msgstr "Limite de mémoire dépassée"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "Votre soumission a utilisé trop de temps CPU (processeur)"
+msgstr "Votre soumission a utilisé trop de mémoire."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Durée maximale d'exécution dépassée"
+msgstr "Exécution interrompue par un signal"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "L'évaluation a été tuée par un signal."
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "Exécution échouée: code de retour différent de zéro"
+msgstr "Exécution échouée : code de retour différent de zéro"
 
 msgid "Your submission failed because it exited with a return code different from 0."
 msgstr "Votre soumission a échouée car elle a terminé avec un code de retour différent de 0."
@@ -349,7 +346,7 @@ msgstr "Chaque fichier source ne peut pas faire plus de %d octets."
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "La soumission doit contenir au maximum %d fichiers."
 
 msgid "Invalid archive format!"
 msgstr "Format d'archive invalide !"
@@ -443,7 +440,7 @@ msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(usernam
 msgstr "Connecté en tant que <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
-msgstr "Connexion impossible"
+msgstr "Échec de la connexion."
 
 msgid "Welcome"
 msgstr "Bienvenue"
@@ -658,7 +655,7 @@ msgstr "Vous pouvez soumettre au maximum %(submissions)s solutions durant ce con
 
 #, python-format
 msgid "You can submit at most %(user_tests)s user tests during this contest."
-msgstr "Vous pouvez soumettre au maximum %(user_tests)s tests utilisateurs durant ce concours "
+msgstr "Vous pouvez soumettre au maximum %(user_tests)s tests utilisateurs durant ce concours."
 
 #, python-format
 msgid "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted time frame of %(per_user_time)s."
@@ -668,7 +665,7 @@ msgid "As soon as the contest starts you can choose to start your time frame."
 msgstr "Dès que le concours a débuté, vous pouvez choisir la fourchette de temps pendant laquelle vous participez."
 
 msgid "Once you start, you can submit solutions until the end of the time frame or until the end of the contest, whatever comes first."
-msgstr "Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que votre fourchette de participation soit terminée ou que le concours se termine (selon le premier ayant lieu)"
+msgstr "Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que votre fourchette de participation soit terminée ou que le concours se termine (selon le premier ayant lieu)."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "En cliquant sur le bouton ci-dessous, vous commencerez votre fourchette de participation."
@@ -1027,7 +1024,7 @@ msgid "Invalid file"
 msgstr "Fichier invalide"
 
 msgid "Print job has too many pages"
-msgstr "Le document à imprimer est trop long."
+msgstr "Le document à imprimer est trop long"
 
 msgid "Sent to printer"
 msgstr "Envoyer à l'imprimante"
@@ -1040,4 +1037,3 @@ msgstr "Envoyer à l'imprimante"
 
 #~ msgid "Standard Template Library"
 #~ msgstr "Librairie Standard C++ (STL)"
-
