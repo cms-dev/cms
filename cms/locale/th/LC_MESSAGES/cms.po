@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-16 15:53+0000\n"
+"PO-Revision-Date: 2025-08-16 15:59+0000\n"
 "Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/cms/main/th/>\n"
 "Language: th\n"
@@ -263,16 +263,14 @@ msgstr "สถานะ"
 msgid "Token request received"
 msgstr "ได้รับคำขอโทเค็นแล้ว"
 
-#, fuzzy
 msgid "Your request has been received and applied to the submission."
-msgstr "ได้รับคำถามของคุณแล้ว, เราจะแจ้งเตือนคุณเมื่อได้รับคำตอบ"
+msgstr "เราได้รับคำขอของคุณและใช้งานไปยังการส่งของคุณแล้ว"
 
 msgid "Test received"
 msgstr "ได้รับชุดทดสอบแล้ว"
 
-#, fuzzy
 msgid "Your test has been received and is currently being executed."
-msgstr "ได้รับการส่งของคุณแล้วและตอนนี้กำลังประมวลผลอยู่"
+msgstr "ได้รับการชุดทดสอบของคุณแล้วและตอนนี้กำลังประมวลผลอยู่"
 
 msgid "details"
 msgstr "รายละเอียด"
@@ -283,13 +281,12 @@ msgstr "กำลังรัน..."
 msgid "Executed"
 msgstr "รันแล้ว"
 
-#, fuzzy
 msgid "Too many print jobs!"
-msgstr "ชุดทดสอบเยอะเกินไป!"
+msgstr "สั่งพิมพ์เยอะเกินไป!"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "สำหรับการแข่งขันนี้ คุณได้ทดสอบครบ %d ครั้งแล้ว"
+msgstr "คุณได้ถึงขีดจำกัดการพิมพ์ครบ %d ครั้งแล้ว"
 
 msgid "Invalid format!"
 msgstr "รูปแบบไม่ถูกต้อง!"
@@ -304,9 +301,8 @@ msgstr "ไฟล์ใหญ่เกินไป!"
 msgid "Each file must be at most %d bytes long."
 msgstr "ไฟล์ใหญ่ได้สูงสุด %d ไบต์"
 
-#, fuzzy
 msgid "Print job storage failed!"
-msgstr "สั่งพิมพ์แล้ว"
+msgstr "งานพิมพ์จัดเก็บล้มเหลว!"
 
 msgid "Please try again."
 msgstr "กรุณาลองใหม่อีกครั้ง"
@@ -342,7 +338,7 @@ msgstr "ขนาดไฟล์แต่ละไฟล์ที่ส่งม
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "การส่งควรมีไม่เกิน%dไฟล์"
 
 msgid "Invalid archive format!"
 msgstr "ไฟล์ archive เสีย"
@@ -353,9 +349,8 @@ msgstr "ไฟล์ archive เปิดไม่ได้"
 msgid "Invalid submission format!"
 msgstr "การส่งไม่ตรงตามรูปแบบที่กำหนดไว้"
 
-#, fuzzy
 msgid "Submission storage failed!"
-msgstr "ไฟล์ที่ส่งใหญ่เกินไป"
+msgstr "การส่งจัดเก็บล้มเหลว!"
 
 msgid "Too many tests!"
 msgstr "ชุดทดสอบเยอะเกินไป!"
@@ -392,9 +387,8 @@ msgstr "ข้อมูลนำเข้าใหญ่เกินไป"
 msgid "The input file must be at most %d bytes long."
 msgstr "ข้อมูลนำเข้าต้องมีขนาดไม่เกิน %d ไบท์"
 
-#, fuzzy
 msgid "Test storage failed!"
-msgstr "การทดสอบใหญ่เกินไป"
+msgstr "การทดสอบจัดเก็บล้มเหลว!"
 
 msgid "Communication"
 msgstr "การสื่อสาร"
@@ -856,7 +850,7 @@ msgid "You can see (and download) all of them using the list on the right."
 msgstr "คุณสามารถดู (และดาวน์โหลด) ทั้งหมดได้โดยการใช้แถบด้านขวา"
 
 msgid "Some suggested translations follow."
-msgstr ""
+msgstr "มีคำแนะนำการแปลต่อไปนี้"
 
 #, python-format
 msgid "Statement in <b>%(lang)s</b>"
@@ -1009,13 +1003,13 @@ msgid "None"
 msgstr "ไม่มี"
 
 msgid "Token request discarded"
-msgstr ""
+msgstr "คำขอโทเค็นถูกยกเลิก"
 
 msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
+msgstr "คำขอของคุณถูกยกเลิกเนื่องจากคุณไม่มีโทเค็นที่พร้อมใช้งาน"
 
 msgid "Your request has been discarded because you already used a token on that submission."
-msgstr ""
+msgstr "คำขอของคุณถูกยกเลิกเนื่องจากคุณใช้โทเค็นในการส่งครั้งนั้นไปแล้ว"
 
 msgid "Invalid file"
 msgstr "ไฟล์ไม่ถูกต้อง"
