@@ -6,7 +6,7 @@ bcrypt==4.3.0
 beautifulsoup4==4.13.4
 certifi==2025.6.15
 chardet==5.2.0
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
 coverage==7.9.1
 gevent==25.5.1
 greenlet==3.2.3
