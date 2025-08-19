@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-16 12:04+0000\n"
-"Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
-"Language: ar\n"
+"PO-Revision-Date: 2025-08-20 09:02+0000\n"
+"Last-Translator: Muaath Alqarni <translate@muaath.dev>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/cms/main/ar/>\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -42,7 +42,7 @@ msgid "Memory used"
 msgstr "الذاكرة المستعملة"
 
 msgid "Score details temporarily unavailable."
-msgstr ""
+msgstr "تفاصيل الدرجة غير متوفرة مؤقتًا."
 
 #, python-format
 msgid "Subtask %(index)s"
@@ -52,24 +52,23 @@ msgid "Compilation succeeded"
 msgstr "نجح التحويل"
 
 msgid "Your submission successfully compiled to an executable."
-msgstr ""
+msgstr "تسليمك حوِّل بنجاح إلى برنامج."
 
 msgid "Compilation failed"
 msgstr "فشل التحويل"
 
-#, fuzzy
 msgid "Your submission did not compile correctly."
-msgstr "تسليمك استغرق من وقت المعالج أكثر من الحد"
+msgstr "تسليمك لم يحول بشكل صحيح."
 
 msgid "Compilation timed out"
 msgstr "التحويل تجاوز حد الوقت"
 
 msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "استغرق تسليمك أكثر من حد الوقت للتحويل. قد يكون بسبب C++ templates على سبيل المثال."
 
-#, fuzzy, python-format
+#, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
-msgstr "أوقف التنفيذ (قد يكون بسبب الوصول لذاكرة غير مصرح بها)"
+msgstr "أوقفت عملية التحويل بإشارة %s (قد يكون بسبب الوصول لذاكرة غير مصرح بها)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
 msgstr ""
@@ -78,7 +77,7 @@ msgid "Output is correct"
 msgstr "المخرجات صحيحة"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr ""
+msgstr "شغّل تسليمك وأعطى إجابة صحيحة"
 
 msgid "Output is partially correct"
 msgstr "المخرجات صحيحة جزئيًا"
@@ -1106,4 +1105,3 @@ msgstr ""
 
 #~ msgid "Standard Template Library"
 #~ msgstr "المكتبة الأساسية"
-
