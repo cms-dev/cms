@@ -2,20 +2,22 @@
 
 {% set page = "test_interface" %}
 
-{% block js_init %}
+{% block additional_js %}
 // Define TASK_LANGUAGES for task-specific language filtering
 var TASK_LANGUAGES = {
-{% for lang in task.get_allowed_languages() or [] %}
-    '{{ lang }}': {
-{% for extension in (lang|to_language).source_extensions %}
-        '{{ extension }}': true,
-{% endfor %}
-    },
+{% for task in contest.tasks %}
+  '{{ task.name }}': {
+    {% for lang in task.get_allowed_languages() or [] %}
+      '{{ lang }}': {
+        {% for extension in (lang|to_language).source_extensions %}
+          '{{ extension }}': true,
+        {% endfor %}
+      },
+    {% endfor %}
+  },
 {% endfor %}
 };
-{% endblock js_init %}
 
-{% block additional_js %}
 $(document).on("click", ".user_test_list tbody tr td.status .details", function (event) {
     var $this = $(this);
     var task_id = $this.parent().parent().parent().parent().attr("data-task");
@@ -117,8 +119,10 @@ $(document).ready(function () {
                     <div class="controls">
                         <input type="file" class="input-xlarge"
                                id="input{{ loop.index0 }}" name="{{ filename }}"
-                               onchange="CMS.CWSUtils.filter_languages($(this).parents('form').find('select[name=language] option'),
-                                                                       $(this).parents('form').find('input[type=file]').not('#input_file'), TASK_LANGUAGES)"/>
+                               onchange="CMS.CWSUtils.filter_languages(
+                                   $(this).parents('form').find('select[name=language] option'),
+                                   $(this).parents('form').find('input[type=file]').not('#input_file'),
+                                   TASK_LANGUAGES['{{ task.name }}'])"/>
                     </div>
                 </div>
 {% endfor %}
