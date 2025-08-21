@@ -30,6 +30,12 @@ dependencies. We also provide:
 Make sure that you have a recent version of Docker installed, as well as Docker
 Compose.
 
+.. warning::
+
+   **If you use Windows**, make sure to clone the Git repo with the option
+   ``core.autocrlf`` set to ``input``. CMS requires Unix line endings; without
+   this option Git will convert all files to Windows line endings.
+
 .. _docker-image_running-tests:
 
 Running tests
