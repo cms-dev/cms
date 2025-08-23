@@ -40,7 +40,11 @@ $(document).on("click", ".submission_list tbody tr td.status .details", function
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
-    modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function() {
+    modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function(response, status, xhr) {
+        if(status != "success") {
+            $(this).html("{% trans %}Error loading details, please refresh the page.{% endtrans %}");
+            return;
+        }
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
         });

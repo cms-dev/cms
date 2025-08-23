@@ -20,18 +20,15 @@
 
 """
 
-from collections.abc import Callable
-import functools
 import ipaddress
 import logging
-import typing
 
 from cms.db.submission import Submission
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.submission import \
     UnacceptableSubmission, accept_submission
-from .contest import ContestHandler
+from .contest import ContestHandler, api_login_required
 from ..phase_management import actual_phase_required
 
 logger = logging.getLogger(__name__)
@@ -45,27 +42,6 @@ class ApiContestHandler(ContestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.api_request = True
-
-
-_P = typing.ParamSpec("_P")
-_R = typing.TypeVar("_R")
-_Self = typing.TypeVar("_Self", bound="ApiContestHandler")
-
-def api_login_required(
-    func: Callable[typing.Concatenate[_Self, _P], _R],
-) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
-    """A decorator filtering out unauthenticated requests.
-
-    """
-
-    @functools.wraps(func)
-    def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
-        if not self.current_user:
-            self.json({"error": "An authenticated user is required"}, 403)
-        else:
-            return func(self, *args, **kwargs)
-
-    return wrapped
 
 
 class ApiLoginHandler(ApiContestHandler):
