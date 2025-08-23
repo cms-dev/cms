@@ -48,7 +48,7 @@
         <td>
           {% for filename in s.task.submission_format %}
             {% if filename in s.files %}
-              {% set real_filename = filename if s.language is none else filename|replace(".%l", (s.language|to_language).source_extension) %}
+              {% set real_filename = get_lang_filename(s.language, filename) %}
           <a href="javascript:void(0);" onclick="utils.show_file('{{ real_filename }}','{{ url("submission_file", s.files[filename].id) }}')">
             {{ real_filename }}
           </a>
@@ -234,10 +234,14 @@
 <div id="evaluation_user">
 
   <div class="score_details" id="evaluation_{{ s.id }}">
-    {% if s.tokened() %}
-      {{ st.get_html_details(sr.score_details, s.task.feedback_level)|safe }}
+    {% if st is defined %}
+      {% if s.tokened() %}
+        {{ st.get_html_details(sr.score_details, s.task.feedback_level)|safe }}
+      {% else %}
+        {{ st.get_html_details(sr.public_score_details, s.task.feedback_level)|safe }}
+      {% endif %}
     {% else %}
-      {{ st.get_html_details(sr.public_score_details, s.task.feedback_level)|safe }}
+      [Cannot get score type - see logs]
     {% endif %}
   </div>
 </div>

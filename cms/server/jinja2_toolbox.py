@@ -37,7 +37,7 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
 from cms.db import SubmissionResult, UserTestResult
 from cms.db.task import Dataset
 from cms.grading import format_status_text
-from cms.grading.languagemanager import get_language
+from cms.grading.languagemanager import get_language, safe_get_lang_filename
 from cms.locale import Translation, DEFAULT_TRANSLATION
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
@@ -204,10 +204,10 @@ def safe_get_score_type(env: Environment, *, dataset: Dataset):
     except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
 
-
 def instrument_cms_toolbox(env: Environment):
     env.globals["get_task_type"] = safe_get_task_type
     env.globals["get_score_type"] = safe_get_score_type
+    env.globals["get_lang_filename"] = safe_get_lang_filename
 
     env.globals["get_mimetype_for_file_name"] = get_type_for_file_name
     env.globals["get_icon_for_mimetype"] = get_icon_for_type

@@ -21,7 +21,7 @@
 """
 
 from cms.db import Dataset, UserTestFile, UserTest
-from cms.grading.languagemanager import get_language
+from cms.grading.languagemanager import safe_get_lang_filename
 
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -60,10 +60,7 @@ class UserTestFileHandler(FileHandler):
         user_test_file = self.safe_get_item(UserTestFile, file_id)
         user_test = user_test_file.user_test
 
-        real_filename = user_test_file.filename
-        if user_test.language is not None:
-            real_filename = real_filename.replace(
-                ".%l", get_language(user_test.language).source_extension)
+        real_filename = safe_get_lang_filename(user_test.language, user_test_file.filename)
         digest = user_test_file.digest
 
         self.sql_session.close()
