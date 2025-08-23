@@ -35,11 +35,9 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, \
     FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import SubmissionResult, UserTestResult
-from cms.db.submission import Submission
 from cms.db.task import Dataset
-from cms.db.usertest import UserTest
 from cms.grading import format_status_text
-from cms.grading.languagemanager import get_language
+from cms.grading.languagemanager import get_language, safe_get_lang_filename
 from cms.locale import Translation, DEFAULT_TRANSLATION
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
@@ -205,16 +203,6 @@ def safe_get_score_type(env: Environment, *, dataset: Dataset):
     # arbitrary exception, hence we stay as general as possible.
     except Exception as err:
         return env.undefined("ScoreType not found: %s" % err)
-
-def safe_get_lang_filename(submission: Submission | UserTest, filename: str) -> str:
-    if submission.language is None:
-        return filename
-    try:
-        lang = get_language(submission.language)
-        source_ext = lang.source_extension
-    except KeyError:
-        source_ext = ".txt"
-    return filename.replace(".%l", source_ext)
 
 def instrument_cms_toolbox(env: Environment):
     env.globals["get_task_type"] = safe_get_task_type

@@ -31,7 +31,7 @@ import logging
 import difflib
 
 from cms.db import Dataset, File, Submission
-from cms.server.jinja2_toolbox import safe_get_lang_filename
+from cms.grading.languagemanager import safe_get_lang_filename
 from cmscommon.datetime import make_datetime
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -80,7 +80,7 @@ class SubmissionFileHandler(FileHandler):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
 
-        real_filename = safe_get_lang_filename(submission, sub_file.filename)
+        real_filename = safe_get_lang_filename(submission.language, sub_file.filename)
         digest = sub_file.digest
 
         self.sql_session.close()
@@ -127,7 +127,7 @@ class SubmissionDiffHandler(BaseHandler):
         for fname in files_to_compare:
             if ".%l" in fname:
                 if sub_old.language == sub_new.language and sub_old.language is not None:
-                    real_fname = safe_get_lang_filename(sub_old, fname)
+                    real_fname = safe_get_lang_filename(sub_old.language, fname)
                 else:
                     real_fname = fname.replace(".%l", ".txt")
             else:
