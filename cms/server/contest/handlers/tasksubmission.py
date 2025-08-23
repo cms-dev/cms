@@ -57,7 +57,7 @@ from cms.server.contest.tokening import \
     UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
 from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
-from .contest import ContestHandler, FileHandler
+from .contest import ContestHandler, FileHandler, api_login_required
 from ..phase_management import actual_phase_required
 
 
@@ -236,7 +236,7 @@ class SubmissionStatusHandler(ContestHandler):
             data["task_tokened_score"], score_type.max_score, None,
             task.score_precision, translation=self.translation)
 
-    @tornado.web.authenticated
+    @api_login_required
     @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name, opaque_id):
@@ -296,7 +296,7 @@ class SubmissionDetailsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @api_login_required
     @actual_phase_required(0, 1, 2, 3, 4)
     @multi_contest
     def get(self, task_name, opaque_id):

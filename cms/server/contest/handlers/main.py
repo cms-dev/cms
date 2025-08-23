@@ -58,7 +58,7 @@ from cms.server.contest.printing import accept_print_job, PrintingDisabled, \
     UnacceptablePrintJob
 from cmscommon.crypto import hash_password, validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
-from .contest import ContestHandler
+from .contest import ContestHandler, api_login_required
 from ..phase_management import actual_phase_required
 
 
@@ -294,7 +294,7 @@ class NotificationsHandler(ContestHandler):
 
     refresh_cookie = False
 
-    @tornado.web.authenticated
+    @api_login_required
     @multi_contest
     def get(self):
         participation: Participation = self.current_user
