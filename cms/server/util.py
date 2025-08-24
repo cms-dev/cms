@@ -45,6 +45,8 @@ from cms.db import Session
 from cms.server.file_middleware import FileServerMiddleware
 from cmscommon.datetime import make_datetime
 
+if typing.TYPE_CHECKING:
+    from cms.io.web_service import WebService
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +185,7 @@ class CommonRequestHandler(RequestHandler):
         self.r_params = None
         self.contest = None
         self.url: Url = None
+        self.static_url_helper = None
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -190,6 +193,7 @@ class CommonRequestHandler(RequestHandler):
         """
         super().prepare()
         self.url = Url(get_url_root(self.request.path))
+        self.static_url_helper = self.service.static_file_hasher.make(self.url)
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
     def finish(self, *args, **kwargs):
@@ -216,5 +220,5 @@ class CommonRequestHandler(RequestHandler):
             logger.debug("Connection closed before our reply.")
 
     @property
-    def service(self):
+    def service(self) -> "WebService":
         return self.application.service
