@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2025-08-24 21:04+0000\n"
+"Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/cms/main/uk/>\n"
 "Language: uk\n"
-"Language-Team: uk TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -110,20 +110,17 @@ msgstr "Час очікування минув (перевищено ліміт 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Ваша спроба використала забагато загального часу. Це може бути викликано, наприклад, невизначеним кодом або переповненням буфера. Зауважте, що в цьому випадку час процесора, видимий у деталях спроби, може бути набагато меншим за обмеження часу."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Обмеження пам'яті"
+msgstr "Перевищено ліміт пам'яті"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "Ваша спроба використала забагато процесорного часу."
+msgstr "Ваше завдання використало забагато пам'яті."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Час запуску минув"
+msgstr "Страта припинена сигналом"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "Оцінювання було перервано сигналом."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Помилка виконання, оскільки код повернення був ненульовим"
@@ -358,7 +355,7 @@ msgstr "Довжина кожного вихідного файлу не пов�
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "Відправлення має містити щонайбільше %d файлів."
 
 msgid "Invalid archive format!"
 msgstr "Невірний формат архіву!"
@@ -1050,4 +1047,3 @@ msgstr "Відправлено на принтер"
 
 #~ msgid "Standard Template Library"
 #~ msgstr "Стандартна бібліотека шаблонів"
-
