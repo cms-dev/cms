@@ -326,6 +326,7 @@ class BaseHandler(CommonRequestHandler):
         params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url"] = self.url
+        params["static_url"] = self.static_url_helper
         params["xsrf_form_html"] = self.xsrf_form_html()
         # FIXME These objects provide too broad an access: their usage
         # should be extracted into with narrower-scoped parameters.
