@@ -203,7 +203,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job, False, None, None, None)
         sandbox.get_file_to_storage.assert_not_called()
         # We preserve the sandbox to let admins check the problem.
-        sandbox.cleanup.assert_called_once_with(delete=False)
+        sandbox.archive.assert_called_once()
 
     def test_many_files_success(self):
         tt, job = self.prepare(
@@ -466,8 +466,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.assertResultsInJob(job, False, None, None, None)
-        sandbox_mgr.cleanup.assert_called_once_with(delete=False)
-        sandbox_usr.cleanup.assert_called_once_with(delete=False)
+        sandbox_mgr.archive.assert_called_once()
+        sandbox_usr.archive.assert_called_once()
 
     def test_single_process_manager_sandbox_failure(self):
         # Manager sandbox had problems, it's not the user's fault.
@@ -484,8 +484,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.assertResultsInJob(job, False, None, None, None)
-        sandbox_mgr.cleanup.assert_called_once_with(delete=False)
-        sandbox_usr.cleanup.assert_called_once_with(delete=False)
+        sandbox_mgr.archive.assert_called_once()
+        sandbox_usr.archive.assert_called_once()
 
     def test_single_process_manager_and_user_failure(self):
         # Manager had problems, it's not the user's fault even if also their
@@ -503,8 +503,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.assertResultsInJob(job, False, None, None, None)
-        sandbox_mgr.cleanup.assert_called_once_with(delete=False)
-        sandbox_usr.cleanup.assert_called_once_with(delete=False)
+        sandbox_mgr.archive.assert_called_once()
+        sandbox_usr.archive.assert_called_once()
 
     def test_single_process_user_sandbox_failure(self):
         # User sandbox had problems, it's not the user's fault.
@@ -521,8 +521,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.assertResultsInJob(job, False, None, None, None)
-        sandbox_mgr.cleanup.assert_called_once_with(delete=False)
-        sandbox_usr.cleanup.assert_called_once_with(delete=False)
+        sandbox_mgr.archive.assert_called_once()
+        sandbox_usr.archive.assert_called_once()
 
     def test_single_process_user_failure(self):
         # User program had problems, it's the user's fault.

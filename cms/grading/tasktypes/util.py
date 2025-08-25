@@ -82,19 +82,16 @@ def delete_sandbox(sandbox: Sandbox, job: Job, success: bool | None = None):
         success = job.success
 
     # Archive the sandbox if required
-    if job.archive_sandbox:
+    if job.archive_sandbox or not success:
         sandbox_digest = sandbox.archive()
         if sandbox_digest is not None:
             job.sandbox_digests[sandbox.get_root_path()] = sandbox_digest
 
-    # If the job was not successful, we keep the sandbox around.
-    if not success:
-        logger.warning("Sandbox %s kept around because job did not succeed.",
-                       sandbox.get_root_path())
+        if not success:
+            logger.warning(f"Job did not succeed! Sandbox digest: {sandbox_digest}")
 
-    delete = success and not config.worker.keep_sandbox and not job.keep_sandbox
     try:
-        sandbox.cleanup(delete=delete)
+        sandbox.cleanup(delete=True)
     except OSError:
         err_msg = "Couldn't delete sandbox."
         logger.warning(err_msg, exc_info=True)
