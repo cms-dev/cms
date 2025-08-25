@@ -55,7 +55,6 @@ from cms.server.contest.submission import get_submission_count, \
     UnacceptableSubmission, accept_submission
 from cms.server.contest.tokening import \
     UnacceptableToken, TokenAlreadyPlayed, accept_token, tokens_available
-from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
 from .contest import ContestHandler, FileHandler, api_login_required
 from ..phase_management import actual_phase_required
@@ -109,11 +108,9 @@ class SubmitHandler(ContestHandler):
             self.notify_success(N_("Submission received"),
                                 N_("Your submission has been received "
                                    "and is currently being evaluated."))
-            # The argument (encrypted submission id) is not used by CWS
-            # (nor it discloses information to the user), but it is
-            # useful for automatic testing to obtain the submission id).
-            query_args["submission_id"] = \
-                encrypt_number(submission.id, config.web_server.secret_key)
+            # The argument is not used by CWS, but it is useful for automatic
+            # testing to obtain the submission id.
+            query_args["submission_id"] = submission.opaque_id
 
         self.redirect(self.contest_url("tasks", task.name, "submissions",
                                        **query_args))

@@ -46,7 +46,6 @@ from cms.grading.languagemanager import get_language
 from cms.server import multi_contest
 from cms.server.contest.submission import get_submission_count, \
     TestingNotAllowed, UnacceptableUserTest, accept_user_test
-from cmscommon.crypto import encrypt_number
 from cmscommon.mimetypes import get_type_for_file_name
 from .contest import ContestHandler, FileHandler, api_login_required
 from ..phase_management import actual_phase_required
@@ -152,11 +151,9 @@ class UserTestHandler(ContestHandler):
             self.notify_success(N_("Test received"),
                                 N_("Your test has been received "
                                    "and is currently being executed."))
-            # The argument (encrypted user test id) is not used by CWS
-            # (nor it discloses information to the user), but it is
-            # useful for automatic testing to obtain the user test id).
-            query_args["user_test_id"] = \
-                encrypt_number(user_test.id, config.web_server.secret_key)
+            # The argument is not used by CWS, but it is useful for automatic
+            # testing to obtain the user test id.
+            query_args["user_test_id"] = user_test.opaque_id
 
         self.redirect(self.contest_url("testing", task_name=task.name,
                                        **query_args))
