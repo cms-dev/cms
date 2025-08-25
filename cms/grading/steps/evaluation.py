@@ -217,7 +217,6 @@ def evaluation_step_before_run(
     for name in [sandbox.stderr_file, sandbox.stdout_file]:
         if isinstance(name, str):
             writable_files.append(name)
-    sandbox.allow_writing_only(writable_files)
 
     sandbox.set_multiprocess(multiprocess)
     sandbox.close_fds = close_fds
