@@ -224,7 +224,7 @@ class UserTestDetailsHandler(ContestHandler):
     @api_login_required
     @actual_phase_required(0)
     @multi_contest
-    def get(self, task_name, user_test_num):
+    def get(self, task_name, opaque_id):
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
@@ -232,7 +232,7 @@ class UserTestDetailsHandler(ContestHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.get_user_test(task, user_test_num)
+        user_test = self.get_user_test(task, opaque_id)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
@@ -249,7 +249,7 @@ class UserTestIOHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, task_name, user_test_num, io):
+    def get(self, task_name, opaque_id, io):
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
@@ -257,7 +257,7 @@ class UserTestIOHandler(FileHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.get_user_test(task, user_test_num)
+        user_test = self.get_user_test(task, opaque_id)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
@@ -283,7 +283,7 @@ class UserTestFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @multi_contest
-    def get(self, task_name, user_test_num, filename):
+    def get(self, task_name, opaque_id, filename):
         if not self.r_params["testing_enabled"]:
             raise tornado.web.HTTPError(404)
 
@@ -291,7 +291,7 @@ class UserTestFileHandler(FileHandler):
         if task is None:
             raise tornado.web.HTTPError(404)
 
-        user_test = self.get_user_test(task, user_test_num)
+        user_test = self.get_user_test(task, opaque_id)
         if user_test is None:
             raise tornado.web.HTTPError(404)
 

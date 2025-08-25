@@ -1,5 +1,5 @@
 {% set status = tr.get_status() if tr is defined else UserTestResult.COMPILING %}
-<tr data-user-test="{{ t_idx }}" data-status="{{ status }}">
+<tr data-user-test="{{ t.opaque_id }}" data-status="{{ status }}">
 {% if show_date %}
     <td class="datetime">{{ t.timestamp|format_datetime }}</td>
 {% else %}
@@ -37,7 +37,7 @@
     </td>
 {% endif %}
     <td class="input">
-        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "input") }}">
+        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t.opaque_id, "input") }}">
             {% trans %}Download{% endtrans %}
         </a>
     </td>
@@ -52,7 +52,7 @@
             {% trans %}N/A{% endtrans %}
         </a>
         {% else %}
-        <a class="btn btn-primary" href="{{ contest_url("tasks", task.name, "tests", t_idx, "output") }}">
+        <a class="btn btn-primary" href="{{ contest_url("tasks", task.name, "tests", t.opaque_id, "output") }}">
             {% trans %}Download{% endtrans %}
         </a>
         {% endif %}
@@ -70,7 +70,7 @@
         {% elif files|length == 1 %}
             {% set filename = next(iter(t.files.keys())) %}
             {% set real_filename = filename|replace(".%l", (t.language|to_language).source_extension) %}
-        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
+        <a class="btn" href="{{ contest_url("tasks", task.name, "tests", t.opaque_id, "files", real_filename) }}">
             {% trans %}Download{% endtrans %}
         </a>
         {% else %}
@@ -87,7 +87,7 @@
                     {% set real_filename = filename %}
                 {% endif %}
                 <li>
-                    <a href="{{ contest_url("tasks", task.name, "tests", t_idx, "files", real_filename) }}">
+                    <a href="{{ contest_url("tasks", task.name, "tests", t.opaque_id, "files", real_filename) }}">
                         {{ real_filename }}
                     </a>
                 </li>
