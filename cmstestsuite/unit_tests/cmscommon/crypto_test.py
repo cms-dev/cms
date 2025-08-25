@@ -18,12 +18,9 @@
 
 """Tests for the crypto module"""
 
-import re
 import unittest
 
-from cmscommon.binary import bin_to_b64
 from cmscommon.crypto import build_password, \
-    decrypt_binary, decrypt_number, encrypt_binary, encrypt_number, \
     generate_random_password, get_hex_random_key, get_random_key, \
     hash_password, parse_authentication, validate_password
 
@@ -45,76 +42,6 @@ class TestGetHexRandomKey(unittest.TestCase):
     def test_length(self):
         # Should be 16 bytes.
         self.assertEqual(len(get_hex_random_key()), 32)
-
-
-class TestEncryptAndDecryptBinary(unittest.TestCase):
-    """Tests for the functions encrypt_binary and decrypt_binary."""
-
-    def setUp(self):
-        super().setUp()
-        self.key = get_hex_random_key()
-
-    def test_encrypt_and_decrypt(self):
-        self.assertEqual(
-            decrypt_binary(encrypt_binary(b"stuff", self.key), self.key),
-            b"stuff")
-
-    def test_encrypt_and_decrypt_empty(self):
-        self.assertEqual(
-            decrypt_binary(encrypt_binary(b"", self.key), self.key),
-            b"")
-
-    def test_encrypt_and_decrypt_long(self):
-        value = b"0" * 1_000_000
-        self.assertEqual(
-            decrypt_binary(encrypt_binary(value, self.key), self.key),
-            value)
-
-    def test_encrypt_chaining(self):
-        # Even if the input is repeated, the output should not be.
-        encrypted = encrypt_binary(b"0" * 1_000_000, self.key)
-        # The output should appear random, so any sequence of 64 bytes is
-        # very unlikely to repeat.
-        blocks = re.findall(".{64}", encrypted)
-        self.assertEqual(len(blocks), len(set(blocks)))
-
-    def test_encrypt_salting(self):
-        self.assertNotEqual(encrypt_binary(b"stuff", self.key),
-                            encrypt_binary(b"stuff", self.key))
-
-    def test_decrypt_invalid_base64(self):
-        encrypted = encrypt_binary(b"stuff", self.key)
-        with self.assertRaises(ValueError):
-            decrypt_binary(encrypted[1:], self.key)
-
-    def test_decrypt_invalid_encrypted(self):
-        # "stuff" is not decryptable.
-        encrypted = bin_to_b64(b"stuff")
-        with self.assertRaises(ValueError):
-            decrypt_binary(encrypted, self.key)
-
-
-class TestEncryptAndDecryptNumber(unittest.TestCase):
-    """Tests for the functions encrypt_number and decrypt_number."""
-
-    def setUp(self):
-        super().setUp()
-        self.key = get_hex_random_key()
-
-    def test_encrypt_and_decrypt(self):
-        self.assertEqual(
-            decrypt_number(encrypt_number(123, self.key), self.key),
-            123)
-
-    def test_encrypt_and_decrypt_negative(self):
-        self.assertEqual(
-            decrypt_number(encrypt_number(-123, self.key), self.key),
-            -123)
-
-    def test_encrypt_and_decrypt_big(self):
-        self.assertEqual(
-            decrypt_number(encrypt_number(10 ** 42, self.key), self.key),
-            10 ** 42)
 
 
 class TestGenerateRandomPassword(unittest.TestCase):
