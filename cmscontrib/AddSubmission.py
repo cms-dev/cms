@@ -28,6 +28,7 @@ from cms import utf8_decoder, ServiceCoord
 from cms.db import File, Participation, SessionGen, Submission, Task, User, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
+from cms.db.util import generate_opaque_id
 from cms.grading.language import Language
 from cms.grading.languagemanager import filename_to_language, get_language
 from cms.io import RemoteServiceClient
@@ -160,7 +161,7 @@ def add_submission(
             language=language_name,
             participation=participation,
             task=task,
-            opaque_id=Submission.generate_opaque_id(session, participation.id)
+            opaque_id=generate_opaque_id(Submission, session, participation.id)
         )
         for filename, digest in file_digests.items():
             session.add(File(filename, digest, submission=submission))

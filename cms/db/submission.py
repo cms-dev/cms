@@ -27,7 +27,6 @@
 """
 
 from datetime import datetime
-import random
 from sqlalchemy import Boolean
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import relationship
@@ -186,25 +185,6 @@ class Submission(Base):
 
         """
         return self.token is not None
-
-    @classmethod
-    def generate_opaque_id(cls, session, participation_id):
-        randint_upper_bound = 2**63-1
-
-        opaque_id = random.randint(0, randint_upper_bound)
-
-        # Note that in theory this may cause the transaction to fail by
-        # generating a non-actually-unique ID. This is however extremely
-        # unlikely (prob. ~num_parallel_submissions_per_contestant^2/2**63).
-        while (session
-               .query(Submission)
-               .filter(Submission.participation_id == participation_id)
-               .filter(Submission.opaque_id == opaque_id)
-               .first()
-               is not None):
-            opaque_id = random.randint(0, randint_upper_bound)
-
-        return opaque_id
 
 
 class File(Base):
