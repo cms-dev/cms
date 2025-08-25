@@ -25,7 +25,6 @@ from werkzeug.local import Local, LocalManager
 from werkzeug.wrappers import Request, Response
 
 from cms import config
-from cmscommon.binary import hex_to_bin
 from cmscommon.datetime import make_timestamp
 
 
@@ -130,7 +129,7 @@ class AWSAuthMiddleware:
         self._local.request = Request(environ)
         self._local.cookie = JSONSecureCookie.load_cookie(
             self._request, AWSAuthMiddleware.COOKIE,
-            hex_to_bin(config.web_server.secret_key))
+            bytes.fromhex(config.web_server.secret_key))
         self._verify_cookie()
 
         def my_start_response(status, headers, exc_info=None):
