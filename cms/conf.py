@@ -85,7 +85,8 @@ class DatabaseConfig:
 
 @dataclass()
 class WorkerConfig:
-    keep_sandbox: bool = False
+    # TODO delete entirely??
+    pass
 
 
 @dataclass()

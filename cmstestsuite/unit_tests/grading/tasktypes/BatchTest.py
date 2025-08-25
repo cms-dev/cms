@@ -225,7 +225,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         sandbox.get_file_to_storage.assert_not_called()
         # We preserve the sandbox to let admins check the problem.
-        sandbox.cleanup.assert_called_once_with(delete=False)
+        sandbox.archive.assert_called_once()
 
     def test_grader_success(self):
         # We sprinkle in also a header, that should be copied, but not the
@@ -412,7 +412,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         # eval_output should not have been called, and the sandbox not deleted.
         self.eval_output.assert_not_called()
-        sandbox.cleanup.assert_called_once_with(delete=False)
+        sandbox.archive.assert_called_once()
 
     def test_stdio_diff_eval_output_failure_(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
@@ -424,7 +424,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.assertResultsInJob(job)
         # Even if the error is in the eval_output sandbox, we keep also the one
         # for evaluation_step to allow debugging.
-        sandbox.cleanup.assert_called_once_with(delete=False)
+        sandbox.archive.assert_called_once()
 
     def test_stdio_diff_get_output_success(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})

@@ -78,12 +78,6 @@ debug = false
 twophase_commit = false
 
 
-[worker]
-# Don't delete the sandbox directory under /tmp/ when they are not
-# needed anymore. Warning: this can easily eat GB of space very soon.
-keep_sandbox = false
-
-
 [sandbox]
 # Do not allow contestants' solutions to write files bigger than this
 # size (expressed in KB; defaults to 1 GB).
