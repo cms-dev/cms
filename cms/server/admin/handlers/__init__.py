@@ -212,7 +212,7 @@ HANDLERS = [
 
     # Submissions
 
-    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionHandler),
+    (r"/submission/((?:opaque_)?[0-9]+)(?:/([0-9]+))?", SubmissionHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/comment", SubmissionCommentHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?/official", SubmissionOfficialStatusHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
@@ -220,7 +220,7 @@ HANDLERS = [
 
     # User tests
 
-    (r"/user_test/([0-9]+)(?:/([0-9]+))?", UserTestHandler),
+    (r"/user_test/((?:opaque_)?[0-9]+)(?:/([0-9]+))?", UserTestHandler),
     (r"/user_test_file/([0-9]+)", UserTestFileHandler),
 
     # The following prefixes are handled by WSGI middlewares:

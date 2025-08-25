@@ -28,9 +28,7 @@ import re
 import tempfile
 from urllib.parse import parse_qs, urlsplit
 
-from cms import config
 from cms.grading.languagemanager import filename_to_language
-from cmscommon.crypto import decrypt_number
 from cmstestsuite.web import GenericRequest, LoginRequest
 
 
@@ -160,13 +158,7 @@ class SubmitRequest(GenericRequest):
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)
             return None
-        try:
-            submission_id = decrypt_number(query["submission_id"][0],
-                                           config.web_server.secret_key)
-        except Exception:
-            logger.warning("Unable to decrypt submission id from page: `%s'",
-                           self.redirected_to)
-            return None
+        submission_id = int(query["submission_id"][0])
         return submission_id
 
 
@@ -227,13 +219,7 @@ class SubmitUserTestRequest(GenericRequest):
             logger.warning("Redirected to an unexpected page: `%s'",
                            self.redirected_to)
             return None
-        try:
-            user_test_id = decrypt_number(query["user_test_id"][0],
-                                          config.web_server.secret_key)
-        except Exception:
-            logger.warning("Unable to decrypt user test id from page: `%s'",
-                           self.redirected_to)
-            return None
+        user_test_id = int(query["user_test_id"][0])
         return user_test_id
 
 
