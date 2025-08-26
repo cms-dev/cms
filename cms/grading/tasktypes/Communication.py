@@ -323,7 +323,6 @@ class Communication(TaskType):
             manager_time_limit,
             config.sandbox.trusted_sandbox_max_memory_kib * 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw")) for i in indices),
-            writable_files=[self.OUTPUT_FILENAME],
             stdin_redirect=self.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
         )
