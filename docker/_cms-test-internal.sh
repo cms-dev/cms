@@ -13,6 +13,16 @@ dropdb --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
+if [ -n $TEST_QUOTAS ]; then
+    # 5 times the disk quota: the test runs up to 4 workers
+    # concurrently; this makes sure they can't get spurious failures
+    # from running out of disk space
+    fallocate -l 320M ~/boxfs.img
+    mkfs.ext4 -O quota ~/boxfs.img
+    sudo mount -o loop,usrquota ~/boxfs.img /var/lib/isolate
+    sed -i 's/#fs_quota/fs_quota/' /home/cmsuser/cms/etc/cms-testdb.toml
+fi
+
 cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
 FUNC=$?
 

@@ -103,9 +103,9 @@ max_file_size = 1_048_576
 # This is the maximum size (in kibibytes) of the sandbox's home
 # directory. Note the sizes are rounded up to a multiple of the disk
 # block size (usually 4KB).
-#fs_quota_kb = 1234
-# Maximum number of inodes (~= files) in the sandbox's home directory.
-#fs_quota_inodes = 1234
+#fs_quota_kb = 65536
+# Maximum number of inodes (i.e. files) in the sandbox's home directory.
+#fs_quota_inodes = 1024
 
 # Max processes, CPU time (s), memory (KiB) for compilation runs.
 compilation_sandbox_max_processes = 1000
