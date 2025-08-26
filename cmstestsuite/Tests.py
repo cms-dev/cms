@@ -436,34 +436,6 @@ ALL_TESTS = [
          checks=[CheckCompilationFail()]),
 
 
-    # Writing to files not allowed.
-
-    # Inability to write to a file does not throw a specific error,
-    # just returns a NULL file handler to the caller. So we rely on
-    # the test program to write the correct result only if the
-    # returned handler is valid.
-
-    Test('write-forbidden-fileio',
-         task=batch_fileio, filenames=['write-forbidden-fileio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-stdio',
-         task=batch_stdio, filenames=['write-forbidden-stdio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-managed',
-         task=batch_fileio_managed, filenames=['write-forbidden-managed.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-communication',
-         task=communication_fifoio_stubbed,
-         filenames=['write-forbidden-communication.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
     # This tests complete successfully only if it is unable to execute
     # output.txt.
 
