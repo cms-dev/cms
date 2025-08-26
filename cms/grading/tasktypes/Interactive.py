@@ -240,7 +240,7 @@ class Interactive(TaskType):
                 "concurrent": self.concurrent,
                 "temp_dir": tempdir,
                 "shard": file_cacher.service.shard if file_cacher.service else None,
-                "delete_sandbox": not (job.keep_sandbox or job.archive_sandbox),
+                "delete_sandbox": True,
             }
 
             keeper_path = os.path.join(
