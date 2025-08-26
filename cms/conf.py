@@ -90,10 +90,17 @@ class WorkerConfig:
 
 
 @dataclass()
+class FSQuotaSettings:
+    kb: int
+    inodes: int
+
+
+@dataclass()
 class SandboxConfig:
     sandbox_implementation: str = "isolate"
     # Max size of each writable file during an evaluation step, in KiB.
     max_file_size: int = 1024 * 1024  # 1 GiB
+    fs_quota: FSQuotaSettings | None = None
     # Max processes, CPU time (s), memory (KiB) for compilation runs.
     compilation_sandbox_max_processes: int = 1000
     compilation_sandbox_max_time_s: float = 10.0
