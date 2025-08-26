@@ -14,6 +14,7 @@ createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
 if [ -n $TEST_QUOTAS ]; then
+    set -ex
     # 5 times the disk quota: the test runs up to 4 workers
     # concurrently; this makes sure they can't get spurious failures
     # from running out of disk space
