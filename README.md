@@ -8,7 +8,7 @@ Homepage: <http://cms-dev.github.io/>
 [![Get support on Telegram](https://img.shields.io/badge/Questions%3F-Join%20the%20Telegram%20group!-%2326A5E4?style=flat&logo=telegram)](https://t.me/contestms)
 [![Translation status](https://hosted.weblate.org/widget/cms/svg-badge.svg)](https://hosted.weblate.org/engage/cms/)
 
-[🌍 Help translate CMS in your language!](https://hosted.weblate.org/engage/cms/)
+[🌍 Help translate CMS in your language using Weblate!](https://hosted.weblate.org/engage/cms/)
 
 Introduction
 ------------
