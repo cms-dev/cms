@@ -935,6 +935,11 @@ class Sandbox:
         return: the box directory of the newly-created sandbox.
         """
         init_cmd = ["isolate", "--box-id=%d" % self.box_id, "--cg", "--init"]
+
+        quota_cfg = config.sandbox.fs_quota
+        if quota_cfg is not None:
+            init_cmd += [f"--quota={quota_cfg.kb},{quota_cfg.inodes}"]
+
         try:
             return subprocess.run(
                 init_cmd, check=True, capture_output=True, encoding="utf-8"
