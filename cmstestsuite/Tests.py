@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 import cmstestsuite.tasks.batch_and_output as batch_and_output
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
@@ -464,3 +466,16 @@ ALL_TESTS = [
          checks=[CheckOverallScore(0, 100)]),
 
 ]
+
+# TODO figure out a better way to enable/disable this.........
+if os.environ.get('TEST_QUOTAS', '') != '':
+    ALL_TESTS += [
+        Test('write-many-files',
+             task=batch_fileio, filenames=['write-many-files.%l'],
+             languages=(LANG_C,),
+             checks=[CheckOverallScore(100, 100)]),
+        Test('write-big-file-quota',
+             task=batch_fileio, filenames=['write-big-file-quota.%l'],
+             languages=(LANG_C,),
+             checks=[CheckOverallScore(100, 100)])
+    ]
