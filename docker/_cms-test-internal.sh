@@ -23,7 +23,7 @@ if [ -n $TEST_QUOTAS ]; then
     sed -i 's/#fs_quota/fs_quota/' /home/cmsuser/cms/etc/cms-testdb.toml
 fi
 
-cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
+cmsRunFunctionalTests -vvv --coverage codecov/functionaltests.xml
 FUNC=$?
 
 # This check is needed because otherwise failing unit tests aren't reported in
