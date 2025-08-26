@@ -390,7 +390,6 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, cmdline_mgr, 4321, 1234 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
-                 writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
             call(sandbox_usr, cmdline_usr, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
@@ -419,7 +418,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, ANY, 2.5 + 1, ANY, dirs_map=ANY,
-                 writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
+                 stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_single_process_missing_manager(self):
         # Manager is missing, should terminate without creating sandboxes.
@@ -644,7 +643,6 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
                      os.path.join(self.base_dir, "0"): ("/fifo0", "rw"),
                      os.path.join(self.base_dir, "1"): ("/fifo1", "rw"),
                  },
-                 writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
             call(sandbox_usr0, cmdline_usr0, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
@@ -681,7 +679,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         self.evaluation_step_before_run.assert_has_calls([
             call(sandbox_mgr, ANY, 2 * (2.5 + 1), ANY, dirs_map=ANY,
-                 writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
+                 stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_many_processes_first_user_failure(self):
         # One of the user programs had problems, it's the user's fault.
