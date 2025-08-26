@@ -81,9 +81,31 @@ twophase_commit = false
 # Which sandbox implementation to use. Currently only isolate is
 # supported.
 sandbox_implementation = "isolate"
+
 # Do not allow contestants' solutions to write files bigger than this
 # size (expressed in KB; defaults to 1 GB).
+# Note that this alone isn't secure; solutions can create multiple files
+# in the sandbox. If, for some reason, you cannot set up quotas and
+# you need to prevent resource exhaustion attacks, you can put isolate's
+# box_root on a tmpfs; this way, all written files count towards the
+# solution's memory usage.
 max_file_size = 1_048_576
+
+# If these are set, enforce a filesystem quota on sandboxes. Note that:
+# (1) the file system that stores isolate boxes (box_root in isolate's
+#     config file) must have quota accounting enabled (for a tmpfs,
+#     mounting with the usrquota mount option is sufficient; for ext4,
+#     run `tune2fs -O quota /dev/sdXY` while unmounted, and you also
+#     need to mount with the usrquota option).
+# (2) this quota is used for all sandboxes (including compilation
+#     and checker runs) and includes all files in the sandbox (including
+#     inputs and the submission executable, and files written to /tmp).
+# This is the maximum size (in kibibytes) of the sandbox's home
+# directory. Note the sizes are rounded up to a multiple of the disk
+# block size (usually 4KB).
+#fs_quota_kb = 1234
+# Maximum number of inodes (~= files) in the sandbox's home directory.
+#fs_quota_inodes = 1234
 
 # Max processes, CPU time (s), memory (KiB) for compilation runs.
 compilation_sandbox_max_processes = 1000

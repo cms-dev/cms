@@ -1344,6 +1344,11 @@ class IsolateSandbox(SandboxBase):
     def initialize_isolate(self) -> str:
         """Initialize isolate's box."""
         init_cmd = [self.box_exec, "--box-id=%d" % self.box_id, "--cg", "--init"]
+
+        cfg = config.sandbox
+        if cfg.fs_quota_kb is not None and cfg.fs_quota_inodes is not None:
+            init_cmd += [f"--quota={cfg.fs_quota_kb},{cfg.fs_quota_inodes}"]
+
         try:
             return subprocess.run(init_cmd, check=True,
                         capture_output=True, encoding="utf-8").stdout.strip()
