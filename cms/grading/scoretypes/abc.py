@@ -393,9 +393,11 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         for st_idx, parameter in enumerate(self.parameters):
             target = targets[st_idx]
-            score += parameter[0]
+            if (parameter[0] > 0):
+                score += parameter[0]
             if all(self.public_testcases[tc_idx] for tc_idx in target):
-                public_score += parameter[0]
+                if (parameter[0] > 0):
+                    public_score += parameter[0]
             headers += ["Subtask %d (%g)" % (st_idx, parameter[0])]
 
         return score, public_score, headers
