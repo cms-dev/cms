@@ -359,6 +359,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "preferred_languages": "[\"en\", \"it_IT\"]",
                 "contest": "contest_key",
                 "submissions": ["sub1_key", "sub2_key"],
+                "user_tests": ["ut_key"],
             },
             "sub1_key": {
                 "_class": "Submission",
@@ -381,6 +382,17 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
                 "files": {},
                 "executables": {},
                 "evaluations": [],
+            },
+            "ut_key": {
+                "_class": "UserTest",
+                "timestamp": 1_234_567_900.123,
+                "language": "c",
+                "user": "user_key",
+                "task": "task_key",
+                "files": {},
+                "managers": {},
+                "input": TestDumpImporter.NON_GENERATED_FILE_DIGEST,
+                "results": []
             },
             "exe_key": {
                 "_class": "Executable",
