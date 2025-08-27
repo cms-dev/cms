@@ -87,7 +87,6 @@ official (boolean): whether to display only the official (true) or unofficial
     {% else %}
         {% for s in submissions|sort(attribute="timestamp")|reverse %}
             {% if s.official == official %}
-                {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
                 {{ row(
                     url,
                     contest_url,

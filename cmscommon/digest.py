@@ -19,8 +19,6 @@
 import hashlib
 import io
 
-from cmscommon.binary import bin_to_hex
-
 
 __all__ = [
     "Digester", "bytes_digest", "path_digest"
@@ -39,7 +37,7 @@ class Digester:
 
     def digest(self) -> str:
         """Return the digest as an hex string."""
-        return bin_to_hex(self._hasher.digest())
+        return self._hasher.digest().hex()
 
 
 def bytes_digest(b: bytes) -> str:

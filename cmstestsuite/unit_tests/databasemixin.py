@@ -456,6 +456,7 @@ class DatabaseMixin(DatabaseObjectGeneratorMixin):
             "participation": participation,
             "input": unique_digest(),
             "timestamp": (task.contest.start + timedelta(0, unique_long_id())),
+            "opaque_id": unique_long_id(),
         }
         args.update(kwargs)
         user_test = UserTest(**args)

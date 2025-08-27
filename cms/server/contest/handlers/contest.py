@@ -263,15 +263,12 @@ class ContestHandler(BaseHandler):
             .one_or_none()
 
     def get_submission(self, task: Task, opaque_id: str | int) -> Submission | None:
-        """Return the num-th contestant's submission on the given task.
+        """Return a contestant's specific submission on the given task.
 
         task: a task for the contest that is being served.
-        submission_num: a positive number, in decimal encoding.
+        opaque_id: submission's opaque_id
 
-        return: the submission_num-th submission
-            (1-based), in chronological order, that was sent by the
-            currently logged in contestant on the given task (None if
-            not found).
+        return: Submission with this opaque_id, or None if not found.
 
         """
         return self.sql_session.query(Submission) \
@@ -280,22 +277,19 @@ class ContestHandler(BaseHandler):
             .filter(Submission.opaque_id == int(opaque_id)) \
             .first()
 
-    def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
-        """Return the num-th contestant's test on the given task.
+    def get_user_test(self, task: Task, opaque_id: str | int) -> UserTest | None:
+        """Return a contestant's specific user test on the given task.
 
         task: a task for the contest that is being served.
-        user_test_num: a positive number, in decimal encoding.
+        opaque_id: user test's opaque_id
 
-        return: the user_test_num-th user test, in
-            chronological order, that was sent by the currently logged
-            in contestant on the given task (None if not found).
+        return: User test with this opaque_id, or None if not found.
 
         """
         return self.sql_session.query(UserTest) \
             .filter(UserTest.participation == self.current_user) \
             .filter(UserTest.task == task) \
-            .order_by(UserTest.timestamp) \
-            .offset(int(user_test_num) - 1) \
+            .filter(UserTest.opaque_id == int(opaque_id)) \
             .first()
 
     def add_notification(

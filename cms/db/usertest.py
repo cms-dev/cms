@@ -40,11 +40,19 @@ class UserTest(Base):
 
     """
     __tablename__ = 'user_tests'
+    __table_args__ = (
+        UniqueConstraint("participation_id", "opaque_id"),
+    )
 
     # Auto increment primary key.
     id: int = Column(
         Integer,
         primary_key=True)
+
+    # Opaque ID to be used to refer to this user test.
+    opaque_id: int = Column(
+        BigInteger,
+        nullable=False)
 
     # User and Contest, thus Participation (id and object) that did the
     # submission.

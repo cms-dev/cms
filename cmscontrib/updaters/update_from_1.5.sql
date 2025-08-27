@@ -45,4 +45,10 @@ ALTER TABLE user_test_results DROP COLUMN evaluation_sandbox;
 -- https://github.com/cms-dev/cms/pull/1486
 ALTER TABLE public.tasks ADD COLUMN allowed_languages varchar[];
 
+-- https://github.com/cms-dev/cms/pull/1526
+ALTER TABLE user_tests ADD COLUMN opaque_id BIGINT;
+UPDATE user_tests SET opaque_id = id WHERE opaque_id IS NULL;
+ALTER TABLE user_tests ADD CONSTRAINT user_tests_participation_id_opaque_id_key UNIQUE (participation_id, opaque_id);
+ALTER TABLE user_tests ALTER COLUMN opaque_id SET NOT NULL;
+
 COMMIT;

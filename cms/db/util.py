@@ -23,6 +23,7 @@
 
 """
 
+import random
 import sys
 import logging
 
@@ -372,3 +373,24 @@ def enumerate_files(
     digests = set(r[0] for r in session.execute(union(*queries)))
     digests.discard(Digest.TOMBSTONE)
     return digests
+
+def generate_opaque_id(
+    cls: type[Submission | UserTest], session: Session, participation_id: int
+):
+    randint_upper_bound = 2**63-1
+
+    opaque_id = random.randint(0, randint_upper_bound)
+
+    # Note that in theory this may cause the transaction to fail by
+    # generating a non-actually-unique ID. This is however extremely
+    # unlikely (prob. ~num_parallel_submissions_per_contestant^2/2**63).
+    while (
+        session.query(cls)
+        .filter(cls.participation_id == participation_id)
+        .filter(cls.opaque_id == opaque_id)
+        .first()
+        is not None
+    ):
+        opaque_id = random.randint(0, randint_upper_bound)
+
+    return opaque_id
