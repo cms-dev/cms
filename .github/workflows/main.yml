@@ -37,17 +37,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload unit test coverage results to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: ${{ !cancelled() }}
         with:
           files: ./codecov/unittests.xml
           flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload functional test coverage results to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: ${{ !cancelled() }}
         with:
           files: ./codecov/functionaltests.xml
           flags: functionaltests
-          token: ${{ secrets.CODECOV_TOKEN }}
