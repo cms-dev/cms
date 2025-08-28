@@ -23,7 +23,7 @@
 import datetime
 import logging
 import os
-import subprocess
+import sys
 import types
 
 from cms import TOKEN_MODE_FINITE
@@ -63,11 +63,6 @@ class TestRunner:
         self.num_users = 0
         self.workers = workers
 
-        if CONFIG["TEST_DIR"] is not None:
-            # Set up our expected environment.
-            os.chdir("%(TEST_DIR)s" % CONFIG)
-            os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
-
         self.start_generic_services()
         self.suffix = self.framework.initialize_aws()
 
@@ -87,22 +82,11 @@ class TestRunner:
                      self.n_submissions, self.n_user_tests, self.n_tests)
 
     def load_cms_conf(self):
-        try:
-            git_root = subprocess.check_output(
-                "git rev-parse --show-toplevel", shell=True,
-                stderr=subprocess.DEVNULL).decode('utf-8').strip()
-        except subprocess.CalledProcessError:
-            git_root = None
-        CONFIG["TEST_DIR"] = git_root
-        # TODO: this probably doesn't work: config/cms.toml doesn't even exist
-        CONFIG["CONFIG_PATH"] = "%s/config/cms.toml" % CONFIG["TEST_DIR"]
-        if CONFIG["TEST_DIR"] is None:
-            CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.toml"
+        CONFIG["CONFIG_PATH"] = os.path.join(sys.prefix, "etc/cms.toml")
 
         # Override CMS config path when environment variable is present
-        CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
-        if CMS_CONFIG_ENV_VAR in os.environ:
-            CONFIG["CONFIG_PATH"] = os.environ[CMS_CONFIG_ENV_VAR]
+        if "CMS_CONFIG" in os.environ:
+            CONFIG["CONFIG_PATH"] = os.environ["CMS_CONFIG"]
 
         return self.framework.get_cms_config()
 
