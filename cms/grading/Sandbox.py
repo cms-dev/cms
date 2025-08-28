@@ -270,6 +270,7 @@ class Sandbox:
         self.stderr_file: str | int | None = None  # -r
         self.stack_space: int | None = None  # -k
         self.address_space: int | None = None  # -m
+        self.remove_syscall_restrictions: int | None = None # --syscalls
         self.timeout: float | None = None  # -t
         self.verbosity: int = 0  # -v
         self.wallclock_timeout: float | None = None  # -w
@@ -831,6 +832,8 @@ class Sandbox:
         if self.address_space is not None:
             # Isolate wants memory size as KiB.
             res += ["--cg-mem=%d" % (self.address_space // 1024)]
+        if self.remove_syscall_restrictions is not None:
+            res += ["--syscalls=%d" % (65535 & ~self.remove_syscall_restrictions)]
         if isinstance(self.stdout_file, str):
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
