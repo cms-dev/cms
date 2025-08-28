@@ -58,10 +58,11 @@ LANG_PYTHON3 = "Python 3 / CPython"
 LANG_PYPY3 = "Python 3 / PyPy"
 LANG_RUST = "Rust"
 LANG_C_SHARP = "C# / Mono"
+LANG_DOTNET = "C# / dotnet"
 
 ALL_LANGUAGES = (
     LANG_C,
-    LANG_C_SHARP,
+    LANG_C_SHARP, LANG_DOTNET,
     LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_CPP20,
     LANG_HS,
     LANG_JAVA,
@@ -81,7 +82,7 @@ MANAGER_LANGUAGES = [
 # are present under `code/`.
 # TODO: this should be the same as `ALL_LANGUAGES`.
 COMMUNICATION_LANGUAGES = [
-    lang for lang in MANAGER_LANGUAGES if lang not in (LANG_C_SHARP,)
+    lang for lang in MANAGER_LANGUAGES if lang not in (LANG_C_SHARP, LANG_DOTNET)
 ]
 
 ALL_TESTS = [
@@ -167,7 +168,7 @@ ALL_TESTS = [
 
     Test('correct-stdio-inner-class',
          task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
-         languages=(LANG_JAVA, LANG_C_SHARP),
+         languages=(LANG_JAVA, LANG_C_SHARP, LANG_DOTNET),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('correct-fileio',

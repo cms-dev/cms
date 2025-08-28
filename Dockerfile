@@ -41,6 +41,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         zip
     )
     apt-get install -y "${PACKAGES[@]}"
+    if grep -q ID=debian /etc/os-release; then
+        apt-get install -y extrepo
+        extrepo enable dotnet
+        apt-get update
+    else
+        # May or may not be necessary depending on combination of ubuntu
+        # version and dotnet version:
+        #apt-get install -y software-properties-common
+        #add-apt-repository ppa:dotnet/backports
+        #apt-get update
+        :
+    fi
+    apt-get install -y dotnet-sdk-10.0
 EOF
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
