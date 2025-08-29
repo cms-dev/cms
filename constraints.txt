@@ -7,7 +7,7 @@ beautifulsoup4==4.13.4
 certifi==2025.6.15
 chardet==5.2.0
 charset-normalizer==3.4.2
-coverage==7.9.1
+coverage==7.10.6
 gevent==25.8.1
 greenlet==3.2.3
 h11==0.16.0
