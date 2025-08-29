@@ -32,7 +32,7 @@ dependencies = [
     "babel==2.12.1",          # http://babel.pocoo.org/en/latest/changelog.html
     "pyxdg>=0.26,<0.29",      # https://freedesktop.org/wiki/Software/pyxdg/
     "Jinja2>=2.10,<2.11",     # http://jinja.pocoo.org/docs/latest/changelog/
-    "markdown-it-py==3.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
+    "markdown-it-py==4.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
     "setuptools>=80,<81",     # https://setuptools.pypa.io/en/latest/history.html
 
     # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
