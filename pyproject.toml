@@ -21,7 +21,7 @@ dependencies = [
     "netifaces>=0.10,<0.12",  # https://bitbucket.org/al45tair/netifaces/src/
     "pycryptodomex==3.23.0",  # https://github.com/Legrandin/pycryptodome/blob/master/Changelog.rst
     "psutil>=5.5,<7.1",       # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
-    "requests==2.32.3",       # https://pypi.python.org/pypi/requests
+    "requests==2.32.5",       # https://pypi.python.org/pypi/requests
     "gevent==25.8.1",         # http://www.gevent.org/changelog.html
     "greenlet>=3.0rc1",
     "werkzeug<1.0",           # https://github.com/pallets/werkzeug/blob/master/CHANGES
