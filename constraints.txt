@@ -3,7 +3,7 @@ anyio==4.9.0
 Babel==2.12.1
 backports.ssl-match-hostname==3.7.0.1
 bcrypt==4.3.0
-beautifulsoup4==4.13.4
+beautifulsoup4==4.13.5
 certifi==2025.6.15
 chardet==5.2.0
 charset-normalizer==3.4.2
