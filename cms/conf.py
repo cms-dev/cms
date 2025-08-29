@@ -85,7 +85,8 @@ class DatabaseConfig:
 
 @dataclass()
 class WorkerConfig:
-    keep_sandbox: bool = False
+    # TODO delete entirely??
+    pass
 
 
 @dataclass()
@@ -93,6 +94,9 @@ class SandboxConfig:
     sandbox_implementation: str = "isolate"
     # Max size of each writable file during an evaluation step, in KiB.
     max_file_size: int = 1024 * 1024  # 1 GiB
+    # TODO: enforce that either 0 or 2 of these are set
+    fs_quota_kb: int | None = None
+    fs_quota_inodes: int | None = None
     # Max processes, CPU time (s), memory (KiB) for compilation runs.
     compilation_sandbox_max_processes: int = 1000
     compilation_sandbox_max_time_s: float = 10.0

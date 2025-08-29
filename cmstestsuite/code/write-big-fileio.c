@@ -7,7 +7,11 @@
 
 /* First we create a huge file in output.txt (2 GB). If the check on
    file size is enforced, the write fails and we write a wrong
-   output. Otherwise we write correct output. */
+   output. Otherwise we write correct output.
+
+   Note that since the file is sparse, it doesn't use up much real disk
+   space, and thus won't hit the disk quota (if that is configured).
+   */
 
 int main() {
     int n, i;
