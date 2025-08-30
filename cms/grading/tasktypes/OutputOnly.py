@@ -57,6 +57,7 @@ class OutputOnly(TaskType):
     # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
     OUTPUT_EVAL_CHECKER = "comparator"
+    OUTPUT_EVAL_REALPREC = "realprecision"
 
     # Other constants to specify the task type behaviour and parameters.
     ALLOW_PARTIAL_SUBMISSION = True
@@ -66,7 +67,8 @@ class OutputOnly(TaskType):
         "output_eval",
         "",
         {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
-         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator",
+         OUTPUT_EVAL_REALPREC: "Outputs compared as real numbers (with precision of 1e-6)"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
 
@@ -96,6 +98,9 @@ class OutputOnly(TaskType):
 
     def _uses_checker(self) -> bool:
         return self.output_eval == OutputOnly.OUTPUT_EVAL_CHECKER
+
+    def _uses_realprecision(self) -> bool:
+        return self.output_eval == self.OUTPUT_EVAL_REALPREC
 
     @staticmethod
     def _get_user_output_filename(job: Job):
@@ -127,6 +132,7 @@ class OutputOnly(TaskType):
         box_success, outcome, text = eval_output(
             file_cacher, job,
             OutputOnly.CHECKER_CODENAME if self._uses_checker() else None,
+            use_realprecision = self._uses_realprecision(),
             user_output_digest=job.files[user_output_filename].digest)
 
         # Fill in the job with the results.

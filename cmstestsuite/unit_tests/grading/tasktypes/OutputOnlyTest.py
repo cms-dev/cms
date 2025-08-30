@@ -67,6 +67,19 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         self.assertEqual(job.text, text)
         self.assertEqual(job.plus, stats)
 
+    def test_realprecision_success(self):
+        tt, job = self.prepare(["realprecision"], {
+            "output_001.txt": FILE_001,
+            "output_023.txt": FILE_023
+        })
+
+        tt.evaluate(job, self.file_cacher)
+
+        self.eval_output.assert_called_once_with(
+            self.file_cacher, job, None, use_realprecision=True,
+            user_output_digest="digest of 023")
+        self.assertResultsInJob(job, True, str(OUTCOME), TEXT, {})
+
     def test_diff_success(self):
         tt, job = self.prepare(["diff"], {
             "output_001.txt": FILE_001,
@@ -76,7 +89,8 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None, user_output_digest="digest of 023")
+            self.file_cacher, job, None, use_realprecision=False,
+            user_output_digest="digest of 023")
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, {})
 
     def test_diff_missing_file(self):
@@ -100,7 +114,8 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None, user_output_digest="digest of 023")
+            self.file_cacher, job, None, use_realprecision=False,
+            user_output_digest="digest of 023")
         self.assertResultsInJob(job, False, None, None, None)
 
     def test_comparator_success(self):
@@ -113,6 +128,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
 
         self.eval_output.assert_called_once_with(
             self.file_cacher, job, "checker",
+            use_realprecision=False,
             user_output_digest="digest of 023")
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, {})
 
