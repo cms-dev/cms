@@ -29,6 +29,25 @@
 </div>
 {% endif %}
 
+{% if participation.messages|length > 0 %}
+<h2>{% trans %}Messages{% endtrans %}</h2>
+<div class="message_list">
+    {% for msg in participation.messages|reverse %}
+    <div class="message">
+        {% if msg.subject|length > 0 %}
+        <h4 class="subject">{{ msg.subject }}</h4>
+        {% else %}
+        <h4 class="subject empty">{% trans %}(no subject){% endtrans %}</h4>
+        {% endif %}
+        <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
+        {% if msg.text|length > 0 %}
+        <div class="body">{{ msg.text | markdown }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 
 
 {% if questions_enabled %}
@@ -106,24 +125,7 @@
 {% endif %}
 
 
-{% if participation.messages|length > 0 %}
-<h2>{% trans %}Messages{% endtrans %}</h2>
-<div class="message_list">
-    {% for msg in participation.messages|reverse %}
-    <div class="message">
-        {% if msg.subject|length > 0 %}
-        <h4 class="subject">{{ msg.subject }}</h4>
-        {% else %}
-        <h4 class="subject empty">{% trans %}(no subject){% endtrans %}</h4>
-        {% endif %}
-        <span class="timestamp">{{ msg.timestamp|format_datetime_smart }}</span>
-        {% if msg.text|length > 0 %}
-        <div class="body">{{ msg.text | markdown }}</div>
-        {% endif %}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+
 
 
 </div>
