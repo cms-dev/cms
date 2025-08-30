@@ -219,7 +219,7 @@ CMS allows to restrict the set of programming languages available to contestants
 
 CMS offers out of the box the following combination of languages: C, C++, Pascal, Java (using a JDK), Python 2 and 3, PHP, Haskell, Rust, C#.
 
-C, C++ and Pascal are the default languages, and have been tested thoroughly in many contests.
+C, and C++ are the default languages and have been tested thoroughly in many contests.
 
 PHP and Python have only been tested with Batch task types, and have not thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
 
