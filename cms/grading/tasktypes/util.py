@@ -40,7 +40,7 @@ from cms.grading.Job import CompilationJob, EvaluationJob, Job
 from cms.grading.Sandbox import Sandbox
 from cms.grading.language import Language
 from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
-    white_diff_fobj_step
+    white_diff_fobj_step, realprecision_diff_fobj_step
 
 
 logger = logging.getLogger(__name__)
@@ -217,6 +217,7 @@ def eval_output(
     file_cacher: FileCacher,
     job: Job,
     checker_codename: str | None,
+    use_realprecision: bool = False,
     user_output_path: str | None = None,
     user_output_digest: str | None = None,
     user_output_filename: str = "",
@@ -227,7 +228,8 @@ def eval_output(
     file_cacher: file cacher to use to get files.
     job: the job triggering this checker run.
     checker_codename: codename of the checker amongst the manager,
-        or None to use white diff.
+        or None to use white diff / real number precision.
+    use_realprecision: whether we should use real precision comparator.
     user_output_path: full path of the user output file, None if
         using the digest (exactly one must be non-None).
     user_output_digest: digest of the user output file, None if
@@ -283,12 +285,13 @@ def eval_output(
         return success, outcome, text
 
     else:
+        comparator_function = realprecision_diff_fobj_step if use_realprecision else white_diff_fobj_step
         if user_output_path is not None:
             user_output_fobj = open(user_output_path, "rb")
         else:
             user_output_fobj = file_cacher.get_file(user_output_digest)
         with user_output_fobj:
             with file_cacher.get_file(job.output) as correct_output_fobj:
-                outcome, text = white_diff_fobj_step(
+                outcome, text = comparator_function(
                     user_output_fobj, correct_output_fobj)
         return True, outcome, text

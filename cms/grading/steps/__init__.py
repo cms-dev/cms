@@ -27,6 +27,8 @@ from .stats import execution_stats, merge_execution_stats
 from .trusted import checker_step, extract_outcome_and_text, trusted_step
 from .whitediff import _WHITES, _white_diff, white_diff_step,\
     white_diff_fobj_step
+from .realprecision import _EPS, realprecision_diff_step, \
+    realprecision_diff_fobj_step, _real_numbers_compare
 
 
 __all__ = [
@@ -43,5 +45,7 @@ __all__ = [
     # trusted.py
     "checker_step", "extract_outcome_and_text", "trusted_step",
     # whitediff.py
-    "_WHITES", "_white_diff", "white_diff_step", "white_diff_fobj_step"
+    "_WHITES", "_white_diff", "white_diff_step", "white_diff_fobj_step",
+    # realprecision.py
+    "_EPS", "_real_numbers_compare", "realprecision_diff_step", "realprecision_diff_fobj_step"
 ]
