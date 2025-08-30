@@ -84,6 +84,7 @@ class Batch(TaskType):
     # Constants used in the parameter definition.
     OUTPUT_EVAL_DIFF = "diff"
     OUTPUT_EVAL_CHECKER = "comparator"
+    OUTPUT_EVAL_REALPREC = "realprecision"
     COMPILATION_ALONE = "alone"
     COMPILATION_GRADER = "grader"
 
@@ -111,7 +112,8 @@ class Batch(TaskType):
         "output_eval",
         "",
         {OUTPUT_EVAL_DIFF: "Outputs compared with white diff",
-         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator"})
+         OUTPUT_EVAL_CHECKER: "Outputs are compared by a comparator",
+         OUTPUT_EVAL_REALPREC: "Outputs compared as real numbers (with precision of 1e-6)"})
 
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 
@@ -180,6 +182,9 @@ class Batch(TaskType):
 
     def _uses_checker(self) -> bool:
         return self.output_eval == self.OUTPUT_EVAL_CHECKER
+
+    def _uses_realprecision(self) -> bool:
+        return self.output_eval == self.OUTPUT_EVAL_REALPREC
 
     @staticmethod
     def _executable_filename(codenames: Iterable[str], language: Language) -> str:
@@ -371,6 +376,7 @@ class Batch(TaskType):
                     file_cacher, job,
                     self.CHECKER_CODENAME
                     if self._uses_checker() else None,
+                    use_realprecision = self._uses_realprecision(),
                     **output_file_params, extra_args=extra_args)
 
         # Fill in the job with the results.
