@@ -82,12 +82,6 @@ twophase_commit = false
 # supported.
 sandbox_implementation = "isolate"
 
-# Do not allow contestants' solutions to write files bigger than this
-# size (expressed in KB; defaults to 1 GB).
-# Note that this alone isn't secure; solutions can create multiple files
-# in the sandbox.
-max_file_size = 1_048_576
-
 # If these are set, enforce a filesystem quota on sandboxes. Note that:
 # (1) The file system that stores isolate boxes (box_root in isolate's
 #     config file) must have quota accounting enabled (for a tmpfs,

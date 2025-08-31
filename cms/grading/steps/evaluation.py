@@ -191,9 +191,6 @@ def evaluation_step_before_run(
     else:
         sandbox.address_space = None
 
-    # config.sandbox.max_file_size is in KiB
-    sandbox.fsize = config.sandbox.max_file_size * 1024
-
     sandbox.stdin_file = stdin_redirect
     sandbox.stdout_file = stdout_redirect
     sandbox.stderr_file = "stderr.txt"

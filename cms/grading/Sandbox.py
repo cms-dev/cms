@@ -216,7 +216,6 @@ class SandboxBase(metaclass=ABCMeta):
         # These are not necessarily used, but are here for API compatibility
         # TODO: move all other common properties here.
         self.box_id: int = 0
-        self.fsize: int | None = None
         self.dirs: list[tuple[str | None, str, str | None]] = []
         self.preserve_env: bool = False
         self.inherit_env: list[str] = []
@@ -926,7 +925,6 @@ class IsolateSandbox(SandboxBase):
         self.preserve_env = False  # -e
         self.inherit_env = []  # -E
         self.set_env = {}  # -E
-        self.fsize = None  # -f
         self.stdin_file: str | None = None  # -i
         self.stack_space: int | None = None  # -k
         self.address_space: int | None = None  # -m
@@ -1060,9 +1058,6 @@ class IsolateSandbox(SandboxBase):
             res += ["--env=%s" % var]
         for var, value in self.set_env.items():
             res += ["--env=%s=%s" % (var, value)]
-        if self.fsize is not None:
-            # Isolate wants file size as KiB.
-            res += ["--fsize=%d" % (self.fsize // 1024)]
         if self.stdin_file is not None:
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
