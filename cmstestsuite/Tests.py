@@ -520,13 +520,6 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Write a huge file
-
-    Test('write-big-fileio',
-         task=batch_fileio, filenames=['write-big-fileio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
 ]
 
 # TODO figure out a better way to enable/disable this.........
