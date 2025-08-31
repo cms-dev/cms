@@ -265,7 +265,6 @@ class Sandbox:
         self.preserve_env = False  # -e
         self.inherit_env: list[str] = []  # -E
         self.set_env: dict[str, str] = {}  # -E
-        self.fsize: int | None = None  # -f
         self.stdin_file: str | int | None = None  # -i
         self.stdout_file: str | int | None = None  # -o
         self.stderr_file: str | int | None = None  # -r
@@ -801,9 +800,6 @@ class Sandbox:
             res += ["--env=%s" % var]
         for var, value in self.set_env.items():
             res += ["--env=%s=%s" % (var, value)]
-        if self.fsize is not None:
-            # Isolate wants file size as KiB.
-            res += ["--fsize=%d" % (self.fsize // 1024)]
         if isinstance(self.stdin_file, str):
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
