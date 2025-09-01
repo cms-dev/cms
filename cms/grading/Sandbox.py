@@ -287,23 +287,22 @@ class Sandbox:
         # between sandboxes.
         self.dirs.append((None, "/dev/shm", "tmp"))
 
-        # Set common environment variables.
+        # Set common configuration that is relevant for multiple
+        # languages.
+
+        self.set_env["PATH"] = "/usr/local/bin:/usr/bin:/bin"
+
         # Specifically needed by Python, that searches the home for
         # packages.
         self.set_env["HOME"] = self._home_dest
 
-        # Needed on Ubuntu by PHP (and more), since /usr/bin only contains a
-        # symlink to one out of many alternatives.
+        # Needed on Ubuntu by PHP, Java, Pascal etc, since /usr/bin
+        # only contains a symlink to one out of many alternatives.
         self.maybe_add_mapped_directory("/etc/alternatives")
 
         # On Arch Linux, pypy3 is installed in `/opt` and `/usr/bin/pypy3` is
         # just a symlink.
         self.maybe_add_mapped_directory("/opt/pypy3")
-
-        # Likewise, needed by C# programs. The Mono runtime looks in
-        # /etc/mono/config to obtain the default DllMap, which includes, in
-        # particular, the System.Native assembly.
-        self.maybe_add_mapped_directory("/etc/mono", options="noexec")
 
         # Tell isolate to get the sandbox ready. We do our best to cleanup
         # after ourselves, but we might have missed something if a previous
@@ -769,9 +768,6 @@ class Sandbox:
 
             # Put archive to FS
             sandbox_archive.seek(0)
-            return file_cacher.put_file_from_fobj(
-                sandbox_archive, "Sandbox %s" % self.get_root_path()
-            )
 
     def add_mapped_directory(
         self,

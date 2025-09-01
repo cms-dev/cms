@@ -79,3 +79,11 @@ class Python3PyPy(CompiledLanguage):
         """See Language.get_evaluation_commands."""
         args = args if args is not None else []
         return [["/usr/bin/pypy3", executable_filename] + args]
+
+    def configure_compilation_sandbox(self, sandbox):
+        # Needed on Arch, where /usr/bin/pypy3 is a symlink into
+        # /opt/pypy3.
+        sandbox.maybe_add_mapped_directory("/opt/pypy3")
+
+    def configure_evaluation_sandbox(self, sandbox):
+        sandbox.maybe_add_mapped_directory("/opt/pypy3")
