@@ -194,7 +194,7 @@ class TwoSteps(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, language)
 
         # Retrieve the compiled executables
         job.success = box_success
@@ -249,6 +249,7 @@ class TwoSteps(TaskType):
         first = evaluation_step_before_run(
             first_sandbox,
             first_command,
+            None,
             job.time_limit,
             job.memory_limit,
             dirs_map={fifo_dir: ("/fifo", "rw")},
@@ -272,6 +273,7 @@ class TwoSteps(TaskType):
         second = evaluation_step_before_run(
             second_sandbox,
             second_command,
+            None,
             job.time_limit,
             job.memory_limit,
             dirs_map={fifo_dir: ("/fifo", "rw")},

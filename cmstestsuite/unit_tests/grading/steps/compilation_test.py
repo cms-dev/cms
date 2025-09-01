@@ -26,6 +26,7 @@ from cms.grading.steps import COMPILATION_MESSAGES, compilation_step
 from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
     import FakeIsolateSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
+from cmstestsuite.unit_tests.grading.tasktypes.tasktypetestutils import LANG_1
 
 
 ONE_COMMAND = [["test", "command"]]
@@ -54,7 +55,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats) as mock_generic_step:
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         mock_generic_step.assert_called_once_with(
             self.sandbox, ONE_COMMAND, "compilation", collect_output=True)
@@ -73,7 +74,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         # User's fault, no error needs to be logged.
         self.assertLoggedError(False)
@@ -91,7 +92,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         # User's fault, no error needs to be logged.
         self.assertLoggedError(False)
@@ -109,7 +110,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         # User's fault, no error needs to be logged.
         self.assertLoggedError(False)
@@ -127,7 +128,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         # User's fault, no error needs to be logged.
         self.assertLoggedError(False)
@@ -141,7 +142,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=None):
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, ONE_COMMAND)
+                self.sandbox, ONE_COMMAND, LANG_1)
 
         # Sandbox should never fail. If it does, should notify the admin.
         self.assertLoggedError()
@@ -156,7 +157,7 @@ class TestCompilationStep(unittest.TestCase):
         with patch("cms.grading.steps.compilation.generic_step",
                    return_value=expected_stats) as mock_generic_step:
             success, compilation_success, text, stats = compilation_step(
-                self.sandbox, TWO_COMMANDS)
+                self.sandbox, TWO_COMMANDS, LANG_1)
 
         mock_generic_step.assert_called_once_with(
             self.sandbox, TWO_COMMANDS, "compilation", collect_output=True)

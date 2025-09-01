@@ -30,6 +30,7 @@ import subprocess
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
+from cms.grading.language import Language
 from .messages import HumanMessage, MessageCollection
 from .stats import StatsDict, execution_stats
 
@@ -83,6 +84,7 @@ EVALUATION_MESSAGES = MessageCollection([
 def evaluation_step(
     sandbox: Sandbox,
     commands: list[list[str]],
+    language: Language | None,
     time_limit: float | None = None,
     memory_limit: int | None = None,
     dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
@@ -101,6 +103,8 @@ def evaluation_step(
 
     sandbox: the sandbox we consider, already created.
     commands: evaluation commands to execute.
+    language: language of the submission (or None if the commands to
+        execute are not from a Language's get_evaluation_commands).
     time_limit: time limit in seconds (applied to each command);
         if None, no time limit is enforced.
     memory_limit: memory limit in bytes (applied to each command);
@@ -135,7 +139,7 @@ def evaluation_step(
     """
     for command in commands:
         success = evaluation_step_before_run(
-            sandbox, command, time_limit, memory_limit,
+            sandbox, command, language, time_limit, memory_limit,
             dirs_map, writable_files, stdin_redirect, stdout_redirect,
             multiprocess, wait=True)
         if not success:
@@ -152,6 +156,7 @@ def evaluation_step(
 def evaluation_step_before_run(
     sandbox: Sandbox,
     command: list[str],
+    language: Language | None,
     time_limit: float | None = None,
     memory_limit: int | None = None,
     dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
@@ -215,6 +220,10 @@ def evaluation_step_before_run(
     sandbox.allow_writing_only(writable_files)
 
     sandbox.set_multiprocess(multiprocess)
+
+    # Configure per-language sandbox parameters.
+    if language:
+        language.configure_evaluation_sandbox(sandbox)
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")

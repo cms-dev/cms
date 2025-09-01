@@ -25,6 +25,8 @@ import logging
 import os
 
 from cms.db import Executable
+from cms.db.filecacher import FileCacher
+from cms.grading.Job import EvaluationJob
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.language import Language
@@ -242,7 +244,7 @@ class Batch(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, language)
 
         # Retrieve the compiled executables.
         job.success = box_success
@@ -266,7 +268,7 @@ class Batch(TaskType):
 
         self._do_compile(job, file_cacher)
 
-    def _execution_step(self, job, file_cacher):
+    def _execution_step(self, job: EvaluationJob, file_cacher: FileCacher):
         # Prepare the execution
         executable_filename = next(iter(job.executables.keys()))
         language = get_language(job.language)
@@ -308,6 +310,7 @@ class Batch(TaskType):
         box_success, evaluation_success, stats = evaluation_step(
             sandbox,
             commands,
+            language,
             job.time_limit,
             job.memory_limit,
             writable_files=files_allowing_write,
