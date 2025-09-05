@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-09-05 16:27+0000\n"
+"PO-Revision-Date: 2025-09-06 00:25+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -233,7 +233,7 @@ msgid "Your question has been received, you will be notified when it is answered
 msgstr "您的提問已成功送出，得到回覆後將會通知您。"
 
 msgid "Print job received"
-msgstr "已收到列印請求"
+msgstr "列印請求已送出"
 
 msgid "Your print job has been received."
 msgstr "您的列印請求已成功送出。"
@@ -260,7 +260,7 @@ msgid "status"
 msgstr "狀態"
 
 msgid "Token request received"
-msgstr "已收到 Token 使用請求"
+msgstr "Token 使用成功"
 
 msgid "Your request has been received and applied to the submission."
 msgstr "已成功使用 %(type_pl)s 於此次傳送。"
