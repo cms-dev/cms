@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-09-06 02:33+0000\n"
+"PO-Revision-Date: 2025-09-06 18:24+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13.1-rc\n"
+"X-Generator: Weblate 5.14-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -68,7 +68,7 @@ msgstr "您的程式編譯時超出時間限制。其中一個可能是過度使
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
-msgstr "編譯程式因接收訊號 %s 而強制終止（訊號有可能因超出記憶體限制觸發）"
+msgstr "編譯程式因接收訊號 %s 而強制終止（訊號有可能因超出記憶體限制而觸發）"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
 msgstr "您的程式編譯時因為特定的訊號而強制中止執行。其中一個可能是過度使用 C++ templates，超出編譯時記憶體限制而觸發訊號。"
@@ -108,7 +108,7 @@ msgid "Execution timed out (wall clock limit exceeded)"
 msgstr "超過時間限制（超過壁鐘時間限制）"
 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
-msgstr "您的程式使用的實際時間超出限制。這可能是由未定義行為或緩衝區溢位所造成。請注意傳送詳細資料顯示的執行時間為 CPU 運算時間而非實際時間，因此有可能會遠小於題目的時間限制。"
+msgstr "您的程式使用的實際時間超出限制。這可能是由未定義行為或緩衝區溢位所造成。請注意傳送詳細資訊顯示的執行時間為 CPU 運算時間而非實際時間，因此有可能會遠小於題目的時間限制。"
 
 msgid "Memory limit exceeded"
 msgstr "超過記憶體限制"
@@ -164,20 +164,20 @@ msgstr "Token"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "您已經沒有任何可用於本題的 %(type_pl)s。"
+msgstr "沒有可用於本題的%(type_pl)s。"
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "您有無限量的 %(type_pl)s 可供用於本題。"
+msgstr "您有無限量的%(type_pl)s 可供用於本題。"
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "一開始您沒有任何 %(type_pl)s。"
+msgstr "一開始您沒有任何%(type_pl)s。"
 
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "一開始您有 %(gen_initial)d 枚 %(type_pl)s。"
+msgstr[0] "一開始您有 %(gen_initial)d 枚%(type_pl)s。"
 
 #, python-format
 msgid "Every minute "
@@ -187,41 +187,41 @@ msgstr[0] "每 %(gen_interval)g 分鐘 "
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "可獲得 %(gen_number)d 枚 %(type_pl)s， "
+msgstr[0] "可獲得 %(gen_number)d 枚%(type_pl)s， "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] "至多持有 %(gen_max)d 枚 %(type_pl)s。"
+msgstr[0] "至多持有 %(gen_max)d 枚%(type_pl)s。"
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "可獲得 %(gen_number)d 枚 %(type_pl)s。"
+msgstr[0] "可獲得 %(gen_number)d 枚%(type_pl)s。"
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "此後不會發放新的 %(type_pl)s。"
+msgstr "此後不會發放新的%(type_pl)s。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "每 %(min_interval)g 秒可以使用一枚 %(type_s)s， "
+msgstr[0] "每 %(min_interval)g 秒可以使用一枚%(type_s)s， "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "且總共只能使用不超過 %(max_number)d 枚 %(type_pl)s。"
+msgstr[0] "且總共只能使用不超過 %(max_number)d 枚%(type_pl)s。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "每 %(min_interval)g 秒可以使用一枚 %(type_s)s。"
+msgstr[0] "每 %(min_interval)g 秒可以使用一枚%(type_s)s。"
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "總共只能使用不超過 %(max_number)d 枚 %(type_pl)s。"
+msgstr[0] "總共只能使用不超過 %(max_number)d 枚%(type_pl)s。"
 
 msgid "You have no limitations on how you use them."
 msgstr "%(type_pl)s 的使用沒有其他限制。"
@@ -272,7 +272,7 @@ msgid "Your test has been received and is currently being executed."
 msgstr "請靜待測試結果出爐。"
 
 msgid "details"
-msgstr "詳細資料"
+msgstr "詳細資訊"
 
 msgid "Executing..."
 msgstr "執行中…"
@@ -550,7 +550,7 @@ msgid "Public score"
 msgstr "公開得分"
 
 msgid "Total score"
-msgstr "總得分"
+msgstr "完整得分"
 
 msgid "Score"
 msgstr "得分"
@@ -568,7 +568,7 @@ msgid "Play!"
 msgstr "現在使用！"
 
 msgid "No tokens"
-msgstr "Token 已用盡"
+msgstr "無可用 Token"
 
 msgid "General information"
 msgstr "競賽資訊"
@@ -619,13 +619,13 @@ msgid "You have an infinite number of tokens."
 msgstr "您持有無限量的 Token。"
 
 msgid "You can see the detailed result of a submission by using a token on it."
-msgstr "對於每次傳送而言，使用一枚 Token 可查看該次傳送的詳細評測結果。"
+msgstr "對於每次傳送而言，使用一枚 Token 可查看該次傳送的完整評測結果。"
 
 msgid "Your score for each task will be the maximum among the tokened submissions and the last one."
-msgstr "各題的最終得分將以所有使用 Token 的傳送或最後一次傳送（無論是否使用 Token）所得的最高總分計算。"
+msgstr "各題的最終得分將以該題有效作答中的最高總分計算。有效作答包含已使用 Token 的作答以及最後一次作答。"
 
 msgid "You have a distinct set of tokens for each task."
-msgstr "各題的 Token 額度是獨立計算的。"
+msgstr "Token 額度為各題獨立計算。"
 
 #, python-format
 msgid "You can find the rules for the %(type_pl)s on each task's description page."
@@ -638,7 +638,7 @@ msgid "You have two types of tokens: a set of <em>contest-tokens</em> shared amo
 msgstr "Token 分為兩類：<em>競賽-Token</em>（所有題目共用的 Token）與<em>題目-Token</em>（每題各自獨立的 Token）。"
 
 msgid "You can see the detailed result of a submission by using two tokens on it, one of each type."
-msgstr "對於每次傳送而言，使用兩類 Token 各一枚可查看該次傳送的詳細評測結果。"
+msgstr "對於每次傳送而言，使用兩類 Token 各一枚可查看該次傳送的完整評測結果。"
 
 #, python-format
 msgid "You can submit at most %(submissions)s solutions during this contest."
@@ -878,7 +878,7 @@ msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_roo
 msgstr "在<a href=\"%(contest_root)s\">競賽概況頁面</a>中，可以看到 %(type_pl)s 的使用規則。"
 
 msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
-msgstr "請注意：查看詳細的評測結果需要使用競賽-Token 與題目-Token 各一枚。"
+msgstr "請注意：查看完整的評測結果需要使用競賽-Token 與題目-Token 各一枚。"
 
 msgid "Attachments"
 msgstr "附件"
@@ -900,10 +900,10 @@ msgid "Public score:"
 msgstr "公開得分："
 
 msgid "Score of tokened submissions:"
-msgstr "有效得分："
+msgstr "有效得分（僅包含已使用 Token 的作答）："
 
 msgid "Total score:"
-msgstr "總得分："
+msgstr "完整得分："
 
 msgid "Submit a solution"
 msgstr "傳送作答"
@@ -936,17 +936,17 @@ msgstr "目前擁有 %(tokens)s 枚 Token 可供使用於本題。"
 
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr "但需等待至 %(expiration_time)s 後才可再次使用 Token。"
+msgstr "但需等待至 %(expiration_time)s 後才可再次使用。"
 
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
 msgstr "在 %(gen_time)s 可以獲得一枚新的 Token。"
 
 msgid "In the current situation, no more tokens will be generated."
-msgstr "不會再有新的 Token 產生。"
+msgstr "根據規則，您目前不會獲得任何新的 Token。"
 
 msgid "Right now, you do not have tokens available for this task."
-msgstr "您目前已用盡可用於本題的 Token。"
+msgstr "目前未持有任何可用於本題的 Token。"
 
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
@@ -959,7 +959,7 @@ msgid "Official submissions"
 msgstr "正式上傳"
 
 msgid "Submission details"
-msgstr "傳送詳細資料"
+msgstr "傳送詳細資訊"
 
 msgid "Close"
 msgstr "關閉"
@@ -990,10 +990,10 @@ msgid "no tests yet"
 msgstr "尚無測試紀錄"
 
 msgid "Test details"
-msgstr "測試詳細資料"
+msgstr "測試詳細資訊"
 
 msgid "Evaluation outcome"
-msgstr "測試訊息"
+msgstr "測試結果"
 
 msgid "Wait..."
 msgstr "等待中..."
