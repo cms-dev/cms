@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-09-06 00:25+0000\n"
+"PO-Revision-Date: 2025-09-06 01:45+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -263,7 +263,7 @@ msgid "Token request received"
 msgstr "Token 使用成功"
 
 msgid "Your request has been received and applied to the submission."
-msgstr "已成功使用 %(type_pl)s 於此次傳送。"
+msgstr "已成功於該次傳送使用 Token。"
 
 msgid "Test received"
 msgstr "已收到測試"
@@ -390,16 +390,16 @@ msgid "Test storage failed!"
 msgstr "無法儲存測試檔案！"
 
 msgid "Communication"
-msgstr "公告及提問頁面"
+msgstr "公告及提問"
 
 msgid "Announcements"
-msgstr "公告訊息"
+msgstr "公告"
 
 msgid "(no subject)"
 msgstr "（無標題）"
 
 msgid "Questions"
-msgstr "提問列表"
+msgstr "提問"
 
 msgid "Subject"
 msgstr "標題"
@@ -522,7 +522,7 @@ msgid "The main Java class of the solution should have exactly the same name as 
 msgstr "若使用 Java 作答則 main class 名需與題目名稱一致。"
 
 msgid "Submission details for compilation"
-msgstr "詳細編譯訊息"
+msgstr "編譯訊息說明"
 
 msgid "Message"
 msgstr "訊息"
@@ -531,7 +531,7 @@ msgid "Explanation"
 msgstr "說明"
 
 msgid "Submission details for evaluation"
-msgstr "詳細評測訊息"
+msgstr "評測訊息說明"
 
 #, python-format
 msgid "Error %(status_code)s"
@@ -891,7 +891,7 @@ msgstr "載入中..."
 
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
-msgstr "%(name)s (%(short_name)s) <small>評測頁面</small>"
+msgstr "%(name)s (%(short_name)s) <small>上傳頁面</small>"
 
 msgid "Score:"
 msgstr "得分："
