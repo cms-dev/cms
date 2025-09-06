@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-09-06 18:24+0000\n"
+"PO-Revision-Date: 2025-09-06 19:19+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -164,20 +164,20 @@ msgstr "Token"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "沒有可用於本題的%(type_pl)s。"
+msgstr "沒有可用於本題的 %(type_pl)s。"
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "您有無限量的%(type_pl)s 可供用於本題。"
+msgstr "您有無限量的 %(type_pl)s 可供用於本題。"
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "一開始您沒有任何%(type_pl)s。"
+msgstr "一開始您沒有任何 %(type_pl)s。"
 
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "一開始您有 %(gen_initial)d 枚%(type_pl)s。"
+msgstr[0] "一開始您有 %(gen_initial)d 枚 %(type_pl)s。"
 
 #, python-format
 msgid "Every minute "
@@ -187,41 +187,41 @@ msgstr[0] "每 %(gen_interval)g 分鐘 "
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "可獲得 %(gen_number)d 枚%(type_pl)s， "
+msgstr[0] "可獲得 %(gen_number)d 枚 %(type_pl)s， "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] "至多持有 %(gen_max)d 枚%(type_pl)s。"
+msgstr[0] "至多持有 %(gen_max)d 枚 %(type_pl)s。"
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "可獲得 %(gen_number)d 枚%(type_pl)s。"
+msgstr[0] "可獲得 %(gen_number)d 枚 %(type_pl)s。"
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "此後不會發放新的%(type_pl)s。"
+msgstr "此後不會發放新的 %(type_pl)s。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "每 %(min_interval)g 秒可以使用一枚%(type_s)s， "
+msgstr[0] "每 %(min_interval)g 秒可以使用一枚 %(type_s)s， "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "且總共只能使用不超過 %(max_number)d 枚%(type_pl)s。"
+msgstr[0] "且總共只能使用不超過 %(max_number)d 枚 %(type_pl)s。"
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "每 %(min_interval)g 秒可以使用一枚%(type_s)s。"
+msgstr[0] "每 %(min_interval)g 秒可以使用一枚 %(type_s)s。"
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "總共只能使用不超過 %(max_number)d 枚%(type_pl)s。"
+msgstr[0] "總共只能使用不超過 %(max_number)d 枚 %(type_pl)s。"
 
 msgid "You have no limitations on how you use them."
 msgstr "%(type_pl)s 的使用沒有其他限制。"
