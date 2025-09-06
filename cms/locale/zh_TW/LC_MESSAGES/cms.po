@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-09-06 01:45+0000\n"
+"PO-Revision-Date: 2025-09-06 02:33+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -501,7 +501,7 @@ msgid "Testing"
 msgstr "線上測試"
 
 msgid "Printing"
-msgstr "列印頁面"
+msgstr "檔案列印"
 
 msgid "Contest Management System"
 msgstr "本系統"
@@ -712,7 +712,7 @@ msgid "No"
 msgstr "否"
 
 msgid "Print"
-msgstr "列印"
+msgstr "提出列印請求"
 
 #, python-format
 msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
