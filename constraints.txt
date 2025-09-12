@@ -30,7 +30,7 @@ pycryptodomex==3.23.0
 pycups==2.0.4
 Pygments==2.19.2
 PyPDF2==3.0.1
-pytest==8.4.1
+pytest==8.4.2
 pytest-cov==6.2.1
 python-telegram-bot==21.11.1
 pyxdg==0.28
