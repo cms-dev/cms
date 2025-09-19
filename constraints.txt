@@ -23,7 +23,7 @@ netifaces==0.11.0
 packaging==25.0
 patool==4.0.1
 pluggy==1.6.0
-prometheus_client==0.21.1
+prometheus_client==0.23.1
 psutil==7.0.0
 psycopg2==2.9.10
 pycryptodomex==3.23.0
