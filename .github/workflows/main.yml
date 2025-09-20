@@ -32,7 +32,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
-          files: ./codecov/junit.xml
+          files: ./codecov-results/junit.xml
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -40,12 +40,12 @@ jobs:
         uses: codecov/codecov-action@v5
         if: ${{ !cancelled() }}
         with:
-          files: ./codecov/unittests.xml
+          files: ./codecov-results/unittests.xml
           flags: unittests
 
       - name: Upload functional test coverage results to Codecov
         uses: codecov/codecov-action@v5
         if: ${{ !cancelled() }}
         with:
-          files: ./codecov/functionaltests.xml
+          files: ./codecov-results/functionaltests.xml
           flags: functionaltests
