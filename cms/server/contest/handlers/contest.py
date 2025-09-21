@@ -29,9 +29,12 @@
 
 """
 
+from collections.abc import Callable
+import functools
 import ipaddress
 import json
 import logging
+import typing
 
 import collections
 
@@ -334,3 +337,26 @@ class ContestHandler(BaseHandler):
 
 class FileHandler(ContestHandler, FileHandlerMixin):
     pass
+
+_P = typing.ParamSpec("_P")
+_R = typing.TypeVar("_R")
+_Self = typing.TypeVar("_Self", bound="ContestHandler")
+
+def api_login_required(
+    func: Callable[typing.Concatenate[_Self, _P], _R],
+) -> Callable[typing.Concatenate[_Self, _P], _R | None]:
+    """A decorator filtering out unauthenticated requests.
+
+    Unlike @tornado.web.authenticated, this returns a JSON error instead of
+    redirecting.
+
+    """
+
+    @functools.wraps(func)
+    def wrapped(self: _Self, *args: _P.args, **kwargs: _P.kwargs):
+        if not self.current_user:
+            self.json({"error": "An authenticated user is required"}, 403)
+        else:
+            return func(self, *args, **kwargs)
+
+    return wrapped

@@ -24,15 +24,21 @@
 
 import logging
 import subprocess
+import typing
 
 from cmscommon.commands import pretty_print_cmdline
 
 
 logger = logging.getLogger(__name__)
 
+class FunctionalTestConfig(typing.TypedDict):
+    VERBOSITY: int
+    COVERAGE: typing.NotRequired[str]
+    PROFILER: typing.NotRequired[str]
+    CONFIG_PATH: typing.NotRequired[str]
 
 # CONFIG is populated by our test script.
-CONFIG = {
+CONFIG: FunctionalTestConfig = {
     'VERBOSITY': 0,
 }
 

@@ -24,6 +24,7 @@
 
 import json
 import logging
+import os
 import re
 import sys
 import time
@@ -129,7 +130,7 @@ class FunctionalTestFramework:
             self.admin_info["username"] = "admin_%s" % suffix
             logger.info("Trying %(username)s" % self.admin_info)
             try:
-                sh([sys.executable, "cmscontrib/AddAdmin.py",
+                sh([os.path.join(sys.prefix, "bin/cmsAddAdmin"),
                     "%(username)s" % self.admin_info,
                     "-p", "%(password)s" % self.admin_info],
                    ignore_failure=False)

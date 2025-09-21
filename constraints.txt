@@ -8,7 +8,7 @@ certifi==2025.6.15
 chardet==5.2.0
 charset-normalizer==3.4.2
 coverage==7.9.1
-gevent==25.5.1
+gevent==25.8.1
 greenlet==3.2.3
 h11==0.16.0
 httpcore==1.0.9
@@ -43,5 +43,5 @@ tornado==4.5.3
 typing_extensions==4.14.0
 urllib3==2.5.0
 Werkzeug==0.16.1
-zope.event==5.1
-zope.interface==7.2
+zope.event==6.0
+zope.interface==8.0

@@ -31,7 +31,7 @@ import logging
 import difflib
 
 from cms.db import Dataset, File, Submission
-from cms.grading.languagemanager import get_language
+from cms.grading.languagemanager import safe_get_lang_filename
 from cmscommon.datetime import make_datetime
 from .base import BaseHandler, FileHandler, require_permission
 
@@ -80,10 +80,7 @@ class SubmissionFileHandler(FileHandler):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
 
-        real_filename = sub_file.filename
-        if submission.language is not None:
-            real_filename = real_filename.replace(
-                ".%l", get_language(submission.language).source_extension)
+        real_filename = safe_get_lang_filename(submission.language, sub_file.filename)
         digest = sub_file.digest
 
         self.sql_session.close()
@@ -130,10 +127,9 @@ class SubmissionDiffHandler(BaseHandler):
         for fname in files_to_compare:
             if ".%l" in fname:
                 if sub_old.language == sub_new.language and sub_old.language is not None:
-                    ext = get_language(sub_old.language).source_extension
+                    real_fname = safe_get_lang_filename(sub_old.language, fname)
                 else:
-                    ext = ".txt"
-                real_fname = fname.replace(".%l", ext)
+                    real_fname = fname.replace(".%l", ".txt")
             else:
                 real_fname = fname
 

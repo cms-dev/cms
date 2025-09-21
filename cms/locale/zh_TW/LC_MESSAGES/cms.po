@@ -1,21 +1,21 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2025-08-21 13:22+0000\n"
+"Last-Translator: LittleCube <froakie20161113@gmail.com>\n"
+"Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
-"Language-Team: zh_TW TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
-msgstr "(空)"
+msgstr "（空）"
 
 msgid "Not correct"
 msgstr "無法得分"
@@ -27,7 +27,7 @@ msgid "Partially correct"
 msgstr "部分正確"
 
 msgid "#"
-msgstr ""
+msgstr "#"
 
 msgid "Outcome"
 msgstr "評測結果"
@@ -42,7 +42,7 @@ msgid "Memory used"
 msgstr "記憶體使用量"
 
 msgid "Score details temporarily unavailable."
-msgstr ""
+msgstr "評分細節暫時無法顯示。"
 
 #, python-format
 msgid "Subtask %(index)s"
@@ -52,84 +52,82 @@ msgid "Compilation succeeded"
 msgstr "編譯成功"
 
 msgid "Your submission successfully compiled to an executable."
-msgstr ""
+msgstr "您的上傳檔案成功被編譯成執行檔。"
 
 msgid "Compilation failed"
 msgstr "編譯失敗"
 
 msgid "Your submission did not compile correctly."
-msgstr ""
+msgstr "您的上傳檔案無法正常編譯。"
 
 msgid "Compilation timed out"
 msgstr "編譯逾時"
 
 msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "您的程式編譯時超出時間限制。其中一個可能是過度因使用 C++ templates 而觸發。"
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
-msgstr "編譯程式因記憶體違規存取而強制終止 (信號 %s)"
+msgstr "編譯程式因接收信號 %s 而強制終止（可能是記憶體違規存取）"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "您的程式編譯時因為特定的訊號而強制中止執行。這有可能是因為超出記憶體限制，其中一個可能是過度因使用 C++ templates 而觸發。"
 
 msgid "Output is correct"
 msgstr "輸出正確"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr ""
+msgstr "您的程式成功執行並給出正確的答案"
 
 #, fuzzy
 msgid "Output is partially correct"
 msgstr "部分正確"
 
 msgid "Your submission ran and gave the partially correct answer"
-msgstr ""
+msgstr "您的程式成功執行並給出部份正確的答案"
 
 msgid "Output isn't correct"
 msgstr "輸出錯誤"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr ""
+msgstr "您的程式成功執行，但給出錯誤的答案"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
 msgstr "執行後並未產生檔案 %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
+msgstr "您的程式成功執行，但沒有寫入指定的輸出檔案"
 
 msgid "Execution timed out"
 msgstr "超過時間限制"
 
 msgid "Your submission used too much CPU time."
-msgstr ""
+msgstr "您的程式佔用了過多的 CPU 運算時間。"
 
 msgid "Execution timed out (wall clock limit exceeded)"
-msgstr ""
+msgstr "超過時間限制（超過壁鐘時間限制）"
 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
-msgstr ""
+msgstr "您的程式使用的實際時間超出限制。這可能是由未定義行為或緩衝區溢位所造成。請注意在這個狀況中，傳送詳細資料中的上傳 CPU 時間可能會遠小於題目的時間限制。"
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "記憶體限制"
+msgstr "超過記憶體限制"
 
 msgid "Your submission used too much memory."
-msgstr ""
+msgstr "您的程式使用了過多的記憶體。"
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "超過時間限制"
+msgstr "程序因信號而強制中止執行"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "您的程序因信號而強制中止執行。"
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "執行失敗: 程式回傳值非零"
+msgstr "執行失敗：程式回傳值非零"
 
 msgid "Your submission failed because it exited with a return code different from 0."
-msgstr ""
+msgstr "您的程式執行失敗因為它的回傳值非零。"
 
 msgid "Execution completed successfully"
 msgstr "評測完成"
@@ -140,41 +138,42 @@ msgstr "略過編譯程序"
 msgid "File not submitted"
 msgstr "檔案未送出"
 
-#, fuzzy
 msgid "Question too long!"
-msgstr "測試檔案過大"
+msgstr "問題過長！"
 
 #, python-format
 msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
-msgstr ""
+msgstr "標題必須是至多 %(max_subject_length)d 個字元而內容至多是 %(max_text_length)d 個字元。"
 
 msgid "contest-token"
-msgstr "競賽-Token"
+msgstr "競賽代幣"
 
 msgid "contest-tokens"
-msgstr "競賽-Token"
+msgstr "競賽代幣"
 
 msgid "task-token"
-msgstr "題目-Token"
+msgstr "題目代幣"
 
 msgid "task-tokens"
-msgstr "題目-Token"
+msgstr "題目代幣"
 
+#, fuzzy
 msgid "token"
 msgstr "Token"
 
+#, fuzzy
 msgid "tokens"
 msgstr "Token"
 
-#, python-format
+#, fuzzy, python-format
 msgid "You don't have %(type_pl)s available for this task."
 msgstr "在本題中, 您沒有任何可用的 %(type_pl)s."
 
-#, python-format
+#, fuzzy, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "本題有無限量的 %(type_pl)s."
 
-#, python-format
+#, fuzzy, python-format
 msgid "You start with no %(type_pl)s."
 msgstr "競賽開始時沒有任何 %(type_pl)s."
 
@@ -203,7 +202,7 @@ msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "會產生一個額外的 %(type_s)s."
 
-#, python-format
+#, fuzzy, python-format
 msgid "You don't get other %(type_pl)s."
 msgstr "並不再產生新的 %(type_pl)s."
 
@@ -227,6 +226,7 @@ msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "且一旦產生 %(type_s)s 後將不會再增加."
 
+#, fuzzy
 msgid "You have no limitations on how you use them."
 msgstr "使用規則中沒有其他額外的限制."
 
@@ -234,29 +234,28 @@ msgid "Question received"
 msgstr "已送出詢問"
 
 msgid "Your question has been received, you will be notified when it is answered."
-msgstr "您的詢問已成功送出, 待此詢問得到回覆後將會通知您."
+msgstr "您的詢問已成功送出，得到回覆後將會通知您。"
 
-#, fuzzy
 msgid "Print job received"
-msgstr "已收到測試"
+msgstr "已收到列印請求"
 
 msgid "Your print job has been received."
-msgstr ""
+msgstr "您的列印請求已成功送出。"
 
 msgid "Submission received"
 msgstr "已收到本次傳送"
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr "已收到您的傳送, 等待評測中."
+msgstr "已收到您的傳送並等待評測中。"
 
 msgid "Compiling..."
-msgstr "編譯中..."
+msgstr "編譯中…"
 
 msgid "Evaluating..."
-msgstr "執行中..."
+msgstr "執行中…"
 
 msgid "Scoring..."
-msgstr "評分中..."
+msgstr "評分中…"
 
 msgid "Evaluated"
 msgstr "已評測"
@@ -265,6 +264,7 @@ msgstr "已評測"
 msgid "status"
 msgstr "狀態"
 
+#, fuzzy
 msgid "Token request received"
 msgstr "Token 使用成功"
 
@@ -281,124 +281,128 @@ msgid "details"
 msgstr "詳細資料"
 
 msgid "Executing..."
-msgstr "執行中..."
+msgstr "執行中…"
 
 msgid "Executed"
 msgstr "已評測"
 
-#, fuzzy
 msgid "Too many print jobs!"
-msgstr "測試次數超出限制"
+msgstr "列印請求超出限制！"
 
 #, fuzzy, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
 msgstr "在競賽中, 您最多可以進行 %d 次測試."
 
-#, fuzzy
 msgid "Invalid format!"
-msgstr "錯誤的測試檔案格式"
+msgstr "測試檔案格式錯誤！"
 
 msgid "Please select the correct files."
-msgstr "請選擇正確的檔案"
+msgstr "請選擇正確的檔案。"
 
-#, fuzzy
 msgid "File too big!"
-msgstr "測試檔案過大"
+msgstr "測試檔案過大！"
 
 #, fuzzy, python-format
 msgid "Each file must be at most %d bytes long."
-msgstr "個別程式碼檔案容量不得超過 %d bytes."
+msgstr "個別程式碼檔案容量不得超過 %d bytes。"
 
 #, fuzzy
 msgid "Print job storage failed!"
-msgstr "測試檔案儲存失敗"
+msgstr "列印請求儲存失敗！"
 
 msgid "Please try again."
-msgstr "請再試一次"
+msgstr "請再試一次。"
 
 msgid "Too many submissions!"
-msgstr "傳送次數超出限制!"
+msgstr "傳送次數超出限制！"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "您在本競賽之傳送次數已達上限 (%d 次)"
+msgstr "您在本競賽之總傳送次數已達上限（%d 次）"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr "您在本題目之傳送次數已達上限 (%d 次)"
+msgstr "您在本題目之傳送次數已達上限（%d 次）"
 
+#, fuzzy
 msgid "Submissions too frequent!"
-msgstr "傳送過於頻繁"
+msgstr "傳送過於頻繁！"
 
-#, python-format
+#, fuzzy, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr "在本競賽的最後一次傳送過後 %d 秒始可再次傳送."
+msgstr "在本競賽的最後一次傳送過後 %d 秒始可再次傳送。"
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr "在本題的最後一次傳送過後 %d 秒始可再次傳送."
+msgstr "在本題的最後一次傳送過後 %d 秒始可再次傳送。"
 
+#, fuzzy
 msgid "Submission too big!"
-msgstr "傳送檔案過大"
+msgstr "傳送檔案過大！"
 
-#, python-format
+#, fuzzy, python-format
 msgid "Each source file must be at most %d bytes long."
-msgstr "個別程式碼檔案容量不得超過 %d bytes."
+msgstr "個別程式碼檔案容量不得超過 %d bytes。"
 
-#, python-format
+#, fuzzy, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "上傳壓縮檔應該包含至多 %d 個檔案。"
 
+#, fuzzy
 msgid "Invalid archive format!"
-msgstr "封裝檔案格式錯誤"
+msgstr "壓縮檔案格式錯誤！"
 
+#, fuzzy
 msgid "The submitted archive could not be opened."
-msgstr "封裝檔案無法正常開啟"
+msgstr "壓縮檔案無法正常開啟。"
 
 msgid "Invalid submission format!"
-msgstr "檔案格式錯誤"
+msgstr "檔案格式錯誤！"
 
+#, fuzzy
 msgid "Submission storage failed!"
-msgstr "本傳送發生檔案存取錯誤"
+msgstr "本次傳送發生檔案儲存錯誤！"
 
 msgid "Too many tests!"
-msgstr "測試次數超出限制"
+msgstr "測試次數超出限制！"
 
-#, python-format
+#, fuzzy, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr "在競賽中, 您最多可以進行 %d 次測試."
+msgstr "您已達到競賽中最多可以進行 %d 次測試的限制。"
 
-#, python-format
+#, fuzzy, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr "在本題中, 您最多可以進行 %d 次測試."
+msgstr "您已達到本題中最多可以進行 %d 次測試的限制。"
 
 msgid "Tests too frequent!"
-msgstr "測試過於頻繁"
+msgstr "測試過於頻繁！"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr "在競賽中, 兩次測試之間必須間隔至少 %d 秒."
+msgstr "在競賽中，兩次測試之間必須間隔至少 %d 秒。"
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr "在本題中, 兩次測試之間必須間隔至少 %d 秒."
+msgstr "在本題中，兩次測試之間必須間隔至少 %d 秒。"
 
 msgid "Invalid test format!"
-msgstr "錯誤的測試檔案格式"
+msgstr "測試檔案格式錯誤！"
 
 msgid "Test too big!"
-msgstr "測試檔案過大"
+msgstr "測試檔案過大！"
 
 msgid "Input too big!"
-msgstr "輸入檔案過大"
+msgstr "輸入檔案過大！"
 
-#, python-format
+#, fuzzy, python-format
 msgid "The input file must be at most %d bytes long."
-msgstr "輸入檔案不得超過 %d bytes"
+msgstr "輸入檔案不得超過 %d bytes。"
 
+#, fuzzy
 msgid "Test storage failed!"
-msgstr "測試檔案儲存失敗"
+msgstr "測試檔案儲存失敗！"
 
+#, fuzzy
 msgid "Communication"
 msgstr "訊息詢問"
 
@@ -406,7 +410,7 @@ msgid "Announcements"
 msgstr "公告訊息"
 
 msgid "(no subject)"
-msgstr "(無標題)"
+msgstr "（無標題）"
 
 msgid "Questions"
 msgstr "詢問列表"
@@ -431,7 +435,7 @@ msgstr "訊息"
 
 #, python-format
 msgid "Automatic (%(lang)s)"
-msgstr "自動偵測 (%(lang)s)"
+msgstr "自動偵測（%(lang)s）"
 
 msgid "Logout"
 msgstr "登出"
@@ -441,10 +445,10 @@ msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(usernam
 msgstr "使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
-msgstr "無法登入"
+msgstr "登入失敗。"
 
 msgid "Welcome"
-msgstr ""
+msgstr "歡迎"
 
 msgid "Please log in"
 msgstr "請登入後參與競賽"
@@ -478,24 +482,24 @@ msgid "%d unread"
 msgstr "%d 則訊息未讀"
 
 msgid "Until contest starts:"
-msgstr "距離競賽開始:"
+msgstr "距離競賽開始："
 
 msgid "Until contest ends:"
-msgstr "距離競賽結束:"
+msgstr "距離競賽結束："
 
 #, fuzzy
 msgid "Until analysis starts:"
-msgstr "距離競賽開始:"
+msgstr "距離檢討開始："
 
 #, fuzzy
 msgid "Until analysis ends:"
-msgstr "距離競賽結束:"
+msgstr "距離檢討結束："
 
 msgid "Time left:"
-msgstr "剩餘時間:"
+msgstr "剩餘時間："
 
 msgid "Server time:"
-msgstr "現在時刻:"
+msgstr "現在時間："
 
 msgid "Overview"
 msgstr "競賽概況"
@@ -503,8 +507,9 @@ msgstr "競賽概況"
 msgid "Statement"
 msgstr "題目敘述"
 
+#, fuzzy
 msgid "Submissions"
-msgstr "評測頁面"
+msgstr "上傳頁面"
 
 msgid "Documentation"
 msgstr "參考資料"
@@ -522,7 +527,7 @@ msgid "is released under the"
 msgstr "遵循"
 
 msgid "GNU Affero General Public License"
-msgstr "GNU AGPL 通用公共許可證"
+msgstr "GNU AGPL 通用公眾授權條款"
 
 msgid "Choose a contest"
 msgstr "選擇一場競賽"
@@ -551,12 +556,15 @@ msgstr "傳送詳細資料"
 msgid "Error %(status_code)s"
 msgstr "錯誤 %(status_code)s"
 
+#, fuzzy
 msgid "An error occured while the server was handling your request."
 msgstr "競賽系統伺服器發生錯誤."
 
+#, fuzzy
 msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
 msgstr "擅自以非正當方式操作本系統將導致取消競賽資格."
 
+#, fuzzy
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr "若在正常使用的情況下發生錯誤, 請聯絡管理員."
 
@@ -1063,4 +1071,3 @@ msgstr ""
 
 #~ msgid "Standard Template Library"
 #~ msgstr "STL 標準樣板函數庫"
-

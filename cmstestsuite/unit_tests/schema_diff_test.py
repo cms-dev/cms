@@ -35,7 +35,12 @@ def split_schema(schema: str) -> list[list[str]]:
     statements: list[list[str]] = []
     cur_statement: list[str] = []
     for line in schema.splitlines():
-        if line == "" or line.startswith("--"):
+        if (
+            line == ""
+            or line.startswith("--")
+            or line.startswith("\\restrict")
+            or line.startswith("\\unrestrict")
+        ):
             continue
         cur_statement.append(line)
         if line.endswith(";"):

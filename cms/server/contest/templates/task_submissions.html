@@ -6,19 +6,6 @@
 
 {% set score_type = get_score_type(dataset=task.active_dataset) %}
 
-{% block js_init %}
-// Define TASK_LANGUAGES for task-specific language filtering
-var TASK_LANGUAGES = {
-{% for lang in task.get_allowed_languages() or [] %}
-    '{{ lang }}': {
-{% for extension in (lang|to_language).source_extensions %}
-        '{{ extension }}': true,
-{% endfor %}
-    },
-{% endfor %}
-};
-{% endblock js_init %}
-
 {# Whether tokens are allowed on this contest. #}
 {% set can_use_tokens_in_contest =
        tokens_contest != TOKEN_MODE_DISABLED
@@ -37,13 +24,27 @@ var TASK_LANGUAGES = {
 {% set can_play_token_now = can_play_token and tokens_info[2] is none %}
 
 {% block additional_js %}
+// Define TASK_LANGUAGES for task-specific language filtering
+var TASK_LANGUAGES = {
+{% for lang in task.get_allowed_languages() or [] %}
+    '{{ lang }}': {
+{% for extension in (lang|to_language).source_extensions %}
+        '{{ extension }}': true,
+{% endfor %}
+    },
+{% endfor %}
+};
 
 $(document).on("click", ".submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
-    modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function() {
+    modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function(response, status, xhr) {
+        if(status != "success") {
+            $(this).html("{% trans %}Error loading details, please refresh the page.{% endtrans %}");
+            return;
+        }
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
         });

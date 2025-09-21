@@ -18,15 +18,18 @@
 
 """Provide utilities to work with programming language classes."""
 
+import logging
 from cms import plugin_list
 from cms.grading.language import Language
-
 
 __all__ = [
     "LANGUAGES",
     "HEADER_EXTS", "SOURCE_EXTS", "OBJECT_EXTS",
     "get_language", "filename_to_language"
 ]
+
+
+logger = logging.getLogger(__name__)
 
 
 LANGUAGES: list[Language] = list()
@@ -48,6 +51,25 @@ def get_language(name: str) -> Language:
     if name not in _BY_NAME:
         raise KeyError("Language `%s' not supported." % name)
     return _BY_NAME[name]
+
+
+def safe_get_lang_filename(lang: str | None, filename: str) -> str:
+    """Get the filename of a file in a specific programming language,
+    avoiding errors if the language isn't recognized.
+
+    lang: name of the programming language
+    filename: filename template (containing .%l)
+    return: filename with the template replaced.
+    """
+    if lang is None:
+        return filename
+    try:
+        language = get_language(lang)
+        source_ext = language.source_extension
+    except KeyError:
+        logger.warning(f"Found invalid language {lang}!")
+        source_ext = ".invalid_language"
+    return filename.replace(".%l", source_ext)
 
 
 def filename_to_language(filename: str, available_languages: list[Language] | None=None) -> Language | None:

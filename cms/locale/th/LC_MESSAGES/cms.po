@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-14 15:01+0000\n"
+"PO-Revision-Date: 2025-08-16 15:59+0000\n"
 "Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
-"Language: th\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/cms/main/th/>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: th\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -110,20 +110,17 @@ msgstr "ใช้เวลาประมวลผลทั้งหมดนา
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "โปรแกรมของคุณใช้เวลาประมวลผลทั้งหมดนานเกินไป อาจเป็นเพราะโค้ด undefined หรือเกิด buffer overflow"
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "ข้อจำกัดหน่วยความจำ"
+msgstr "ใช้หน่วยความจำมากเกินไป"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "การส่งของคุณใช้เวลาประมวลของ CPU ผลนานเกินไป"
+msgstr "โปรแกรมคุณใช้หน่วยความจำมากเกินไป"
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "ใช้เวลาประมวลผลนานเกินไป"
+msgstr "โปรแกรมของคุณถูก kill ด้วยค่า signal"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "การตรวจถูก kill ด้วยค่า signal"
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "การรันไม่สำเร็จ เพราะโปรแกรมคืนค่าที่ไม่ใช่ศูนย์"
@@ -165,17 +162,17 @@ msgstr "โทเค็น"
 msgid "tokens"
 msgstr "โทเค็น"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "คุณไม่เหลือโทเค็นสำหรับโจทย์ข้อนี้แล้ว"
+msgstr "คุณไม่เหลือ %(type_pl)s สำหรับโจทย์ข้อนี้แล้ว"
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
 msgstr "คุณมี %(type_pl)s จำนวนไม่จำกัดสำหรับโจทย์นี้"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr "คุณเริ่มต้นด้วยไม่มี %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
@@ -187,48 +184,48 @@ msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "ทุก %(gen_interval)g นาที "
 
-#, fuzzy, python-format
+#, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr[0] "คุณได้ %(gen_number)d %(type_pl)s "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] ""
+msgstr[0] "ได้สูงสุด %(gen_max)d%(type_pl)s"
 
-#, fuzzy, python-format
+#, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr[0] "คุณได้ %(type_pl)s อีก %(gen_number)dอัน"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr "คุณจะไม่ได้ %(type_pl)s ชนิดอื่น"
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] ""
+msgstr[0] "คุณสามารถใช้%(type_s)sได้ทุก%(min_interval)gวินาที "
 
-#, fuzzy, python-format
+#, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr[0] "จะมี%(type_pl)sทั้งหมดไม่เกิน%(max_number)d"
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] ""
+msgstr[0] "คุณสามารถใช่%(type_s)sได้ทุก%(min_interval)gวินาที"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] "คุณเริ่มต้นด้วย %(gen_initial)d %(type_pl)s."
+msgstr[0] "คุณไม่สามารถใช้%(type_pl)sทั้งหมดได้เกิน%(max_number)d"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You have no limitations on how you use them."
-msgstr "แต่คุณจะต้องรอจนถึง %(expiration_time)s จึงจะสามารถใช้ได้"
+msgstr "ไม่มีข้อจำกันในการใช้มัน"
 
 msgid "Question received"
 msgstr "ได้รับคำถามแล้ว"
@@ -263,20 +260,17 @@ msgstr "ประเมินผลแล้ว"
 msgid "status"
 msgstr "สถานะ"
 
-#, fuzzy
 msgid "Token request received"
-msgstr "ได้รับชุดทดสอบแล้ว"
+msgstr "ได้รับคำขอโทเค็นแล้ว"
 
-#, fuzzy
 msgid "Your request has been received and applied to the submission."
-msgstr "ได้รับคำถามของคุณแล้ว, เราจะแจ้งเตือนคุณเมื่อได้รับคำตอบ"
+msgstr "เราได้รับคำขอของคุณและใช้งานไปยังการส่งของคุณแล้ว"
 
 msgid "Test received"
 msgstr "ได้รับชุดทดสอบแล้ว"
 
-#, fuzzy
 msgid "Your test has been received and is currently being executed."
-msgstr "ได้รับการส่งของคุณแล้วและตอนนี้กำลังประมวลผลอยู่"
+msgstr "ได้รับการชุดทดสอบของคุณแล้วและตอนนี้กำลังประมวลผลอยู่"
 
 msgid "details"
 msgstr "รายละเอียด"
@@ -287,13 +281,12 @@ msgstr "กำลังรัน..."
 msgid "Executed"
 msgstr "รันแล้ว"
 
-#, fuzzy
 msgid "Too many print jobs!"
-msgstr "ชุดทดสอบเยอะเกินไป!"
+msgstr "สั่งพิมพ์เยอะเกินไป!"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "สำหรับการแข่งขันนี้ คุณได้ทดสอบครบ %d ครั้งแล้ว"
+msgstr "คุณได้ถึงขีดจำกัดการพิมพ์ครบ %d ครั้งแล้ว"
 
 msgid "Invalid format!"
 msgstr "รูปแบบไม่ถูกต้อง!"
@@ -308,9 +301,8 @@ msgstr "ไฟล์ใหญ่เกินไป!"
 msgid "Each file must be at most %d bytes long."
 msgstr "ไฟล์ใหญ่ได้สูงสุด %d ไบต์"
 
-#, fuzzy
 msgid "Print job storage failed!"
-msgstr "สั่งพิมพ์แล้ว"
+msgstr "งานพิมพ์จัดเก็บล้มเหลว!"
 
 msgid "Please try again."
 msgstr "กรุณาลองใหม่อีกครั้ง"
@@ -346,7 +338,7 @@ msgstr "ขนาดไฟล์แต่ละไฟล์ที่ส่งม
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "การส่งควรมีไม่เกิน%dไฟล์"
 
 msgid "Invalid archive format!"
 msgstr "ไฟล์ archive เสีย"
@@ -357,9 +349,8 @@ msgstr "ไฟล์ archive เปิดไม่ได้"
 msgid "Invalid submission format!"
 msgstr "การส่งไม่ตรงตามรูปแบบที่กำหนดไว้"
 
-#, fuzzy
 msgid "Submission storage failed!"
-msgstr "ไฟล์ที่ส่งใหญ่เกินไป"
+msgstr "การส่งจัดเก็บล้มเหลว!"
 
 msgid "Too many tests!"
 msgstr "ชุดทดสอบเยอะเกินไป!"
@@ -396,9 +387,8 @@ msgstr "ข้อมูลนำเข้าใหญ่เกินไป"
 msgid "The input file must be at most %d bytes long."
 msgstr "ข้อมูลนำเข้าต้องมีขนาดไม่เกิน %d ไบท์"
 
-#, fuzzy
 msgid "Test storage failed!"
-msgstr "การทดสอบใหญ่เกินไป"
+msgstr "การทดสอบจัดเก็บล้มเหลว!"
 
 msgid "Communication"
 msgstr "การสื่อสาร"
@@ -860,7 +850,7 @@ msgid "You can see (and download) all of them using the list on the right."
 msgstr "คุณสามารถดู (และดาวน์โหลด) ทั้งหมดได้โดยการใช้แถบด้านขวา"
 
 msgid "Some suggested translations follow."
-msgstr ""
+msgstr "มีคำแนะนำการแปลต่อไปนี้"
 
 #, python-format
 msgid "Statement in <b>%(lang)s</b>"
@@ -1013,13 +1003,13 @@ msgid "None"
 msgstr "ไม่มี"
 
 msgid "Token request discarded"
-msgstr ""
+msgstr "คำขอโทเค็นถูกยกเลิก"
 
 msgid "Your request has been discarded because you have no tokens available."
-msgstr ""
+msgstr "คำขอของคุณถูกยกเลิกเนื่องจากคุณไม่มีโทเค็นที่พร้อมใช้งาน"
 
 msgid "Your request has been discarded because you already used a token on that submission."
-msgstr ""
+msgstr "คำขอของคุณถูกยกเลิกเนื่องจากคุณใช้โทเค็นในการส่งครั้งนั้นไปแล้ว"
 
 msgid "Invalid file"
 msgstr "ไฟล์ไม่ถูกต้อง"
@@ -1038,4 +1028,3 @@ msgstr "ส่งไปยังเครื่องพิมพ์"
 
 #~ msgid "Standard Template Library"
 #~ msgstr "ไลบรารีเทมเพลตพื้นฐาน"
-
