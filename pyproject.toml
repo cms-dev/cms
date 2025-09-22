@@ -61,7 +61,7 @@ Repository = "https://github.com/cms-dev/cms"
 devel = [
     # Only for testing
     "beautifulsoup4>=4.8,<4.14",
-    "coverage>=4.5,<7.10",
+    "coverage>=4.5,<7.11",
     "pytest",
     "pytest-cov",
 
