@@ -25,3 +25,7 @@ buffer_size = 100
 #log_dir = "INSTALL_DIR/log/ranking"
 # Data directory (the scoreboard data is stored here).
 #lib_dir = "INSTALL_DIR/lib/ranking"
+
+# UI
+[public]
+show_id_column = false
