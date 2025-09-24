@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 import os
 import sys
@@ -38,6 +38,11 @@ def default_path(name):
 
 
 @dataclass
+class PublicConfig:
+    show_id_column: bool = False
+
+
+@dataclass
 class Config:
     # Connection.
     bind_address: str = "127.0.0.1"
@@ -50,6 +55,9 @@ class Config:
     realm_name: str = "Scoreboard"
     username: str = "usern4me"
     password: str = "passw0rd"
+
+    # UI.
+    public: PublicConfig = field(default_factory=PublicConfig)
 
     # Buffers
     buffer_size: int = 100

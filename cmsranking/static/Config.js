@@ -73,4 +73,24 @@ var Config = new function () {
     self.get_history_url = function () {
         return "history";
     }
+
+    self.get_public_config_url = function () {
+        return "config";
+    }
 };
+
+var PublicConfig = {
+    show_id_column: false
+};
+
+$.ajax({
+    url: Config.get_public_config_url(),
+    dataType: "json",
+    async: false,
+    success: function (data, status, xhr) {
+        PublicConfig = data;
+    },
+    error: function () {
+        console.error("Error while getting public configuration data");
+    }
+});
