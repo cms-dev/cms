@@ -3,15 +3,15 @@ msgstr ""
 "Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-27 10:21+0000\n"
-"Last-Translator: \"p. randla\" <prandla@r9.pm>\n"
+"PO-Revision-Date: 2025-09-28 17:07+0000\n"
+"Last-Translator: Benjamin Swart <Benjaminswart@email.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/cms/main/cs/>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.14-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -110,20 +110,17 @@ msgstr "Program vyčerpal časový limit (překročený limit na reálný čas)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "Odevzdané řešení využilo příliš mnoho celkového času. To může být např. způsobeno kódem s nedefinovaným chováním nebo přetečením bufferu. Uvědomte si, že v tomto případě může být procesorový čas zobrazený v detailech odevzdaného řešení mnohem menší než časový limit."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Paměťový limit"
+msgstr "Program vyčerpal paměťový limit"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "Odevzdané řešení spotřebovalo příliš mnoho procesorového času."
+msgstr "Odevzdané řešení spotřebovalo příliš mnoho paměti."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Program vyčerpal časový limit"
+msgstr "Program byl ukončen signálem"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "Vyhodnocování bylo ukončeno signálem."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Program selhal kvůli nenulové návratové hodnotě"
@@ -165,24 +162,24 @@ msgstr "token"
 msgid "tokens"
 msgstr "tokeny"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr "Právě teď nemáte pro tuto úlohu k dispozici žádný token."
+msgstr "Pro tuto úlohu nemáte k dispozici žádné %(type_pl)s."
 
-#, fuzzy, python-format
+#, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr "Máte neomezený počet tokenů."
+msgstr "Pro tuto úlohu máte nekonečně mnoho %(type_pl)s."
 
-#, fuzzy, python-format
+#, python-format
 msgid "You start with no %(type_pl)s."
-msgstr "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
+msgstr "Na začátku nemáte žádné %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
-msgstr[1] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
-msgstr[2] "%(type_pl)s k dispozici na začátku: %(gen_initial)d"
+msgstr[0] "Na začátku nemáte žádné %(type_s)s."
+msgstr[1] "Na začátku máte %(gen_initial)d %(type_pl)s."
+msgstr[2] "Na začátku máte %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
@@ -194,41 +191,41 @@ msgstr[2] "Každých %(gen_interval)g minut "
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] "dostanete další %(type_s), "
-msgstr[1] "dostanete další %(gen_number)d %(type_pl), "
-msgstr[2] "dostanete dalších %(gen_number) %(type_pl), "
+msgstr[0] "dostanete další %(type_s)s. "
+msgstr[1] "dostanete další %(gen_number)d %(type_pl)s. "
+msgstr[2] "dostanete dalších %(gen_number)d %(type_pl)s. "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] " až do maximálního počtu 1 %(type_pl)s."
-msgstr[1] " až do maximálního počtu %(gen_max)d %(type_pl)s."
-msgstr[2] " až do maximálního počtu %(gen_max)d %(type_pl)s."
+msgstr[0] "až do maximálního počtu jednoho %(type_s)s."
+msgstr[1] "až do maximálního počtu %(gen_max)d %(type_pl)s."
+msgstr[2] "až do maximálního počtu %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] " dostanete další %(type_s)s."
-msgstr[1] " dostanete další %(type_s)s v počtu %(gen_number)d."
-msgstr[2] " dostanete další %(type_s)s v počtu %(gen_number)d."
+msgstr[0] "dostanete další %(type_s)s."
+msgstr[1] "dostanete další %(gen_number)d %(type_pl)s."
+msgstr[2] "dostanete dalších %(gen_number)d %(type_pl)s."
 
-#, fuzzy, python-format
+#, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr " dostanete další %(type_s)s."
+msgstr "Nedostanete další %(type_pl)s."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] "Můžete použít %(type_s)s každou vteřinu "
-msgstr[1] "Můžete použít %(type_s)s každé %(min_interval)g vteřiny "
-msgstr[2] "Můžete použít %(type_s)s každých %(min_interval)g vteřin "
+msgstr[0] "Můžete použít %(type_s)s každou sekundu "
+msgstr[1] "Můžete použít %(type_s)s každé %(min_interval)g sekundy "
+msgstr[2] "Můžete použít %(type_s)s každých %(min_interval)g sekund "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] " a maximálně 1 %(type_s) celkem."
-msgstr[1] " a maximálně %(max_number)d %(type_pl)s celkem."
-msgstr[2] " a maximálně %(max_number)d %(type_pl)s celkem."
+msgstr[0] "a maximálně jeden %(type_s)s celkem."
+msgstr[1] "a maximálně %(max_number)d %(type_pl)s celkem."
+msgstr[2] "a maximálně %(max_number)d %(type_pl)s celkem."
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
@@ -241,8 +238,8 @@ msgstr[2] "Smíte použít %(type_s)s každých %(min_interval)g vteřin."
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Počet použití %(type_s)s máte omezený na 1."
-msgstr[1] "Počet použití %(type_s)s máte omezený na %(max_number)d."
-msgstr[2] "Počet použití %(type_s)s máte omezený na %(max_number)d."
+msgstr[1] "Počet použití %(type_pl)s máte omezený na %(max_number)d."
+msgstr[2] "Počet použití %(type_pl)s máte omezený na %(max_number)d."
 
 msgid "You have no limitations on how you use them."
 msgstr "Nemáte žádná omezení na to, jak je použijete."
@@ -322,7 +319,7 @@ msgid "Each file must be at most %d bytes long."
 msgstr "Každý soubor smí být velký maximálně %d bytů."
 
 msgid "Print job storage failed!"
-msgstr "Nepodařilo se uložit tiskovou úlohu."
+msgstr "Nepodařilo se uložit tiskovou úlohu!"
 
 msgid "Please try again."
 msgstr "Prosím zkuste to znovu."
@@ -358,7 +355,7 @@ msgstr "Každý zdrojový soubor smí být maximálně %d bytů velký."
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "Řešení smí obsahovat nejvýše %d souborů."
 
 msgid "Invalid archive format!"
 msgstr "Neplatný formát archivu!"
@@ -528,7 +525,7 @@ msgid "Contest Management System"
 msgstr "Systém pro správu soutěží"
 
 msgid "is released under the"
-msgstr " je uvolněný pod"
+msgstr "je uvolněný pod"
 
 msgid "GNU Affero General Public License"
 msgstr "licencí GNU Affero General Public"
@@ -782,20 +779,17 @@ msgstr "Hesla se neshodují!"
 msgid "This username is already taken, please choose a different one."
 msgstr "Toto uživatelské jméno je již zabrané, prosíme vyberte jiné."
 
-#, fuzzy
 msgid "This user is already registered in the contest."
-msgstr "Toto uživatelské jméno je již zabrané, prosíme vyberte jiné."
+msgstr "Tento uživatel je již do této soutěže zaregistrovaný."
 
 msgid "No such user."
-msgstr ""
+msgstr "Takovýto uživatel neexistuje."
 
-#, fuzzy
 msgid "The password is not correct."
-msgstr "Hesla se neshodují!"
+msgstr "Toto heslo není správně."
 
-#, fuzzy
 msgid "Registration"
-msgstr "Registrovat"
+msgstr "Registrace"
 
 msgid "Please fill in the fields to register"
 msgstr "Prosíme vyplňte tato pole k registraci"
@@ -803,9 +797,8 @@ msgstr "Prosíme vyplňte tato pole k registraci"
 msgid "New user"
 msgstr "Nový uživatel"
 
-#, fuzzy
 msgid "Join contest"
-msgstr "Vyberte si soutěž"
+msgstr "Připojit se do soutěže"
 
 msgid "First name"
 msgstr "Křestní jméno"
@@ -830,13 +823,13 @@ msgid "Confirm password"
 msgstr "Zopakujte heslo"
 
 msgid "Registered in the contest successfully!"
-msgstr ""
+msgstr "Byli jste úspěšně zaregistrovaní do soutěže!"
 
 msgid "Your username is:"
 msgstr "Vaše uživatelské jméno je:"
 
 msgid "Your password is stored securely."
-msgstr ""
+msgstr "Vaše heslo je bezpečně uloženo."
 
 msgid "Back to login"
 msgstr "Zpět na přihlášení"
@@ -900,9 +893,9 @@ msgstr "Bližší informace"
 msgid "Compilation commands"
 msgstr "Příkazy ke kompilaci"
 
-#, fuzzy, python-format
+#, python-format
 msgid "You can find the rules for the %(type_pl)s on the <a href=\"%(contest_root)s\">contest overview page</a>."
-msgstr "Pravidla pro %(type_pl)s můžete najít u popisu každé úlohy."
+msgstr "Pravidla pro %(type_pl)s můžete najít na <a href=\"%(contest_root)s\">stránce s přehledem o soutěži</a>."
 
 msgid "Remember that to see the detailed result of a submission you need to use both a contest-token and a task-token."
 msgstr "Pamatujte, že k zobrazení detailních výsledků odevzdaného řešení musíte použít jak soutěžní token, tak úlohový token."
@@ -1029,7 +1022,7 @@ msgid "None"
 msgstr "Žádné"
 
 msgid "Token request discarded"
-msgstr "Požadavek na token nesplněn."
+msgstr "Požadavek na token zahozen"
 
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "Požadavek nebyl splněn, protože nemáte k dispozici žádné tokeny."
