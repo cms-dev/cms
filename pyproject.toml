@@ -37,7 +37,7 @@ dependencies = [
 
     # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
     # MarkupSafe causes jinja to break
-    "MarkupSafe==2.0.1",
+    "MarkupSafe==3.0.3",
 
     # Only for some importers:
     "pyyaml>=5.3,<6.1",       # http://pyyaml.org/wiki/PyYAML
