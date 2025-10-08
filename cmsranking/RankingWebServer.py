@@ -42,7 +42,7 @@ from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
 # Needed for initialization. Do not remove.
 import cmsranking.Logger  # noqa
 from cmscommon.eventsource import EventSource
-from cmsranking.Config import load_config
+from cmsranking.Config import PublicConfig, load_config
 from cmsranking.Contest import Contest
 from cmsranking.Entity import InvalidData
 from cmsranking.Scoring import ScoringStore
@@ -473,6 +473,32 @@ class RootHandler:
         return response
 
 
+class PublicConfigHandler:
+
+    def __init__(self, pub_config: PublicConfig):
+        self.pub_config = pub_config
+
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    @responder
+    def wsgi_app(self, environ, start_response):
+        request = Request(environ)
+        request.encoding_errors = "strict"
+
+        response = Response()
+        response.status_code = 200
+        response.mimetype = "application/json"
+        print(str(self.pub_config))
+        response.data = json.dumps(
+            self.pub_config,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+        )
+
+        return response
+
+
 class RoutingHandler:
 
     def __init__(
@@ -482,6 +508,7 @@ class RoutingHandler:
         logo_handler: ImageHandler,
         score_handler: ScoreHandler,
         history_handler: HistoryHandler,
+        public_config_handler: PublicConfigHandler,
     ):
         self.router = Map([
             Rule("/", methods=["GET"], endpoint="root"),
@@ -489,6 +516,7 @@ class RoutingHandler:
             Rule("/scores", methods=["GET"], endpoint="scores"),
             Rule("/events", methods=["GET"], endpoint="events"),
             Rule("/logo", methods=["GET"], endpoint="logo"),
+            Rule("/config", methods=["GET"], endpoint="public_config")
         ], encoding_errors="strict")
 
         self.event_handler = event_handler
@@ -496,6 +524,7 @@ class RoutingHandler:
         self.score_handler = score_handler
         self.history_handler = history_handler
         self.root_handler = root_handler
+        self.public_config_handler = public_config_handler
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -517,6 +546,8 @@ class RoutingHandler:
             return self.score_handler(environ, start_response)
         elif endpoint == "history":
             return self.history_handler(environ, start_response)
+        elif endpoint == 'public_config':
+            return self.public_config_handler(environ, start_response)
 
 
 def main() -> int:
@@ -593,7 +624,8 @@ def main() -> int:
             os.path.join(config.lib_dir, '%(name)s'),
             os.path.join(web_dir, 'img', 'logo.png')),
         ScoreHandler(stores),
-        HistoryHandler(stores))
+        HistoryHandler(stores),
+        PublicConfigHandler(config.public))
 
     wsgi_app = SharedDataMiddleware(DispatcherMiddleware(
         toplevel_handler, {
