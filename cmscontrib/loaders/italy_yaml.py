@@ -611,10 +611,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             load(conf, args, "score_type")
             load(conf, args, "score_type_parameters")
         else:
-            if "score_type" in conf or "score_type_parameters" in conf or "n_input" in conf:
+            if "score_type" in conf or "score_type_parameters" in conf:
                 logger.warning("To override score type data, task.yaml must "
                             "specify all 'score_type', "
-                            "'score_type_parameters' and"
+                            "'score_type_parameters' and "
                             "'n_input'.")
                 
             # Detect subtasks by checking GEN
