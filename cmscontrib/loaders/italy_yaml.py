@@ -603,95 +603,98 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         else:
             evaluation_param = "diff"
 
-        # Detect subtasks by checking GEN
-        gen_filename = os.path.join(self.path, 'gen', 'GEN')
-        try:
-            with open(gen_filename, "rt", encoding="utf-8") as gen_file:
-                subtasks = []
-                testcases = 0
-                points = None
-                for line in gen_file:
-                    line = line.strip()
-                    splitted = line.split('#', 1)
-
-                    if len(splitted) == 1:
-                        # This line represents a testcase, otherwise
-                        # it's just a blank
-                        if splitted[0] != '':
-                            testcases += 1
-
-                    else:
-                        testcase, comment = splitted
-                        testcase = testcase.strip()
-                        comment = comment.strip()
-                        testcase_detected = len(testcase) > 0
-                        copy_testcase_detected = comment.startswith("COPY:")
-                        subtask_detected = comment.startswith('ST:')
-
-                        flags = [testcase_detected,
-                                 copy_testcase_detected,
-                                 subtask_detected]
-                        if len([x for x in flags if x]) > 1:
-                            raise Exception("No testcase and command in"
-                                            " the same line allowed")
-
-                        # This line represents a testcase and contains a
-                        # comment, but the comment doesn't start a new
-                        # subtask
-                        if testcase_detected or copy_testcase_detected:
-                            testcases += 1
-
-                        # This line starts a new subtask
-                        if subtask_detected:
-                            # Close the previous subtask
-                            if points is None:
-                                assert testcases == 0
-                            else:
-                                subtasks.append([points, testcases])
-                            # Open the new one
-                            testcases = 0
-                            points = int(comment[3:].strip())
-
-                # Close last subtask (if no subtasks were defined, just
-                # fallback to Sum)
-                if points is None:
-                    args["score_type"] = "Sum"
-                    total_value = float(conf.get("total_value", 100.0))
-                    input_value = 0.0
-                    n_input = testcases
-                    if n_input != 0:
-                        input_value = total_value / n_input
-                    args["score_type_parameters"] = input_value
-                else:
-                    subtasks.append([points, testcases])
-                    assert 100 == sum([int(st[0]) for st in subtasks])
-                    n_input = sum([int(st[1]) for st in subtasks])
-                    args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = subtasks
-
-                if "n_input" in conf:
-                    assert int(conf['n_input']) == n_input
-
-        # If gen/GEN doesn't exist, just fallback to Sum
-        except OSError:
-            args["score_type"] = "Sum"
-            total_value = float(conf.get("total_value", 100.0))
-            input_value = 0.0
-            n_input = int(conf['n_input'])
-            if n_input != 0:
-                input_value = total_value / n_input
-            args["score_type_parameters"] = input_value
-
         # Override score_type if explicitly specified
-        if "score_type" in conf and "score_type_parameters" in conf:
+        if "score_type" in conf and "score_type_parameters" in conf and "n_input" in conf:
             logger.info("Overriding 'score_type' and 'score_type_parameters' "
                         "as per task.yaml")
+            n_input = conf["n_input"]
             load(conf, args, "score_type")
             load(conf, args, "score_type_parameters")
-        elif "score_type" in conf or "score_type_parameters" in conf:
-            logger.warning("To override score type data, task.yaml must "
-                           "specify both 'score_type' and "
-                           "'score_type_parameters'.")
+        else:
+            if "score_type" in conf or "score_type_parameters" in conf:
+                logger.warning("To override score type data, task.yaml must "
+                            "specify all 'score_type', "
+                            "'score_type_parameters' and "
+                            "'n_input'.")
+                
+            # Detect subtasks by checking GEN
+            gen_filename = os.path.join(self.path, 'gen', 'GEN')
+            try:
+                with open(gen_filename, "rt", encoding="utf-8") as gen_file:
+                    subtasks = []
+                    testcases = 0
+                    points = None
+                    for line in gen_file:
+                        line = line.strip()
+                        splitted = line.split('#', 1)
+
+                        if len(splitted) == 1:
+                            # This line represents a testcase, otherwise
+                            # it's just a blank
+                            if splitted[0] != '':
+                                testcases += 1
+
+                        else:
+                            testcase, comment = splitted
+                            testcase = testcase.strip()
+                            comment = comment.strip()
+                            testcase_detected = len(testcase) > 0
+                            copy_testcase_detected = comment.startswith("COPY:")
+                            subtask_detected = comment.startswith('ST:')
+
+                            flags = [testcase_detected,
+                                    copy_testcase_detected,
+                                    subtask_detected]
+                            if len([x for x in flags if x]) > 1:
+                                raise Exception("No testcase and command in"
+                                                " the same line allowed")
+
+                            # This line represents a testcase and contains a
+                            # comment, but the comment doesn't start a new
+                            # subtask
+                            if testcase_detected or copy_testcase_detected:
+                                testcases += 1
+
+                            # This line starts a new subtask
+                            if subtask_detected:
+                                # Close the previous subtask
+                                if points is None:
+                                    assert testcases == 0
+                                else:
+                                    subtasks.append([points, testcases])
+                                # Open the new one
+                                testcases = 0
+                                points = int(comment[3:].strip())
+
+                    # Close last subtask (if no subtasks were defined, just
+                    # fallback to Sum)
+                    if points is None:
+                        args["score_type"] = "Sum"
+                        total_value = float(conf.get("total_value", 100.0))
+                        input_value = 0.0
+                        n_input = testcases
+                        if n_input != 0:
+                            input_value = total_value / n_input
+                        args["score_type_parameters"] = input_value
+                    else:
+                        subtasks.append([points, testcases])
+                        assert 100 == sum([int(st[0]) for st in subtasks])
+                        n_input = sum([int(st[1]) for st in subtasks])
+                        args["score_type"] = "GroupMin"
+                        args["score_type_parameters"] = subtasks
+
+                    if "n_input" in conf:
+                        assert int(conf['n_input']) == n_input
+
+            # If gen/GEN doesn't exist, just fallback to Sum
+            except OSError:
+                args["score_type"] = "Sum"
+                total_value = float(conf.get("total_value", 100.0))
+                input_value = 0.0
+                n_input = int(conf['n_input'])
+                if n_input != 0:
+                    input_value = total_value / n_input
+                args["score_type_parameters"] = input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):
