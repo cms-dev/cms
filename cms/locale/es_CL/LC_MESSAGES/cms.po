@@ -1,17 +1,17 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2025-10-29 03:03+0000\n"
+"Last-Translator: Alan Nathan Mendoza Grande <mendozaalan721@gmail.com>\n"
+"Language-Team: Spanish (Chile) <https://hosted.weblate.org/projects/cms/main/es_CL/>\n"
 "Language: es_CL\n"
-"Language-Team: es_CL TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -110,20 +110,17 @@ msgstr "Tiempo límite excedido (tiempo físico total)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "El envío utilizó demasiado tiempo en total. Esto podría ser el resultado de código con comportamiento indefinido o desbordamientos (buffer overflow). Notar que en este caso, el tiempo de CPU que se muestra en los detalles podría ser muy inferior al tiempo máximo permitido."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Límite de memoria"
+msgstr "Límite de memoria excedida"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "El envío utilizó demasiado tiempo de CPU."
+msgstr "Tu envío excedió el límite de memoria."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Tiempo límite excedido"
+msgstr "La ejecución fue terminada por una señal."
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "La evaluación fue terminada por una señal."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Ejecución fallida por código de retorno distinto de cero"
@@ -349,7 +346,7 @@ msgstr "Cada archivo de código fuente debe tener un tamaño de a lo sumo %d byt
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "El envío debe contener como máximo %d archivos."
 
 msgid "Invalid archive format!"
 msgstr "¡El formato del archivo comprimido es inválido!"
@@ -1040,4 +1037,3 @@ msgstr "Enviado a la impresora"
 
 #~ msgid "Standard Template Library"
 #~ msgstr "Standrad Template Library"
-
