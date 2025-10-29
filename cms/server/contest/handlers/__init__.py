@@ -52,7 +52,11 @@ from .taskusertest import \
     UserTestDetailsHandler, \
     UserTestIOHandler, \
     UserTestFileHandler
-
+from .ddd import \
+    DDDLoginHandler, \
+    DDDNewUserHandler, \
+    DDDAddUserToContestHandler, \
+    DDDUpdateUserHandler
 
 HANDLERS = [
 
@@ -100,6 +104,11 @@ HANDLERS = [
     # The following prefixes are handled by WSGI middlewares:
     # * /static, defined in cms/io/web_service.py
     # * /stl, defined in cms/server/contest/server.py
+
+    (r"/ddd/login", DDDLoginHandler),
+    (r"/ddd/update_user", DDDUpdateUserHandler),
+    (r"/ddd/add_user_to_contest", DDDAddUserToContestHandler),
+    (r"/ddd/new_user", DDDNewUserHandler),
 ]
 
 

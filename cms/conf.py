@@ -199,6 +199,11 @@ class Config:
         if CMS_CONFIG_ENV_VAR in os.environ:
             paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
 
+        # Keys for communicating with the DDD main site (different in production)
+        self.ddd_jwt_alg = "HS256"
+        self.ddd_jwt_key = "eab27693fb749631b3469134f2019d1b"
+        self.ddd_url = "localhost:8000"
+
         # Attempt to load a config file.
         self._load(paths)
 
