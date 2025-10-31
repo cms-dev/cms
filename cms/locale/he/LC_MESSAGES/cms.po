@@ -8,67 +8,68 @@ msgstr ""
 "Project-Id-Version: Contest Management System 1.5.1\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-25 00:17+0300\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2025-11-01 21:51+0000\n"
+"Last-Translator: Ron Ryvchin <ron.ryv@gmail.com>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/cms/main/he/>\n"
 "Language: he\n"
-"Language-Team: he <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
-msgstr ""
+msgstr "N/A"
 
 msgid "Not correct"
-msgstr ""
+msgstr "שגוי"
 
 msgid "Correct"
-msgstr ""
+msgstr "נכון"
 
 msgid "Partially correct"
-msgstr ""
+msgstr "נכון חלקית"
 
 msgid "#"
-msgstr ""
+msgstr "#"
 
 msgid "Outcome"
-msgstr ""
+msgstr "תוצאה"
 
 msgid "Details"
-msgstr ""
+msgstr "פרטים"
 
 msgid "Execution time"
-msgstr ""
+msgstr "זמן ריצה"
 
 msgid "Memory used"
-msgstr ""
+msgstr "זיכרון שהשתמשתם בו"
 
 msgid "Score details temporarily unavailable."
-msgstr ""
+msgstr "פרטי הניקוד אינם זמינים באופן זמני."
 
 #, python-format
 msgid "Subtask %(index)s"
-msgstr ""
+msgstr "תת משימה %(index)s"
 
 msgid "Compilation succeeded"
-msgstr ""
+msgstr "הקומפילציה עברה בהצלחה"
 
 msgid "Your submission successfully compiled to an executable."
-msgstr ""
+msgstr "ההגשה שלכם התקמפלה בהצלחה לקובץ הרצה."
 
 msgid "Compilation failed"
-msgstr ""
+msgstr "הקומפילציה נכשלה"
 
 msgid "Your submission did not compile correctly."
-msgstr ""
+msgstr "ההגשה שלכם לא התקמפלה בהצלחה."
 
 msgid "Compilation timed out"
-msgstr ""
+msgstr "הקומפילציה חרגה מהזמן המוקצב"
 
 msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "ההגשה שלכם חרגה ממגבלת הזמן בעת הקמפול. זה עלול להגרם על ידי שימוש יתר ב-templates של C++, למשל."
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
@@ -78,19 +79,19 @@ msgid "Your submission was killed with the specified signal. Among other things,
 msgstr ""
 
 msgid "Output is correct"
-msgstr ""
+msgstr "הפלט נכון"
 
 msgid "Your submission ran and gave the correct answer"
 msgstr ""
 
 msgid "Output is partially correct"
-msgstr ""
+msgstr "הפלט נכון חלקית"
 
 msgid "Your submission ran and gave the partially correct answer"
 msgstr ""
 
 msgid "Output isn't correct"
-msgstr ""
+msgstr "הפלט שגוי"
 
 msgid "Your submission ran, but gave the wrong answer"
 msgstr ""
@@ -118,7 +119,7 @@ msgid "Memory limit exceeded"
 msgstr ""
 
 msgid "Your submission used too much memory."
-msgstr ""
+msgstr "ההגשה שלכם השתמשה ביותר מידי זכרון."
 
 msgid "Execution killed by signal"
 msgstr ""
@@ -139,7 +140,7 @@ msgid "No compilation needed"
 msgstr ""
 
 msgid "File not submitted"
-msgstr ""
+msgstr "הקובץ לא הוגש"
 
 msgid "Question too long!"
 msgstr ""
@@ -258,19 +259,19 @@ msgid "Your submission has been received and is currently being evaluated."
 msgstr ""
 
 msgid "Compiling..."
-msgstr ""
+msgstr "מתקמפלת..."
 
 msgid "Evaluating..."
-msgstr ""
+msgstr "נבדקת..."
 
 msgid "Scoring..."
-msgstr ""
+msgstr "מנוקדת..."
 
 msgid "Evaluated"
-msgstr ""
+msgstr "נבדקה"
 
 msgid "status"
-msgstr ""
+msgstr "סטטוס"
 
 msgid "Token request received"
 msgstr ""
@@ -288,7 +289,7 @@ msgid "details"
 msgstr ""
 
 msgid "Executing..."
-msgstr ""
+msgstr "מורצת..."
 
 msgid "Executed"
 msgstr ""
@@ -307,7 +308,7 @@ msgid "Please select the correct files."
 msgstr ""
 
 msgid "File too big!"
-msgstr ""
+msgstr "הקובץ גדול מידי!"
 
 #, python-format
 msgid "Each file must be at most %d bytes long."
@@ -1032,4 +1033,3 @@ msgstr ""
 
 msgid "Sent to printer"
 msgstr ""
-
