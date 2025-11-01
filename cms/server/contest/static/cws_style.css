@@ -17,9 +17,54 @@ body {
     }
 }
 
+.task_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.4);
+}
+
+.task_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.4);
+}
+
+.task_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.4);
+}
+
+/* add color in table overview */
+.table-striped tbody>tr>th.overview-score.score_0,
+.table-striped tbody>tr:nth-child(odd)>th.overview-score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.4) !important;
+    white-space: nowrap;
+}
+
+.table-striped tbody>tr:hover>th.overview-score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.5) !important;
+    white-space: nowrap;
+}
+
+.table-striped tbody>tr>th.overview-score.score_0_100,
+.table-striped tbody>tr:nth-child(odd)>th.overview-score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.4) !important;
+    white-space: nowrap;
+}
+
+.table-striped tbody>tr:hover>th.overview-score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.5) !important;
+    white-space: nowrap;
+}
+
+.table-striped tbody>tr>th.overview-score.score_100,
+.table-striped tbody>tr:nth-child(odd)>th.overview-score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.4) !important;
+    white-space: nowrap;
+}
+
+.table-striped tbody>tr:hover>th.overview-score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.5) !important;
+    white-space: nowrap;
+}
 /* Remove the on-hover coloring of rows in tables with table-nohover class */
 .table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {
-    background-color: transparent !important;
+    background-color: transparent;
 }
 
 /** Announcements, questions, answers and messages **/
@@ -450,17 +495,6 @@ td.token_rules p:last-child {
     margin-left: 5px;
 }
 
-.task_score.score_0 {
-    background-color: hsla(0, 100%, 50%, 0.4);
-}
-
-.task_score.score_0_100 {
-    background-color: hsla(60, 100%, 50%, 0.4);
-}
-
-.task_score.score_100 {
-    background-color: hsla(120, 100%, 50%, 0.4);
-}
 
 /*** Submit a solution */
 
