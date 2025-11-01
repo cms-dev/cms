@@ -1,0 +1,103 @@
+https://github.com/cms-dev/cms
+
+docker compose -p cms-main -f docker/docker-compose.dev.yml down         
+ลบประวัติทั้งหมด
+
+docker ps 
+ดูที่มีอยู่
+
+
+sudo rm -rf .dev/postgres-data
+sudo rm -rf .dev/postgres-conf
+ลบข้อมูลเก่า
+
+sudo ufw disable
+
+
+sudo ufw allow 8888:8890/tcp
+sudo ufw reload
+เปิด port
+
+cd .. 
+sudo chown -R singto1597:singto1597 cms
+sudo chmod -R 777 cms
+sudo rm -rf cmsPiriyalai/.dev/postgres-data
+sudo rm -rf cmsPiriyalai/.dev/postgres-conf
+cd cms
+
+./docker/cms-dev.sh
+รันสคริป
+
+
+ใน cms terminal
+sudo chown -R cmsuser:cmsuser .
+แก้สิทธิ์
+
+createdb -h devdb -U postgres cmsdb
+ตรวจสอบข้อมูล ถ้าไม่ได้ กดซ้ำๆ
+
+cmsInitDB
+
+
+git clone https://github.com/cms-dev/con_test.git
+cd con_test
+cmsImportUser --all
+cmsImportContest -i .
+
+cmsContestWebServer
+
+cmsAdminWebServer
+
+cmsEvaluationService
+cmsWorker
+cmsScoringService
+
+cmsLogService
+cmsChecker
+cmsPrintingService
+cmsProxyService
+cmsResourceService
+
+netstat -tulnp | grep 8889 (ดูพอร์ต)
+kill <pid>
+
+
+
+docker exec -it ............ /bin/bash
+
+
+
+-----
+cmsAddUser Admin user admin
+cmsAddAdmin singto
+
+
+เข้าระบบหลังบ้าน แล้วสามารถใช้ 
+psql -U postgres cmsdb
+SELECT id, username FROM users;
+SELECT id, password FROM users;
+
+
+
+เปลี่ยนรหัส
+UPDATE users SET password = 'plaintext:singto25222524' WHERE username = 'singto';
+
+vcurqc
+
+
+
+
+
+การปิด ให้ ctrl + c ทั้งหมด แล้วก็ออกมา อยู่บนเครื่อง แล้วให้ใช้
+docker compose -p cms-main -f docker/docker-compose.dev.yml down
+ถ้าปิดแล้วยังเหลืออยู่ให้ใช้ 
+docker stop ....
+
+หากจะเปิดขึ้นมาอีกรอบให้ใช้
+sudo chmod -R 777 .dev/postgres-data
+docker compose -p cms-main -f docker/docker-compose.dev.yml up -d devdb
+docker ps 
+ตอนนี้รันพื้นหลังมาเรียบร้อยแล้ว
+./docker/cms-dev.sh
+cd con_test
+cmsContestWebServer
