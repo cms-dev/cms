@@ -193,6 +193,7 @@
     </colgroup> -->
     <thead>
         <tr>
+            <th>{% trans %}Score{% endtrans %}</th>
             <th>{% trans %}Task{% endtrans %}</th>
             <th>{% trans %}Name{% endtrans %}</th>
             <th>{% trans %}Time limit{% endtrans %}</th>
@@ -209,6 +210,23 @@
         {% set task_allowed_languages = t_iter.get_allowed_languages() %}
         {% set extensions = "[%s]"|format(task_allowed_languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
         <tr>
+            {% set score_data = task_scores[t_iter.name] | default(None) %}
+            {% set current_score = score_data.score | default(0) %}
+            {% set max_score = score_data.max_score | default(100) %}
+            {# ------------------------------------------- #}
+            <th class="overview-score
+                {% if current_score <= 0 %}
+                    score_0
+                {% elif current_score >= max_score %}
+                    score_100
+                {% elif current_score > 0 %}
+                    score_0_100
+                {% else %}
+                    score_0
+                {% endif %}
+            ">
+                {{ "%.0f"|format(current_score) }} / {{ "%.0f"|format(max_score) }}
+            </th>
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>

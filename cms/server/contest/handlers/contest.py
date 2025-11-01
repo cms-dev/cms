@@ -41,6 +41,8 @@ import collections
 from cms.db.user import Participation
 from cms.server.util import Url
 
+from sqlalchemy import desc
+
 try:
     collections.MutableMapping
 except:
@@ -51,6 +53,7 @@ import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest, contest
+from cms.db.submission import SubmissionResult
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -230,7 +233,48 @@ class ContestHandler(BaseHandler):
 
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(participation.user, self.contest)
+            task_scores = {}
+            current_participation = self.current_user
 
+            for task in self.contest.tasks:
+                
+                # ดึง SubmissionResult ที่ดีที่สุดสำหรับ Task นี้
+                # โดยใช้คะแนน (score) เป็นเกณฑ์ในการเรียงลำดับ
+                # และต้องเป็น Submission ที่ 'official' ด้วย (ตามมาตรฐานการนับคะแนน)
+                
+                best_result = self.sql_session.query(SubmissionResult)\
+                    .join(SubmissionResult.submission)\
+                    .filter(Submission.participation == current_participation)\
+                    .filter(Submission.task == task)\
+                    .filter(Submission.official == True)\
+                    .order_by(desc(SubmissionResult.score))\
+                    .first() 
+                
+                current_score = 0
+                if best_result:
+                    # ใช้ public_score เพื่อแสดงผลตามที่ผู้เข้าแข่งขันควรจะเห็น
+                    # หรือใช้ score หากต้องการคะแนนจริง ๆ (ขึ้นอยู่กับ Policy)
+                    # เราจะใช้ public_score เป็นค่าเริ่มต้น
+                    current_score = best_result.public_score if best_result.public_score is not None else 0.0
+
+                max_score = 100
+                if task.active_dataset:
+                    try:
+                        # score_type_object จะถูกนิยามใน Dataset Model (task.py) 
+                        # และมี property ชื่อ max_score อยู่
+                        max_score = task.active_dataset.score_type_object.max_score
+                    except Exception:
+                        # ถ้าเกิดข้อผิดพลาดในการเข้าถึง (เช่น score_type_object ยังไม่มี)
+                        # ให้ใช้ค่าเริ่มต้น 100 ไปก่อน
+                        pass 
+
+                task_scores[task.name] = {
+                    "score": current_score,
+                    "max_score": max_score
+                }
+
+            # ส่ง task_scores ไปให้ template
+            ret["task_scores"] = task_scores
         # some information about token configuration
         ret["tokens_contest"] = self.contest.token_mode
 
