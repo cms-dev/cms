@@ -19,59 +19,47 @@ body {
 
 .task_score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.4);
-    /* สีแดง/ส้มอ่อน */
 }
 
 .task_score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.4);
-    /* สีเหลือง/เขียวอ่อน */
 }
 
 .task_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.4);
-    /* สีเขียวอ่อน */
 }
 
-/* 1. กฎสำหรับ .score_0 (สีแดง) */
 .table-striped tbody>tr>th.overview-score.score_0,
 .table-striped tbody>tr:nth-child(odd)>th.overview-score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.4) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 
 .table-striped tbody>tr:hover>th.overview-score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.5) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 
-/* 2. กฎสำหรับ .score_0_100 (สีเหลือง) */
 .table-striped tbody>tr>th.overview-score.score_0_100,
 .table-striped tbody>tr:nth-child(odd)>th.overview-score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.4) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 
 .table-striped tbody>tr:hover>th.overview-score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.5) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 
-/* 3. กฎสำหรับ .score_100 (สีเขียว) */
 .table-striped tbody>tr>th.overview-score.score_100,
 .table-striped tbody>tr:nth-child(odd)>th.overview-score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.4) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 
 .table-striped tbody>tr:hover>th.overview-score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.5) !important;
     white-space: nowrap;
-    /* บังคับไม่ให้ตัดคำ */
 }
 /* Remove the on-hover coloring of rows in tables with table-nohover class */
 .table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {

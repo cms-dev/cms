@@ -237,11 +237,6 @@ class ContestHandler(BaseHandler):
             current_participation = self.current_user
 
             for task in self.contest.tasks:
-                
-                # ดึง SubmissionResult ที่ดีที่สุดสำหรับ Task นี้
-                # โดยใช้คะแนน (score) เป็นเกณฑ์ในการเรียงลำดับ
-                # และต้องเป็น Submission ที่ 'official' ด้วย (ตามมาตรฐานการนับคะแนน)
-                
                 best_result = self.sql_session.query(SubmissionResult)\
                     .join(SubmissionResult.submission)\
                     .filter(Submission.participation == current_participation)\
@@ -253,8 +248,6 @@ class ContestHandler(BaseHandler):
                 current_score = 0
                 if best_result:
                     # ใช้ public_score เพื่อแสดงผลตามที่ผู้เข้าแข่งขันควรจะเห็น
-                    # หรือใช้ score หากต้องการคะแนนจริง ๆ (ขึ้นอยู่กับ Policy)
-                    # เราจะใช้ public_score เป็นค่าเริ่มต้น
                     current_score = best_result.public_score if best_result.public_score is not None else 0.0
 
                 max_score = 100
@@ -264,8 +257,7 @@ class ContestHandler(BaseHandler):
                         # และมี property ชื่อ max_score อยู่
                         max_score = task.active_dataset.score_type_object.max_score
                     except Exception:
-                        # ถ้าเกิดข้อผิดพลาดในการเข้าถึง (เช่น score_type_object ยังไม่มี)
-                        # ให้ใช้ค่าเริ่มต้น 100 ไปก่อน
+                        # ถ้าเกิดข้อผิดพลาดในการเข้าถึงให้ใช้ค่าเริ่มต้น 100 
                         pass 
 
                 task_scores[task.name] = {
