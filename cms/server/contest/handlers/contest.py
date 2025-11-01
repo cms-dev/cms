@@ -247,17 +247,13 @@ class ContestHandler(BaseHandler):
                 
                 current_score = 0
                 if best_result:
-                    # ใช้ public_score เพื่อแสดงผลตามที่ผู้เข้าแข่งขันควรจะเห็น
                     current_score = best_result.public_score if best_result.public_score is not None else 0.0
 
                 max_score = 100
                 if task.active_dataset:
                     try:
-                        # score_type_object จะถูกนิยามใน Dataset Model (task.py) 
-                        # และมี property ชื่อ max_score อยู่
                         max_score = task.active_dataset.score_type_object.max_score
                     except Exception:
-                        # ถ้าเกิดข้อผิดพลาดในการเข้าถึงให้ใช้ค่าเริ่มต้น 100 
                         pass 
 
                 task_scores[task.name] = {
@@ -265,7 +261,7 @@ class ContestHandler(BaseHandler):
                     "max_score": max_score
                 }
 
-            # ส่ง task_scores ไปให้ template
+            # sent score to fontend
             ret["task_scores"] = task_scores
         # some information about token configuration
         ret["tokens_contest"] = self.contest.token_mode

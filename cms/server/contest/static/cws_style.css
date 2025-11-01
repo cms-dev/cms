@@ -29,6 +29,7 @@ body {
     background-color: hsla(120, 100%, 50%, 0.4);
 }
 
+/* add color in table overview */
 .table-striped tbody>tr>th.overview-score.score_0,
 .table-striped tbody>tr:nth-child(odd)>th.overview-score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.4) !important;
