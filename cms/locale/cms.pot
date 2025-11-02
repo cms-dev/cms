@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Contest Management System 1.5.1\n"
+"Project-Id-Version: Contest Management System 1.6.dev0\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -244,12 +244,6 @@ msgstr ""
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr ""
 
-msgid "Print job received"
-msgstr ""
-
-msgid "Your print job has been received."
-msgstr ""
-
 msgid "Submission received"
 msgstr ""
 
@@ -290,32 +284,6 @@ msgid "Executing..."
 msgstr ""
 
 msgid "Executed"
-msgstr ""
-
-msgid "Too many print jobs!"
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr ""
-
-msgid "Invalid format!"
-msgstr ""
-
-msgid "Please select the correct files."
-msgstr ""
-
-msgid "File too big!"
-msgstr ""
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr ""
-
-msgid "Print job storage failed!"
-msgstr ""
-
-msgid "Please try again."
 msgstr ""
 
 msgid "Too many submissions!"
@@ -360,7 +328,13 @@ msgstr ""
 msgid "Invalid submission format!"
 msgstr ""
 
+msgid "Please select the correct files."
+msgstr ""
+
 msgid "Submission storage failed!"
+msgstr ""
+
+msgid "Please try again."
 msgstr ""
 
 msgid "Too many tests!"
@@ -510,9 +484,6 @@ msgid "Documentation"
 msgstr ""
 
 msgid "Testing"
-msgstr ""
-
-msgid "Printing"
 msgstr ""
 
 msgid "Contest Management System"
@@ -723,50 +694,6 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-msgid "Print"
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr ""
-
-msgid "File (text or PDF)"
-msgstr ""
-
-msgid "File (text)"
-msgstr ""
-
-msgid "Submit"
-msgstr ""
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-msgid "Previous print jobs"
-msgstr ""
-
-msgid "Date and time"
-msgstr ""
-
-msgid "Time"
-msgstr ""
-
-msgid "File name"
-msgstr ""
-
-msgid "Status"
-msgstr ""
-
-msgid "Preparing..."
-msgstr ""
-
-msgid "no print jobs yet"
-msgstr ""
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -902,6 +829,9 @@ msgstr ""
 msgid "loading..."
 msgstr ""
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr ""
@@ -926,6 +856,9 @@ msgstr ""
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr ""
+
+msgid "Submit"
 msgstr ""
 
 msgid "submission.zip"
@@ -993,6 +926,15 @@ msgstr ""
 msgid "Previous tests"
 msgstr ""
 
+msgid "Date and time"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
 msgid "Input"
 msgstr ""
 
@@ -1021,14 +963,5 @@ msgid "Your request has been discarded because you have no tokens available."
 msgstr ""
 
 msgid "Your request has been discarded because you already used a token on that submission."
-msgstr ""
-
-msgid "Invalid file"
-msgstr ""
-
-msgid "Print job has too many pages"
-msgstr ""
-
-msgid "Sent to printer"
 msgstr ""
 

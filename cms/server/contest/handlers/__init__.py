@@ -47,7 +47,6 @@ from .main import \
     RegistrationHandler, \
     StartHandler, \
     NotificationsHandler, \
-    PrintingHandler, \
     DocumentationHandler
 from .communication import \
     CommunicationHandler, \
@@ -68,7 +67,6 @@ HANDLERS = [
     (r"/register", RegistrationHandler),
     (r"/start", StartHandler),
     (r"/notifications", NotificationsHandler),
-    (r"/printing", PrintingHandler),
     (r"/documentation", DocumentationHandler),
 
     # Tasks

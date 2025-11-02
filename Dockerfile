@@ -23,7 +23,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         ghc
         git
         libcap-dev
-        libcups2-dev
         libffi-dev
         libpq-dev
         libyaml-dev

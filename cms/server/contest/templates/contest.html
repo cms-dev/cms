@@ -200,11 +200,6 @@ $(document).ready(function () {
                                 <a href="{{ contest_url("testing") }}">{% trans %}Testing{% endtrans %}</a>
                             </li>
         {% endif %}
-        {% if printing_enabled %}
-                            <li{% if page == "printing" %} class="active"{% endif %}>
-                                <a href="{{ contest_url("printing") }}">{% trans %}Printing{% endtrans %}</a>
-                            </li>
-        {% endif %}
     {% endif %}
                         </ul>
                     </div>

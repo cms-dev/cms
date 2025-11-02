@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-08-24 21:04+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
-"Language-Team: Ukrainian <https://hosted.weblate.org/projects/cms/main/uk/>\n"
 "Language: uk\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/cms/main/uk/>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -250,12 +250,6 @@ msgstr "Питання отримано"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Ваше запитання отримано, Ви отримаєте сповіщення, коли на нього дадуть відповідь."
 
-msgid "Print job received"
-msgstr "Отримано завдання для друку"
-
-msgid "Your print job has been received."
-msgstr "Ваше завдання для друку отримано."
-
 msgid "Submission received"
 msgstr "Спробу отримано"
 
@@ -297,32 +291,6 @@ msgstr "Виконання..."
 
 msgid "Executed"
 msgstr "Виконано"
-
-msgid "Too many print jobs!"
-msgstr "Забагато завдань для друку!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Ви досягли максимальної кількості завдань для друку (%d)."
-
-msgid "Invalid format!"
-msgstr "Недійсний формат!"
-
-msgid "Please select the correct files."
-msgstr "Виберіть правильні файли."
-
-msgid "File too big!"
-msgstr "Файл завеликий!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Довжина кожного файлу не повинна перевищувати %d байтів."
-
-msgid "Print job storage failed!"
-msgstr "Не вдалося зберегти завдання для друку!"
-
-msgid "Please try again."
-msgstr "Будь ласка спробуйте ще раз."
 
 msgid "Too many submissions!"
 msgstr "Забагато спроб!"
@@ -366,8 +334,14 @@ msgstr "Не вдалося відкрити надісланий архів."
 msgid "Invalid submission format!"
 msgstr "Недійсний формат спроби!"
 
+msgid "Please select the correct files."
+msgstr "Виберіть правильні файли."
+
 msgid "Submission storage failed!"
 msgstr "Помилка зберігання даних!"
+
+msgid "Please try again."
+msgstr "Будь ласка спробуйте ще раз."
 
 msgid "Too many tests!"
 msgstr "Забагато тестів!"
@@ -517,9 +491,6 @@ msgstr "Документація"
 
 msgid "Testing"
 msgstr "Тестування"
-
-msgid "Printing"
-msgstr "Друк"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -729,50 +700,6 @@ msgstr "Так"
 msgid "No"
 msgstr "Ні"
 
-msgid "Print"
-msgstr "Роздрукувати"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Ви можете надрукувати ще %(remaining_jobs)s текстових або PDF-файлів обсягом до %(max_pages)s сторінок кожен."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Ви можете надрукувати ще %(remaining_jobs)s текстових файлів обсягом до %(max_pages)s сторінок кожен."
-
-msgid "File (text or PDF)"
-msgstr "Файл (текст або PDF)"
-
-msgid "File (text)"
-msgstr "Файл (текст)"
-
-msgid "Submit"
-msgstr "Надіслати"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Ви більше не можете нічого друкувати, оскільки ви використали свою квоту друку."
-
-msgid "Previous print jobs"
-msgstr "Попередні завдання для друку"
-
-msgid "Date and time"
-msgstr "Дата і час"
-
-msgid "Time"
-msgstr "Час"
-
-msgid "File name"
-msgstr "Ім'я файлу"
-
-msgid "Status"
-msgstr "Статус"
-
-msgid "Preparing..."
-msgstr "Підготовка..."
-
-msgid "no print jobs yet"
-msgstr "ще немає завдань для друку"
-
 msgid "The passwords do not match!"
 msgstr "Паролі не збігаються!"
 
@@ -909,6 +836,9 @@ msgstr "невідомий"
 msgid "loading..."
 msgstr "завантаження..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>спроби</small>"
@@ -934,6 +864,9 @@ msgstr "Ви можете надіслати будь-яку підмножин�
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Ви можете надіслати ще %(submissions_left)s рішення(ів)."
+
+msgid "Submit"
+msgstr "Надіслати"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -1000,6 +933,15 @@ msgstr "вхідні дані"
 msgid "Previous tests"
 msgstr "Попередні тести"
 
+msgid "Date and time"
+msgstr "Дата і час"
+
+msgid "Time"
+msgstr "Час"
+
+msgid "Status"
+msgstr "Статус"
+
 msgid "Input"
 msgstr "Вхідні дані"
 
@@ -1030,20 +972,3 @@ msgstr "Ваш запит відхилено, оскільки у вас нем�
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Ваш запит відхилено, оскільки ви вже використали токен для цієї спроби."
 
-msgid "Invalid file"
-msgstr "Неправильний файл"
-
-msgid "Print job has too many pages"
-msgstr "Завдання для друку містить забагато сторінок"
-
-msgid "Sent to printer"
-msgstr "Відправлено на принтер"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Виконання припинено (може бути викликано порушенням обмежень пам’яті)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Оцінювання було знищено сигналом. Серед іншого це може бути спричинено перевищенням ліміту пам’яті. Зауважте, що якщо це причина, використання пам’яті, видиме в деталях спроби, є використанням до розподілу, який спричинив сигнал."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Стандартна бібліотека шаблонів"

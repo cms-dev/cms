@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-11-09 16:47+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
-"Language-Team: Bulgarian <https://hosted.weblate.org/projects/cms/main/bg/>\n"
 "Language: bg\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/cms/main/bg/>\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -252,13 +252,6 @@ msgstr "Въпросът е получен"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Вашият въпрос беше получен. Ще бъдете уведомени, когато имате отговор."
 
-#, fuzzy
-msgid "Print job received"
-msgstr "Тестът е получен"
-
-msgid "Your print job has been received."
-msgstr ""
-
 msgid "Submission received"
 msgstr "Решението е получено"
 
@@ -304,33 +297,6 @@ msgstr "Изпълняване…"
 msgid "Executed"
 msgstr "Изпълнено"
 
-msgid "Too many print jobs!"
-msgstr "Твърде много задачи за разпечатване!"
-
-#, fuzzy, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Достигнахте максималния лимит от най-много %d изпращания на решения на всички задачи."
-
-msgid "Invalid format!"
-msgstr "Неправилен формат!"
-
-msgid "Please select the correct files."
-msgstr "Моля, изберете правилните файлове."
-
-msgid "File too big!"
-msgstr "Файлът е твърде голям!"
-
-#, fuzzy, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Всеки файл с код трябва да бъде най-много %d байта голям."
-
-#, fuzzy
-msgid "Print job storage failed!"
-msgstr "Съхраняватено на тестове се провали!"
-
-msgid "Please try again."
-msgstr "Моля, опитайте отново."
-
 msgid "Too many submissions!"
 msgstr "Твърде много изпратени решения!"
 
@@ -373,8 +339,14 @@ msgstr "Изпратеният архив не може да бъде отвор
 msgid "Invalid submission format!"
 msgstr "Неправилен формат на решението!"
 
+msgid "Please select the correct files."
+msgstr "Моля, изберете правилните файлове."
+
 msgid "Submission storage failed!"
 msgstr "Съхраняването на решението беше неуспешно!"
+
+msgid "Please try again."
+msgstr "Моля, опитайте отново."
 
 msgid "Too many tests!"
 msgstr "Твърде много тестове!"
@@ -527,9 +499,6 @@ msgstr "Документация"
 
 msgid "Testing"
 msgstr "Тестване"
-
-msgid "Printing"
-msgstr "Разпечатване"
 
 msgid "Contest Management System"
 msgstr ""
@@ -744,52 +713,6 @@ msgstr "Да"
 msgid "No"
 msgstr "Не"
 
-msgid "Print"
-msgstr "Разпечатване"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr ""
-
-msgid "File (text or PDF)"
-msgstr "Файл (текст или PDF)"
-
-msgid "File (text)"
-msgstr "Файл (текст)"
-
-msgid "Submit"
-msgstr "Изпращане"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-#, fuzzy
-msgid "Previous print jobs"
-msgstr "Предишни тестове"
-
-msgid "Date and time"
-msgstr "Дата и час"
-
-msgid "Time"
-msgstr "Време"
-
-#, fuzzy
-msgid "File name"
-msgstr "Име"
-
-msgid "Status"
-msgstr "Състояние"
-
-msgid "Preparing..."
-msgstr "Потготвяне…"
-
-msgid "no print jobs yet"
-msgstr "все още няма заявки за разпечатване"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -932,6 +855,9 @@ msgstr ""
 msgid "loading..."
 msgstr "зареждане…"
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>предадени решения</small>"
@@ -961,6 +887,9 @@ msgstr ""
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Можете да предадете още %(submissions_left)s решения."
+
+msgid "Submit"
+msgstr "Изпращане"
 
 #, fuzzy
 msgid "submission.zip"
@@ -1030,6 +959,15 @@ msgstr "вход"
 msgid "Previous tests"
 msgstr "Предишни тестове"
 
+msgid "Date and time"
+msgstr "Дата и час"
+
+msgid "Time"
+msgstr "Време"
+
+msgid "Status"
+msgstr "Състояние"
+
 msgid "Input"
 msgstr "Вход"
 
@@ -1061,11 +999,3 @@ msgstr ""
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr ""
 
-msgid "Invalid file"
-msgstr "Неправилен файл"
-
-msgid "Print job has too many pages"
-msgstr ""
-
-msgid "Sent to printer"
-msgstr ""

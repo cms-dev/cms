@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: lt_LT\n"
@@ -253,12 +253,6 @@ msgstr "Klausimas gautas"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Tavo klausimas gautas. Kai jis bus atsakytas, pasirodys pranešimas."
 
-msgid "Print job received"
-msgstr "Spausdinimo darbas gautas"
-
-msgid "Your print job has been received."
-msgstr "Tavo spausdinimo darbas gautas."
-
 msgid "Submission received"
 msgstr "Sprendimas gautas"
 
@@ -302,32 +296,6 @@ msgstr "Vykdoma..."
 msgid "Executed"
 msgstr "Įvykdyta"
 
-msgid "Too many print jobs!"
-msgstr "Per daug spausdinimo darbų!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Pasiekei %d spausdinimo darbų limitą."
-
-msgid "Invalid format!"
-msgstr "Netinkamas formatas!"
-
-msgid "Please select the correct files."
-msgstr "Pasirink teisingus failus."
-
-msgid "File too big!"
-msgstr "Failas per didelis!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Kiekvienas failas turi būti ne didesnis nei %d baitų."
-
-msgid "Print job storage failed!"
-msgstr "Nepavyko išsaugoti spausdinimo darbo!"
-
-msgid "Please try again."
-msgstr "Bandyk dar kartą."
-
 msgid "Too many submissions!"
 msgstr "Per daug pateiktų sprendimų!"
 
@@ -370,8 +338,14 @@ msgstr "Nepavyksta atverti pateikto archyvo."
 msgid "Invalid submission format!"
 msgstr "Netinkamas pateikimo formatas!"
 
+msgid "Please select the correct files."
+msgstr "Pasirink teisingus failus."
+
 msgid "Submission storage failed!"
 msgstr "Nepavyko išsaugoti pateikto sprendimo!"
+
+msgid "Please try again."
+msgstr "Bandyk dar kartą."
 
 msgid "Too many tests!"
 msgstr "Per daug testų!"
@@ -522,9 +496,6 @@ msgstr "Dokumentacija"
 
 msgid "Testing"
 msgstr "Testavimas"
-
-msgid "Printing"
-msgstr "Spausdinimas"
 
 msgid "Contest Management System"
 msgstr "Varžybų aptarnavimo sistema"
@@ -735,50 +706,6 @@ msgstr "Taip"
 msgid "No"
 msgstr "Ne"
 
-msgid "Print"
-msgstr "Spausdinti"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Gali spausdinti dar %(remaining_jobs)s tekstinių arba PDF failų po ne daugiau nei %(max_pages)s puslapių."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Gali spausdinti dar %(remaining_jobs)s tekstinių failų po ne daugiau nei %(max_pages)s puslapių."
-
-msgid "File (text or PDF)"
-msgstr "Failas (tekstinis arba PDF)"
-
-msgid "File (text)"
-msgstr "Failas (tekstinis)"
-
-msgid "Submit"
-msgstr "Pateikti"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Daugiau spausdinti negali nes jau sunaudojai savo spausdinimo limitą."
-
-msgid "Previous print jobs"
-msgstr "Ankstesni spausdinimo darbai"
-
-msgid "Date and time"
-msgstr "Data ir laikas"
-
-msgid "Time"
-msgstr "Laikas"
-
-msgid "File name"
-msgstr "Failo vardas"
-
-msgid "Status"
-msgstr "Būsena"
-
-msgid "Preparing..."
-msgstr "Paruošiama..."
-
-msgid "no print jobs yet"
-msgstr "spausdinimo darbų dar nėra"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -924,6 +851,9 @@ msgstr "nežinomas"
 msgid "loading..."
 msgstr "kraunama..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>sprendimų pateikimas</small>"
@@ -949,6 +879,9 @@ msgstr "Viename sprendime gali pateikti ne visus išvesties failus."
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Gali pateikti dar %(submissions_left)s sprendimą(-ų)."
+
+msgid "Submit"
+msgstr "Pateikti"
 
 msgid "submission.zip"
 msgstr "sprendimas.zip"
@@ -1017,6 +950,15 @@ msgstr "įvestis"
 msgid "Previous tests"
 msgstr "Ankstesni testai"
 
+msgid "Date and time"
+msgstr "Data ir laikas"
+
+msgid "Time"
+msgstr "Laikas"
+
+msgid "Status"
+msgstr "Būsena"
+
 msgid "Input"
 msgstr "Įvestis"
 
@@ -1046,24 +988,4 @@ msgstr "Tavo užklausa atmesta, kadangi neturi žetonų."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Užklausa buvo atmesta, kadangi šiam sprendimui žetoną jau naudojai."
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "Netinkamas formatas!"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "Nepavyko išsaugoti spausdinimo darbo!"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Vykdymas nutrauktas (tai galėjo įvykti viršijus atminties ribojimus)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Tavo sprendimo vykdymas buvo nutrauktas signalu. Viena iš galimų priežasčių yra atminties ribojimo viršijimas. Sprendimo informacijos lange rodomas panaudotos atminties kiekis yra toks, koks jis buvo prieš signalą sukėlusį veiksmą."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standartinė šablonų biblioteka"
 

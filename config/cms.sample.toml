@@ -61,7 +61,6 @@ Worker = [
 ContestWebServer = [["localhost", 21000]]
 AdminWebServer = [["localhost", 21100]]
 ProxyService = [["localhost", 28600]]
-PrintingService = [["localhost", 25123]]
 PrometheusExporter = []
 TelegramBot = []
 
@@ -186,25 +185,6 @@ rankings = ["http://usern4me:passw0rd@localhost:8890/"]
 # trust. (this string is passed as the "verify" option to requests.put,
 # see the documentation of requests for more info.)
 #https_certfile = "..."
-
-
-[printing]
-# Maximum size of a print job in bytes.
-max_print_length = 10_000_000
-
-# Printer name (can be found out using 'lpstat -p'; if missing, printing
-# is disabled)
-#printer = "..."
-
-# Output paper size (probably A4 or Letter)
-paper_size = "A4"
-
-# Maximum number of pages a user can print per print job (excluding the
-# title page). Text files are cropped to this length. Too long pdf files
-# are rejected.
-max_pages_per_job = 10
-max_jobs_per_user = 10
-pdf_printing_allowed = false
 
 
 [prometheus]
