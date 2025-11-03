@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-# Copyright © 2018 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2025 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,25 +16,33 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import binascii
+"""A class to update a dump created by CMS.
+
+Used by DumpImporter and DumpUpdater.
+
+Adds opaque_id to user tests.
+
+"""
 
 
-__all__ = [
-    "bin_to_hex", "hex_to_bin", "bin_to_b64", "b64_to_bin",
-]
+import random
 
 
-def bin_to_hex(bin: bytes) -> str:
-    return binascii.b2a_hex(bin).decode('ascii')
+class Updater:
 
+    def __init__(self, data):
+        assert data["_version"] == 46
+        self.objs = data
 
-def hex_to_bin(hex: str) -> bytes:
-    return binascii.a2b_hex(hex.encode('ascii'))
+    def run(self):
+        used_ids = set()
+        for k, v in self.objs.items():
+            if k.startswith("_"):
+                continue
+            if v["_class"] == "UserTest":
+                while "opaque_id" not in v or v["opaque_id"] in used_ids:
+                    v["opaque_id"] = random.randint(0, 2**63-1)
+                used_ids.add(v["opaque_id"])
 
+        return self.objs
 
-def bin_to_b64(bin: bytes) -> str:
-    return binascii.b2a_base64(bin, newline=False).decode('ascii')
-
-
-def b64_to_bin(b64: str) -> bytes:
-    return binascii.a2b_base64(b64.encode('ascii'))
