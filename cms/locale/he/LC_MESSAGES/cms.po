@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Contest Management System 1.5.1\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-11-02 22:51+0000\n"
+"PO-Revision-Date: 2025-11-08 19:51+0000\n"
 "Last-Translator: Ron Ryvchin <ron.ryv@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/cms/main/he/>\n"
 "Language: he\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -73,47 +73,47 @@ msgstr "ההגשה שלכם חרגה ממגבלת הזמן בעת הקמפול. 
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
-msgstr ""
+msgstr "הקמפול הופסק בעקבות האות %s (ייתכן שעקב חריגה ממגבלות הזכרון)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "ההגשה שלך הופסקה בעקבות האות שצוין. בין היתר, ייתכן שזה נגרם עקב חריגה ממגבלת הזיכרון בזמן הקומפילציה, למשל עקב שימוש מופרז בתבניות ++C."
 
 msgid "Output is correct"
 msgstr "הפלט נכון"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr ""
+msgstr "ההגשה שלך הורצה וסיפקה את התשובה הנכונה"
 
 msgid "Output is partially correct"
 msgstr "הפלט נכון חלקית"
 
 msgid "Your submission ran and gave the partially correct answer"
-msgstr ""
+msgstr "ההגשה שלך הורצה וסיפקה תשובה נכונה חלקית"
 
 msgid "Output isn't correct"
 msgstr "הפלט שגוי"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr ""
+msgstr "ההגשה שלך הורצה, אך סיפקה תשובה שגויה"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
-msgstr ""
+msgstr "ההרצה לא יצרה את הקובץ %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
+msgstr "ההגשה שלך רצה, אך לא כתבה לקובץ הפלט הנכון"
 
 msgid "Execution timed out"
-msgstr ""
+msgstr "חריגה ממגבלת הזמן"
 
 msgid "Your submission used too much CPU time."
-msgstr ""
+msgstr "ההגשה שלך השתמשה ביותר מידי זמן מעבד."
 
 msgid "Execution timed out (wall clock limit exceeded)"
-msgstr ""
+msgstr "חריגה ממגבלת הזמן (שעון קיר)"
 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
-msgstr ""
+msgstr "ההגשה שלכם השתמשה ביותר מידי זמן כולל. זה יכול להגרם עקב קוד לא מוגדר, או גלישת זכרון, למשל. שימו לב שבמקרה זה זמן המעבד הנראה בפרטי ההגשה עלול להיות קטן ממגבלת זמן הריצה."
 
 msgid "Memory limit exceeded"
 msgstr "חריגה ממגבלת הזכרון"
@@ -122,141 +122,141 @@ msgid "Your submission used too much memory."
 msgstr "ההגשה שלכם השתמשה ביותר מידי זכרון."
 
 msgid "Execution killed by signal"
-msgstr ""
+msgstr "הריצה הופסקה על ידי אות"
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "ההרצה הופסקה על ידי אות."
 
 msgid "Execution failed because the return code was nonzero"
-msgstr ""
+msgstr "ההרצה נכשלה כי ערך החזרה היה שונה מאפס"
 
 msgid "Your submission failed because it exited with a return code different from 0."
-msgstr ""
+msgstr "ההגשה שלכם נכשלה כי היא יצאה עם ערך חזרה שונה מ-0."
 
 msgid "Execution completed successfully"
-msgstr ""
+msgstr "הריצה הסתיימה בהצלחה"
 
 msgid "No compilation needed"
-msgstr ""
+msgstr "אין צורך בקומפילציה"
 
 msgid "File not submitted"
 msgstr "הקובץ לא הוגש"
 
 msgid "Question too long!"
-msgstr ""
+msgstr "השאלה ארוכה מידי!"
 
 #, python-format
 msgid "Subject must be at most %(max_subject_length)d characters, content at most %(max_text_length)d."
-msgstr ""
+msgstr "הנושא חייב להיות בעל לכל היותר %(max_subject_length)d תוים, והתוכן לכל היותר %(max_text_length)d."
 
 msgid "contest-token"
-msgstr ""
+msgstr "אסימון-תחרות"
 
 msgid "contest-tokens"
-msgstr ""
+msgstr "אסימוני-תחרות"
 
 msgid "task-token"
-msgstr ""
+msgstr "אסימון-משימה"
 
 msgid "task-tokens"
-msgstr ""
+msgstr "אסימוני-משימה"
 
 msgid "token"
-msgstr ""
+msgstr "אסימון"
 
 msgid "tokens"
-msgstr ""
+msgstr "אסימונים"
 
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
-msgstr ""
+msgstr "אין לכם %(type_pl)s זמינים עבור משימה זו."
 
 #, python-format
 msgid "You have an infinite number of %(type_pl)s for this task."
-msgstr ""
+msgstr "יש לכם מספר אינסופי של %(type_pl)s עבור משימה זו."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
-msgstr ""
+msgstr "אתם מתחילים בלי %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(gen_initial)d %(type_pl)s."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "אתם מתחילים עם %(type_s)s יחיד."
+msgstr[1] "אתם מתחילים עם %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_interval)g minutes "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "כל דקה "
+msgstr[1] "כל %(gen_interval)g דקות "
 
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "אתם מקבלים %(type_s)s נוסף, "
+msgstr[1] "אתם מקבלים %(gen_number)d %(type_pl)s נוספים, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "עד למקסימום של %(type_s)s יחיד."
+msgstr[1] "עד למקסימום של %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "תקבלו %(type_s)s נוסף."
+msgstr[1] "תקבלו %(gen_number)d %(type_pl)s נוספים."
 
 #, python-format
 msgid "You don't get other %(type_pl)s."
-msgstr ""
+msgstr "לא תקבלו %(type_pl)s נוספים."
 
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "אתם יכולים להשתמש ב- %(type_s)s בכל שניה "
+msgstr[1] "אתם יכולים להשתמש ב- %(type_s)s בכל %(min_interval)g שניות "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ובלא יותר מ-%(type_s)s בסך הכל."
+msgstr[1] "ובלא יותר מ- %(max_number)d %(type_pl)s בסך הכל."
 
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "אתם יכולים להשתמש ב-%(type_s)s בכל שניה."
+msgstr[1] "אתם יכולים להשתמש ב-%(type_s)s בכל %(min_interval)g שניות."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "אתם יכולים להשתמש בלא יותר מ-%(type_s)s בסך הכל."
+msgstr[1] "אתם יכולים להשתמש בלא יותר מ- %(max_number)d %(type_pl)s בסך הכל."
 
 msgid "You have no limitations on how you use them."
-msgstr ""
+msgstr "אין לכם מגבלות באיך להשתמש בהם."
 
 msgid "Question received"
-msgstr ""
+msgstr "השאלה התקבלה"
 
 msgid "Your question has been received, you will be notified when it is answered."
-msgstr ""
+msgstr "השאלה שלכם התקבלה, תקבלו התראה כשהיא תענה."
 
 msgid "Print job received"
-msgstr ""
+msgstr "עבודת ההדפסה התקבלה"
 
 msgid "Your print job has been received."
-msgstr ""
+msgstr "עבודת ההדפסה שלכם התקבלה."
 
 msgid "Submission received"
-msgstr ""
+msgstr "ההגשה התקבלה"
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr ""
+msgstr "ההגשה שלכם התקבלה וכעת נבדקת."
 
 msgid "Compiling..."
 msgstr "מתקמפלת..."
@@ -274,282 +274,282 @@ msgid "status"
 msgstr "סטטוס"
 
 msgid "Token request received"
-msgstr ""
+msgstr "הבקשה לאסימונים התקבלה"
 
 msgid "Your request has been received and applied to the submission."
-msgstr ""
+msgstr "הבקשה שלכם התקבלה ומושמת להגשה."
 
 msgid "Test received"
-msgstr ""
+msgstr "הטסט התקבל"
 
 msgid "Your test has been received and is currently being executed."
-msgstr ""
+msgstr "הטסט שלכם התקבל וכרגע מורץ."
 
 msgid "details"
-msgstr ""
+msgstr "פרטים"
 
 msgid "Executing..."
 msgstr "מורצת..."
 
 msgid "Executed"
-msgstr ""
+msgstr "הורצה"
 
 msgid "Too many print jobs!"
-msgstr ""
+msgstr "יותר מידי עבודות הדפסה!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr ""
+msgstr "הגעתם למגבלה המירבית של לכל היותר %d עבודות הדפסה."
 
 msgid "Invalid format!"
-msgstr ""
+msgstr "פורמט לא תקין!"
 
 msgid "Please select the correct files."
-msgstr ""
+msgstr "אנא בחרו את הקבצים הנכונים."
 
 msgid "File too big!"
 msgstr "הקובץ גדול מידי!"
 
 #, python-format
 msgid "Each file must be at most %d bytes long."
-msgstr ""
+msgstr "על כל קובץ להיות באורך של לכל היותר %d בתים."
 
 msgid "Print job storage failed!"
-msgstr ""
+msgstr "האכסון של עבודת ההדפסה נכשל!"
 
 msgid "Please try again."
-msgstr ""
+msgstr "אנא נסו שוב."
 
 msgid "Too many submissions!"
-msgstr ""
+msgstr "יותר מידי הגשות!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr ""
+msgstr "הגעתם למגבלה המירבית של לכל היותר %d הגשות על פני כל המשימות."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions on this task."
-msgstr ""
+msgstr "הגעתם למגבלה של לכל היותר %d הגשות במשימה זו."
 
 msgid "Submissions too frequent!"
-msgstr ""
+msgstr "ההגשות דכופות מידי!"
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
-msgstr ""
+msgstr "על פני כל המשימות, אתם יכולים להגיש שוב לאחר %d שניות מההגשה האחרונה שלכם."
 
 #, python-format
 msgid "For this task, you can submit again after %d seconds from last submission."
-msgstr ""
+msgstr "עבור משימה זו, אתם יכולים להגיש שוב לאחר %d שניות מההגשה האחרונה שלכם."
 
 msgid "Submission too big!"
-msgstr ""
+msgstr "ההגשה גדולה מידי!"
 
 #, python-format
 msgid "Each source file must be at most %d bytes long."
-msgstr ""
+msgstr "על כל קובץ קוד להיות באורך של לכל היותר %d בתים."
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "על ההגשה להכיל לכל היותר %d קבצים."
 
 msgid "Invalid archive format!"
-msgstr ""
+msgstr "פורמט ארכיון לא תקין!"
 
 msgid "The submitted archive could not be opened."
-msgstr ""
+msgstr "הארכיון שהוגש לא יכל להפתח."
 
 msgid "Invalid submission format!"
-msgstr ""
+msgstr "פורמט הגשה לא תקין!"
 
 msgid "Submission storage failed!"
-msgstr ""
+msgstr "אכסון ההגשה נכשל!"
 
 msgid "Too many tests!"
-msgstr ""
+msgstr "יותר מידי טסטים!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
-msgstr ""
+msgstr "הגעתם למגבלה של לכל היותר %d טסטים על פני כל המשימות."
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
-msgstr ""
+msgstr "הגעתם למגבלה של לכל היותר %d טסטים במשימה זו."
 
 msgid "Tests too frequent!"
-msgstr ""
+msgstr "הטסטים תכופים מידי!"
 
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
-msgstr ""
+msgstr "על פני כל המשימות, אתם יכולים להגיש טסט שוב כעבור %d שניות מאז הטסט האחרון."
 
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
-msgstr ""
+msgstr "במשימה זו, אתם יכולים להגיש טסט שוב כעבור %d שניות מאז הטסט האחרון."
 
 msgid "Invalid test format!"
-msgstr ""
+msgstr "פורמט טסט לא תקין!"
 
 msgid "Test too big!"
-msgstr ""
+msgstr "הטסט גדול מידי!"
 
 msgid "Input too big!"
-msgstr ""
+msgstr "הקלט גדול מידי!"
 
 #, python-format
 msgid "The input file must be at most %d bytes long."
-msgstr ""
+msgstr "על קובץ הקלט להיות לכל היותר באורך %d בתים."
 
 msgid "Test storage failed!"
-msgstr ""
+msgstr "אכסון הטסט נכשל!"
 
 msgid "Communication"
-msgstr ""
+msgstr "תקשורת"
 
 msgid "Announcements"
-msgstr ""
+msgstr "הכרזות"
 
 msgid "(no subject)"
-msgstr ""
+msgstr "(ללא נושא)"
 
 msgid "Questions"
-msgstr ""
+msgstr "שאלות"
 
 msgid "Subject"
-msgstr ""
+msgstr "נושא"
 
 msgid "Text"
-msgstr ""
+msgstr "טקסט"
 
 msgid "Ask question"
-msgstr ""
+msgstr "שאלו שאלה"
 
 msgid "Reset"
-msgstr ""
+msgstr "אתחול"
 
 msgid "no answer yet"
-msgstr ""
+msgstr "עדיין אין תשובה"
 
 msgid "Messages"
-msgstr ""
+msgstr "הודעות"
 
 #, python-format
 msgid "Automatic (%(lang)s)"
-msgstr ""
+msgstr "אוטומטית (%(lang)s)"
 
 msgid "Logout"
-msgstr ""
+msgstr "התנתקות"
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-msgstr ""
+msgstr "מחובר כ-<strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
-msgstr ""
+msgstr "ההתחברות נכשלה."
 
 msgid "Welcome"
-msgstr ""
+msgstr "ברוכים הבאים"
 
 msgid "Please log in"
-msgstr ""
+msgstr "אנא התחברו"
 
 msgid "Username"
-msgstr ""
+msgstr "שם משתמש"
 
 msgid "Password"
-msgstr ""
+msgstr "ססמה"
 
 msgid "Login"
-msgstr ""
+msgstr "התחברות"
 
 msgid "Don't have an account?"
-msgstr ""
+msgstr "איך לכם משתמש?"
 
 msgid "Register"
-msgstr ""
+msgstr "הרשמה"
 
 msgid "New message"
-msgstr ""
+msgstr "הודעה חדשה"
 
 msgid "New announcement"
-msgstr ""
+msgstr "הכרזה חדשה"
 
 msgid "New answer"
-msgstr ""
+msgstr "תשובה חדשה"
 
 #, python-format
 msgid "%d unread"
-msgstr ""
+msgstr "%d לא נקראו"
 
 msgid "Until contest starts:"
-msgstr ""
+msgstr "עד תחילת התחרות:"
 
 msgid "Until contest ends:"
-msgstr ""
+msgstr "עד סוף התחרות:"
 
 msgid "Until analysis starts:"
-msgstr ""
+msgstr "עד תחילת האנליסיס:"
 
 msgid "Until analysis ends:"
-msgstr ""
+msgstr "עד סוף האנליסיס:"
 
 msgid "Time left:"
-msgstr ""
+msgstr "זמן שנשאר:"
 
 msgid "Server time:"
-msgstr ""
+msgstr "זמן השרת:"
 
 msgid "Overview"
-msgstr ""
+msgstr "סקירה כללית"
 
 msgid "Statement"
-msgstr ""
+msgstr "סטייטמנט"
 
 msgid "Submissions"
-msgstr ""
+msgstr "הגשות"
 
 msgid "Documentation"
-msgstr ""
+msgstr "תיעוד"
 
 msgid "Testing"
-msgstr ""
+msgstr "בדיקה"
 
 msgid "Printing"
-msgstr ""
+msgstr "הדפסה"
 
 msgid "Contest Management System"
-msgstr ""
+msgstr "מערכת ה-CMS"
 
 msgid "is released under the"
-msgstr ""
+msgstr "משוחררת תחת ה-"
 
 msgid "GNU Affero General Public License"
-msgstr ""
+msgstr "רישיון הציבור הכללי של GNU Affero"
 
 msgid "Choose a contest"
-msgstr ""
+msgstr "בחרו תחרות"
 
 msgid "Programming languages and libraries"
-msgstr ""
+msgstr "שפות תכנות וספריות"
 
 msgid "The main Java class of the solution should have exactly the same name as the task."
-msgstr ""
+msgstr "למחלקה הראשית ב-Java של הפתרון צריך להיות בדיוק אותו השם כמו שם המשימה."
 
 msgid "Submission details for compilation"
-msgstr ""
+msgstr "פרטי ההגשה לקומפילציה"
 
 msgid "Message"
-msgstr ""
+msgstr "הודעה"
 
 msgid "Explanation"
-msgstr ""
+msgstr "הסבר"
 
 msgid "Submission details for evaluation"
-msgstr ""
+msgstr "פרטי ההגשה לבדיקה"
 
 #, python-format
 msgid "Error %(status_code)s"
-msgstr ""
+msgstr "שגיאה %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
 msgstr ""
@@ -990,34 +990,34 @@ msgid "You can submit %(user_tests_left)s more test(s)."
 msgstr ""
 
 msgid "input"
-msgstr ""
+msgstr "קלט"
 
 msgid "Previous tests"
-msgstr ""
+msgstr "הטסטים הקודמים"
 
 msgid "Input"
-msgstr ""
+msgstr "קלט"
 
 msgid "Output"
-msgstr ""
+msgstr "פלט"
 
 msgid "no tests yet"
-msgstr ""
+msgstr "אין טסטים עדיין"
 
 msgid "Test details"
-msgstr ""
+msgstr "פרטי הטסט"
 
 msgid "Evaluation outcome"
-msgstr ""
+msgstr "תוצאת ההרצה"
 
 msgid "Wait..."
-msgstr ""
+msgstr "המתינו..."
 
 msgid "None"
-msgstr ""
+msgstr "None"
 
 msgid "Token request discarded"
-msgstr ""
+msgstr "בקשת האסימון נדחתה"
 
 msgid "Your request has been discarded because you have no tokens available."
 msgstr ""
@@ -1026,10 +1026,10 @@ msgid "Your request has been discarded because you already used a token on that 
 msgstr ""
 
 msgid "Invalid file"
-msgstr ""
+msgstr "קובץ לא תקין"
 
 msgid "Print job has too many pages"
 msgstr ""
 
 msgid "Sent to printer"
-msgstr ""
+msgstr "נשלח למדפסת"
