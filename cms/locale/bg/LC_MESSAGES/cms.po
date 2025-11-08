@@ -1,21 +1,21 @@
-
 msgid ""
 msgstr ""
-"Project-Id-Version:  VERSION\n"
+"Project-Id-Version: VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: bg_BG\n"
-"Language-Team: bg_BG TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"PO-Revision-Date: 2025-11-08 19:51+0000\n"
+"Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/cms/main/bg/>\n"
+"Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
-msgstr "Неизвестно"
+msgstr "Няма"
 
 msgid "Not correct"
 msgstr "Грешно"
@@ -33,7 +33,7 @@ msgid "Outcome"
 msgstr "Резултат"
 
 msgid "Details"
-msgstr "Детайли"
+msgstr "Подробности"
 
 msgid "Execution time"
 msgstr "Време за изпълнение"
@@ -52,7 +52,7 @@ msgid "Compilation succeeded"
 msgstr "Успешно компилиране"
 
 msgid "Your submission successfully compiled to an executable."
-msgstr "Вашето решение успешно се компилира до програма."
+msgstr "Вашето решение се компилира успешно до изпълним файл."
 
 msgid "Compilation failed"
 msgstr "Неуспешно компилиране"
@@ -63,22 +63,21 @@ msgstr "Вашето решение не се компилира успешно.
 msgid "Compilation timed out"
 msgstr "Превишено време за компилиране"
 
-#, fuzzy
 msgid "Your submission exceeded the time limit while compiling. This might be caused by an excessive use of C++ templates, for example."
-msgstr "Компилирането на вашето решение беше прекратено с указания сигнал. Това може да бъде причинено от превишаване на ограниченията за памет на компилирането, което от своя страна да е резултат от прекомерна употреба на на C++ темплейти."
+msgstr "Компилирането на решението превиши ограничението за време за компилиране. Това може да е резултат от прекомерна употреба на шаблони в C++."
 
 #, python-format
 msgid "Compilation killed with signal %s (could be triggered by violating memory limits)"
 msgstr "Компилирането беше прекратено със сигнал %s (може да бъде причинено от нарушаване на ограниченията за памет)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr "Компилирането на вашето решение беше прекратено с указания сигнал. Това може да бъде причинено от превишаване на ограниченията за памет на компилирането, което от своя страна да е резултат от прекомерна употреба на на C++ темплейти."
+msgstr "Компилирането на решението беше прекратено с указания сигнал. Това може да бъде причинено от превишаване на ограниченията за памет на компилирането, което от своя страна да е резултат от прекомерна употреба на шаблони в C++."
 
 msgid "Output is correct"
-msgstr "Верен отговор"
+msgstr "Изходът е верен"
 
 msgid "Your submission ran and gave the correct answer"
-msgstr "Вашето решение тръгна и даде верен отговор"
+msgstr "Вашето решение се изпълни и даде верен отговор"
 
 #, fuzzy
 msgid "Output is partially correct"
@@ -89,17 +88,17 @@ msgid "Your submission ran and gave the partially correct answer"
 msgstr "Вашето решение тръгна и даде верен отговор"
 
 msgid "Output isn't correct"
-msgstr "Грешен отговор"
+msgstr "Изходът е грешен"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr "Вашето решение тръгна, но даде грешен отговор"
+msgstr "Вашето решение се изпълни, но даде грешен отговор"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
-msgstr "Оценката не създаде файл %s"
+msgstr "Изпълнението не създаде файл %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr "Вашето решение тръгна, но не записа в правилния изходен файл"
+msgstr "Вашето решение се изпълни, но не извърши запис в правилния изходен файл"
 
 msgid "Execution timed out"
 msgstr "Превишено време за изпълнение"
@@ -129,7 +128,7 @@ msgid "The evaluation was killed by a signal."
 msgstr ""
 
 msgid "Execution failed because the return code was nonzero"
-msgstr "Изпълнението се провали, защото програмата върна ненулев резултат."
+msgstr "Изпълнението беше неуспешно, защото програмата завърши с код различен от нула"
 
 msgid "Your submission failed because it exited with a return code different from 0."
 msgstr ""
@@ -141,7 +140,7 @@ msgid "No compilation needed"
 msgstr "Не е необходимо компилиране"
 
 msgid "File not submitted"
-msgstr "Файлът не е предаден"
+msgstr "Файлът не е изпратен"
 
 #, fuzzy
 msgid "Question too long!"
@@ -251,7 +250,7 @@ msgid "Question received"
 msgstr "Въпросът е получен"
 
 msgid "Your question has been received, you will be notified when it is answered."
-msgstr "Вашият въпрос беше получен, ще бъдете уведомени, когато имате отговор."
+msgstr "Вашият въпрос беше получен. Ще бъдете уведомени, когато имате отговор."
 
 #, fuzzy
 msgid "Print job received"
@@ -261,22 +260,22 @@ msgid "Your print job has been received."
 msgstr ""
 
 msgid "Submission received"
-msgstr "Решението получено"
+msgstr "Решението е получено"
 
 msgid "Your submission has been received and is currently being evaluated."
-msgstr "Вешето решение беше получено и бива оценено в момента."
+msgstr "Вашето решение беше получено и в момента се оценява."
 
 msgid "Compiling..."
-msgstr "Компилиране..."
+msgstr "Компилиране…"
 
 msgid "Evaluating..."
-msgstr "Тестване..."
+msgstr "Проверяване…"
 
 msgid "Scoring..."
-msgstr "Оценяване..."
+msgstr "Оценяване…"
 
 msgid "Evaluated"
-msgstr "Оценено"
+msgstr "Проверено"
 
 #, fuzzy
 msgid "status"
@@ -294,29 +293,29 @@ msgid "Test received"
 msgstr "Тестът е получен"
 
 msgid "Your test has been received and is currently being executed."
-msgstr "Вашият тест беше получен и сега се изпълнява."
+msgstr "Вашият тест беше получен и в момента се изпълнява."
 
 msgid "details"
-msgstr "детайли"
+msgstr "подробности"
 
 msgid "Executing..."
-msgstr "Изпълняване"
+msgstr "Изпълняване…"
 
 msgid "Executed"
 msgstr "Изпълнено"
 
 msgid "Too many print jobs!"
-msgstr "Твърде много задачи за принтиране!"
+msgstr "Твърде много задачи за разпечатване!"
 
 #, fuzzy, python-format
 msgid "You have reached the maximum limit of at most %d print jobs."
 msgstr "Достигнахте максималния лимит от най-много %d изпращания на решения на всички задачи."
 
 msgid "Invalid format!"
-msgstr "Невалиден формат!"
+msgstr "Неправилен формат!"
 
 msgid "Please select the correct files."
-msgstr "Моля изберете правилните файлове."
+msgstr "Моля, изберете правилните файлове."
 
 msgid "File too big!"
 msgstr "Файлът е твърде голям!"
@@ -330,21 +329,21 @@ msgid "Print job storage failed!"
 msgstr "Съхраняватено на тестове се провали!"
 
 msgid "Please try again."
-msgstr "Моля опитайте отново."
+msgstr "Моля, опитайте отново."
 
 msgid "Too many submissions!"
-msgstr "Твърде много изпращания на решение!"
+msgstr "Твърде много изпратени решения!"
 
 #, python-format
 msgid "You have reached the maximum limit of at most %d submissions among all tasks."
-msgstr "Достигнахте максималния лимит от най-много %d изпращания на решения на всички задачи."
+msgstr "Достигнахте ограничението за не повече от %d изпратени решения на всички задачи."
 
 #, fuzzy, python-format
 msgid "You have reached the maximum limit of at most %d submissions on this task."
 msgstr "Достигнахте максималния лимит от най-много %d изпращания на решения на всички задачи."
 
 msgid "Submissions too frequent!"
-msgstr "Твърде чести изпращания на решение!"
+msgstr "Изпращането на решения е прекалено често!"
 
 #, python-format
 msgid "Among all tasks, you can submit again after %d seconds from last submission."
@@ -355,27 +354,27 @@ msgid "For this task, you can submit again after %d seconds from last submission
 msgstr ""
 
 msgid "Submission too big!"
-msgstr "Изпратеното решение е твърде голямо!"
+msgstr "Изпратеното решение е прекалено голямо!"
 
 #, python-format
 msgid "Each source file must be at most %d bytes long."
-msgstr "Всеки файл с код трябва да бъде най-много %d байта голям."
+msgstr "Всеки файл с изходен код трябва да бъде с размер не повече от %d байта."
 
 #, python-format
 msgid "The submission should contain at most %d files."
 msgstr ""
 
 msgid "Invalid archive format!"
-msgstr "Невалиден формат на архива!"
+msgstr "Неправилен формат на архива!"
 
 msgid "The submitted archive could not be opened."
-msgstr "Това решение не може да бъде отворено."
+msgstr "Изпратеният архив не може да бъде отворен."
 
 msgid "Invalid submission format!"
-msgstr "Невалиден формат на решението!"
+msgstr "Неправилен формат на решението!"
 
 msgid "Submission storage failed!"
-msgstr "Съхраняването на решение се провали!"
+msgstr "Съхраняването на решението беше неуспешно!"
 
 msgid "Too many tests!"
 msgstr "Твърде много тестове!"
@@ -400,10 +399,10 @@ msgid "For this task, you can test again after %d seconds from last test."
 msgstr ""
 
 msgid "Invalid test format!"
-msgstr "Невалиден формат на теста!"
+msgstr "Неправилен формат на теста!"
 
 msgid "Test too big!"
-msgstr "Програмата за тестване е твърде голяма!"
+msgstr "Тестът е твърде голям!"
 
 msgid "Input too big!"
 msgstr "Входът е твърде голям!"
@@ -413,7 +412,7 @@ msgid "The input file must be at most %d bytes long."
 msgstr "Входният файл може да бъде най-много %d байта."
 
 msgid "Test storage failed!"
-msgstr "Съхраняватено на тестове се провали!"
+msgstr "Съхраняването на теста беше неуспешно!"
 
 msgid "Communication"
 msgstr "Комуникация"
@@ -434,13 +433,13 @@ msgid "Text"
 msgstr "Текст"
 
 msgid "Ask question"
-msgstr "Задай въпрос"
+msgstr "Задайте въпрос"
 
 msgid "Reset"
-msgstr "Изчисти"
+msgstr "Изчистване"
 
 msgid "no answer yet"
-msgstr "няма отговор все още"
+msgstr "все още няма отговор"
 
 msgid "Messages"
 msgstr "Съобщения"
@@ -454,16 +453,16 @@ msgstr "Изход"
 
 #, python-format
 msgid "Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
-msgstr "Влязохте като <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr "Влезли сте като <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Failed to log in."
-msgstr "Неуспешно влизате"
+msgstr "Неуспешно влизане."
 
 msgid "Welcome"
-msgstr "Здравейте"
+msgstr "Добре дошли"
 
 msgid "Please log in"
-msgstr "Моля влезте"
+msgstr "Моля, влезте"
 
 msgid "Username"
 msgstr "Потребителско име"
@@ -495,10 +494,10 @@ msgid "%d unread"
 msgstr "%d непрочетени"
 
 msgid "Until contest starts:"
-msgstr "До започване на състезанието:"
+msgstr "До началото на състезанието:"
 
 msgid "Until contest ends:"
-msgstr "До край на състезанието:"
+msgstr "До края на състезанието:"
 
 #, fuzzy
 msgid "Until analysis starts:"
@@ -530,7 +529,7 @@ msgid "Testing"
 msgstr "Тестване"
 
 msgid "Printing"
-msgstr "Принтиране"
+msgstr "Разпечатване"
 
 msgid "Contest Management System"
 msgstr ""
@@ -551,26 +550,26 @@ msgid "The main Java class of the solution should have exactly the same name as 
 msgstr ""
 
 msgid "Submission details for compilation"
-msgstr "Детайли на решенията"
+msgstr "Подробности за компилацията на решението"
 
 msgid "Message"
-msgstr "Съобщения"
+msgstr "Съобщение"
 
 msgid "Explanation"
 msgstr ""
 
 msgid "Submission details for evaluation"
-msgstr "Детайли на решенията"
+msgstr "Подробности за изпълнението на решението"
 
 #, python-format
 msgid "Error %(status_code)s"
 msgstr "Грешка %(status_code)s"
 
 msgid "An error occured while the server was handling your request."
-msgstr "Възникна грешка докато сървърът се опитваше да обработи вашата заявка"
+msgstr "Възникна грешка докато сървърът се опитваше да обработи заявката."
 
 msgid "Note that attempts to tamper with Contest Management System (such as probing the server with customized URLs) may be considered cheating and may lead to disqualification."
-msgstr "Отбележете, че опити да нарушавате работата на системата за състезанието като да изпращате нестандартни заявки) може да бъде считано за измама и да доведе до дисквалификация."
+msgstr "Имайте предвид, че опитите да нарушавате работата на системата (като да тествате сървъра с нестандартни заявки) може да бъдат сметнати за измама и да доведат до дисквалификация."
 
 msgid "If you encountered this error during normal usage, please notify the contest administrators."
 msgstr ""
@@ -1072,4 +1071,3 @@ msgstr ""
 
 msgid "Sent to printer"
 msgstr ""
-
