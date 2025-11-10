@@ -41,5 +41,5 @@ tornado==4.5.3
 typing_extensions==4.14.0
 urllib3==2.5.0
 Werkzeug==0.16.1
-zope.event==6.0
+zope.event==6.1
 zope.interface==8.0
