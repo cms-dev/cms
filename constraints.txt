@@ -28,7 +28,7 @@ psutil==7.0.0
 psycopg2==2.9.10
 pycryptodomex==3.23.0
 Pygments==2.19.2
-pytest==8.4.1
+pytest==9.0.0
 pytest-cov==6.2.1
 python-telegram-bot==21.11.1
 pyxdg==0.28
