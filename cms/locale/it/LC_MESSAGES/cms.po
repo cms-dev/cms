@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-08-22 12:34+0000\n"
 "Last-Translator: William Di Luigi <williamdiluigi@gmail.com>\n"
-"Language-Team: Italian <https://hosted.weblate.org/projects/cms/main/it/>\n"
 "Language: it\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/cms/main/it/>\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -241,12 +241,6 @@ msgstr "Domanda ricevuta"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "La tua domanda è stata ricevuta, riceverai una notifica quando verrà risposta."
 
-msgid "Print job received"
-msgstr "Comando di stampa ricevuto"
-
-msgid "Your print job has been received."
-msgstr "Il comando di stampa è stato ricevuto."
-
 msgid "Submission received"
 msgstr "Sottoposizione ricevuta"
 
@@ -288,32 +282,6 @@ msgstr "Esecuzione in corso..."
 
 msgid "Executed"
 msgstr "Eseguito"
-
-msgid "Too many print jobs!"
-msgstr "Troppe stampe!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Hai raggiunto il limite massimo di %d stampe."
-
-msgid "Invalid format!"
-msgstr "Formato invalido!"
-
-msgid "Please select the correct files."
-msgstr "Seleziona i file corretti."
-
-msgid "File too big!"
-msgstr "File troppo grande!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Ogni file deve essere grande al massimo %d byte."
-
-msgid "Print job storage failed!"
-msgstr "Errore nel salvataggio della stampa!"
-
-msgid "Please try again."
-msgstr "Riprova."
 
 msgid "Too many submissions!"
 msgstr "Troppe sottoposizioni!"
@@ -357,8 +325,14 @@ msgstr "Impossibile aprire l'archivio sottoposto."
 msgid "Invalid submission format!"
 msgstr "Formato sottoposizione invalido!"
 
+msgid "Please select the correct files."
+msgstr "Seleziona i file corretti."
+
 msgid "Submission storage failed!"
 msgstr "Errore nel salvataggio della sottoposizione!"
+
+msgid "Please try again."
+msgstr "Riprova."
 
 msgid "Too many tests!"
 msgstr "Troppi test!"
@@ -508,9 +482,6 @@ msgstr "Documentazione"
 
 msgid "Testing"
 msgstr "Testing"
-
-msgid "Printing"
-msgstr "In stampa"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -720,50 +691,6 @@ msgstr "Sì"
 msgid "No"
 msgstr "No"
 
-msgid "Print"
-msgstr "Stampa"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Puoi stampare altri %(remaining_jobs)s file PDF, ognuno con al massimo %(max_pages)s pagine."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Puoi stampare altri %(remaining_jobs)s file di testo, ognuno con al massimo %(max_pages)s pagine."
-
-msgid "File (text or PDF)"
-msgstr "File (testo o PDF)"
-
-msgid "File (text)"
-msgstr "File (testo)"
-
-msgid "Submit"
-msgstr "Sottoponi"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Non puoi stampare perché la tua quota è esaurita."
-
-msgid "Previous print jobs"
-msgstr "Stampe precedenti"
-
-msgid "Date and time"
-msgstr "Data e ora"
-
-msgid "Time"
-msgstr "Ora"
-
-msgid "File name"
-msgstr "Nome del file"
-
-msgid "Status"
-msgstr "Stato"
-
-msgid "Preparing..."
-msgstr "In preparazione..."
-
-msgid "no print jobs yet"
-msgstr "nessuna stampa ancora"
-
 msgid "The passwords do not match!"
 msgstr "Le password non combaciano!"
 
@@ -899,6 +826,9 @@ msgstr "sconosciuto"
 msgid "loading..."
 msgstr "caricamento in corso..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>sottoposizioni</small>"
@@ -924,6 +854,9 @@ msgstr "Puoi inviare un qualsiasi sottinsieme dei file di output in ciascuna sot
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Puoi sottoporre altre %(submissions_left)s soluzioni."
+
+msgid "Submit"
+msgstr "Sottoponi"
 
 msgid "submission.zip"
 msgstr "sottoposizione.zip"
@@ -990,6 +923,15 @@ msgstr "input"
 msgid "Previous tests"
 msgstr "Test precedenti"
 
+msgid "Date and time"
+msgstr "Data e ora"
+
+msgid "Time"
+msgstr "Ora"
+
+msgid "Status"
+msgstr "Stato"
+
 msgid "Input"
 msgstr "Input"
 
@@ -1020,20 +962,3 @@ msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "La tua richiesta è stata rifiutata perché hai già usato un token su questa sottoposizione."
 
-msgid "Invalid file"
-msgstr "File non valido"
-
-msgid "Print job has too many pages"
-msgstr "Il job di stampa ha troppe pagine"
-
-msgid "Sent to printer"
-msgstr "Inviato alla stampante"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Esecuzione terminata forzatamente (potrebbe essere causato da una violazione dei limiti di memoria)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "La valutazione è stata interrotta da un segnale. Tra le altre cose, questo potrebbe essere causato dal superamento del limite di memoria. Nota che se questo è il motivo, l'utilizzo della memoria visibile nei dettagli di invio è l'utilizzo appena prima dell'allocazione che ha causato il segnale."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standard Template Library"

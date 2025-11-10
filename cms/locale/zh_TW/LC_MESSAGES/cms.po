@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-09-06 19:19+0000\n"
 "Last-Translator: Omelet <2qbingxuan@gmail.com>\n"
-"Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
 "Language: zh_TW\n"
+"Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/cms/main/zh_Hant/>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -232,12 +232,6 @@ msgstr "提問已送出"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "您的提問已成功送出，得到回覆後將會通知您。"
 
-msgid "Print job received"
-msgstr "列印請求已送出"
-
-msgid "Your print job has been received."
-msgstr "您的列印請求已成功送出。"
-
 msgid "Submission received"
 msgstr "已收到本次傳送"
 
@@ -279,32 +273,6 @@ msgstr "執行中…"
 
 msgid "Executed"
 msgstr "執行完畢"
-
-msgid "Too many print jobs!"
-msgstr "列印次數超出限制！"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "您的列印次數已達上限（%d 次）。"
-
-msgid "Invalid format!"
-msgstr "格式錯誤！"
-
-msgid "Please select the correct files."
-msgstr "請選擇正確的檔案。"
-
-msgid "File too big!"
-msgstr "檔案過大！"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "個別檔案容量不得超過 %d bytes。"
-
-msgid "Print job storage failed!"
-msgstr "無法儲存列印請求！"
-
-msgid "Please try again."
-msgstr "請再試一次。"
 
 msgid "Too many submissions!"
 msgstr "傳送次數超出限制！"
@@ -348,8 +316,14 @@ msgstr "上傳的壓縮檔無法正常開啟。"
 msgid "Invalid submission format!"
 msgstr "檔案格式錯誤！"
 
+msgid "Please select the correct files."
+msgstr "請選擇正確的檔案。"
+
 msgid "Submission storage failed!"
 msgstr "無法儲存傳送的檔案！"
+
+msgid "Please try again."
+msgstr "請再試一次。"
 
 msgid "Too many tests!"
 msgstr "測試次數超出限制！"
@@ -499,9 +473,6 @@ msgstr "參考資料"
 
 msgid "Testing"
 msgstr "線上測試"
-
-msgid "Printing"
-msgstr "檔案列印"
 
 msgid "Contest Management System"
 msgstr "本系統"
@@ -711,50 +682,6 @@ msgstr "是"
 msgid "No"
 msgstr "否"
 
-msgid "Print"
-msgstr "提出列印請求"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "您至多可以再列印 %(remaining_jobs)s 次 %(max_pages)s 頁以下的純文字或 PDF 檔案。"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "您至多可以再列印 %(remaining_jobs)s 次 %(max_pages)s 頁以下的純文字檔案。"
-
-msgid "File (text or PDF)"
-msgstr "檔案（純文字或 PDF）"
-
-msgid "File (text)"
-msgstr "檔案（純文字）"
-
-msgid "Submit"
-msgstr "傳送"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "您已達到列印次數上限，無法再列印。"
-
-msgid "Previous print jobs"
-msgstr "列印記錄"
-
-msgid "Date and time"
-msgstr "日期與時間"
-
-msgid "Time"
-msgstr "時間"
-
-msgid "File name"
-msgstr "檔案名稱"
-
-msgid "Status"
-msgstr "狀態"
-
-msgid "Preparing..."
-msgstr "列印準備中..."
-
-msgid "no print jobs yet"
-msgstr "尚無列印紀錄"
-
 msgid "The passwords do not match!"
 msgstr "密碼與確認密碼不符！"
 
@@ -889,6 +816,9 @@ msgstr "不明"
 msgid "loading..."
 msgstr "載入中..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>上傳頁面</small>"
@@ -914,6 +844,9 @@ msgstr "在一次作答中，您可以只上傳部份的輸出檔。"
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "您還可以上傳 %(submissions_left)s 次作答。"
+
+msgid "Submit"
+msgstr "傳送"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -980,6 +913,15 @@ msgstr "輸入"
 msgid "Previous tests"
 msgstr "測試記錄"
 
+msgid "Date and time"
+msgstr "日期與時間"
+
+msgid "Time"
+msgstr "時間"
+
+msgid "Status"
+msgstr "狀態"
+
 msgid "Input"
 msgstr "輸入"
 
@@ -1010,14 +952,3 @@ msgstr "未持有可用 Token。"
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "該次傳送已使用過 Token。"
 
-msgid "Invalid file"
-msgstr "無效的檔案"
-
-msgid "Print job has too many pages"
-msgstr "超出列印頁數上限"
-
-msgid "Sent to printer"
-msgstr "傳送至印表機"
-
-#~ msgid "Standard Template Library"
-#~ msgstr "STL 標準樣板函數庫"

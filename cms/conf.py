@@ -148,16 +148,6 @@ class ProxyServiceConfig:
 
 
 @dataclass()
-class PrintingServiceConfig:
-    max_print_length: int = 10_000_000  # 10 MB
-    printer: str | None = None
-    paper_size: str = "A4"
-    max_pages_per_job: int = 10
-    max_jobs_per_user: int = 10
-    pdf_printing_allowed: bool = False
-
-
-@dataclass()
 class PrometheusConfig:
     listen_address: str = "127.0.0.1"
     listen_port: int = 8811
@@ -186,7 +176,6 @@ class Config:
     contest_web_server: CWSConfig = field_helper(CWSConfig)
     admin_web_server: AWSConfig = field_helper(AWSConfig)
     proxy_service: ProxyServiceConfig = field_helper(ProxyServiceConfig)
-    printing: PrintingServiceConfig = field_helper(PrintingServiceConfig)
     prometheus: PrometheusConfig = field_helper(PrometheusConfig)
     telegram_bot: TelegramBotConfig | None = None
     # This is the one that will be provided in the config file.

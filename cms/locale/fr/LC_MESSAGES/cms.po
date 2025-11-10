@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-08-17 17:02+0000\n"
 "Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/cms/main/fr/>\n"
 "Language: fr\n"
+"Language-Team: French <https://hosted.weblate.org/projects/cms/main/fr/>\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -241,12 +241,6 @@ msgstr "Question envoyée"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Votre question a été envoyée, vous serez notifié lorsque quelqu'un y aura répondu."
 
-msgid "Print job received"
-msgstr "Impression reçue"
-
-msgid "Your print job has been received."
-msgstr "Votre impression a été reçue."
-
 msgid "Submission received"
 msgstr "Soumission reçue"
 
@@ -288,32 +282,6 @@ msgstr "En cours d'exécution..."
 
 msgid "Executed"
 msgstr "Exécuté"
-
-msgid "Too many print jobs!"
-msgstr "Trop d'impressions !"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Vous avez atteint le nombre maximal de %d impressions."
-
-msgid "Invalid format!"
-msgstr "Format invalide !"
-
-msgid "Please select the correct files."
-msgstr "Sélectionnez les fichiers corrects."
-
-msgid "File too big!"
-msgstr "Fichier trop gros !"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Chaque fichier source ne peut pas faire plus de %d octets."
-
-msgid "Print job storage failed!"
-msgstr "Impossible de stocker l'impression !"
-
-msgid "Please try again."
-msgstr "Veuillez réessayer."
 
 msgid "Too many submissions!"
 msgstr "Trop de soumissions !"
@@ -357,8 +325,14 @@ msgstr "Impossible d'ouvrir l'archive soumise."
 msgid "Invalid submission format!"
 msgstr "Format de soumission invalide !"
 
+msgid "Please select the correct files."
+msgstr "Sélectionnez les fichiers corrects."
+
 msgid "Submission storage failed!"
 msgstr "Erreur d'enregistrement de votre soumission !"
+
+msgid "Please try again."
+msgstr "Veuillez réessayer."
 
 msgid "Too many tests!"
 msgstr "Trop de tests !"
@@ -508,9 +482,6 @@ msgstr "Documentation"
 
 msgid "Testing"
 msgstr "Tests"
-
-msgid "Printing"
-msgstr "Impression en cours"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -720,50 +691,6 @@ msgstr "Oui"
 msgid "No"
 msgstr "Non"
 
-msgid "Print"
-msgstr "Imprimer"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes ou PDF de %(max_pages)s pages maximum chacuns."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Vous pouvez encore imprimer %(remaining_jobs)s fichiers textes de %(max_pages)s pages maximum chacuns."
-
-msgid "File (text or PDF)"
-msgstr "Fichier (texte ou PDF)"
-
-msgid "File (text)"
-msgstr "Fichier (texte)"
-
-msgid "Submit"
-msgstr "Soumettre"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Vous ne pouvez plus imprimer car vous avez épuisé votre quota d'impression."
-
-msgid "Previous print jobs"
-msgstr "Impressions précédentes"
-
-msgid "Date and time"
-msgstr "Date et heure"
-
-msgid "Time"
-msgstr "Heure"
-
-msgid "File name"
-msgstr "Nom de fichier"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Preparing..."
-msgstr "Préparation ..."
-
-msgid "no print jobs yet"
-msgstr "aucune impression"
-
 msgid "The passwords do not match!"
 msgstr "Les mots de passe ne correspondent pas !"
 
@@ -899,6 +826,9 @@ msgstr "inconnu"
 msgid "loading..."
 msgstr "chargement ..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>soumissions</small>"
@@ -924,6 +854,9 @@ msgstr "Vous pouvez soumettre un sous-ensemble des sorties dans une seule soumis
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Vous pouvez encore soumettre %(submissions_left)s solutions."
+
+msgid "Submit"
+msgstr "Soumettre"
 
 msgid "submission.zip"
 msgstr "soumission.zip"
@@ -990,6 +923,15 @@ msgstr "entrée"
 msgid "Previous tests"
 msgstr "Tests précédents"
 
+msgid "Date and time"
+msgstr "Date et heure"
+
+msgid "Time"
+msgstr "Heure"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Input"
 msgstr "Entrée"
 
@@ -1020,20 +962,3 @@ msgstr "Votre requête a été annulée car vous n'avez plus de jetons disponibl
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Votre requête a été annulée car vous avez déjà utilisé un jeton sur cette soumission."
 
-msgid "Invalid file"
-msgstr "Fichier invalide"
-
-msgid "Print job has too many pages"
-msgstr "Le document à imprimer est trop long"
-
-msgid "Sent to printer"
-msgstr "Envoyer à l'imprimante"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Exécution tuée (peut être causé par un dépassement des limites mémoire)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "L'évaluation a été tuée par un signal. Cela peut être causé, mais pas uniquement, par un dépassement des limites mémoire. Notez que si cela est le cas, l'utilisation de la mémoire visible dans les détails de la soumission est l'utilisation avant l'allocation mémoire qui a causé le signal."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Librairie Standard C++ (STL)"

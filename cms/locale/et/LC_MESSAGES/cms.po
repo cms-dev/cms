@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-08-17 17:02+0000\n"
 "Last-Translator: \"p. randla\" <prandla@r9.pm>\n"
-"Language-Team: Estonian <https://hosted.weblate.org/projects/cms/main/et/>\n"
 "Language: et\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/cms/main/et/>\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -241,12 +241,6 @@ msgstr "Küsimus on vastu võetud"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Teie küsimus on vastu võetud. Teid teavitatakse, kui selle on vastatud."
 
-msgid "Print job received"
-msgstr "Printimistöö vastu võetud"
-
-msgid "Your print job has been received."
-msgstr "Teie printimistöö on edukalt vastu võetud."
-
 msgid "Submission received"
 msgstr "Lahendus on vastu võetud"
 
@@ -288,32 +282,6 @@ msgstr "Testimine..."
 
 msgid "Executed"
 msgstr "Käivitatud"
-
-msgid "Too many print jobs!"
-msgstr "Liiga palju printmistöid!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Teil ei ole lubatud rohkem kui %d printimistööd esitada."
-
-msgid "Invalid format!"
-msgstr "Vigane vorming!"
-
-msgid "Please select the correct files."
-msgstr "Palun valige õiged failid."
-
-msgid "File too big!"
-msgstr "Fail on liiga suur!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Iga fail võib olla ülimalt %d baiti pikk."
-
-msgid "Print job storage failed!"
-msgstr "Printimistöö salvestamine ebaõnnestus!"
-
-msgid "Please try again."
-msgstr "Palun proovige uuesti."
 
 msgid "Too many submissions!"
 msgstr "Liiga palju esitatud lahendusi!"
@@ -357,8 +325,14 @@ msgstr "Esitatud arhiivi ei õnnestunud avada."
 msgid "Invalid submission format!"
 msgstr "Esitatud lahenduse vorming on vale!"
 
+msgid "Please select the correct files."
+msgstr "Palun valige õiged failid."
+
 msgid "Submission storage failed!"
 msgstr "Esitatud lahenduse salvestamine ebaõnnestus!"
+
+msgid "Please try again."
+msgstr "Palun proovige uuesti."
 
 msgid "Too many tests!"
 msgstr "Liiga palju teste!"
@@ -508,9 +482,6 @@ msgstr "Dokumentatsioon"
 
 msgid "Testing"
 msgstr "Testimine"
-
-msgid "Printing"
-msgstr "Printimine"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -720,50 +691,6 @@ msgstr "Jah"
 msgid "No"
 msgstr "Ei"
 
-msgid "Print"
-msgstr "Prindi"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Te võite printida veel %(remaining_jobs)s teksti või PDF faili, igaüks kuni %(max_pages)s lehekülge pikk."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Te võite printida veel %(remaining_jobs)s tekstifaili, igaüks kuni %(max_pages)s lehekülge pikk."
-
-msgid "File (text or PDF)"
-msgstr "Fail (tekst või PDF)"
-
-msgid "File (text)"
-msgstr "Fail (tekst)"
-
-msgid "Submit"
-msgstr "Esita"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Te ei saa rohkem printida, kuna kasutasite ära teile lubatud printimiskvoodi."
-
-msgid "Previous print jobs"
-msgstr "Eelmised printimistööd"
-
-msgid "Date and time"
-msgstr "Kuupäev ja kellaaeg"
-
-msgid "Time"
-msgstr "Aeg"
-
-msgid "File name"
-msgstr "Faili nimi"
-
-msgid "Status"
-msgstr "Olek"
-
-msgid "Preparing..."
-msgstr "Valmistamine..."
-
-msgid "no print jobs yet"
-msgstr "printimistöid ei ole"
-
 msgid "The passwords do not match!"
 msgstr "Paroolid ei klapi!"
 
@@ -899,6 +826,9 @@ msgstr "tundmatu"
 msgid "loading..."
 msgstr "laadimine..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>esitatud lahendused</small>"
@@ -924,6 +854,9 @@ msgstr "Võite esitada suvalise alamhulga väljundfailidest."
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Võite esitada veel %(submissions_left)s lahendust."
+
+msgid "Submit"
+msgstr "Esita"
 
 msgid "submission.zip"
 msgstr "lahendus.zip"
@@ -990,6 +923,15 @@ msgstr "sisend"
 msgid "Previous tests"
 msgstr "Eelmised testid"
 
+msgid "Date and time"
+msgstr "Kuupäev ja kellaaeg"
+
+msgid "Time"
+msgstr "Aeg"
+
+msgid "Status"
+msgstr "Olek"
+
 msgid "Input"
 msgstr "Sisend"
 
@@ -1020,20 +962,3 @@ msgstr "Päring on tühistatud, kuna Teil pole ühtegi piletit."
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Päring on tühistatud, kuna selle jaoks on juba piletit kasutatud."
 
-msgid "Invalid file"
-msgstr "Vigane fail"
-
-msgid "Print job has too many pages"
-msgstr "Prinditaval dokumendil on liiga mitu lehekülge"
-
-msgid "Sent to printer"
-msgstr "Printerile saadetud"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Programmi täitmine katkes signaali tagajärjel (võib olla tingitud mälupiirangute ületamisest)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Lahenduse jooksmine katkes signaali tagajärjel. See võib olla tingitud muuhulgas mälupiirangu ületamisest. Pane tähele, et sellisel juhul näidatakse esituse mälukastutust vahetult enne piirangu ületamist."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standard Template Library"

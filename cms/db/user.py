@@ -39,7 +39,7 @@ from cmscommon.crypto import generate_random_password, build_password
 from . import CastingArray, Codename, Base, Admin, Contest
 import typing
 if typing.TYPE_CHECKING:
-    from . import PrintJob, Submission, UserTest
+    from . import Submission, UserTest
 
 class User(Base):
     """Class to store a user.
@@ -267,12 +267,6 @@ class Participation(Base):
 
     user_tests: list["UserTest"] = relationship(
         "UserTest",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-        back_populates="participation")
-
-    printjobs: list["PrintJob"] = relationship(
-        "PrintJob",
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="participation")

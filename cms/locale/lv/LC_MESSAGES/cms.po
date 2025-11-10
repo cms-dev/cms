@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: lv_LV\n"
@@ -253,12 +253,6 @@ msgstr "Jautājums saņemts"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Jūsu jautājums saņemts. Tiklīdz uz to būs atbildēts, jums tiks paziņots."
 
-msgid "Print job received"
-msgstr "Drukas uzdevums saņemts"
-
-msgid "Your print job has been received."
-msgstr "Jūsu drukas uzdevums ir saņemts."
-
 msgid "Submission received"
 msgstr "Iesūtījums saņemts"
 
@@ -300,32 +294,6 @@ msgstr "Izpilda…"
 
 msgid "Executed"
 msgstr "Izpildīts"
-
-msgid "Too many print jobs!"
-msgstr "Pārāk daudz drukas uzdevumu!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Jūs esat sasniedzis maksimāli pieļaujamo drukas uzdevumu ierobežojumu (%d)."
-
-msgid "Invalid format!"
-msgstr "Nepareizs formāts!"
-
-msgid "Please select the correct files."
-msgstr "Lūdzu, izvēlieties pareizās datnes."
-
-msgid "File too big!"
-msgstr "Datne pārāk liela!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Katras datnes lielums nedrīkst pārsniegt %d baitus."
-
-msgid "Print job storage failed!"
-msgstr "Drukas uzdevumu glabātuvē ir radusies kļūme!"
-
-msgid "Please try again."
-msgstr "Lūdzu, mēģiniet vēlreiz."
 
 msgid "Too many submissions!"
 msgstr "Pārāk daudz iesūtījumu!"
@@ -369,8 +337,14 @@ msgstr "Iesūtīto arhīvu nav iespējams atvērt."
 msgid "Invalid submission format!"
 msgstr "Nepareizs iesūtījuma formāts!"
 
+msgid "Please select the correct files."
+msgstr "Lūdzu, izvēlieties pareizās datnes."
+
 msgid "Submission storage failed!"
 msgstr "Iesūtījumu glabātuvē ir radusies kļūme!"
+
+msgid "Please try again."
+msgstr "Lūdzu, mēģiniet vēlreiz."
 
 msgid "Too many tests!"
 msgstr "Par daudz testu!"
@@ -520,9 +494,6 @@ msgstr "Dokumentācija"
 
 msgid "Testing"
 msgstr "Testēšana"
-
-msgid "Printing"
-msgstr "Drukāšana"
 
 msgid "Contest Management System"
 msgstr "Sacensību vadīšanas sistēma"
@@ -732,50 +703,6 @@ msgstr "Jā"
 msgid "No"
 msgstr "Nē"
 
-msgid "Print"
-msgstr "Drukāt"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Jūs drīkstat izdrukāt vēl %(remaining_jobs)s teksta vai PDF datnes (katru ne garāku par %(max_pages)s lappusēm)."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Jūs drīkstat izdrukāt vēl %(remaining_jobs)s teksta datnes (katru ne garāku par %(max_pages)s lappusēm)."
-
-msgid "File (text or PDF)"
-msgstr "Datne (teksta vai PDF)"
-
-msgid "File (text)"
-msgstr "Datne (teksta)"
-
-msgid "Submit"
-msgstr "Iesūtīt"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Jūs vairs neko nevarat izdrukāt, jo jau esat izlietojuši atļauto lappušu skaitu."
-
-msgid "Previous print jobs"
-msgstr "Iepriekšējie drukas uzdevumi"
-
-msgid "Date and time"
-msgstr "Datums un laiks"
-
-msgid "Time"
-msgstr "Laiks"
-
-msgid "File name"
-msgstr "Datnes nosaukums"
-
-msgid "Status"
-msgstr "Statuss"
-
-msgid "Preparing..."
-msgstr "Sagatavojas…"
-
-msgid "no print jobs yet"
-msgstr "pagaidām nav drukas uzdevumu"
-
 msgid "The passwords do not match!"
 msgstr "Paroles nesakrīt!"
 
@@ -912,6 +839,9 @@ msgstr "nezināms"
 msgid "loading..."
 msgstr "ielādē…"
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>iesūtījumi</small>"
@@ -937,6 +867,9 @@ msgstr "Jūs varat iesūtīt jebkuru izvadu apakškopu vienā iesūtījumā."
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Jūs varat iesūtīt vēl %(submissions_left)s iesūtījumu(s)."
+
+msgid "Submit"
+msgstr "Iesūtīt"
 
 msgid "submission.zip"
 msgstr "iesūtījums.zip"
@@ -1003,6 +936,15 @@ msgstr "ievaddati"
 msgid "Previous tests"
 msgstr "Iepriekšējie testi"
 
+msgid "Date and time"
+msgstr "Datums un laiks"
+
+msgid "Time"
+msgstr "Laiks"
+
+msgid "Status"
+msgstr "Statuss"
+
 msgid "Input"
 msgstr "Ievaddati"
 
@@ -1032,22 +974,4 @@ msgstr "Jūsu pieprasījums ir noraidīts, jo jums nav žetonu."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Jūsu pieprasījums ir noraidīts, jo jūs jau izmantojāt žetonu šim iesūtījumam."
-
-msgid "Invalid file"
-msgstr "Nepareiza datne"
-
-msgid "Print job has too many pages"
-msgstr "Drukas uzdevumam ir pārāk daudz lappušu"
-
-msgid "Sent to printer"
-msgstr "Nosūtīts drukāšanai"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Izpilde pārtraukta (to var būt izraisījusi atmiņas ierobežojumu neievērošana)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Izpilde tika pārtraukta ar signālu. Citu iemeslu starpā, to varētu būt izraisījusi atmiņas ierobežojuma pārsniegšana. Šajā gadījumā atmiņas patēriņš, kas ir redzams iesūtījuma detaļās, atbilst stāvoklim pirms signālu izraisījušās atmiņas iedalīšanas."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standarta šablonu bibliotēka (STL)"
 

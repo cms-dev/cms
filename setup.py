@@ -53,9 +53,6 @@ PACKAGE_DATA = {
         "contest/templates/*.*",
         "contest/templates/macro/*.*",
     ],
-    "cms.service": [
-        "templates/printing/*.*",
-    ],
     "cms.locale": [
         "*/LC_MESSAGES/*.*",
     ],
@@ -130,7 +127,6 @@ setup(
         "scripts/cmsContestWebServer",
         "scripts/cmsAdminWebServer",
         "scripts/cmsProxyService",
-        "scripts/cmsPrintingService",
         "scripts/cmsRankingWebServer",
         "scripts/cmsInitDB",
         "scripts/cmsDropDB",

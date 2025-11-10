@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -248,12 +248,6 @@ msgstr "已送出询问"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "您的询问已成功送出, 待此询问得到回复后将会通知您。"
 
-msgid "Print job received"
-msgstr "已收到测试"
-
-msgid "Your print job has been received."
-msgstr "已收到打印请求。"
-
 msgid "Submission received"
 msgstr "已收到本次提交"
 
@@ -297,32 +291,6 @@ msgstr "执行中..."
 msgid "Executed"
 msgstr "已评测"
 
-msgid "Too many print jobs!"
-msgstr "打印次数过多！"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "在本题中, 您最多可以进行 %d 次测试。"
-
-msgid "Invalid format!"
-msgstr "非法的测试文件格式！"
-
-msgid "Please select the correct files."
-msgstr "请选择正确的文件。"
-
-msgid "File too big!"
-msgstr "测试文件过大！"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "每个文件长度不得超过 %d 字节。"
-
-msgid "Print job storage failed!"
-msgstr "打印文件储存失败。"
-
-msgid "Please try again."
-msgstr "请再试一次。"
-
 msgid "Too many submissions!"
 msgstr "提交次数超出限制！"
 
@@ -365,8 +333,14 @@ msgstr "封装文件无法正常开启。"
 msgid "Invalid submission format!"
 msgstr "文件格式错误！"
 
+msgid "Please select the correct files."
+msgstr "请选择正确的文件。"
+
 msgid "Submission storage failed!"
 msgstr "提交文件存取错误！"
+
+msgid "Please try again."
+msgstr "请再试一次。"
 
 msgid "Too many tests!"
 msgstr "测试次数过多！"
@@ -516,9 +490,6 @@ msgstr "参考资料"
 
 msgid "Testing"
 msgstr "线上测试"
-
-msgid "Printing"
-msgstr "打印中"
 
 msgid "Contest Management System"
 msgstr "本系统"
@@ -732,50 +703,6 @@ msgstr "是"
 msgid "No"
 msgstr "否"
 
-msgid "Print"
-msgstr "打印"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "您可以再打印 %(remaining_jobs)s 个文本文件或者 PDF，每个文件最多 %(max_pages)s 页。"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "您可以打印 %(remaining_jobs)s 个文本文件，每个文件最多 %(max_pages)s 页。"
-
-msgid "File (text or PDF)"
-msgstr "文件（文字或 PDF）"
-
-msgid "File (text)"
-msgstr "文件（文字）"
-
-msgid "Submit"
-msgstr "提交"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "由于您的打印次数已用完，您不能再打印了。"
-
-msgid "Previous print jobs"
-msgstr "测试记录"
-
-msgid "Date and time"
-msgstr "日期与时间"
-
-msgid "Time"
-msgstr "时间"
-
-msgid "File name"
-msgstr "文件名"
-
-msgid "Status"
-msgstr "状态"
-
-msgid "Preparing..."
-msgstr "评分中..."
-
-msgid "no print jobs yet"
-msgstr "尚未测试"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -920,6 +847,9 @@ msgstr ""
 msgid "loading..."
 msgstr "评分中..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>评测页面</small>"
@@ -949,6 +879,9 @@ msgstr ""
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "您可以再上传 %(submissions_left)s 个解答。"
+
+msgid "Submit"
+msgstr "提交"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -1017,6 +950,15 @@ msgstr "输入"
 msgid "Previous tests"
 msgstr "测试记录"
 
+msgid "Date and time"
+msgstr "日期与时间"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Status"
+msgstr "状态"
+
 msgid "Input"
 msgstr "输入"
 
@@ -1046,18 +988,4 @@ msgstr "由于无可用 Token，使用已拒绝。"
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "由于本次提交已使用过 Token，使用已拒绝。"
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "非法的测试文件格式！"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "打印文件储存失败。"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Standard Template Library"
-#~ msgstr "STL 标准样板函数库"
 

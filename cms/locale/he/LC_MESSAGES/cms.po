@@ -7,16 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contest Management System 1.5.1\n"
 "Report-Msgid-Bugs-To: contestms@googlegroups.com\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-11-08 19:51+0000\n"
 "Last-Translator: Ron Ryvchin <ron.ryv@gmail.com>\n"
-"Language-Team: Hebrew <https://hosted.weblate.org/projects/cms/main/he/>\n"
 "Language: he\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/cms/main/he/>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 5.15-dev\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -246,12 +245,6 @@ msgstr "השאלה התקבלה"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "השאלה שלכם התקבלה, תקבלו התראה כשהיא תענה."
 
-msgid "Print job received"
-msgstr "עבודת ההדפסה התקבלה"
-
-msgid "Your print job has been received."
-msgstr "עבודת ההדפסה שלכם התקבלה."
-
 msgid "Submission received"
 msgstr "ההגשה התקבלה"
 
@@ -293,32 +286,6 @@ msgstr "מורצת..."
 
 msgid "Executed"
 msgstr "הורצה"
-
-msgid "Too many print jobs!"
-msgstr "יותר מידי עבודות הדפסה!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "הגעתם למגבלה המירבית של לכל היותר %d עבודות הדפסה."
-
-msgid "Invalid format!"
-msgstr "פורמט לא תקין!"
-
-msgid "Please select the correct files."
-msgstr "אנא בחרו את הקבצים הנכונים."
-
-msgid "File too big!"
-msgstr "הקובץ גדול מידי!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "על כל קובץ להיות באורך של לכל היותר %d בתים."
-
-msgid "Print job storage failed!"
-msgstr "האכסון של עבודת ההדפסה נכשל!"
-
-msgid "Please try again."
-msgstr "אנא נסו שוב."
 
 msgid "Too many submissions!"
 msgstr "יותר מידי הגשות!"
@@ -362,8 +329,14 @@ msgstr "הארכיון שהוגש לא יכל להפתח."
 msgid "Invalid submission format!"
 msgstr "פורמט הגשה לא תקין!"
 
+msgid "Please select the correct files."
+msgstr "אנא בחרו את הקבצים הנכונים."
+
 msgid "Submission storage failed!"
 msgstr "אכסון ההגשה נכשל!"
+
+msgid "Please try again."
+msgstr "אנא נסו שוב."
 
 msgid "Too many tests!"
 msgstr "יותר מידי טסטים!"
@@ -513,9 +486,6 @@ msgstr "תיעוד"
 
 msgid "Testing"
 msgstr "בדיקה"
-
-msgid "Printing"
-msgstr "הדפסה"
 
 msgid "Contest Management System"
 msgstr "מערכת ה-CMS"
@@ -725,50 +695,6 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-msgid "Print"
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr ""
-
-msgid "File (text or PDF)"
-msgstr ""
-
-msgid "File (text)"
-msgstr ""
-
-msgid "Submit"
-msgstr ""
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-msgid "Previous print jobs"
-msgstr ""
-
-msgid "Date and time"
-msgstr ""
-
-msgid "Time"
-msgstr ""
-
-msgid "File name"
-msgstr ""
-
-msgid "Status"
-msgstr ""
-
-msgid "Preparing..."
-msgstr ""
-
-msgid "no print jobs yet"
-msgstr ""
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -904,6 +830,9 @@ msgstr ""
 msgid "loading..."
 msgstr ""
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr ""
@@ -928,6 +857,9 @@ msgstr ""
 
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
+msgstr ""
+
+msgid "Submit"
 msgstr ""
 
 msgid "submission.zip"
@@ -995,6 +927,15 @@ msgstr "קלט"
 msgid "Previous tests"
 msgstr "הטסטים הקודמים"
 
+msgid "Date and time"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
 msgid "Input"
 msgstr "קלט"
 
@@ -1025,11 +966,3 @@ msgstr ""
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr ""
 
-msgid "Invalid file"
-msgstr "קובץ לא תקין"
-
-msgid "Print job has too many pages"
-msgstr ""
-
-msgid "Sent to printer"
-msgstr "נשלח למדפסת"

@@ -71,7 +71,6 @@ from cms.db import (
     Participation,
     UserTest,
     UserTestResult,
-    PrintJob,
     Announcement,
     Base,
     init_db,
@@ -162,7 +161,6 @@ class DumpImporter:
         skip_submissions: bool,
         skip_user_tests: bool,
         skip_users: bool,
-        skip_print_jobs: bool,
     ):
         self.drop = drop
         self.load_files = load_files
@@ -171,7 +169,6 @@ class DumpImporter:
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
         self.skip_users = skip_users
-        self.skip_print_jobs = skip_print_jobs
 
         self.import_source = import_source
         self.import_dir = import_source
@@ -286,10 +283,6 @@ class DumpImporter:
                                            UserTest, Announcement)):
                         del self.objs[k]
 
-                    # Skip print jobs if requested
-                    elif self.skip_print_jobs and isinstance(v, PrintJob):
-                        del self.objs[k]
-
                     # Skip generated data if requested
                     elif self.skip_generated and \
                             isinstance(v, (SubmissionResult, UserTestResult)):
@@ -324,7 +317,6 @@ class DumpImporter:
                             session, obj,
                             skip_submissions=self.skip_submissions,
                             skip_user_tests=self.skip_user_tests,
-                            skip_print_jobs=self.skip_print_jobs,
                             skip_users=self.skip_users,
                             skip_generated=self.skip_generated)
 
@@ -522,8 +514,6 @@ def main():
                         help="don't import user tests")
     parser.add_argument("-X", "--no-users", action="store_true",
                         help="don't import users")
-    parser.add_argument("-P", "--no-print-jobs", action="store_true",
-                        help="don't import print jobs")
     parser.add_argument("import_source", action="store", type=utf8_decoder,
                         help="source directory or compressed file")
 
@@ -536,8 +526,7 @@ def main():
                             skip_generated=args.no_generated,
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
-                            skip_users=args.no_users,
-                            skip_print_jobs=args.no_print_jobs)
+                            skip_users=args.no_users)
     success = importer.do_import()
     return 0 if success is True else 1
 

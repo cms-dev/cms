@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sl_SI\n"
@@ -263,12 +263,6 @@ msgstr "Vprašanje je bilo prejeto"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Tvoje vprašanje je bilo prejeto. O odgovoru boš obveščen(a)"
 
-msgid "Print job received"
-msgstr "Tiskalniško opravilo je sprejeto"
-
-msgid "Your print job has been received."
-msgstr "Tvoje tiskalniško opravilo je bilo sprejeto."
-
 msgid "Submission received"
 msgstr "Oddaja je sprejeta"
 
@@ -312,32 +306,6 @@ msgstr "Izvajam..."
 msgid "Executed"
 msgstr "Izvedeno"
 
-msgid "Too many print jobs!"
-msgstr "Preveč tiskalniških opravil!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Dosegel(la) si največje število %d tiskanj."
-
-msgid "Invalid format!"
-msgstr "Napačen format!"
-
-msgid "Please select the correct files."
-msgstr "Prosim izberi pravilne datoteke."
-
-msgid "File too big!"
-msgstr "Datoteka je prevelika!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Vsaka datoteka je lahko velika največ %d bajtov."
-
-msgid "Print job storage failed!"
-msgstr "Shranjevanje tiska ni uspelo!"
-
-msgid "Please try again."
-msgstr "Prosim poizkusi znova."
-
 msgid "Too many submissions!"
 msgstr "Preveč oddaj!"
 
@@ -380,8 +348,14 @@ msgstr "Ne morem odpreti oddanega arhiva."
 msgid "Invalid submission format!"
 msgstr "Napačna oblika oddaje!"
 
+msgid "Please select the correct files."
+msgstr "Prosim izberi pravilne datoteke."
+
 msgid "Submission storage failed!"
 msgstr "Shranjevanje oddaje neuspešno!"
+
+msgid "Please try again."
+msgstr "Prosim poizkusi znova."
 
 msgid "Too many tests!"
 msgstr "Preveč preizkusov!"
@@ -534,9 +508,6 @@ msgstr "Dokumentacija"
 
 msgid "Testing"
 msgstr "Preizkušanje"
-
-msgid "Printing"
-msgstr "Tiskanje"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -750,50 +721,6 @@ msgstr "Da"
 msgid "No"
 msgstr "Ne"
 
-msgid "Print"
-msgstr "Tiskaj"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Natisneš lahko še %(remaining_jobs)s besedilnih ali PDF datotek z največ %(max_pages)s stranmi."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Natisneš lahko še %(remaining_jobs)s besedilnih datotek z največ %(max_pages)s stranmi."
-
-msgid "File (text or PDF)"
-msgstr "Datoteka (besedilna ali PDF)"
-
-msgid "File (text)"
-msgstr "Datoteka (besedilna)"
-
-msgid "Submit"
-msgstr "Oddaj"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Ne moreš več tiskati, ker si porabil(a) svojo kvoto tiskanja."
-
-msgid "Previous print jobs"
-msgstr "Prejšnja tiskalniška opravila"
-
-msgid "Date and time"
-msgstr "Datum in čas"
-
-msgid "Time"
-msgstr "Čas"
-
-msgid "File name"
-msgstr "Ime datoteke"
-
-msgid "Status"
-msgstr "Stanje"
-
-msgid "Preparing..."
-msgstr "Pripravljam..."
-
-msgid "no print jobs yet"
-msgstr "ni tiskalniških opravil"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -939,6 +866,9 @@ msgstr ""
 msgid "loading..."
 msgstr "nalagam..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>oddaje</small>"
@@ -968,6 +898,9 @@ msgstr ""
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Oddaš lahko še %(submissions_left)s rešitev."
+
+msgid "Submit"
+msgstr "Oddaj"
 
 msgid "submission.zip"
 msgstr "oddaja.zip"
@@ -1036,6 +969,15 @@ msgstr "vhod"
 msgid "Previous tests"
 msgstr "Predhodni preizkusi"
 
+msgid "Date and time"
+msgstr "Datum in čas"
+
+msgid "Time"
+msgstr "Čas"
+
+msgid "Status"
+msgstr "Stanje"
+
 msgid "Input"
 msgstr "Vhod"
 
@@ -1065,18 +1007,4 @@ msgstr "Tvoja zahteva je bila zavžena, ker nimaš na voljo žetonov."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Tvoja zahteva je bila zavržena, ker si pri tej oddaji že uporabil žeton."
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "Napačen format!"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "Shranjevanje tiska ni uspelo!"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standardna predložna knjižnica"
 

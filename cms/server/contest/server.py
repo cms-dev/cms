@@ -128,11 +128,6 @@ class ContestWebServer(WebService):
             ServiceCoord("ProxyService", 0),
             must_be_present=ranking_enabled)
 
-        printing_enabled = config.printing.printer is not None
-        self.printing_service = self.connect_to(
-            ServiceCoord("PrintingService", 0),
-            must_be_present=printing_enabled)
-
     def add_notification(
         self, username: str, timestamp: datetime, subject: str, text: str, level: str
     ):

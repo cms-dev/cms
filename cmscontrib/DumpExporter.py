@@ -68,7 +68,6 @@ from cms.db import (
     UserTest,
     SubmissionResult,
     UserTestResult,
-    PrintJob,
     Announcement,
     Participation,
     Base,
@@ -169,7 +168,6 @@ class DumpExporter:
         skip_submissions: bool,
         skip_user_tests: bool,
         skip_users: bool,
-        skip_print_jobs: bool,
     ):
         if contest_ids is None:
             with SessionGen() as session:
@@ -197,7 +195,6 @@ class DumpExporter:
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
         self.skip_users = skip_users
-        self.skip_print_jobs = skip_print_jobs
         self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
@@ -248,7 +245,6 @@ class DumpExporter:
                         skip_submissions=self.skip_submissions,
                         skip_user_tests=self.skip_user_tests,
                         skip_users=self.skip_users,
-                        skip_print_jobs=self.skip_print_jobs,
                         skip_generated=self.skip_generated)
                     for file_ in files:
                         if not self.safe_get_file(file_,
@@ -369,10 +365,6 @@ class DumpExporter:
                 if skip:
                     continue
 
-            # Skip print jobs if requested
-            if self.skip_print_jobs and other_cls is PrintJob:
-                continue
-
             # Skip generated data if requested
             if self.skip_generated and other_cls in (SubmissionResult,
                                                      UserTestResult):
@@ -452,8 +444,6 @@ def main():
                         help="don't export user tests")
     parser.add_argument("-X", "--no-users", action="store_true",
                         help="don't export users")
-    parser.add_argument("-P", "--no-print-jobs", action="store_true",
-                        help="don't export print jobs")
     parser.add_argument("export_target", action="store",
                         type=utf8_decoder, nargs='?', default="",
                         help="target directory or archive for export")
@@ -467,8 +457,7 @@ def main():
                             skip_generated=args.no_generated,
                             skip_submissions=args.no_submissions,
                             skip_user_tests=args.no_user_tests,
-                            skip_users=args.no_users,
-                            skip_print_jobs=args.no_print_jobs)
+                            skip_users=args.no_users)
     success = exporter.do_export()
     return 0 if success is True else 1
 

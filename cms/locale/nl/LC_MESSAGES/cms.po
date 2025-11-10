@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: nl_NL\n"
@@ -244,12 +244,6 @@ msgstr "Vraag ontvangen"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Je vraag werd ontvangen, je zal worden verwittigd wanneer ze beantwoord is."
 
-msgid "Print job received"
-msgstr "Printopdracht ontvangen"
-
-msgid "Your print job has been received."
-msgstr "Je printopdracht werd ontvangen."
-
 msgid "Submission received"
 msgstr "Inzending ontvangen"
 
@@ -291,32 +285,6 @@ msgstr "Bezig met uitvoeren..."
 
 msgid "Executed"
 msgstr "Uitgevoerd"
-
-msgid "Too many print jobs!"
-msgstr "Te veel printopdrachten!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Je hebt de maximumlimiet van %d printopdrachten bereikt."
-
-msgid "Invalid format!"
-msgstr "Ongeldig formaat!"
-
-msgid "Please select the correct files."
-msgstr "Selecteer de correcte bestanden aub."
-
-msgid "File too big!"
-msgstr "Bestand te groot!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Elk bestand mag maximaal %d bytes groot zijn."
-
-msgid "Print job storage failed!"
-msgstr "Kon de printopdracht niet registreren!"
-
-msgid "Please try again."
-msgstr "Probeer opnieuw aub."
 
 msgid "Too many submissions!"
 msgstr "Te veel inzendingen!"
@@ -360,8 +328,14 @@ msgstr "Het ingediende archief kon niet worden geopend."
 msgid "Invalid submission format!"
 msgstr "Ongeldig formaat voor inzending!"
 
+msgid "Please select the correct files."
+msgstr "Selecteer de correcte bestanden aub."
+
 msgid "Submission storage failed!"
 msgstr "Opslag van inzending mislukt!"
+
+msgid "Please try again."
+msgstr "Probeer opnieuw aub."
 
 msgid "Too many tests!"
 msgstr "Te veel tests!"
@@ -511,9 +485,6 @@ msgstr "Documentatie"
 
 msgid "Testing"
 msgstr "Testen"
-
-msgid "Printing"
-msgstr "Afdrukken"
 
 msgid "Contest Management System"
 msgstr "Wedstrijdbeheersysteem"
@@ -723,50 +694,6 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nee"
 
-msgid "Print"
-msgstr "Afdrukken"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Je kunt nog maximaal %(remaining_jobs)s tekst- of PDF-bestanden afdrukken van elk maximaal %(max_pages)s pagina's."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Je kunt nog %(remaining_jobs)s tekstbestanden afdrukken van elk maximaal %(max_pages)s pagina's."
-
-msgid "File (text or PDF)"
-msgstr "Bestand (tekst of PDF)"
-
-msgid "File (text)"
-msgstr "Bestand (tekst)"
-
-msgid "Submit"
-msgstr "Indienen"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Je kunt niets meer afdrukken omdat je je printquota al opgebruikt hebt."
-
-msgid "Previous print jobs"
-msgstr "Vorige printopdrachten"
-
-msgid "Date and time"
-msgstr "Datum en tijd"
-
-msgid "Time"
-msgstr "Tijd"
-
-msgid "File name"
-msgstr "Bestandsnaam"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Preparing..."
-msgstr "Voorbereiden..."
-
-msgid "no print jobs yet"
-msgstr "nog geen printopdrachten"
-
 msgid "The passwords do not match!"
 msgstr "De paswoorden zijn niet gelijk!"
 
@@ -902,6 +829,9 @@ msgstr "onbekend"
 msgid "loading..."
 msgstr "laden..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>inzendingen</small>"
@@ -927,6 +857,9 @@ msgstr "Je mag eender welke subsets van outputs in een enkele inzending sturen."
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Je kunt nog %(submissions_left)s keer indienen."
+
+msgid "Submit"
+msgstr "Indienen"
 
 msgid "submission.zip"
 msgstr "inzending.zip"
@@ -993,6 +926,15 @@ msgstr "input"
 msgid "Previous tests"
 msgstr "Vorige tests"
 
+msgid "Date and time"
+msgstr "Datum en tijd"
+
+msgid "Time"
+msgstr "Tijd"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Input"
 msgstr "Input"
 
@@ -1022,22 +964,4 @@ msgstr "Je aanvraag werd afgewezen omdat je geen tokens beschikbaar hebt."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Je aanvraag werd afgewezen omdat je al een token gebruikte voor deze inzending."
-
-msgid "Invalid file"
-msgstr "Ongeldig bestand"
-
-msgid "Print job has too many pages"
-msgstr "Printopdracht heeft de veel paginas"
-
-msgid "Sent to printer"
-msgstr "Naar de printer verzonden"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Uitvoering beëindigt (kan veroorzaakt woorden voor geheugenlimieten te overschrijden)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "De uitvoering werd beëindigd door een signaal. Dit kan onder andere veroorzaakt worden door het overschrijden van de geheugenlimiet. Als dit de reden is, is het geheugengebruik, voor de allocatie die het signaal veroorzaakte, zichtbaar in de details van de inzending."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standard Template Library"
 
