@@ -13,6 +13,6 @@ cache/
 lib/
 log/
 .vagrant/
-codecov/
+codecov-results/
 .dev/
 test_logs/
