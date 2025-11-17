@@ -89,8 +89,7 @@ class Worker(Service):
                 files = enumerate_files(session,
                                         contest,
                                         skip_submissions=True,
-                                        skip_user_tests=True,
-                                        skip_print_jobs=True)
+                                        skip_user_tests=True)
             for digest in files:
                 try:
                     self.file_cacher.cache_file(digest)

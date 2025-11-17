@@ -31,10 +31,6 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Isolate <https://github.com/ioi/isolate/>`_ >= 2.0;
 
-* `TeX Live <https://www.tug.org/texlive/>`_ (only for printing);
-
-* `a2ps <https://www.gnu.org/software/a2ps/>`_ (only for printing).
-
 You will also require a Linux kernel with support for `cgroupv2 <https://docs.kernel.org/admin-guide/cgroup-v2.html>`_.
 Most Linux distributions provide such kernels by default.
 
@@ -67,10 +63,9 @@ On Ubuntu 24.04, one will need to run the following script as root to satisfy al
 
     # Feel free to change OpenJDK packages with your preferred JDK.
     apt install build-essential openjdk-11-jdk-headless fp-compiler \
-        postgresql postgresql-client \
-        python3.12 python3.12-dev python3-pip python3-venv \
-        libpq-dev libcups2-dev libyaml-dev libffi-dev \
-        shared-mime-info cppreference-doc-en-html zip curl
+        postgresql postgresql-client python3.12 python3.12-dev python3-pip \
+        python3-venv libpq-dev libyaml-dev libffi-dev shared-mime-info \
+        cppreference-doc-en-html zip curl
 
     # Isolate from upstream package repository
     echo 'deb [arch=amd64 signed-by=/etc/apt/keyrings/isolate.asc] http://www.ucw.cz/isolate/debian/ noble-isolate main' >/etc/apt/sources.list.d/isolate.list
@@ -78,8 +73,7 @@ On Ubuntu 24.04, one will need to run the following script as root to satisfy al
     apt update && apt install isolate
 
     # Optional
-    apt install nginx-full php-cli texlive-latex-base \
-        a2ps ghc rustc mono-mcs pypy3
+    apt install nginx-full php-cli ghc rustc mono-mcs pypy3
 
 The above commands provide a very essential Pascal environment. Consider installing the following packages for additional units: ``fp-units-base``, ``fp-units-fcl``, ``fp-units-misc``, ``fp-units-math`` and ``fp-units-rtl``.
 
@@ -92,16 +86,14 @@ On Arch Linux, run the following commands as root to install almost all dependen
 .. sourcecode:: bash
 
     pacman -S base-devel jdk8-openjdk fpc postgresql postgresql-client \
-        python python-pip postgresql-libs libcups libyaml \
-        shared-mime-info
+        python python-pip postgresql-libs libyaml shared-mime-info
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/cppreference/
     # https://aur.archlinux.org/packages/isolate
 
     # Optional
-    pacman -S --needed nginx php php-fpm phppgadmin texlive-core \
-        a2ps ghc rust mono pypy3
+    pacman -S --needed nginx php php-fpm phppgadmin ghc rust mono pypy3
 
 
 Preparation steps

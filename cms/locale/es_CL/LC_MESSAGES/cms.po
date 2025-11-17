@@ -3,12 +3,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-06-06 09:35+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
+"PO-Revision-Date: 2025-10-29 03:03+0000\n"
+"Last-Translator: Alan Nathan Mendoza Grande <mendozaalan721@gmail.com>\n"
 "Language: es_CL\n"
-"Language-Team: es_CL TEAM <EMAIL@ADDRESS>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language-Team: Spanish (Chile) <https://hosted.weblate.org/projects/cms/main/es_CL/>\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -110,20 +110,17 @@ msgstr "Tiempo límite excedido (tiempo físico total)"
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr "El envío utilizó demasiado tiempo en total. Esto podría ser el resultado de código con comportamiento indefinido o desbordamientos (buffer overflow). Notar que en este caso, el tiempo de CPU que se muestra en los detalles podría ser muy inferior al tiempo máximo permitido."
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "Límite de memoria"
+msgstr "Límite de memoria excedida"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "El envío utilizó demasiado tiempo de CPU."
+msgstr "Tu envío excedió el límite de memoria."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "Tiempo límite excedido"
+msgstr "La ejecución fue terminada por una señal."
 
 msgid "The evaluation was killed by a signal."
-msgstr ""
+msgstr "La evaluación fue terminada por una señal."
 
 msgid "Execution failed because the return code was nonzero"
 msgstr "Ejecución fallida por código de retorno distinto de cero"
@@ -244,12 +241,6 @@ msgstr "Pregunta recibida"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Su pregunta ha sido recibida. Se le notificará cuando sea respondida."
 
-msgid "Print job received"
-msgstr "Trabajo de impresión recibido"
-
-msgid "Your print job has been received."
-msgstr "Su trabajo de impresión ha sido recibido."
-
 msgid "Submission received"
 msgstr "Envío recibido"
 
@@ -292,32 +283,6 @@ msgstr "Ejecutando..."
 msgid "Executed"
 msgstr "Ejecutado"
 
-msgid "Too many print jobs!"
-msgstr "¡Demasiados trabajos de impresión!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Ha alcanzado el límite máximo de %d trabajos de impresión."
-
-msgid "Invalid format!"
-msgstr "¡Formato inválido!"
-
-msgid "Please select the correct files."
-msgstr "Por favor seleccione los archivos correctos."
-
-msgid "File too big!"
-msgstr "¡El archivo es demasiado grande!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Cada archivo debe tener un tamaño de a lo sumo %d bytes."
-
-msgid "Print job storage failed!"
-msgstr "¡No se pudo almacenar el trabajo de impresión!"
-
-msgid "Please try again."
-msgstr "Por favor, intente nuevamente."
-
 msgid "Too many submissions!"
 msgstr "¡Demasiados envíos!"
 
@@ -349,7 +314,7 @@ msgstr "Cada archivo de código fuente debe tener un tamaño de a lo sumo %d byt
 
 #, python-format
 msgid "The submission should contain at most %d files."
-msgstr ""
+msgstr "El envío debe contener como máximo %d archivos."
 
 msgid "Invalid archive format!"
 msgstr "¡El formato del archivo comprimido es inválido!"
@@ -360,8 +325,14 @@ msgstr "No se pudo abrir el archivo comprimido enviado."
 msgid "Invalid submission format!"
 msgstr "¡El formato del envío es inválido!"
 
+msgid "Please select the correct files."
+msgstr "Por favor seleccione los archivos correctos."
+
 msgid "Submission storage failed!"
 msgstr "¡No se pudo almacenar el envío!"
+
+msgid "Please try again."
+msgstr "Por favor, intente nuevamente."
 
 msgid "Too many tests!"
 msgstr "¡Demasiados tests!"
@@ -511,9 +482,6 @@ msgstr "Documentación"
 
 msgid "Testing"
 msgstr "Testing"
-
-msgid "Printing"
-msgstr "Impresión"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -723,50 +691,6 @@ msgstr "Sí"
 msgid "No"
 msgstr "No"
 
-msgid "Print"
-msgstr "Imprimir"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Puedes imprimir %(remaining_jobs)s archivos de texto o pdf adicionales, de hasta %(max_pages)s páginas cada uno."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Puedes imprimir %(remaining_jobs)s archivos de texto adicionales, de hasta %(max_pages)s páginas cada uno."
-
-msgid "File (text or PDF)"
-msgstr "Archivo (de texto o PDF)"
-
-msgid "File (text)"
-msgstr "Archivo (de texto)"
-
-msgid "Submit"
-msgstr "Enviar"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Ya no puedes imprimir nada más, pues ya has agotado tu cuota de impresión."
-
-msgid "Previous print jobs"
-msgstr "Trabajos de impresión previos"
-
-msgid "Date and time"
-msgstr "Fecha y hora"
-
-msgid "Time"
-msgstr "Hora"
-
-msgid "File name"
-msgstr "Nombre de archivo"
-
-msgid "Status"
-msgstr "Estado"
-
-msgid "Preparing..."
-msgstr "Preparando..."
-
-msgid "no print jobs yet"
-msgstr "sin trabajos de impresión aún"
-
 msgid "The passwords do not match!"
 msgstr "Las contraseñas no coinciden"
 
@@ -902,6 +826,9 @@ msgstr "desconocido"
 msgid "loading..."
 msgstr "cargando..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>envíos</small>"
@@ -927,6 +854,9 @@ msgstr "Puedes enviar cualquier subconjunto de los archivos de salida en un mism
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Puedes enviar %(submissions_left)s soluciones más."
+
+msgid "Submit"
+msgstr "Enviar"
 
 msgid "submission.zip"
 msgstr "envio.zip"
@@ -993,6 +923,15 @@ msgstr "entrada"
 msgid "Previous tests"
 msgstr "Tests anteriores"
 
+msgid "Date and time"
+msgstr "Fecha y hora"
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "Status"
+msgstr "Estado"
+
 msgid "Input"
 msgstr "Entrada"
 
@@ -1022,22 +961,4 @@ msgstr "Su pedido ha sido descartado porque no posee tokens disponibles."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Su pedido ha sido descartado porque ya ha utilizado un token sobre ese envío."
-
-msgid "Invalid file"
-msgstr "Archivo inválido"
-
-msgid "Print job has too many pages"
-msgstr "El trabajo de impresión tiene demasiadas páginas"
-
-msgid "Sent to printer"
-msgstr "Enviado a la impresora"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "La ejecución fue terminada abruptamente (podría deberse a un exceso en el uso de memoria)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "La evaluación fue terminada mediante una señal del sistema operativo. Entre otras cosas, esto podría deberse a un exceso en el uso de memoria. Notar que si esta fuera la razón, la memoria utilizada mostrada en los detalles de envío sería la memoria utilizada antes de la reserva de memoria que generó la señal."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standrad Template Library"
 

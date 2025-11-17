@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ja\n"
@@ -236,12 +236,6 @@ msgstr "質問を受理しました"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "あなたの質問を受理しました。回答があった場合は通知されます。"
 
-msgid "Print job received"
-msgstr "印刷ジョブを受理しました"
-
-msgid "Your print job has been received."
-msgstr "あなたの印刷ジョブを受理しました。"
-
 msgid "Submission received"
 msgstr "提出を受理しました"
 
@@ -285,32 +279,6 @@ msgstr "実行中…"
 msgid "Executed"
 msgstr "実行完了"
 
-msgid "Too many print jobs!"
-msgstr "印刷が多すぎます!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "印刷はひとりあたり最大 %d 回までです。"
-
-msgid "Invalid format!"
-msgstr "無効な形式です!"
-
-msgid "Please select the correct files."
-msgstr "正しいファイルを選択してください。"
-
-msgid "File too big!"
-msgstr "ファイルが大きすぎます!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "各ファイルは %d バイト以下である必要があります。"
-
-msgid "Print job storage failed!"
-msgstr "印刷ジョブの保存に失敗しました!"
-
-msgid "Please try again."
-msgstr "もう一度試してください。"
-
 msgid "Too many submissions!"
 msgstr "提出が多すぎます!"
 
@@ -353,8 +321,14 @@ msgstr "提出されたアーカイブを開くことができませんでした
 msgid "Invalid submission format!"
 msgstr "無効な提出形式です!"
 
+msgid "Please select the correct files."
+msgstr "正しいファイルを選択してください。"
+
 msgid "Submission storage failed!"
 msgstr "提出ファイルの保存に失敗しました!"
+
+msgid "Please try again."
+msgstr "もう一度試してください。"
 
 msgid "Too many tests!"
 msgstr "テスト要求が多すぎます!"
@@ -507,9 +481,6 @@ msgstr "資料"
 
 msgid "Testing"
 msgstr "テスト"
-
-msgid "Printing"
-msgstr "印刷"
 
 msgid "Contest Management System"
 msgstr "コンテスト管理システム (CMS)"
@@ -723,50 +694,6 @@ msgstr "はい"
 msgid "No"
 msgstr "いいえ"
 
-msgid "Print"
-msgstr "印刷"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "あなたは %(max_pages)s ページ以下のテキストまたはPDFファイルをあと %(remaining_jobs)s 回印刷できます。"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "あなたは %(max_pages)s ページ以下のテキストファイルをあと %(remaining_jobs)s 回印刷できます。"
-
-msgid "File (text or PDF)"
-msgstr "ファイル (テキストまたはPDF)"
-
-msgid "File (text)"
-msgstr "ファイル (テキスト)"
-
-msgid "Submit"
-msgstr "提出"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "あなたに割り当てられた印刷制限の上限に達したため、これ以上印刷することはできません。"
-
-msgid "Previous print jobs"
-msgstr "以前の印刷ジョブ"
-
-msgid "Date and time"
-msgstr "日付と時刻"
-
-msgid "Time"
-msgstr "時刻"
-
-msgid "File name"
-msgstr "ファイル名"
-
-msgid "Status"
-msgstr "状態"
-
-msgid "Preparing..."
-msgstr "準備中…"
-
-msgid "no print jobs yet"
-msgstr "まだ印刷ジョブはありません"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -909,6 +836,9 @@ msgstr "不明"
 msgid "loading..."
 msgstr "読み込み中…"
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>提出</small>"
@@ -938,6 +868,9 @@ msgstr ""
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "あなたはあと %(submissions_left)s 回提出できます。"
+
+msgid "Submit"
+msgstr "提出"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -1006,6 +939,15 @@ msgstr "入力"
 msgid "Previous tests"
 msgstr "以前のテスト"
 
+msgid "Date and time"
+msgstr "日付と時刻"
+
+msgid "Time"
+msgstr "時刻"
+
+msgid "Status"
+msgstr "状態"
+
 msgid "Input"
 msgstr "入力"
 
@@ -1035,18 +977,4 @@ msgstr "使用可能なトークンがないので、あなたの要求は却下
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "この提出には既にトークンが使用されているため、あなたの要求は却下されました。"
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "無効な形式です!"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "印刷ジョブの保存に失敗しました!"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standard Template Library"
 

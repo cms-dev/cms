@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-08-16 15:59+0000\n"
 "Last-Translator: Pasit Sangprachathanarak <ouipingpasit@gmail.com>\n"
-"Language-Team: Thai <https://hosted.weblate.org/projects/cms/main/th/>\n"
 "Language: th\n"
+"Language-Team: Thai <https://hosted.weblate.org/projects/cms/main/th/>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -223,7 +223,6 @@ msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "คุณไม่สามารถใช้%(type_pl)sทั้งหมดได้เกิน%(max_number)d"
 
-#, python-format
 msgid "You have no limitations on how you use them."
 msgstr "ไม่มีข้อจำกันในการใช้มัน"
 
@@ -232,12 +231,6 @@ msgstr "ได้รับคำถามแล้ว"
 
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "ได้รับคำถามของคุณแล้ว, เราจะแจ้งเตือนคุณเมื่อได้รับคำตอบ"
-
-msgid "Print job received"
-msgstr "สั่งพิมพ์แล้ว"
-
-msgid "Your print job has been received."
-msgstr "คุณได้สั่งพิมพ์แล้ว"
 
 msgid "Submission received"
 msgstr "ได้รับการส่งแล้ว"
@@ -281,32 +274,6 @@ msgstr "กำลังรัน..."
 msgid "Executed"
 msgstr "รันแล้ว"
 
-msgid "Too many print jobs!"
-msgstr "สั่งพิมพ์เยอะเกินไป!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "คุณได้ถึงขีดจำกัดการพิมพ์ครบ %d ครั้งแล้ว"
-
-msgid "Invalid format!"
-msgstr "รูปแบบไม่ถูกต้อง!"
-
-msgid "Please select the correct files."
-msgstr "กรุณาเลือกไฟล์ที่ถูกต้อง"
-
-msgid "File too big!"
-msgstr "ไฟล์ใหญ่เกินไป!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "ไฟล์ใหญ่ได้สูงสุด %d ไบต์"
-
-msgid "Print job storage failed!"
-msgstr "งานพิมพ์จัดเก็บล้มเหลว!"
-
-msgid "Please try again."
-msgstr "กรุณาลองใหม่อีกครั้ง"
-
 msgid "Too many submissions!"
 msgstr "การส่งมากเกินไป!"
 
@@ -349,8 +316,14 @@ msgstr "ไฟล์ archive เปิดไม่ได้"
 msgid "Invalid submission format!"
 msgstr "การส่งไม่ตรงตามรูปแบบที่กำหนดไว้"
 
+msgid "Please select the correct files."
+msgstr "กรุณาเลือกไฟล์ที่ถูกต้อง"
+
 msgid "Submission storage failed!"
 msgstr "การส่งจัดเก็บล้มเหลว!"
+
+msgid "Please try again."
+msgstr "กรุณาลองใหม่อีกครั้ง"
 
 msgid "Too many tests!"
 msgstr "ชุดทดสอบเยอะเกินไป!"
@@ -500,9 +473,6 @@ msgstr "เอกสาร"
 
 msgid "Testing"
 msgstr "การทดสอบ"
-
-msgid "Printing"
-msgstr "การพิมพ์"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -712,50 +682,6 @@ msgstr "ใช่"
 msgid "No"
 msgstr "ไม่"
 
-msgid "Print"
-msgstr "พิมพ์"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "คุณสามารถพิมพ์ไฟล์ข้อความหรือ PDF ได้อีก %(remaining_jobs)s รอบ หรือพิมพ์ PDF ได้ไม่เกิน %(max_pages)s หน้าต่อครั้ง"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "คุณสามารถพิมพ์ไฟล์ข้อความได้อีก %(remaining_jobs)s รอบ โดยพิมพ์ได้ไม่เกิน %(max_pages)s หน้าต่อครั้ง"
-
-msgid "File (text or PDF)"
-msgstr "ไฟล์ (ข้อความ หรือ PDF)"
-
-msgid "File (text)"
-msgstr "ไฟล์ (ข้อความ)"
-
-msgid "Submit"
-msgstr "ส่ง"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "ไม่สามารถพิมพ์ได้ เพราะคุณพิมพ์เกินโควตาแล้ว"
-
-msgid "Previous print jobs"
-msgstr "งานการพิมพ์ก่อนหน้า"
-
-msgid "Date and time"
-msgstr "วันที่และเวลา"
-
-msgid "Time"
-msgstr "เวลา"
-
-msgid "File name"
-msgstr "ชื่อไฟล์"
-
-msgid "Status"
-msgstr "สถานะ"
-
-msgid "Preparing..."
-msgstr "กำลังเตรียม..."
-
-msgid "no print jobs yet"
-msgstr "ไม่มีงานการพิมพ์"
-
 msgid "The passwords do not match!"
 msgstr "รหัสผ่านไม่ตรงกัน!"
 
@@ -890,6 +816,9 @@ msgstr "ไม่ทราบ"
 msgid "loading..."
 msgstr "กำลังโหลด..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "<small>การส่งโปรแกรมของโจทย์</small> %(name)s (%(short_name)s)"
@@ -915,6 +844,9 @@ msgstr "คุณอาจส่ง output เพียงบางส่วน�
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "คุณสามารถส่งคำตอบได้อีกไม่เกิน %(submissions_left)s ครั้ง"
+
+msgid "Submit"
+msgstr "ส่ง"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -981,6 +913,15 @@ msgstr "ข้อมูลนำเข้า"
 msgid "Previous tests"
 msgstr "ชุดทดสอบก่อนหน้า"
 
+msgid "Date and time"
+msgstr "วันที่และเวลา"
+
+msgid "Time"
+msgstr "เวลา"
+
+msgid "Status"
+msgstr "สถานะ"
+
 msgid "Input"
 msgstr "ข้อมูลนำเข้า"
 
@@ -1011,20 +952,3 @@ msgstr "คำขอของคุณถูกยกเลิกเนื่อ
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "คำขอของคุณถูกยกเลิกเนื่องจากคุณใช้โทเค็นในการส่งครั้งนั้นไปแล้ว"
 
-msgid "Invalid file"
-msgstr "ไฟล์ไม่ถูกต้อง"
-
-msgid "Print job has too many pages"
-msgstr "งานพิมพ์มีจำนวนหน้ามากเกินไป"
-
-msgid "Sent to printer"
-msgstr "ส่งไปยังเครื่องพิมพ์"
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "การคอมไพล์ถูกหยุด (อาจเป็นเพราะใช้หน่วยความจำมากเกินไป)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "การส่งของคุณถูกหยุด ซึ่งอาจเป็นเพราะใช้หน่วยความจำมากเกินไป ซึ่งหากใช้หน่วยความจำมากเกินไปจริง โปรแกรมจะแสดงผลขนาดหน่วยความจำก่อนที่จะเกินหน่วยความจำสูงสุด"
-
-#~ msgid "Standard Template Library"
-#~ msgstr "ไลบรารีเทมเพลตพื้นฐาน"

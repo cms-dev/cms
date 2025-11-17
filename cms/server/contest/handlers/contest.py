@@ -50,7 +50,7 @@ except:
 import tornado.web
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest, contest
+from cms.db import Contest, Submission, Task, UserTest
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -203,7 +203,6 @@ class ContestHandler(BaseHandler):
 
         ret["phase"] = self.contest.phase(self.timestamp)
 
-        ret["printing_enabled"] = (config.printing.printer is not None)
         ret["questions_enabled"] = self.contest.allow_questions
         ret["testing_enabled"] = self.contest.allow_user_tests
 

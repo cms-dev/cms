@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: vi\n"
@@ -235,12 +235,6 @@ msgstr "Đã nhận được câu hỏi"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Câu hỏi của bạn đã được tiếp nhận, bạn sẽ được thông báo khi có câu trả lời."
 
-msgid "Print job received"
-msgstr "Đã nhận được yêu cầu in"
-
-msgid "Your print job has been received."
-msgstr "Yêu cầu in của bạn đã được tiếp nhận."
-
 msgid "Submission received"
 msgstr "Đã nhận được bài nộp"
 
@@ -284,32 +278,6 @@ msgstr "Đang chạy..."
 msgid "Executed"
 msgstr "Đã chạy xong"
 
-msgid "Too many print jobs!"
-msgstr "Quá nhiều yêu cầu in!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Bạn đã sử dụng hết giới hạn %d yêu cầu in."
-
-msgid "Invalid format!"
-msgstr "Định dạng không hợp lệ!"
-
-msgid "Please select the correct files."
-msgstr "Hãy chọn đúng file."
-
-msgid "File too big!"
-msgstr "File quá lớn!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Mỗi file có kích thước tối đa là %d byte."
-
-msgid "Print job storage failed!"
-msgstr "Không thể lưu trữ yêu cầu in!"
-
-msgid "Please try again."
-msgstr "Hãy thử lại."
-
 msgid "Too many submissions!"
 msgstr "Quá nhiều bài nộp!"
 
@@ -352,8 +320,14 @@ msgstr "Không mở được file nén đã nộp."
 msgid "Invalid submission format!"
 msgstr "Định dạng bài nộp không hợp lệ!"
 
+msgid "Please select the correct files."
+msgstr "Hãy chọn đúng file."
+
 msgid "Submission storage failed!"
 msgstr "Không thể lưu trữ lại bài nộp!"
+
+msgid "Please try again."
+msgstr "Hãy thử lại."
 
 msgid "Too many tests!"
 msgstr "Quá nhiều lần chạy thử!"
@@ -503,9 +477,6 @@ msgstr "Tài liệu"
 
 msgid "Testing"
 msgstr "Kiểm thử"
-
-msgid "Printing"
-msgstr "In"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -716,50 +687,6 @@ msgstr "Có"
 msgid "No"
 msgstr "Không"
 
-msgid "Print"
-msgstr "In"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Bạn có thể in thêm tối đa %(remaining_jobs)s file văn bản hoặc PDF, mỗi file dài không quá %(max_pages)s trang."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Bạn có thể in thêm tối đa %(remaining_jobs)s file văn bản, mỗi file dài không quá %(max_pages)s trang."
-
-msgid "File (text or PDF)"
-msgstr "File (văn bản hoặc PDF)"
-
-msgid "File (text)"
-msgstr "File (văn bản)"
-
-msgid "Submit"
-msgstr "Nộp"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Bạn đã sử dụng hết số lần in cho phép."
-
-msgid "Previous print jobs"
-msgstr "Các yêu cầu in trước"
-
-msgid "Date and time"
-msgstr "Thời điểm"
-
-msgid "Time"
-msgstr "Thời gian"
-
-msgid "File name"
-msgstr "Tên file"
-
-msgid "Status"
-msgstr "Tình trạng"
-
-msgid "Preparing..."
-msgstr "Đang chuẩn bị..."
-
-msgid "no print jobs yet"
-msgstr "chưa có yêu cầu in nào"
-
 msgid "The passwords do not match!"
 msgstr "Mật khẩu không khớp!"
 
@@ -905,6 +832,9 @@ msgstr "không xác định"
 msgid "loading..."
 msgstr "đang tải..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "<small>Bài nộp</small> %(name)s (%(short_name)s)"
@@ -930,6 +860,9 @@ msgstr "Bạn có thể nộp file kết quả bất kể số lượng và th�
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Bạn còn %(submissions_left)s lần nộp bài."
+
+msgid "Submit"
+msgstr "Nộp"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -998,6 +931,15 @@ msgstr "dữ liệu vào"
 msgid "Previous tests"
 msgstr "Các yêu cầu chạy thử trước"
 
+msgid "Date and time"
+msgstr "Thời điểm"
+
+msgid "Time"
+msgstr "Thời gian"
+
+msgid "Status"
+msgstr "Tình trạng"
+
 msgid "Input"
 msgstr "Dữ liệu vào"
 
@@ -1027,24 +969,4 @@ msgstr "Yêu cầu sử dụng token không được chấp nhận do bạn khô
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Yêu cầu sử dụng token không được chấp nhận do bạn đã sử dụng token cho bài nộp đó."
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "Định dạng không hợp lệ!"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "Không thể lưu trữ yêu cầu in!"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Chương trình bị ngắt (có thể do vượt quá giới hạn bộ nhớ)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Quá trình chấm bài bị ngắt. Lỗi  này xảy ra có thể do sử dụng quá giới hạn bộ nhớ. Trong trường hợp đó, lượng bộ nhớ sử dụng được hiển thị là lượng bộ nhớ ngay trước thao tác cấp phát gây ra tín hiệu ngắt."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standard Template Library"
 

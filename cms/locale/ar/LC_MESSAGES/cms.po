@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION\n"
+"Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
-"PO-Revision-Date: 2025-08-20 09:02+0000\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
+"PO-Revision-Date: 2025-10-07 18:02+0000\n"
 "Last-Translator: Muaath Alqarni <translate@muaath.dev>\n"
-"Language-Team: Arabic <https://hosted.weblate.org/projects/cms/main/ar/>\n"
 "Language: ar\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/cms/main/ar/>\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.13\n"
 "Generated-By: Babel 2.12.1\n"
 
 msgid "N/A"
@@ -71,7 +71,7 @@ msgid "Compilation killed with signal %s (could be triggered by violating memory
 msgstr "أوقفت عملية التحويل بإشارة %s (قد يكون بسبب الوصول لذاكرة غير مصرح بها)"
 
 msgid "Your submission was killed with the specified signal. Among other things, this might be caused by exceeding the memory limit for the compilation, and in turn by an excessive use of C++ templates, for example."
-msgstr ""
+msgstr "أوقف تشغيل تسليمك بسبب إشارة (signal). من بين الأسباب الكثيرة، قد يكون بسبب تجاوز حد الذاكرة أثناء التحويل بسبب (templates) في C++ على سبيل المثال."
 
 msgid "Output is correct"
 msgstr "المخرجات صحيحة"
@@ -83,20 +83,20 @@ msgid "Output is partially correct"
 msgstr "المخرجات صحيحة جزئيًا"
 
 msgid "Your submission ran and gave the partially correct answer"
-msgstr ""
+msgstr "تم تشغيل تسليمك وأعطى نتيجة صحيحة جزئيًا"
 
 msgid "Output isn't correct"
 msgstr "المخرجات غير صحيحة"
 
 msgid "Your submission ran, but gave the wrong answer"
-msgstr ""
+msgstr "تم تشغيل تسليمك، ولكن أعطى نتيجة خاطئة"
 
 #, python-format
 msgid "Evaluation didn't produce file %s"
-msgstr ""
+msgstr "التشغيل لم ينشئ الملف %s"
 
 msgid "Your submission ran, but did not write on the correct output file"
-msgstr ""
+msgstr "تم تشغيل تسليمك، ولكن لم يكتب في ملف المخرجات الصحيح"
 
 msgid "Execution timed out"
 msgstr "التنفيذ تجاوز حد الوقت"
@@ -105,22 +105,19 @@ msgid "Your submission used too much CPU time."
 msgstr "تسليمك استغرق من وقت المعالج أكثر من الحد"
 
 msgid "Execution timed out (wall clock limit exceeded)"
-msgstr ""
+msgstr "التشغيل تجاوز حد الوقت (تجاوز حد الوقت الفعلي)"
 
 msgid "Your submission used too much total time. This might be triggered by undefined code, or buffer overflow, for example. Note that in this case the CPU time visible in the submission details might be much smaller than the time limit."
 msgstr ""
 
-#, fuzzy
 msgid "Memory limit exceeded"
-msgstr "حد الذاكرة"
+msgstr "تجاوز حد الذاكرة"
 
-#, fuzzy
 msgid "Your submission used too much memory."
-msgstr "تسليمك استغرق من وقت المعالج أكثر من الحد"
+msgstr "تسليمك استغرق من وقت المعالج أكثر من الحد."
 
-#, fuzzy
 msgid "Execution killed by signal"
-msgstr "التنفيذ تجاوز حد الوقت"
+msgstr "أوقف التنفيذ بسبب إشارة (signal)"
 
 msgid "The evaluation was killed by a signal."
 msgstr ""
@@ -129,17 +126,16 @@ msgid "Execution failed because the return code was nonzero"
 msgstr "فشل التنفيذ لأن كود الخروج لم يساوي صفر"
 
 msgid "Your submission failed because it exited with a return code different from 0."
-msgstr ""
+msgstr "فشل تسليمك لأنه يرجع رقم خروج غير صفر (exit code)."
 
 msgid "Execution completed successfully"
-msgstr ""
+msgstr "التشغيل انتهى بنجاح"
 
-#, fuzzy
 msgid "No compilation needed"
-msgstr "نجح التحويل"
+msgstr "لا يحتاج تحويل (compilation)"
 
 msgid "File not submitted"
-msgstr ""
+msgstr "لم يسلم الملف"
 
 msgid "Question too long!"
 msgstr "السؤال طويل جدًا!"
@@ -282,13 +278,6 @@ msgstr "استقبلت سؤالًا"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr ""
 
-#, fuzzy
-msgid "Print job received"
-msgstr "استقبلت سؤالًا"
-
-msgid "Your print job has been received."
-msgstr ""
-
 msgid "Submission received"
 msgstr "التسليم استقبل"
 
@@ -338,33 +327,6 @@ msgstr "الوقت المستغرق للتنفيذ"
 msgid "Executed"
 msgstr "نُفّذ"
 
-msgid "Too many print jobs!"
-msgstr ""
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr ""
-
-#, fuzzy
-msgid "Invalid format!"
-msgstr "ملف غير صالح"
-
-msgid "Please select the correct files."
-msgstr ""
-
-msgid "File too big!"
-msgstr "ملف ضخم جدًا!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr ""
-
-msgid "Print job storage failed!"
-msgstr ""
-
-msgid "Please try again."
-msgstr "فضلًا جرب مرة أخرى."
-
 msgid "Too many submissions!"
 msgstr "كثرت تسليمات!"
 
@@ -408,9 +370,15 @@ msgstr ""
 msgid "Invalid submission format!"
 msgstr "التسليمات الرسمية"
 
+msgid "Please select the correct files."
+msgstr ""
+
 #, fuzzy
 msgid "Submission storage failed!"
 msgstr "تسليم جدًا ضخم!"
+
+msgid "Please try again."
+msgstr "فضلًا جرب مرة أخرى."
 
 #, fuzzy
 msgid "Too many tests!"
@@ -565,9 +533,6 @@ msgstr "دليل الاستخدام"
 #, fuzzy
 msgid "Testing"
 msgstr "الأسئلة"
-
-msgid "Printing"
-msgstr "طباعة"
 
 msgid "Contest Management System"
 msgstr "نظام إدارة المسابقات"
@@ -745,7 +710,7 @@ msgstr "لقد بدأت إطارك الزمني في %(start_time)s"
 msgid "There's nothing you can do now."
 msgstr "لا يمكنك فعل شيء."
 
-#, fuzzy, python-format
+#, fuzzy
 msgid "You never started your time frame. Now it's too late."
 msgstr "لقد بدأت إطارك الزمني في %(start_time)s"
 
@@ -781,51 +746,6 @@ msgstr "نعم"
 
 msgid "No"
 msgstr "لا"
-
-msgid "Print"
-msgstr "اطبع"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "يمكنك طباعة %(remaining_jobs)s ملفات نصية أو PDF زيادة، وكل منها لا يتجاوز %(max_pages)s صفحات."
-
-#, fuzzy, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "يمكنك طباعة %(remaining_jobs)s ملفات نصية أو PDF زيادة، وكل منها لا يتجاوز %(max_pages)s صفحات."
-
-msgid "File (text or PDF)"
-msgstr "ملف (نصي أو PDF)"
-
-msgid "File (text)"
-msgstr "ملف (نصي)"
-
-msgid "Submit"
-msgstr "تسليم"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-msgid "Previous print jobs"
-msgstr ""
-
-msgid "Date and time"
-msgstr "التاريخ والوقت"
-
-msgid "Time"
-msgstr "الوقت"
-
-msgid "File name"
-msgstr "اسم الملف"
-
-msgid "Status"
-msgstr "الحالة"
-
-msgid "Preparing..."
-msgstr "يجهز..."
-
-#, fuzzy
-msgid "no print jobs yet"
-msgstr "لا إجابة بعد"
 
 msgid "The passwords do not match!"
 msgstr "كلمتي المرور غير متطابقة!"
@@ -967,6 +887,9 @@ msgstr "غير معروف"
 msgid "loading..."
 msgstr "يحمل..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, fuzzy, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>الوصف</small>"
@@ -993,6 +916,9 @@ msgstr "يمكنك أن تسلم أي جزء من المخرجات في التس
 #, fuzzy, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "يمكنك تسليم %(submissions)s حلول بحد أقصى أثناء المسابقة"
+
+msgid "Submit"
+msgstr "تسليم"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -1061,6 +987,15 @@ msgstr "المدخلات"
 msgid "Previous tests"
 msgstr "التسليمات السابقة"
 
+msgid "Date and time"
+msgstr "التاريخ والوقت"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Status"
+msgstr "الحالة"
+
 msgid "Input"
 msgstr "المدخلات"
 
@@ -1094,14 +1029,3 @@ msgstr ""
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr ""
 
-msgid "Invalid file"
-msgstr "ملف غير صالح"
-
-msgid "Print job has too many pages"
-msgstr ""
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Standard Template Library"
-#~ msgstr "المكتبة الأساسية"

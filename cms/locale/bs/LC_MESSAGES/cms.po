@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: bs_BA\n"
@@ -254,13 +254,6 @@ msgstr "Primljeno pitanje"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Vaše pitanje je primljeno, bićete obaviješteni kada dobijete odgovor."
 
-#, fuzzy
-msgid "Print job received"
-msgstr "Test primljen"
-
-msgid "Your print job has been received."
-msgstr ""
-
 msgid "Submission received"
 msgstr "Primljena prijava"
 
@@ -304,36 +297,6 @@ msgstr "Izvršavam..."
 msgid "Executed"
 msgstr "Izvršeno"
 
-#, fuzzy
-msgid "Too many print jobs!"
-msgstr "Previše testova!"
-
-#, fuzzy, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Dosegli ste gornju granicu od maksimalnih %d testova za sve zadatke."
-
-#, fuzzy
-msgid "Invalid format!"
-msgstr "Neispravan format testa!"
-
-msgid "Please select the correct files."
-msgstr "Molimo izaberite korektne datoteke."
-
-#, fuzzy
-msgid "File too big!"
-msgstr "Test je prevelik!"
-
-#, fuzzy, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Svaka izvorna datoteka može biti velika najviše %d bajta."
-
-#, fuzzy
-msgid "Print job storage failed!"
-msgstr "Smještaj testa neuspješan!"
-
-msgid "Please try again."
-msgstr "Molimo pokušajte ponovo."
-
 msgid "Too many submissions!"
 msgstr "Previše prijava!"
 
@@ -376,8 +339,14 @@ msgstr "Poslana arhiva se nije mogla otvoriti."
 msgid "Invalid submission format!"
 msgstr "Neispravan format prijave!"
 
+msgid "Please select the correct files."
+msgstr "Molimo izaberite korektne datoteke."
+
 msgid "Submission storage failed!"
 msgstr "Smještaj prijave neuspješan!"
+
+msgid "Please try again."
+msgstr "Molimo pokušajte ponovo."
 
 msgid "Too many tests!"
 msgstr "Previše testova!"
@@ -541,9 +510,6 @@ msgstr ""
 #, fuzzy
 msgid "Testing"
 msgstr "Test je prevelik!"
-
-msgid "Printing"
-msgstr ""
 
 msgid "Contest Management System"
 msgstr ""
@@ -764,55 +730,6 @@ msgstr "Da"
 msgid "No"
 msgstr "Ne"
 
-#, fuzzy
-msgid "Print"
-msgstr "Ulaz"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr ""
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr ""
-
-msgid "File (text or PDF)"
-msgstr ""
-
-msgid "File (text)"
-msgstr ""
-
-msgid "Submit"
-msgstr "Pošalji"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr ""
-
-#, fuzzy
-msgid "Previous print jobs"
-msgstr "Prethodni testovi"
-
-msgid "Date and time"
-msgstr "Datum i vrijeme"
-
-msgid "Time"
-msgstr "Vrijeme"
-
-#, fuzzy
-msgid "File name"
-msgstr "Ime"
-
-msgid "Status"
-msgstr "Status"
-
-#, fuzzy
-msgid "Preparing..."
-msgstr "Evaluiram..."
-
-#, fuzzy
-msgid "no print jobs yet"
-msgstr "još uvijek nema testova"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -955,6 +872,9 @@ msgstr ""
 msgid "loading..."
 msgstr "učitavam..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>prijave</small>"
@@ -984,6 +904,9 @@ msgstr ""
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr ""
+
+msgid "Submit"
+msgstr "Pošalji"
 
 msgid "submission.zip"
 msgstr "prijava.zip"
@@ -1052,6 +975,15 @@ msgstr "ulaz"
 msgid "Previous tests"
 msgstr "Prethodni testovi"
 
+msgid "Date and time"
+msgstr "Datum i vrijeme"
+
+msgid "Time"
+msgstr "Vrijeme"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Input"
 msgstr "Ulaz"
 
@@ -1081,13 +1013,4 @@ msgstr "Vaš zahtjev je odbijen jer nemate više slobodnih tokena."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Vaš zahtjev je odbijen jer ste već iskoristili token na toj prijavi."
-
-msgid "Invalid file"
-msgstr ""
-
-msgid "Print job has too many pages"
-msgstr ""
-
-msgid "Sent to printer"
-msgstr ""
 

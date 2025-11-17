@@ -51,7 +51,6 @@ from . import (
     UserTestManager,
     UserTestResult,
     UserTestExecutable,
-    PrintJob,
     Session,
 )
 
@@ -309,7 +308,6 @@ def enumerate_files(
     skip_submissions=False,
     skip_user_tests=False,
     skip_users=False,
-    skip_print_jobs=False,
     skip_generated=False,
 ) -> set[str]:
     """Enumerate all the files (by digest) referenced by the
@@ -362,11 +360,6 @@ def enumerate_files(
             queries.append(user_test_result_q
                            .filter(UserTestResult.output != None)
                            .with_entities(UserTestResult.output))
-
-    if not skip_print_jobs and not skip_users:
-        queries.append(contest_q.join(Contest.participations)
-                       .join(Participation.printjobs)
-                       .with_entities(PrintJob.digest))
 
     # union(...).execute() would be executed outside of the session.
     digests = set(r[0] for r in session.execute(union(*queries)))

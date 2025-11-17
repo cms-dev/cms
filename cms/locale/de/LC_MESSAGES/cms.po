@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-16 14:52+0300\n"
+"POT-Creation-Date: 2025-11-09 23:31+0100\n"
 "PO-Revision-Date: 2025-06-06 09:35+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de_DE\n"
@@ -244,12 +244,6 @@ msgstr "Frage erhalten"
 msgid "Your question has been received, you will be notified when it is answered."
 msgstr "Deine Frage wurde erhalten, du wirst bei Antworten benachrichtigt."
 
-msgid "Print job received"
-msgstr "Druckauftrag erhalten"
-
-msgid "Your print job has been received."
-msgstr "Dein Druckauftrag ist erhalten worden."
-
 msgid "Submission received"
 msgstr "Einsendung erhalten"
 
@@ -291,32 +285,6 @@ msgstr "Ausführung..."
 
 msgid "Executed"
 msgstr "Ausgeführt"
-
-msgid "Too many print jobs!"
-msgstr "Zu viele Druckaufträge!"
-
-#, python-format
-msgid "You have reached the maximum limit of at most %d print jobs."
-msgstr "Du hast die Begrenzung für maximal %d Druckaufträge erreicht."
-
-msgid "Invalid format!"
-msgstr "Ungültiges Format!"
-
-msgid "Please select the correct files."
-msgstr "Bitte wähle die korrekten Dateien aus."
-
-msgid "File too big!"
-msgstr "Datei zu groß!"
-
-#, python-format
-msgid "Each file must be at most %d bytes long."
-msgstr "Jede Datei darf maximal %d Bytes groß sein."
-
-msgid "Print job storage failed!"
-msgstr "Speichern des Druckauftrags fehlgeschlagen!"
-
-msgid "Please try again."
-msgstr "Bitte erneut versuchen."
 
 msgid "Too many submissions!"
 msgstr "Zu viele Einsendungen!"
@@ -360,8 +328,14 @@ msgstr "Das eingesendete Archiv konnte nicht geöffnet werden."
 msgid "Invalid submission format!"
 msgstr "Ungültiges Einsendungsformat!"
 
+msgid "Please select the correct files."
+msgstr "Bitte wähle die korrekten Dateien aus."
+
 msgid "Submission storage failed!"
 msgstr "Speichern der Einsendung fehlgeschlagen!"
+
+msgid "Please try again."
+msgstr "Bitte erneut versuchen."
 
 msgid "Too many tests!"
 msgstr "Zu viele Tests!"
@@ -512,9 +486,6 @@ msgstr "Dokumentation"
 
 msgid "Testing"
 msgstr "Testen"
-
-msgid "Printing"
-msgstr "Drucken"
 
 msgid "Contest Management System"
 msgstr "Contest Management System"
@@ -725,50 +696,6 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-msgid "Print"
-msgstr "Drucken"
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text or PDF files of up to %(max_pages)s pages each."
-msgstr "Du kannst %(remaining_jobs)s weitere Text- oder PDF-Dateien mit jeweils bis zu %(max_pages)s Seiten drucken."
-
-#, python-format
-msgid "You can print %(remaining_jobs)s more text files of up to %(max_pages)s pages each."
-msgstr "Du kannst %(remaining_jobs)s weitere Textdateien mit jeweils bis zu %(max_pages)s Seiten drucken."
-
-msgid "File (text or PDF)"
-msgstr "Datei (Text oder PDF)"
-
-msgid "File (text)"
-msgstr "Datei (Text)"
-
-msgid "Submit"
-msgstr "Absenden"
-
-msgid "You cannot print anything any more as you have used up your printing quota."
-msgstr "Du kannst nichts mehr drucken, da du deinen Druckkontingent bereits aufgebraucht hast."
-
-msgid "Previous print jobs"
-msgstr "Vorherige Druckaufträge"
-
-msgid "Date and time"
-msgstr "Datum und Uhrzeit"
-
-msgid "Time"
-msgstr "Uhrzeit"
-
-msgid "File name"
-msgstr "Dateiname"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Preparing..."
-msgstr "Vorbereitung..."
-
-msgid "no print jobs yet"
-msgstr "noch keine Druckaufträge"
-
 msgid "The passwords do not match!"
 msgstr ""
 
@@ -913,6 +840,9 @@ msgstr "unbekannt"
 msgid "loading..."
 msgstr "laden..."
 
+msgid "Error loading details, please refresh the page."
+msgstr ""
+
 #, python-format
 msgid "%(name)s (%(short_name)s) <small>submissions</small>"
 msgstr "%(name)s (%(short_name)s) <small>Einsendungen</small>"
@@ -938,6 +868,9 @@ msgstr "Du kannst eine beliebige Teilmenge von Ausgaben in einer einzigen Einsen
 #, python-format
 msgid "You can submit %(submissions_left)s more solution(s)."
 msgstr "Du kannst noch %(submissions_left)s weitere Lösung(en) einsenden."
+
+msgid "Submit"
+msgstr "Absenden"
 
 msgid "submission.zip"
 msgstr "submission.zip"
@@ -1006,6 +939,15 @@ msgstr "Eingabe"
 msgid "Previous tests"
 msgstr "Vorherige Tests"
 
+msgid "Date and time"
+msgstr "Datum und Uhrzeit"
+
+msgid "Time"
+msgstr "Uhrzeit"
+
+msgid "Status"
+msgstr "Status"
+
 msgid "Input"
 msgstr "Eingabe"
 
@@ -1035,24 +977,4 @@ msgstr "Deine Anfrage wurde verworfen, weil du über keine Tokens verfügst."
 
 msgid "Your request has been discarded because you already used a token on that submission."
 msgstr "Deine Anfrage wurde verworfen, weil du für diese Einsendung bereits einen Token verwendet hast."
-
-#, fuzzy
-msgid "Invalid file"
-msgstr "Ungültiges Format!"
-
-#, fuzzy
-msgid "Print job has too many pages"
-msgstr "Speichern des Druckauftrags fehlgeschlagen!"
-
-msgid "Sent to printer"
-msgstr ""
-
-#~ msgid "Execution killed (could be triggered by violating memory limits)"
-#~ msgstr "Ausführung terminiert (könnte durch Überschreiten der Speicherbegrenzung ausgelöst worden sein)"
-
-#~ msgid "The evaluation was killed by a signal. Among other things, this might be caused by exceeding the memory limit. Note that if this is the reason, the memory usage visible in the submission details is the usage before the allocation that caused the signal."
-#~ msgstr "Die Ausführung deiner Einsendung wurde durch ein Signal terminiert. Dies kann unter anderem durch ein Überschreiten der Speicherbegrenzung ausgelöst worden sein. Beachte in diesem Fall, dass die in den Einsendungsdetails angezeigte Speichernutzung sich auf den Wert vor der Allokation von weiterem Speicher bezieht."
-
-#~ msgid "Standard Template Library"
-#~ msgstr "Standardbibliothek (STL)"
 
