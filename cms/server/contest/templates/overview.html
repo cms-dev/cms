@@ -182,7 +182,7 @@
 {% if actual_phase >= 0 or participation.unrestricted %}
 <h2>{% trans %}Task overview{% endtrans %}</h2>
 
-<table class="table table-bordered table-striped">
+<table class="main_task_list table table-bordered table-striped">
     <!-- <colgroup>
         <col class="task"/>
         <col class="time_limit"/>
@@ -193,6 +193,9 @@
     </colgroup> -->
     <thead>
         <tr>
+{% if contest.show_task_scores_in_overview %}
+            <th>{% trans %}Score{% endtrans %}</th>
+{% endif %}
             <th>{% trans %}Task{% endtrans %}</th>
             <th>{% trans %}Name{% endtrans %}</th>
             <th>{% trans %}Time limit{% endtrans %}</th>
@@ -209,6 +212,9 @@
         {% set task_allowed_languages = t_iter.get_allowed_languages() %}
         {% set extensions = "[%s]"|format(task_allowed_languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
         <tr>
+{% if contest.show_task_scores_in_overview and task_scores is defined %}
+            <td class="public_score {{ get_score_class(task_scores[t_iter.id][0], task_scores[t_iter.id][1], t_iter.score_precision) }}">{{ task_scores[t_iter.id][2] }}</td>
+{% endif %}
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
