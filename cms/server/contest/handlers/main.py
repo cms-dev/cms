@@ -51,7 +51,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import PrintJob, User, Participation, Team, Submission, Token, Task, Dataset
+from cms.db import User, Participation, Team, Submission, Token, Task, Dataset
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.grading.scoring import task_score
