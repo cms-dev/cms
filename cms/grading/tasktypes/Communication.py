@@ -227,7 +227,7 @@ class Communication(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, language)
 
         # Retrieve the compiled executables.
         job.success = box_success
@@ -320,6 +320,7 @@ class Communication(TaskType):
         manager_ = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
+            None,
             manager_time_limit,
             config.sandbox.trusted_sandbox_max_memory_kib * 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw")) for i in indices),
@@ -355,11 +356,13 @@ class Communication(TaskType):
             # Assumes that the actual execution of the user solution is the
             # last command in commands, and that the previous are "setup"
             # that don't need tight control.
+            # TODO: why can't this use normal evaluation step??
             if len(commands) > 1:
                 trusted_step(sandbox_user[i], commands[:-1])
             the_process = evaluation_step_before_run(
                 sandbox_user[i],
                 commands[-1],
+                language,
                 job.time_limit,
                 job.memory_limit,
                 dirs_map={fifo_dir[i]: (sandbox_fifo_dir[i], "rw")},

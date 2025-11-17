@@ -21,6 +21,7 @@
 import logging
 import os
 from abc import ABCMeta, abstractmethod
+from cms.grading.Sandbox import Sandbox
 
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,13 @@ class Language(metaclass=ABCMeta):
         """
         pass
 
+    def configure_compilation_sandbox(self, sandbox: Sandbox):
+        """
+        Set sandbox parameters necessary for running the compilation
+        commands.
+        """
+        pass
+
     @abstractmethod
     def get_evaluation_commands(
         self,
@@ -153,6 +161,13 @@ class Language(metaclass=ABCMeta):
         return: a list of commands, each a list of
             strings to be passed to subprocess.
 
+        """
+        pass
+
+    def configure_evaluation_sandbox(self, sandbox: Sandbox):
+        """
+        Set sandbox parameters necessary for running the evaluation
+        commands.
         """
         pass
 

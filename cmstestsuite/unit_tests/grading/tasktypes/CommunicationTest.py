@@ -167,8 +167,12 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertEqual(sandbox.create_file_from_storage.call_count, 2)
         # Compilation step called correctly.
         self.compilation_step.assert_called_once_with(
-            sandbox, fake_compilation_commands(
-                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"))
+            sandbox,
+            fake_compilation_commands(
+                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"
+            ),
+            LANG_1,
+        )
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
@@ -226,9 +230,12 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertEqual(sandbox.create_file_from_storage.call_count, 3)
         # Compilation step called correctly.
         self.compilation_step.assert_called_once_with(
-            sandbox, fake_compilation_commands(
-                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1", "bar.l1"],
-                "bar_foo"))
+            sandbox,
+            fake_compilation_commands(
+                COMPILATION_COMMAND_1, ["stub.l1", "foo.l1", "bar.l1"], "bar_foo"
+            ),
+            LANG_1,
+        )
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
@@ -250,8 +257,10 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
             "foo.l1", "digest of foo.l1")
         # Compilation step called correctly, without the stub.
         self.compilation_step.assert_called_once_with(
-            sandbox, fake_compilation_commands(
-                COMPILATION_COMMAND_1, ["foo.l1"], "foo"))
+            sandbox,
+            fake_compilation_commands(COMPILATION_COMMAND_1, ["foo.l1"], "foo"),
+            LANG_1,
+        )
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
@@ -278,8 +287,10 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         self.assertEqual(sandbox.create_file_from_storage.call_count, 2)
         # Compilation step called correctly, without the stub.
         self.compilation_step.assert_called_once_with(
-            sandbox, fake_compilation_commands(
-                COMPILATION_COMMAND_1, ["foo.l1"], "foo"))
+            sandbox,
+            fake_compilation_commands(COMPILATION_COMMAND_1, ["foo.l1"], "foo"),
+            LANG_1,
+        )
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
         sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
@@ -388,11 +399,11 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         cmdline_usr = ["run1", "foo", "stub",
                        "/fifo0/m_to_u0", "/fifo0/u0_to_m"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 4321, 1234 * 1024 * 1024,
+            call(sandbox_mgr, cmdline_mgr, None, 4321, 1234 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
-            call(sandbox_usr, cmdline_usr, 2.5, 123 * 1024 * 1024,
+            call(sandbox_usr, cmdline_usr, LANG_1, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,
@@ -418,7 +429,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, ANY, 2.5 + 1, ANY, dirs_map=ANY,
+            call(sandbox_mgr, ANY, None, 2.5 + 1, ANY, dirs_map=ANY,
                  writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_single_process_missing_manager(self):
@@ -591,7 +602,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # redirects and no command line arguments.
         cmdline_usr = ["run1", "foo", "stub"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_usr, cmdline_usr, ANY, ANY, dirs_map=ANY,
+            call(sandbox_usr, cmdline_usr, LANG_1, ANY, ANY, dirs_map=ANY,
                  stdin_redirect="/fifo0/m_to_u0",
                  stdout_redirect="/fifo0/u0_to_m",
                  multiprocess=ANY)])
@@ -639,19 +650,19 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         cmdline_usr1 = ["run1", "foo", "stub",
                         "/fifo1/m_to_u1", "/fifo1/u1_to_m", "1"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, cmdline_mgr, 4321, 1234 * 1024 * 1024,
+            call(sandbox_mgr, cmdline_mgr, None, 4321, 1234 * 1024 * 1024,
                  dirs_map={
                      os.path.join(self.base_dir, "0"): ("/fifo0", "rw"),
                      os.path.join(self.base_dir, "1"): ("/fifo1", "rw"),
                  },
                  writable_files=["output.txt"],
                  stdin_redirect="input.txt", multiprocess=True),
-            call(sandbox_usr0, cmdline_usr0, 2.5, 123 * 1024 * 1024,
+            call(sandbox_usr0, cmdline_usr0, LANG_1, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "0"): ("/fifo0", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,
                  multiprocess=True),
-            call(sandbox_usr1, cmdline_usr1, 2.5, 123 * 1024 * 1024,
+            call(sandbox_usr1, cmdline_usr1, LANG_1, 2.5, 123 * 1024 * 1024,
                  dirs_map={os.path.join(self.base_dir, "1"): ("/fifo1", "rw")},
                  stdin_redirect=None,
                  stdout_redirect=None,
@@ -680,7 +691,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_mgr, ANY, 2 * (2.5 + 1), ANY, dirs_map=ANY,
+            call(sandbox_mgr, ANY, None, 2 * (2.5 + 1), ANY, dirs_map=ANY,
                  writable_files=ANY, stdin_redirect=ANY, multiprocess=ANY)])
 
     def test_many_processes_first_user_failure(self):
@@ -775,11 +786,11 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         cmdline_usr0 = ["run1", "foo", "stub", "0"]
         cmdline_usr1 = ["run1", "foo", "stub", "1"]
         self.evaluation_step_before_run.assert_has_calls([
-            call(sandbox_usr0, cmdline_usr0, ANY, ANY, dirs_map=ANY,
+            call(sandbox_usr0, cmdline_usr0, LANG_1, ANY, ANY, dirs_map=ANY,
                  stdin_redirect="/fifo0/m_to_u0",
                  stdout_redirect="/fifo0/u0_to_m",
                  multiprocess=ANY),
-            call(sandbox_usr1, cmdline_usr1, ANY, ANY, dirs_map=ANY,
+            call(sandbox_usr1, cmdline_usr1, LANG_1, ANY, ANY, dirs_map=ANY,
                  stdin_redirect="/fifo1/m_to_u1",
                  stdout_redirect="/fifo1/u1_to_m",
                  multiprocess=ANY)

@@ -60,3 +60,7 @@ class PascalFpc(CompiledLanguage):
         command += ["-O2", "-XSs", "-o%s" % executable_filename]
         command += [source_filenames[0]]
         return [command]
+
+    def configure_compilation_sandbox(self, sandbox):
+        # Needed for /etc/fpc.cfg.
+        sandbox.maybe_add_mapped_directory("/etc")

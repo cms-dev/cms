@@ -64,6 +64,13 @@ class HaskellGhc(CompiledLanguage):
                          executable_filename, source_filenames[0]])
         return commands
 
+    def configure_compilation_sandbox(self, sandbox):
+        # Directory required to be visible during a compilation with GHC.
+        # GHC looks for the Haskell's package database in
+        # "/usr/lib/ghc/package.conf.d" (already visible by isolate's default,
+        # but it is a symlink to "/var/lib/ghc/package.conf.d")
+        sandbox.maybe_add_mapped_directory("/var/lib/ghc")
+
     @staticmethod
     def _capitalize(string: str):
         dirname, basename = os.path.split(string)

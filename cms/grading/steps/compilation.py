@@ -29,6 +29,7 @@ import logging
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
+from cms.grading.language import Language
 from cms.grading.steps.stats import StatsDict
 from .messages import HumanMessage, MessageCollection
 from .utils import generic_step
@@ -66,7 +67,7 @@ COMPILATION_MESSAGES = MessageCollection([
 
 
 def compilation_step(
-    sandbox: Sandbox, commands: list[list[str]]
+    sandbox: Sandbox, commands: list[list[str]], language: Language
 ) -> tuple[bool, bool | None, list[str] | None, StatsDict | None]:
     """Execute some compilation commands in the sandbox.
 
@@ -79,6 +80,7 @@ def compilation_step(
 
     sandbox: the sandbox we consider, already created.
     commands: compilation commands to execute.
+    language: language of the submission
 
     return: a tuple with four items:
         * success: True if the sandbox did not fail, in any command;
@@ -93,17 +95,13 @@ def compilation_step(
 
     """
     # Set sandbox parameters suitable for compilation.
-    sandbox.add_mapped_directory("/etc")
-    # Directory required to be visible during a compilation with GHC.
-    # GHC looks for the Haskell's package database in
-    # "/usr/lib/ghc/package.conf.d" (already visible by isolate's default,
-    # but it is a symlink to "/var/lib/ghc/package.conf.d"
-    sandbox.maybe_add_mapped_directory("/var/lib/ghc")
-    sandbox.preserve_env = True
     sandbox.max_processes = config.sandbox.compilation_sandbox_max_processes
     sandbox.timeout = config.sandbox.compilation_sandbox_max_time_s
     sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
     sandbox.address_space = config.sandbox.compilation_sandbox_max_memory_kib * 1024
+
+    # Set per-language sandbox parameters.
+    language.configure_compilation_sandbox(sandbox)
 
     # Run the compilation commands, copying stdout and stderr to stats.
     stats = generic_step(sandbox, commands, "compilation", collect_output=True)

@@ -21,6 +21,7 @@ in the system.
 
 """
 
+import os
 from shlex import quote as shell_quote
 
 from cms.grading import Language
@@ -91,3 +92,10 @@ class JavaJDK(Language):
             command = ["/usr/bin/java", "-Deval=true", "-Xmx512M", "-Xss64M",
                        main] + args
             return [unzip_command, command]
+
+    def configure_compilation_sandbox(self, sandbox):
+        # the jvm conf directory is often symlinked to /etc in
+        # distributions, but the location of it in /etc is inconsistent.
+        for path in os.listdir("/etc"):
+            if path == "java" or path.startswith("java-"):
+                sandbox.add_mapped_directory(f"/etc/{path}")
