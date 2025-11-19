@@ -323,7 +323,6 @@ class Communication(TaskType):
             manager_time_limit,
             config.sandbox.trusted_sandbox_max_memory_kib * 1024,
             dirs_map=dict((fifo_dir[i], (sandbox_fifo_dir[i], "rw")) for i in indices),
-            writable_files=[self.OUTPUT_FILENAME],
             stdin_redirect=self.INPUT_FILENAME,
             multiprocess=job.multithreaded_sandbox,
         )
@@ -437,6 +436,6 @@ class Communication(TaskType):
         delete_sandbox(sandbox_mgr, job)
         for s in sandbox_user:
             delete_sandbox(s, job)
-        if job.success and not config.worker.keep_sandbox and not job.keep_sandbox:
+        if job.success:
             for d in fifo_dir:
                 rmtree(d)

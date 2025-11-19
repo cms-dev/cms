@@ -14,6 +14,7 @@ services:
       # - https://github.com/pytest-dev/pytest/issues/7443
       # - https://github.com/actions/runner/issues/241
       PYTEST_ADDOPTS: --color=yes
+      TEST_QUOTAS: ${TEST_QUOTAS-ext4}
     volumes:
       - "../codecov:/home/cmsuser/src/codecov"
     privileged: true

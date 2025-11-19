@@ -86,7 +86,6 @@ def evaluation_step(
     time_limit: float | None = None,
     memory_limit: int | None = None,
     dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
-    writable_files: list[str] | None = None,
     stdin_redirect: str | None = None,
     stdout_redirect: str | None = None,
     multiprocess: bool = False,
@@ -109,11 +108,6 @@ def evaluation_step(
         from external directories to a pair of strings: the first is the path
         they should be mapped to inside the sandbox, the second, is
         isolate's options for the mapping.
-    writable_files: a list of inner file names (relative to
-        the inner path) on which the command is allow to write, or None to
-        indicate that all files are read-only; if applicable, redirected
-        output and the standard error are implicitly added to the files
-        allowed.
     stdin_redirect: the name of the file that will be redirected
         to the standard input of each command; if None, nothing will be
         provided to stdin.
@@ -136,7 +130,7 @@ def evaluation_step(
     for command in commands:
         success = evaluation_step_before_run(
             sandbox, command, time_limit, memory_limit,
-            dirs_map, writable_files, stdin_redirect, stdout_redirect,
+            dirs_map, stdin_redirect, stdout_redirect,
             multiprocess, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
@@ -155,7 +149,6 @@ def evaluation_step_before_run(
     time_limit: float | None = None,
     memory_limit: int | None = None,
     dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
-    writable_files: list[str] | None = None,
     stdin_redirect: str | None = None,
     stdout_redirect: str | None = None,
     multiprocess: bool = False,
@@ -182,8 +175,6 @@ def evaluation_step_before_run(
     # Default parameters handling.
     if dirs_map is None:
         dirs_map = {}
-    if writable_files is None:
-        writable_files = []
     if stdout_redirect is None:
         stdout_redirect = "stdout.txt"
 
@@ -200,19 +191,12 @@ def evaluation_step_before_run(
     else:
         sandbox.address_space = None
 
-    # config.sandbox.max_file_size is in KiB
-    sandbox.fsize = config.sandbox.max_file_size * 1024
-
     sandbox.stdin_file = stdin_redirect
     sandbox.stdout_file = stdout_redirect
     sandbox.stderr_file = "stderr.txt"
 
     for src, (dest, options) in dirs_map.items():
         sandbox.add_mapped_directory(src, dest=dest, options=options)
-    for name in [sandbox.stderr_file, sandbox.stdout_file]:
-        if name is not None:
-            writable_files.append(name)
-    sandbox.allow_writing_only(writable_files)
 
     sandbox.set_multiprocess(multiprocess)
 

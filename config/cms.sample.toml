@@ -76,19 +76,33 @@ debug = false
 twophase_commit = false
 
 
-[worker]
-# Don't delete the sandbox directory under /tmp/ when they are not
-# needed anymore. Warning: this can easily eat GB of space very soon.
-keep_sandbox = false
-
-
 [sandbox]
 # Which sandbox implementation to use. Currently only isolate is
 # supported.
 sandbox_implementation = "isolate"
-# Do not allow contestants' solutions to write files bigger than this
-# size (expressed in KB; defaults to 1 GB).
-max_file_size = 1_048_576
+
+# If these are set, enforce a filesystem quota on sandboxes. Note that:
+# (1) The file system that stores isolate boxes (box_root in isolate's
+#     config file) must have quota accounting enabled (for a tmpfs,
+#     mounting with the usrquota mount option is sufficient; for ext4,
+#     run `tune2fs -O quota /dev/sdXY` while unmounted, then mount with
+#     the usrquota option).
+# (2) If you cannot configure disk quotas for some reason (e.g. when
+#     running a kernel without quota support), you can instead put
+#     isolate's box_root on a tmpfs; this way, all written files count
+#     towards the solution's memory usage. In that case, do not set
+#     these two options.
+# (3) This quota is used for all types of sandboxes (including
+#     compilation and checker runs) and includes all files in the
+#     sandbox (including inputs, outputs, and the submission executable,
+#     and files written to /tmp).
+# (4) You must set both the size and inode limit.
+
+# This is the maximum size (in kibibytes) of the sandbox's home
+# directory (as reported by e.g. `du`).
+#fs_quota.kb = 65536
+# Maximum number of inodes (i.e. files) in the sandbox's home directory.
+#fs_quota.inodes = 1024
 
 # Max processes, CPU time (s), memory (KiB) for compilation runs.
 compilation_sandbox_max_processes = 1000

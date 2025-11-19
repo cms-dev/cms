@@ -281,18 +281,13 @@ class Batch(TaskType):
             self._actual_input: job.input
         }
 
-        # Check which redirect we need to perform, and in case we don't
-        # manage the output via redirect, the submission needs to be able
-        # to write on it.
-        files_allowing_write = []
+        # Check which redirect we need to perform
         stdin_redirect = None
         stdout_redirect = None
         if len(self.input_filename) == 0:
             stdin_redirect = self._actual_input
         if len(self.output_filename) == 0:
             stdout_redirect = self._actual_output
-        else:
-            files_allowing_write.append(self._actual_output)
 
         # Create the sandbox
         sandbox = create_sandbox(file_cacher, name="evaluate")
@@ -310,7 +305,6 @@ class Batch(TaskType):
             commands,
             job.time_limit,
             job.memory_limit,
-            writable_files=files_allowing_write,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect,
             multiprocess=job.multithreaded_sandbox)

@@ -87,7 +87,6 @@ class Job:
         multithreaded_sandbox: bool = False,
         archive_sandbox: bool = False,
         shard: int | None = None,
-        keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
         sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
@@ -108,9 +107,6 @@ class Job:
             allow multithreading.
         archive_sandbox: whether the sandbox is to be archived.
         shard: the shard of the Worker completing this job.
-        keep_sandbox: whether to forcefully keep the sandbox,
-            even if other conditions (the config, the sandbox status)
-            don't warrant it.
         sandboxes: the paths of the sandboxes used in
             the Worker during the execution of the job.
         sandbox_digests: the digests of the sandbox archives used to
@@ -148,7 +144,6 @@ class Job:
         self.multithreaded_sandbox = multithreaded_sandbox
         self.archive_sandbox = archive_sandbox
         self.shard = shard
-        self.keep_sandbox = keep_sandbox
         self.sandboxes = sandboxes
         self.sandbox_digests = sandbox_digests
         self.info = info
@@ -172,7 +167,6 @@ class Job:
             'multithreaded_sandbox': self.multithreaded_sandbox,
             'archive_sandbox': self.archive_sandbox,
             'shard': self.shard,
-            'keep_sandbox': self.keep_sandbox,
             'sandboxes': self.sandboxes,
             'sandbox_digests': self.sandbox_digests,
             'info': self.info,
@@ -303,7 +297,6 @@ class CompilationJob(Job):
         task_type: str | None = None,
         task_type_parameters: object = None,
         shard: int | None = None,
-        keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
         sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
@@ -330,7 +323,7 @@ class CompilationJob(Job):
 
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox, archive_sandbox,
-                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     shard, sandboxes, sandbox_digests, info, success,
                      text, files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
@@ -520,7 +513,6 @@ class EvaluationJob(Job):
         task_type: str | None = None,
         task_type_parameters: object = None,
         shard: int | None = None,
-        keep_sandbox: bool = False,
         sandboxes: list[str] | None = None,
         sandbox_digests: dict[str, str] | None = None,
         info: str | None = None,
@@ -566,7 +558,7 @@ class EvaluationJob(Job):
         """
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox, archive_sandbox,
-                     shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
+                     shard, sandboxes, sandbox_digests, info, success,
                      text, files, managers, executables)
         self.input = input
         self.output = output
