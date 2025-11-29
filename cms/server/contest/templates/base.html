@@ -6,15 +6,15 @@
 
         <title>{% block title %}{% endblock title %}</title>
 
-        <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
-        <link rel="stylesheet" href="{{ url("static", "css", "bootstrap.css") }}">
-        <link rel="stylesheet" href="{{ url("static", "cws_style.css") }}">
+        <link rel="shortcut icon" href="{{ static_url("static", "favicon.ico") }}" />
+        <link rel="stylesheet" href="{{ static_url("static", "css", "bootstrap.css") }}">
+        <link rel="stylesheet" href="{{ static_url("static", "cws_style.css") }}">
 
-        <script src="{{ url("static", "jq", "jquery-3.6.0.min.js") }}"></script>
+        <script src="{{ static_url("static", "jq", "jquery-3.6.0.min.js") }}"></script>
         {# For compatibility with Bootstrap 2.x #}
-        <script src="{{ url("static", "jq", "jquery-migrate-3.3.2.min.js") }}"></script>
-        <script src="{{ url("static", "js", "bootstrap.js") }}"></script>
-        <script src="{{ url("static", "cws_utils.js") }}"></script>
+        <script src="{{ static_url("static", "jq", "jquery-migrate-3.3.2.min.js") }}"></script>
+        <script src="{{ static_url("static", "js", "bootstrap.js") }}"></script>
+        <script src="{{ static_url("static", "cws_utils.js") }}"></script>
 
         {% block js %}{% endblock js %}
     </head>

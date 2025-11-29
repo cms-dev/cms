@@ -39,7 +39,7 @@ $(document).on("click", ".submission_list tbody tr td.status .details", function
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
-    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
+    modal_body.html('<div class="loading"><img src="{{ static_url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
     modal_body.load(utils.contest_url("tasks", "{{ task.name }}", "submissions", submission_id, "details"), function(response, status, xhr) {
         if(status != "success") {
             $(this).html("{% trans %}Error loading details, please refresh the page.{% endtrans %}");
@@ -108,7 +108,7 @@ update_score = function(score_elem, task_score_elem,
     task_score_span.text(task_score_message);
     if (task_score_is_partial) {
         task_score_span.append(
-            $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
+            $("<img class=\"details\" src=\"{{ static_url("static", "loading.gif") }}\"/>"));
     }
     task_score_elem.removeClass("undefined");
     task_score_elem.removeClass("score_0");
@@ -124,7 +124,7 @@ update_scores = function (submission_id, data) {
     var terminal_status = is_status_terminal(data["status"]);
     if (!terminal_status) {
         row.children("td.status").append(
-            $("<img class=\"details\" src=\"{{ url("static", "loading.gif") }}\"/>"));
+            $("<img class=\"details\" src=\"{{ static_url("static", "loading.gif") }}\"/>"));
     } else {
         row.children("td.status").append(
             $("<a class=\"details\">{% trans %}details{% endtrans %}</a>"));
@@ -205,7 +205,7 @@ $(document).ready(function () {
         <span class="score">
             {{ score_type.format_score(public_score, score_type.max_public_score, none, task.score_precision, translation=translation) }}
         {% if is_score_partial %}
-            <img src="{{ url("static", "loading.gif") }}" />
+            <img src="{{ static_url("static", "loading.gif") }}" />
         {% endif %}
         </span>
     </div>
@@ -227,7 +227,7 @@ $(document).ready(function () {
         {% if can_use_tokens %}
             {{ score_type.format_score(tokened_score, score_type.max_score, none, task.score_precision, translation=translation) }}
             {% if is_score_partial %}
-            <img src="{{ url("static", "loading.gif") }}" />
+            <img src="{{ static_url("static", "loading.gif") }}" />
             {% endif %}
         {% else %}
             {% trans %}N/A{% endtrans %}
@@ -366,6 +366,7 @@ $(document).ready(function () {
 <h3>{% trans %}Unofficial submissions{% endtrans %}</h3>
   {{ macro_submission.rows(
       url,
+      static_url,
       contest_url,
       translation,
       xsrf_form_html,
@@ -382,6 +383,7 @@ $(document).ready(function () {
 
 {{ macro_submission.rows(
     url,
+    static_url,
     contest_url,
     translation,
     xsrf_form_html,

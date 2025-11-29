@@ -24,7 +24,7 @@ $(document).on("click", ".user_test_list tbody tr td.status .details", function 
     var user_test_id = $this.parent().parent().attr("data-user-test");
     var modal = $("#user_test_detail");
     var modal_body = modal.children(".modal-body");
-    modal_body.html('<div class="loading"><img src="{{ url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
+    modal_body.html('<div class="loading"><img src="{{ static_url("static", "loading.gif") }}"/>{% trans %}loading...{% endtrans %}</div>');
     modal_body.load(utils.contest_url("tasks", task_id, "tests", user_test_id, "details"), function(response, status, xhr) {
         if(status != "success") {
             $(this).html("{% trans %}Error loading details, please refresh the page.{% endtrans %}");
