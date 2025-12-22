@@ -316,6 +316,8 @@ class ContestImporter:
             args["ip"] = list(map(ipaddress.ip_network, new_p["ip"].split(",")))
         if "password" in new_p:
             args["password"] = new_p["password"]
+        if "delay" in new_p:
+            args["delay_time"] = datetime.timedelta(seconds=new_p["delay"])
 
         new_p = Participation(**args)
         session.add(new_p)
