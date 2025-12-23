@@ -296,12 +296,6 @@ class ContestImporter:
             .filter(Participation.contest_id == contest.id)
             .first()
         )
-        # FIXME: detect if some details of the participation have been updated
-        # and thus the existing participation needs to be changed.
-        if p is not None:
-            logger.warning("Participation of user %s in this contest already "
-                           "exists, not updating it.", new_p["username"])
-            return p
 
         # Prepare new participation
         args = {
@@ -318,6 +312,11 @@ class ContestImporter:
             args["password"] = new_p["password"]
         if "delay" in new_p:
             args["delay_time"] = datetime.timedelta(seconds=new_p["delay"])
+
+        if p is not None:
+            for k, v in args.items():
+                setattr(p, k, v)
+            return p
 
         new_p = Participation(**args)
         session.add(new_p)
