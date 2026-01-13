@@ -193,7 +193,7 @@
     </colgroup> -->
     <thead>
         <tr>
-{% if contest.show_task_scores_in_overview %}
+{% if contest.show_task_scores_in_overview and task_scores is defined%}
             <th>{% trans %}Score{% endtrans %}</th>
 {% endif %}
             <th>{% trans %}Task{% endtrans %}</th>

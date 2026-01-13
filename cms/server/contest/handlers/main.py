@@ -51,7 +51,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import User, Participation, Team, Submission, Token, Task, Dataset
+from cms.db import User, Participation, Team, Submission, Task
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.grading.scoring import task_score
@@ -78,7 +78,6 @@ class MainHandler(ContestHandler):
     """
     @multi_contest
     def get(self):
-        self.r_params = self.render_params()
         self.render("overview.html", **self.r_params)
 
     def render_params(self):
@@ -91,7 +90,9 @@ class MainHandler(ContestHandler):
                 .filter(Participation.id == self.current_user.id)
                 .options(
                     joinedload(Participation.user),
-                    joinedload(Participation.contest),
+                    joinedload(Participation.contest)
+                    .joinedload(Contest.tasks)
+                    .joinedload(Task.active_dataset),
                     joinedload(Participation.submissions).joinedload(Submission.token),
                     joinedload(Participation.submissions).joinedload(
                         Submission.results
@@ -100,13 +101,9 @@ class MainHandler(ContestHandler):
                 .first()
             )
 
-            self.contest = (
-                self.sql_session.query(Contest)
-                .filter(Contest.id == participation.contest.id)
-                .options(joinedload(Contest.tasks).joinedload(Task.active_dataset))
-                .first()
-            )
-
+            self.contest = participation.contest
+            # Ensure the template sees this fully-loaded version
+            ret["contest"] = self.contest
             ret["participation"] = participation
 
             # Compute public scores for all tasks only if they will be shown
