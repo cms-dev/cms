@@ -6,8 +6,10 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2018 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2015 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2017-2026 Tobias Lenz <t_lenz94@web.de>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -50,9 +52,6 @@ class Contest(Base):
     """
     __tablename__ = 'contests'
     __table_args__ = (
-        CheckConstraint("start <= stop"),
-        CheckConstraint("stop <= analysis_start"),
-        CheckConstraint("analysis_start <= analysis_stop"),
         CheckConstraint("token_gen_initial <= token_gen_max"),
     )
 
@@ -197,30 +196,6 @@ class Contest(Base):
         CheckConstraint("token_gen_max > 0"),
         nullable=True)
 
-    # Beginning and ending of the contest.
-    start: datetime = Column(
-        DateTime,
-        nullable=False,
-        default=datetime(2000, 1, 1))
-    stop: datetime = Column(
-        DateTime,
-        nullable=False,
-        default=datetime(2030, 1, 1))
-
-    # Beginning and ending of the contest anaylsis mode.
-    analysis_enabled: bool = Column(
-        Boolean,
-        nullable=False,
-        default=False)
-    analysis_start: datetime = Column(
-        DateTime,
-        nullable=False,
-        default=datetime(2030, 1, 1))
-    analysis_stop: datetime = Column(
-        DateTime,
-        nullable=False,
-        default=datetime(2030, 1, 1))
-
     # Timezone for the contest. All timestamps in CWS will be shown
     # using the timezone associated to the logged-in user or (if it's
     # None or an invalid string) the timezone associated to the
@@ -271,6 +246,20 @@ class Contest(Base):
         nullable=False,
         default=0)
 
+    # Main group (id and Group object) of this contest
+    main_group_id: int = Column(
+        Integer,
+        ForeignKey("group.id", use_alter=True, name="fk_contest_main_group_id",
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        index=True)
+    main_group = relationship(
+        "Group",
+        primaryjoin="Group.id==Contest.main_group_id",
+        post_update=True)
+
+    # Follows the description of the fields automatically added by
+    # SQLAlchemy.
+    # groups (list of Group objects)
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
 
@@ -294,29 +283,6 @@ class Contest(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         back_populates="contest")
-
-    def phase(self, timestamp: datetime) -> int:
-        """Return: -1 if contest isn't started yet at time timestamp,
-                    0 if the contest is active at time timestamp,
-                    1 if the contest has ended but analysis mode
-                      hasn't started yet
-                    2 if the contest has ended and analysis mode is active
-                    3 if the contest has ended and analysis mode is disabled or
-                      has ended
-
-        timestamp: the time we are iterested in.
-        """
-        # NOTE: this logic is duplicated in aws_utils.js.
-        if timestamp < self.start:
-            return -1
-        if timestamp <= self.stop:
-            return 0
-        if self.analysis_enabled:
-            if timestamp < self.analysis_start:
-                return 1
-            elif timestamp <= self.analysis_stop:
-                return 2
-        return 3
 
 
 class Announcement(Base):

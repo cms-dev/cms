@@ -4,6 +4,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2018 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,14 +25,14 @@ from collections.abc import Callable
 import functools
 import typing
 
-from cms.db import Contest, Dataset, Task
+from cms.db import Contest, Dataset, Task, Group
 from cms.db.base import Base
 from cms.db.session import Session
 
 
 __all__ = [
     "contest_from_db", "task_from_db",
-    "update_contest", "update_task"
+    "update_contest", "update_task", "update_group"
 ]
 
 
@@ -307,6 +308,11 @@ def update_task(old_task: Task, new_task: Task, parent=None, get_statements=True
 
 def update_contest(old_contest: Contest, new_contest: Contest, parent=None):
     """Update old_contest with information from new_contest"""
+    def update_groups_fn(o, n, parent=None):
+        _update_list_with_key(
+            o, n, key=lambda g: g.name, preserve_old=True,
+            update_value_fn=functools.partial(update_group, parent=parent))
+
     _update_object(old_contest, new_contest, {
         # Announcements are not provided by the loader, we should keep
         # those we have.
@@ -315,4 +321,16 @@ def update_contest(old_contest: Contest, new_contest: Contest, parent=None):
         # must be handled differently.
         Contest.tasks: False,
         Contest.participations: False,
+        Contest.main_group: False,
+        Contest.groups: update_groups_fn
+    }, parent=parent)
+
+
+def update_group(old_group: Group, new_group: Group, parent=None):
+    """
+    Update old_group with information from new_group
+    """
+    _update_object(old_group, new_group, {
+        Group.contest: False,
+        Group.participations: False,
     }, parent=parent)

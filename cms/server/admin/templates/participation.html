@@ -40,6 +40,21 @@
     <table>
       <tr>
         <td>
+          <span class="info" title="The group this contestant is part of. This determines his contest time window."></span>
+          Group
+        </td>
+        <td>
+          <select name="group_id">
+            {% for g in contest.groups %}
+            <option value="{{ g.id }}" {% if participation.group_id == g.id %}selected{% endif %}>
+              {{ g.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>
           <span class="info" title="Code of the team of the contestant in this contest. Only used in the external ranking."></span>
           Team
         </td>

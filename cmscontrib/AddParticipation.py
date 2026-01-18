@@ -4,6 +4,8 @@
 # Copyright © 2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2021 Manuel Gundlach <manuel.gundlach@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,8 +38,8 @@ import sys
 from sqlalchemy.exc import IntegrityError
 
 from cms import utf8_decoder
-from cms.db import Contest, Participation, SessionGen, Team, User, \
-    ask_for_contest
+from cms.db import Contest, Participation, SessionGen, Team, Group, \
+    User, ask_for_contest
 from cmscommon.crypto import build_password, hash_password
 
 
@@ -56,6 +58,7 @@ def add_participation(
     team_code: str | None,
     hidden: bool,
     unrestricted: bool,
+    groupname: str
 ):
     logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
@@ -78,6 +81,17 @@ def add_participation(
             if contest is None:
                 logger.error("No contest with id `%s' found.", contest_id)
                 return False
+            if groupname is None:
+                logger.error("No group name provided.")
+                return False
+            else:
+                group: Group | None = \
+                    session.query(Group) \
+                        .filter(Group.contest_id == contest_id,
+                                Group.name == groupname).first()
+                if group is None:
+                    logger.error("No group with name `%s' found.", groupname)
+                    return False
             team: Team | None = None
             if team_code is not None:
                 team = \
@@ -94,6 +108,7 @@ def add_participation(
             participation = Participation(
                 user=user,
                 contest=contest,
+                group=group,
                 ip=[ipaddress.ip_network(ip)] if ip is not None else None,
                 delay_time=datetime.timedelta(seconds=delay_time),
                 extra_time=datetime.timedelta(seconds=extra_time),
@@ -162,7 +177,8 @@ def main():
         args.plaintext_password or args.hashed_password,
         args.method or "plaintext",
         args.hashed_password is not None, args.team,
-        args.hidden, args.unrestricted)
+        args.hidden, args.unrestricted,
+        args.group)
     return 0 if success is True else 1
 
 

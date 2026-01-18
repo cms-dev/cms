@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block core %}
+
+<h1>
+  Group {{ group.name }} in <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a>
+</h1>
+
+<h2 id="title_submissions" class="toggling_on">Users</h2>
+<div id="users">
+  {% if group.participations|length < 1 %}
+  <p>No users found.</p>
+
+  {% else %}
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in group.participations %}
+      <tr>
+        <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
+        <td>{{ p.user.first_name }}</td>
+        <td>{{ p.user.last_name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_group_info" class="toggling_on">Group information</h2>
+<div id="group_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url("contest", contest.id, "group", group.id, "edit") }}" method="POST">
+      {{ xsrf_form_html|safe }}
+    <table>
+      <tr>
+        <td>
+          <span class="info" title="The name of this user group."></span>
+          Name
+        </td>
+        <td>
+          <input type="text" name="name" value="{{ group.name }}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Start time of the contest for users in this group in the UTC timezone. 
+                                    Example: '2015-12-31 15:00:00'."></span>
+          Start time (in UTC)
+        </td>
+        <td>
+          <input type="text" name="start" value="{{ group.start }}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="End time of the contest for users in this group in the UTC timezone. 
+                                    Example: '2015-12-31 18:00:00'."></span>
+          End time (in UTC)
+        </td>
+        <td>
+          <input type="text" name="stop" value="{{ group.stop }}"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Length of the contest (in seconds) for each contestant.
+                                    If not specified, each contestant can submit solutions for the whole duration of the contest.
+                                    If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
+          Length of the contest
+        </td>
+        <td><input type="text" name="per_user_time" value="{{ group.per_user_time.total_seconds() if group.per_user_time is not none else "" }}"></td>
+      </tr>
+      <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
+      <tr>
+        <td>
+          <span class="info" title="If true, analysis mode for this contest will be enabled."></span>
+          Enabled
+        </td>
+        <td>
+          <input type="checkbox" id="analysis_enabled" name="analysis_enabled" {{ "checked" if group.analysis_enabled else "" }}/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="Start time of the analysis mode in the UTC timezone.
+                                    Example: '2015-12-31 15:00:00'."></span>
+          Analysis mode start time (in UTC)
+        </td>
+        <td><input type="text" name="analysis_start" value="{{ group.analysis_start }}"></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="info" title="End time of the analysis mode in the UTC timezone.
+                                    Example: '2015-12-31 18:00:00'."></span>
+          Analysis mode end time (in UTC)
+        </td>
+        <td><input type="text" name="analysis_stop" value="{{ group.analysis_stop }}"></td>
+      </tr>
+    </table>
+    <input type="submit"
+        value="Update"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+        />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+{% endblock core %}

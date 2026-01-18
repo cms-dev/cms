@@ -9,6 +9,7 @@
 # Copyright © 2015-2019 Luca Chiodini <luca@chiodini.org>
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,7 +36,7 @@ import yaml
 from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE, \
     FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_OI_RESTRICTED
 from cms.db import Contest, User, Task, Statement, Attachment, Team, Dataset, \
-    Manager, Testcase
+    Manager, Testcase, Group
 from cms.grading.languagemanager import LANGUAGES, HEADER_EXTS
 from cmscommon.constants import \
     SCORE_MODE_MAX, SCORE_MODE_MAX_SUBTASK, SCORE_MODE_MAX_TOKENED_LAST
@@ -237,10 +238,11 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 args["token_gen_interval"] = timedelta(minutes=1)
 
         # Times
-        load(conf, args, ["start", "inizio"], conv=parse_datetime)
-        load(conf, args, ["stop", "fine"], conv=parse_datetime)
+        main_group = {}
+        load(conf, main_group, ["start", "inizio"], conv=parse_datetime)
+        load(conf, main_group, ["stop", "fine"], conv=parse_datetime)
         load(conf, args, ["timezone"])
-        load(conf, args, ["per_user_time"], conv=make_timedelta)
+        load(conf, main_group, ["per_user_time"], conv=make_timedelta)
 
         # Limits
         load(conf, args, "max_submission_number")
@@ -249,9 +251,33 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
 
         # Analysis mode
-        load(conf, args, "analysis_enabled")
-        load(conf, args, "analysis_start", conv=parse_datetime)
-        load(conf, args, "analysis_stop", conv=parse_datetime)
+        load(conf, main_group, "analysis_enabled")
+        load(conf, main_group, "analysis_start", conv=parse_datetime)
+        load(conf, main_group, "analysis_stop", conv=parse_datetime)
+
+        # Groups
+        main_group_name: str | None = load(conf, None, "main_group")
+        groups: Group | None = load(conf, None, "groups")
+
+        if groups is None:
+            args["groups"] = [self.make_group(main_group)]
+            args["main_group"] = args["groups"][0]
+        else:
+            if main_group:
+                logger.warning("You should not specify `start', `stop', "
+                               "`analysis_start', `analysis_end', or "
+                               "`analysis_enabled' when using groups; I'm "
+                               "going to ignore them")
+
+            if main_group_name is None:
+                if len(groups) == 1:
+                    main_group_name = groups[0]["name"]
+                else:
+                    main_group_name = "main"
+
+            args["groups"] = [self.make_group(g) for g in groups]       
+            args["main_group"] = [g for g in args["groups"] 
+                                    if g.name == main_group_name][0]
 
         tasks: list[str] | None = load(conf, None, ["tasks", "problemi"])
         participations: list[dict] | None = load(conf, None, ["users", "utenti"])
@@ -265,6 +291,20 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         logger.info("Contest parameters loaded.")
 
         return Contest(**args), tasks, participations
+
+    @staticmethod
+    def make_group(g_dict: dict) -> Group | None:
+        """Build a Group object from a dict"""
+        args = {}
+        for key in ["start", "stop", "analysis_stop", "analysis_end"]:
+            if key in g_dict:
+                args[key] = parse_datetime(g_dict[key])
+        for key in ["name", "analysis_enabled"]:
+            if key in g_dict:
+                args[key] = g_dict[key]
+        if "per_user_time" in g_dict:
+            args["per_user_time"] = make_timedelta(g_dict["per_user_time"])
+        return Group(**args)
 
     def get_user(self):
         """See docstring in class UserLoader."""

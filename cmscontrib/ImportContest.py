@@ -7,6 +7,9 @@
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2014-2015 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2015-2016 Luca Chiodini <luca@chiodini.org>
+# Copyright © 2021 Manuel Gundlach <manuel.gundlach@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
+# Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,9 +46,10 @@ import sys
 
 from cms import utf8_decoder
 from cms.db.session import Session
-from cms.db import SessionGen, User, Team, Participation, Task, Contest
+from cms.db import SessionGen, User, Team, Participation, Task, Contest, Group
 from cms.db.filecacher import FileCacher
-from cmscontrib.importing import ImportDataError, update_contest, update_task
+from cmscontrib.importing import ImportDataError, update_contest, \
+    update_group, update_task
 from cmscontrib.loaders import choose_loader, build_epilog
 from cmscontrib.loaders.base_loader import BaseLoader, ContestLoader
 
@@ -106,8 +110,9 @@ class ContestImporter:
 
         # Apply the modification flags
         if self.zero_time:
-            contest.start = datetime.datetime(1970, 1, 1)
-            contest.stop = datetime.datetime(1970, 1, 1)
+            for g in contest.groups:
+                g.start = datetime.datetime(1970, 1, 1)
+                g.stop = datetime.datetime(1970, 1, 1)
 
         with SessionGen() as session:
             try:
@@ -118,6 +123,9 @@ class ContestImporter:
                     t.contest = None
                 for tasknum, taskname in enumerate(tasks):
                     self._task_to_db(session, contest, tasknum, taskname)
+                # Update/create groups
+                for g in contest.groups:
+                    self._group_to_db(session, contest, g)
                 # Delete stale participations if asked to, then import all
                 # others.
                 if self.delete_stale_participations:
@@ -163,7 +171,7 @@ class ContestImporter:
             logger.info("Creating contest on the database.")
             contest = new_contest
             session.add(contest)
-
+            session.flush()  # To get the contest.id assigned
         else:
             if not (self.update_contest or self.update_tasks):
                 # Contest already present, but user did not ask to update any
@@ -178,7 +186,11 @@ class ContestImporter:
                 # if it has changed.
                 if contest_has_changed:
                     logger.info("Contest data has changed, updating it.")
+
                     update_contest(contest, new_contest)
+                    contest.main_group = [
+                        g for g in contest.groups
+                        if g.name == new_contest.main_group.name][0]
                 else:
                     logger.info("Contest data has not changed.")
 
@@ -312,7 +324,11 @@ class ContestImporter:
             args["password"] = new_p["password"]
         if "delay" in new_p:
             args["delay_time"] = datetime.timedelta(seconds=new_p["delay"])
-
+        if "group" in new_p:
+            args["group"] = [g for g in contest.groups
+                             if g.name == new_p["group"]][0]
+        else:
+            args["group"] = contest.main_group
         if p is not None:
             for k, v in args.items():
                 setattr(p, k, v)
@@ -321,6 +337,48 @@ class ContestImporter:
         new_p = Participation(**args)
         session.add(new_p)
         return new_p
+
+    @staticmethod
+    def _group_to_db(
+        session: Session, contest: Contest, new_g: Group
+    ) -> Group:
+        """Add the group to the DB and attach it to the contest
+
+        session: session to use.
+        contest: the contest in the DB.
+        new_g: the group object
+
+        return: the group in the DB.
+        """
+        # Check whether a group of this name already exists for
+        # the given contest
+        g: Group | None = (
+            session.query(Group)
+            .filter(Group.name == new_g.name)
+            .filter(Group.contest_id == contest.id)
+            .first()
+        )
+
+        if g is not None:
+            update_group(g, new_g)
+            return g
+
+        # Create new group and attach it to the contest
+        args = {
+            "name": new_g.name,
+            "start": new_g.start,
+            "stop": new_g.stop,
+            "analysis_enabled": new_g.analysis_enabled,
+            "analysis_start": new_g.analysis_start,
+            "analysis_stop": new_g.analysis_stop,
+        }
+        if new_g.per_user_time is not None:
+            args["per_user_time"] = new_g.per_user_time
+
+        new_group = Group(**args)
+        new_group.contest = contest
+        session.add(new_group)
+        return new_group
 
     def _delete_stale_participations(
         self, session: Session, contest: Contest, usernames_to_keep: set[str]

@@ -10,6 +10,7 @@
 # Copyright © 2016 Masaki Hara <ackie.h.gmai@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -55,7 +56,7 @@ __all__ = [
     # contest
     "Contest", "Announcement",
     # user
-    "User", "Team", "Participation", "Message", "Question",
+    "Group", "User", "Team", "Participation", "Message", "Question",
     # admin
     "Admin",
     # task
@@ -95,7 +96,7 @@ from .base import Base
 from .fsobject import FSObject, LargeObject
 from .admin import Admin
 from .contest import Contest, Announcement
-from .user import User, Team, Participation, Message, Question
+from .user import Group, User, Team, Participation, Message, Question
 from .task import Task, Statement, Attachment, Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \
     Executable, Evaluation

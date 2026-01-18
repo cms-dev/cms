@@ -205,19 +205,40 @@
     <tr><td colspan=2><h2>Times</h2></td></tr>
     <tr>
       <td>
-        <span class="info" title="Start time of the contest in the UTC timezone.
-                                  Example: '2015-12-31 15:00:00'."></span>
-        Start time (in UTC)
+        <span class="info" title="The group used for time calculations in the admin and ranking interface."></span>
+        Main group
       </td>
-      <td><input type="text" name="start" value="{{ contest.start }}"></td>
+      <td>
+        <a href='{{ url("contest", contest.id, "group", contest.main_group_id, "edit") }}'>{{ contest.main_group.name }}</a>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="info" title="Start time of the contest for users in main group in the UTC timezone. 
+                                    Example: '2015-12-31 15:00:00'."></span>
+        Main Group Start Time (UTC)
+      </td>
+      <td>
+        <input type="text" name="main_group_start" value="{{ contest.main_group.start }}"/>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="info" title="End time of the contest for users in main group in the UTC timezone. 
+                                    Example: '2015-12-31 18:00:00'."></span>
+        Main Group End Time (UTC)
+      </td>
+      <td>
+        <input type="text" name="main_group_stop" value="{{ contest.main_group.stop }}"/>
+      </td>
     </tr>
     <tr>
       <td>
-        <span class="info" title="End time of the contest in the UTC timezone.
-                                  Example: '2015-12-31 18:00:00'."></span>
-        End time (in UTC)
+        <span class="info" style="visibility: hidden;"></span>
+        <span style="max-width: 300px; display: inline-block; word-wrap: break-word;">
+          To change the start and end times of other groups or change the main
+          group, please use the <a href='{{ url("contest", contest.id, "groups")
+          }}'>groups</a> section.
+        </span>
       </td>
-      <td><input type="text" name="stop" value="{{ contest.stop }}"></td>
     </tr>
     <tr>
       <td>
@@ -226,15 +247,6 @@
         Timezone
       </td>
       <td><input type="text" name="timezone" value="{{ contest.timezone if contest.timezone is not none else "" }}"></td>
-    </tr>
-    <tr>
-      <td>
-        <span class="info" title="Length of the contest (in seconds) for each contestant.
-                                  If not specified, each contestant can submit solutions for the whole duration of the contest.
-                                  If specified, only up to this length after the first log in (or up to the end of the contest, whichever comes first)."></span>
-        Length of the contest
-      </td>
-      <td><input type="text" name="per_user_time" value="{{ contest.per_user_time.total_seconds()|int if contest.per_user_time is not none else "" }}"></td>
     </tr>
 
     <tr><td colspan=2><h2>Limits</h2></td></tr>
@@ -276,32 +288,6 @@
         Minimum interval between user tests
       </td>
       <td><input type="text" name="min_user_test_interval" value="{{ contest.min_user_test_interval.total_seconds()|int if contest.min_user_test_interval is not none else "" }}"></td>
-    </tr>
-    <tr><td colspan=2><h2>Analysis mode</h2></td></tr>
-    <tr>
-      <td>
-        <span class="info" title="If true, analysis mode for this contest will be enabled."></span>
-        Enabled
-      </td>
-      <td>
-        <input type="checkbox" id="analysis_enabled" name="analysis_enabled" {{ "checked" if contest.analysis_enabled else "" }}/>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <span class="info" title="Start time of the analysis mode in the UTC timezone.
-                                  Example: '2015-12-31 15:00:00'."></span>
-        Analysis mode start time (in UTC)
-      </td>
-      <td><input type="text" name="analysis_start" value="{{ contest.analysis_start }}"></td>
-    </tr>
-    <tr>
-      <td>
-        <span class="info" title="End time of the analysis mode in the UTC timezone.
-                                  Example: '2015-12-31 18:00:00'."></span>
-        Analysis mode end time (in UTC)
-      </td>
-      <td><input type="text" name="analysis_stop" value="{{ contest.analysis_stop }}"></td>
     </tr>
   </table>
   <input type="submit"
