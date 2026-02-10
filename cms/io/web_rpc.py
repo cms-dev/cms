@@ -81,8 +81,7 @@ class RPCMiddleware:
         self._service = service
         self._auth = auth
         self._url_map = Map([Rule("/<service>/<int:shard>/<method>",
-                                  methods=["POST"], endpoint="rpc")],
-                            encoding_errors="strict")
+                                  methods=["POST"], endpoint="rpc")])
 
     def __call__(self, environ, start_response):
         """Execute this instance as a WSGI application.
