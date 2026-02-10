@@ -25,8 +25,8 @@ filters, tests, etc. that are useful for generic global usage.
 """
 
 from datetime import datetime, timedelta, tzinfo
-from jinja2 import Environment, StrictUndefined, contextfilter, \
-    contextfunction, environmentfunction
+from jinja2 import Environment, StrictUndefined, pass_context, \
+    pass_environment
 from jinja2.runtime import Context
 import markdown_it
 import markupsafe
@@ -45,7 +45,7 @@ from cmscommon.datetime import make_datetime, make_timestamp, utc, local_tz
 from cmscommon.mimetypes import get_type_for_file_name, get_icon_for_type
 
 
-@contextfilter
+@pass_context
 def all_(ctx: Context, l: list, test: str | None = None, *args) -> bool:
     """Check if all elements of the given list pass the given test.
 
@@ -69,7 +69,7 @@ def all_(ctx: Context, l: list, test: str | None = None, *args) -> bool:
     return True
 
 
-@contextfilter
+@pass_context
 def any_(ctx: Context, l: list, test: str | None = None, *args) -> bool:
     """Check if any element of the given list passes the given test.
 
@@ -93,7 +93,7 @@ def any_(ctx: Context, l: list, test: str | None = None, *args) -> bool:
     return False
 
 
-@contextfilter
+@pass_context
 def dictselect(
     ctx: Context, d: dict, test: str | None = None, *args, by: str = "key"
 ) -> dict:
@@ -122,7 +122,7 @@ def dictselect(
                 if ctx.call(test, {"key": k, "value": v}[by], *args))
 
 
-@contextfunction
+@pass_context
 def today(ctx: Context, dt: datetime) -> bool:
     """Returns whether the given datetime is today.
 
@@ -185,7 +185,7 @@ def instrument_generic_toolbox(env: Environment):
     env.tests["today"] = today
 
 
-@environmentfunction
+@pass_environment
 def safe_get_task_type(env: Environment, *, dataset: Dataset):
     try:
         return dataset.task_type_object
@@ -195,7 +195,7 @@ def safe_get_task_type(env: Environment, *, dataset: Dataset):
         return env.undefined("TaskType not found: %s" % err)
 
 
-@environmentfunction
+@pass_environment
 def safe_get_score_type(env: Environment, *, dataset: Dataset):
     try:
         return dataset.score_type_object
@@ -215,21 +215,21 @@ def instrument_cms_toolbox(env: Environment):
     env.filters["to_language"] = get_language
 
 
-@contextfilter
+@pass_context
 def format_datetime(ctx: Context, dt: datetime):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     timezone: tzinfo = ctx.get("timezone", local_tz)
     return translation.format_datetime(dt, timezone)
 
 
-@contextfilter
+@pass_context
 def format_time(ctx: Context, dt: datetime):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     timezone: tzinfo = ctx.get("timezone", local_tz)
     return translation.format_time(dt, timezone)
 
 
-@contextfilter
+@pass_context
 def format_datetime_smart(ctx: Context, dt: datetime):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     now: datetime = ctx.get("now", make_datetime())
@@ -237,37 +237,37 @@ def format_datetime_smart(ctx: Context, dt: datetime):
     return translation.format_datetime_smart(dt, now, timezone)
 
 
-@contextfilter
+@pass_context
 def format_timedelta(ctx: Context, td: timedelta):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return translation.format_timedelta(td)
 
 
-@contextfilter
+@pass_context
 def format_duration(ctx: Context, d: float, length: str = "short"):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return translation.format_duration(d, length)
 
 
-@contextfilter
+@pass_context
 def format_size(ctx: Context, s: int):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return translation.format_size(s)
 
 
-@contextfilter
+@pass_context
 def format_decimal(ctx: Context, n: int):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return translation.format_decimal(n)
 
 
-@contextfilter
+@pass_context
 def format_locale(ctx: Context, n: str):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return translation.format_locale(n)
 
 
-@contextfilter
+@pass_context
 def wrapped_format_status_text(ctx: Context, status_text: list[str]):
     translation: Translation = ctx.get("translation", DEFAULT_TRANSLATION)
     return format_status_text(status_text, translation=translation)

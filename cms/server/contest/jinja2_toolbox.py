@@ -23,7 +23,7 @@ useful specifically to the use that CWS makes of it.
 
 """
 
-from jinja2 import contextfilter, PackageLoader
+from jinja2 import pass_context, PackageLoader
 
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from .formatting import format_token_rules, get_score_class
@@ -38,7 +38,7 @@ def instrument_cms_toolbox(env):
     env.filters["extract_token_params"] = extract_token_params
 
 
-@contextfilter
+@pass_context
 def wrapped_format_token_rules(ctx, tokens, t_type=None):
     translation = ctx["translation"]
     return format_token_rules(tokens, t_type, translation=translation)
