@@ -33,7 +33,6 @@ dependencies = [
     "pyxdg>=0.26,<0.29",      # https://freedesktop.org/wiki/Software/pyxdg/
     "Jinja2==3.1.6",          # https://jinja.palletsprojects.com/en/stable/changes/
     "markdown-it-py==3.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
-    "setuptools>=80,<81",     # https://setuptools.pypa.io/en/latest/history.html
     "MarkupSafe==3.0.3",      # https://markupsafe.palletsprojects.com/en/stable/changes/
 
     # Only for some importers:
@@ -65,7 +64,7 @@ devel = [
 ]
 
 [build-system]
-requires = ["setuptools>=80,<81", "babel==2.12.1"]
+requires = ["setuptools==82.0.0", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
