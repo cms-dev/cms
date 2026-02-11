@@ -163,7 +163,7 @@
                 {{- sr.compilation_sandbox_paths[loop.index0] -}}
               </a>
             {% endfor %}
-          {% else %}
+          {% elif sr.compilation_sandbox_paths is not none %}
             {{ sr.compilation_sandbox_paths|join(" ") }}
           {% endif %}
 
@@ -297,7 +297,7 @@
                   {{- ev.evaluation_sandbox_paths[loop.index0] -}}
                 </a>
               {% endfor %}
-            {% else %}
+            {% elif ev.evaluation_sandbox_paths is not none %}
               {{ ev.evaluation_sandbox_paths|join(" ") }}
             {% endif %}
 
