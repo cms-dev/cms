@@ -33,11 +33,6 @@ from . import TaskType, eval_output
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
-def N_(message):
-    return message
-
-
 class OutputOnly(TaskType):
     """Task type class for output only tasks, with submission composed
     of testcase_number text files, to be evaluated diffing or using a
@@ -107,7 +102,7 @@ class OutputOnly(TaskType):
         # No compilation needed.
         job.success = True
         job.compilation_success = True
-        job.text = [N_("No compilation needed")]
+        job.text = ["outputonly:nocompile"]
         job.plus = {}
 
     def evaluate(self, job, file_cacher):
@@ -119,7 +114,7 @@ class OutputOnly(TaskType):
         if user_output_filename not in job.files:
             job.success = True
             job.outcome = "0.0"
-            job.text = [N_("File not submitted")]
+            job.text = ["outputonly:nofile"]
             job.plus = {}
             return
 
