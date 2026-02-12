@@ -41,11 +41,6 @@ from . import TaskType, \
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
-def N_(message):
-    return message
-
-
 class TwoSteps(TaskType):
     """Task type class for tasks where the user must submit two files
     with a function each; the first function compute some data, that
@@ -313,8 +308,7 @@ class TwoSteps(TaskType):
             # Check that the output file was created
             if not second_sandbox.file_exists(TwoSteps.OUTPUT_FILENAME):
                 outcome = 0.0
-                text = [N_("Evaluation didn't produce file %s"),
-                        TwoSteps.OUTPUT_FILENAME]
+                text = ["evaluation:nooutput", TwoSteps.OUTPUT_FILENAME]
                 if job.get_output:
                     job.user_output = None
 
@@ -329,7 +323,7 @@ class TwoSteps(TaskType):
                 # If just asked to execute, fill text and set dummy outcome.
                 if job.only_execution:
                     outcome = 0.0
-                    text = [N_("Execution completed successfully")]
+                    text = ["execution:success"]
 
                 # Otherwise evaluate the output file.
                 else:

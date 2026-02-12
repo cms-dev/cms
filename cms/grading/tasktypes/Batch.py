@@ -39,11 +39,6 @@ from . import TaskType, \
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
-def N_(message):
-    return message
-
-
 class Batch(TaskType):
     """Task type class for a unique standalone submission source, with
     comparator (or not).
@@ -336,8 +331,7 @@ class Batch(TaskType):
             # Check that the output file was created
             if not sandbox.file_exists(self._actual_output):
                 outcome = 0.0
-                text = [N_("Evaluation didn't produce file %s"),
-                        self._actual_output]
+                text = ["evaluation:nooutput", self._actual_output]
                 if job.get_output:
                     job.user_output = None
 
@@ -352,7 +346,7 @@ class Batch(TaskType):
                 # If just asked to execute, fill text and set dummy outcome.
                 if job.only_execution:
                     outcome = 0.0
-                    text = [N_("Execution completed successfully")]
+                    text = ["execution:success"]
 
                 # Otherwise prepare to evaluate the output file.
                 else:

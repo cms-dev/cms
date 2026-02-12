@@ -36,7 +36,6 @@ from abc import ABCMeta, abstractmethod
 
 from cms import FEEDBACK_LEVEL_RESTRICTED
 from cms.db import SubmissionResult
-from cms.grading.steps import EVALUATION_MESSAGES
 from cms.locale import Translation, DEFAULT_TRANSLATION
 from cms.server.jinja2_toolbox import GLOBAL_ENVIRONMENT
 from jinja2 import Template
@@ -435,7 +434,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     tc_score, parameter)
 
                 time_limit_was_exceeded = False
-                if evaluations[tc_idx].text == [EVALUATION_MESSAGES.get("timeout").message]:
+                if evaluations[tc_idx].text == ["evaluation:timeout"]:
                     time_limit_was_exceeded = True
 
                 testcases.append({

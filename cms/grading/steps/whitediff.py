@@ -30,8 +30,6 @@ import typing
 
 from cms.grading.Sandbox import Sandbox
 
-from .evaluation import EVALUATION_MESSAGES
-
 
 logger = logging.getLogger(__name__)
 
@@ -130,9 +128,9 @@ def white_diff_fobj_step(
 
     """
     if _white_diff(output_fobj, correct_output_fobj):
-        return 1.0, [EVALUATION_MESSAGES.get("success").message]
+        return 1.0, ["evaluation:success"]
     else:
-        return 0.0, [EVALUATION_MESSAGES.get("wrong").message]
+        return 0.0, ["evaluation:wrong"]
 
 
 def white_diff_step(
@@ -156,5 +154,4 @@ def white_diff_step(
                 sandbox.get_file(correct_output_filename) as res_file:
             return white_diff_fobj_step(out_file, res_file)
     else:
-        return 0.0, [
-            EVALUATION_MESSAGES.get("nooutput").message, output_filename]
+        return 0.0, ["evaluation:nooutput", output_filename]

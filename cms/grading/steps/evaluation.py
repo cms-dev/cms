@@ -42,7 +42,7 @@ def N_(message: str):
     return message
 
 
-EVALUATION_MESSAGES = MessageCollection([
+EVALUATION_MESSAGES = MessageCollection("evaluation", [
     HumanMessage("success",
                  N_("Output is correct"),
                  N_("Your submission ran and gave the correct answer")),
@@ -56,27 +56,38 @@ EVALUATION_MESSAGES = MessageCollection([
     HumanMessage("nooutput",
                  N_("Evaluation didn't produce file %s"),
                  N_("Your submission ran, but did not write on the "
-                    "correct output file")),
+                    "correct output file"),
+                 inline_help=True),
     HumanMessage("timeout",
                  N_("Execution timed out"),
-                 N_("Your submission used too much CPU time.")),
+                 N_("Your submission used too much CPU time."),
+                 inline_help=True),
     HumanMessage("walltimeout",
                  N_("Execution timed out (wall clock limit exceeded)"),
                  N_("Your submission used too much total time. This might "
                     "be triggered by undefined code, or buffer overflow, "
                     "for example. Note that in this case the CPU time "
                     "visible in the submission details might be much smaller "
-                    "than the time limit.")),
+                    "than the time limit."),
+                 inline_help=True),
     HumanMessage("memorylimit",
                  N_("Memory limit exceeded"),
-                 N_("Your submission used too much memory.")),
+                 N_("Your submission used too much memory."),
+                 inline_help=True),
     HumanMessage("signal",
                  N_("Execution killed by signal"),
-                 N_("The evaluation was killed by a signal.")),
+                 N_("The evaluation was killed by a signal."),
+                 inline_help=True),
     HumanMessage("returncode",
                  N_("Execution failed because the return code was nonzero"),
                  N_("Your submission failed because it exited with a return "
-                    "code different from 0.")),
+                    "code different from 0."),
+                 inline_help=True),
+])
+# This message is stored separately because we don't want to show it on the help page.
+EXECUTION_MESSAGES = MessageCollection("execution", [
+    HumanMessage("success", N_("Execution completed successfully"), ""),
+    # all other user test messages are shared with the regular evaluation messages.
 ])
 
 
@@ -270,27 +281,26 @@ def human_evaluation_message(stats: StatsDict) -> list[str]:
 
     stats: execution statistics for an evaluation step.
 
-    return: a list of strings composing the message (where
-        strings from the second to the last are formatting arguments for the
-        first); or an empty list if no message should be passed to
-        contestants.
+    return: a list of strings composing the message (where the first is a message
+        ID and the rest are format arguments for the message); or an empty list
+        if no message should be passed to contestants.
 
     """
     exit_status = stats['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
-        return [EVALUATION_MESSAGES.get("timeout").message]
+        return ["evaluation:timeout"]
     elif exit_status == Sandbox.EXIT_TIMEOUT_WALL:
-        return [EVALUATION_MESSAGES.get("walltimeout").message]
+        return ["evaluation:walltimeout"]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return [EVALUATION_MESSAGES.get("signal").message]
+        return ["evaluation:signal"]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         # Contestants won't see this, the submission will still be evaluating.
         return []
     elif exit_status == Sandbox.EXIT_MEM_LIMIT:
-        return [EVALUATION_MESSAGES.get("memorylimit").message]
+        return ["evaluation:memorylimit"]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Don't tell which code: would be too much information!
-        return [EVALUATION_MESSAGES.get("returncode").message]
+        return ["evaluation:returncode"]
     elif exit_status == Sandbox.EXIT_OK:
         return []
     else:

@@ -45,11 +45,6 @@ from . import TaskType, check_executables_number, check_manager_present, \
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
-def N_(message):
-    return message
-
-
 class Communication(TaskType):
     """Task type class for tasks with a fully admin-controlled process.
 
@@ -405,7 +400,7 @@ class Communication(TaskType):
         # If just asked to execute, fill text and set dummy outcome.
         elif job.only_execution:
             outcome = 0.0
-            text = [N_("Execution completed successfully")]
+            text = ["execution:success"]
 
         # If the user sandbox detected some problem (timeout, ...),
         # the outcome is 0.0 and the text describes that problem.

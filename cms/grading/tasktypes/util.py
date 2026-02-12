@@ -39,8 +39,8 @@ from cms.grading import JobException
 from cms.grading.Job import CompilationJob, EvaluationJob, Job
 from cms.grading.Sandbox import Sandbox
 from cms.grading.language import Language
-from cms.grading.steps import EVALUATION_MESSAGES, checker_step, \
-    white_diff_fobj_step
+from cms.grading.steps.messages import HumanMessage, MessageCollection
+from cms.grading.steps import checker_step, white_diff_fobj_step
 
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,17 @@ logger = logging.getLogger(__name__)
 
 EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
+
+# Dummy function to mark translatable string.
+def N_(message: str):
+    return message
+
+
+# These messages are used by both BatchAndOutput and OutputOnly.
+OUTPUT_ONLY_MESSAGES = MessageCollection("outputonly", [
+    HumanMessage("nocompile", N_("No compilation needed"), ""),
+    HumanMessage("nofile", N_("File not submitted"), ""),
+])
 
 def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
     """Create a sandbox, and return it.
@@ -251,8 +262,7 @@ def eval_output(
         # as if the file did not exist.
         if not os.path.exists(user_output_path) \
                 or os.path.islink(user_output_path):
-            return True, 0.0, [EVALUATION_MESSAGES.get("nooutput").message,
-                               user_output_filename]
+            return True, 0.0, ["evaluation:nooutput", user_output_filename]
 
     if checker_codename is not None:
         if not check_manager_present(job, checker_codename):
