@@ -32,7 +32,9 @@ class TestAddParticipation(DatabaseMixin, unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.contest = self.add_contest()
+
+        group = self.get_group(name = "default")
+        self.contest = self.add_contest(groups = [group])
         self.user = self.add_user()
         self.team = self.add_team()
         self.session.commit()
@@ -66,47 +68,48 @@ class TestAddParticipation(DatabaseMixin, unittest.TestCase):
     def test_success(self):
         self.assertTrue(add_participation(
             self.user.username, self.contest.id, None, None, None,
-            "pwd", "bcrypt", False, None, False, False))
+            "pwd", "bcrypt", False, None, False, False, "default"))
         self.assertParticipationInDb(self.user.id, self.contest.id, "pwd")
 
     def test_success_with_team(self):
         self.assertTrue(add_participation(
             self.user.username, self.contest.id, None, None, None,
-            "pwd", "bcrypt", False, self.team.code, False, False))
+            "pwd", "bcrypt", False, self.team.code, False, False, "default"))
         self.assertParticipationInDb(self.user.id, self.contest.id, "pwd",
                                      team_code=self.team.code)
 
     def test_user_not_found(self):
         self.assertFalse(add_participation(
             self.user.username + "_", self.contest.id, None, None, None,
-            "pwd", "bcrypt", False, None, False, False))
+            "pwd", "bcrypt", False, None, False, False, "default"))
 
     def test_contest_not_found(self):
         self.assertFalse(add_participation(
             self.user.username, self.contest.id + 1, None, None, None,
-            "pwd", "bcrypt", False, None, False, False))
+            "pwd", "bcrypt", False, None, False, False, "default"))
 
     def test_team_not_found(self):
         self.assertFalse(add_participation(
             self.user.username, self.contest.id, None, None, None,
-            "pwd", "bcrypt", False, self.team.code + "_", False, False))
+            "pwd", "bcrypt", False, self.team.code + "_", False, False, "default"))
+    # TODO: test nonexistent group
 
     def test_already_exists(self):
         self.assertTrue(add_participation(
             self.user.username, self.contest.id, None, None, None,
-            "pwd", "bcrypt", False, None, False, False))
+            "pwd", "bcrypt", False, None, False, False, "default"))
         self.assertParticipationInDb(self.user.id, self.contest.id, "pwd")
 
         # Second add_participation should fail without changing values.
         self.assertFalse(add_participation(
             self.user.username, self.contest.id + 1, "1.2.3.4", 60, 120,
-            "other_pwd", "plaintext", True, self.team.code, True, True))
+            "other_pwd", "plaintext", True, self.team.code, True, True, "default"))
         self.assertParticipationInDb(self.user.id, self.contest.id, "pwd")
 
     def test_other_values(self):
         self.assertTrue(add_participation(
             self.user.username, self.contest.id, "1.2.3.4", 60, 120,
-            "pwd", "plaintext", True, None, True, True))
+            "pwd", "plaintext", True, None, True, True, "default"))
         self.assertParticipationInDb(self.user.id, self.contest.id, "pwd",
                                      delay_time=60, extra_time=120,
                                      hidden=True, unrestricted=True,
