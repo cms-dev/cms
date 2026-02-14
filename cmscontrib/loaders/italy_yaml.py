@@ -10,6 +10,7 @@
 # Copyright © 2016 Andrea Cracco <guilucand@gmail.com>
 # Copyright © 2018 Edoardo Morassutto <edoardo.morassutto@gmail.com>
 # Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
+# Copyright © 2026 Jonathan Baumann <jonathan.baumann@edu.ruhr-uni-bochum.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -260,6 +261,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         groups: Group | None = load(conf, None, "groups")
 
         if groups is None:
+            main_group["name"] = "default"
             args["groups"] = [self.make_group(main_group)]
             args["main_group"] = args["groups"][0]
         else:
@@ -275,8 +277,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 else:
                     main_group_name = "main"
 
-            args["groups"] = [self.make_group(g) for g in groups]       
-            args["main_group"] = [g for g in args["groups"] 
+            args["groups"] = [self.make_group(g) for g in groups]
+            args["main_group"] = [g for g in args["groups"]
                                     if g.name == main_group_name][0]
 
         tasks: list[str] | None = load(conf, None, ["tasks", "problemi"])
@@ -656,7 +658,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                             "specify all 'score_type', "
                             "'score_type_parameters' and "
                             "'n_input'.")
-                
+
             # Detect subtasks by checking GEN
             gen_filename = os.path.join(self.path, 'gen', 'GEN')
             try:
