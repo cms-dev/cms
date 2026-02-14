@@ -653,11 +653,13 @@ def main() -> int:
         http_server = WSGIServer(
             (config.bind_address, config.http_port), wsgi_app)
         servers.append(http_server)
+        logger.info(f"Listening to HTTP requests at {config.bind_address}:{config.http_port}")
     if config.https_port is not None:
         https_server = WSGIServer(
             (config.bind_address, config.https_port), wsgi_app,
             certfile=config.https_certfile, keyfile=config.https_keyfile)
         servers.append(https_server)
+        logger.info(f"Listening to HTTPS requests at {config.bind_address}:{config.https_port}")
 
     def sigterm_handler(*_):
         raise KeyboardInterrupt
