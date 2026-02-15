@@ -12,6 +12,7 @@
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 # Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
+# Copyright © 2026 Jonathan Baumann <Jonathan.Baumann@edu.ruhr-uni-bochum.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -129,12 +130,16 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_int(attrs, "score_precision")
 
             main_group_attrs = dict()
-            self.get_datetime(main_group_attrs, "main_group_start")
-            assert main_group_attrs.get("main_group_start") is not None, "No main group start time specified."
-            self.get_datetime(main_group_attrs, "main_group_stop")
-            assert main_group_attrs.get("main_group_stop") is not None, "No main group stop time specified."
-            contest.main_group.start = main_group_attrs.get("main_group_start")
-            contest.main_group.stop = main_group_attrs.get("main_group_stop")
+            self.get_datetime(main_group_attrs, "start")
+            assert main_group_attrs.get("start") is not None, "No main group start time specified."
+            self.get_datetime(main_group_attrs, "stop")
+            assert main_group_attrs.get("stop") is not None, "No main group stop time specified."
+            self.get_timedelta_sec(main_group_attrs, "per_user_time")
+
+            self.get_bool(main_group_attrs, "analysis_enabled")
+            self.get_datetime(main_group_attrs, "analysis_start")
+            self.get_datetime(main_group_attrs, "analysis_stop")
+            contest.main_group.set_attrs(main_group_attrs)
 
             # Update the contest.
             contest.set_attrs(attrs)
