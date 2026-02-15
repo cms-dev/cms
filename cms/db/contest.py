@@ -257,11 +257,14 @@ class Contest(Base):
         primaryjoin="Group.id==Contest.main_group_id",
         post_update=True)
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # groups (list of Group objects)
     # These one-to-many relationships are the reversed directions of
     # the ones defined in the "child" classes using foreign keys.
+    groups : list["Group"] = relationship(
+        "Group",
+        foreign_keys="[Group.contest_id]",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
 
     tasks: list["Task"] = relationship(
         "Task",
