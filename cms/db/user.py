@@ -105,10 +105,8 @@ class Group(Base):
         index=True)
     contest: Contest = relationship(
         Contest,
-        backref=backref('groups',
-                        cascade="all, delete-orphan",
-                        passive_deletes=True),
-        primaryjoin="Contest.id==Group.contest_id")
+        foreign_keys=[contest_id],
+        back_populates="groups")
 
     def phase(self, timestamp: datetime) -> int:
         """Return: -1 if contest isn't started yet at time timestamp,
@@ -134,9 +132,11 @@ class Group(Base):
                 return 2
         return 3
 
-    # Follows the description of the fields automatically added by
-    # SQLAlchemy.
-    # participations (list of Participation objects)
+    participations: list["Participation"] = relationship(
+        "Participation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="group")
 
 
 class User(Base):
@@ -330,17 +330,15 @@ class Participation(Base):
     __table_args__ = (UniqueConstraint("contest_id", "user_id"),)
 
     # Group this user belongs to
-    group_id = Column(
+    group_id: int = Column(
         Integer,
         ForeignKey(Group.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    group = relationship(
+    group: Group = relationship(
         Group,
-        backref=backref("participations",
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
+        back_populates="participations")
 
     # Team (id and object) that the user is representing with this
     # participation.
