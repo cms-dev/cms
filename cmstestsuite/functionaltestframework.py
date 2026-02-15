@@ -213,7 +213,7 @@ class FunctionalTestFramework:
             r'method="POST" name="edit_contest" style="display:inline;">',
             page)
         match_group = re.search(
-            r'<a href="../contest/[0-9]+/group/([0-9]+)/edit">',
+            r'<a href=\'../contest/[0-9]+/group/([0-9]+)/edit\'>',
             page)
         if match_contest is not None and match_group is not None:
             contest_id = int(match_contest.groups()[0])
