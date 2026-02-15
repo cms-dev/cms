@@ -49,7 +49,7 @@ class Group(Base):
     """Class to store a group of users (for timing, etc.).
 
     """
-    __tablename__ = 'group'
+    __tablename__ = 'groups'
     __table_args__ = (
         UniqueConstraint('contest_id', 'name'),
         CheckConstraint("start <= stop"),

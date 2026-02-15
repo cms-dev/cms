@@ -249,7 +249,7 @@ class Contest(Base):
     # Main group (id and Group object) of this contest
     main_group_id: int = Column(
         Integer,
-        ForeignKey("group.id", use_alter=True, name="fk_contest_main_group_id",
+        ForeignKey("groups.id", use_alter=True, name="fk_contest_main_group_id",
                    onupdate="CASCADE", ondelete="SET NULL"),
         index=True)
     main_group = relationship(
