@@ -325,8 +325,6 @@ class AddUserHandler(SimpleHandler("add_user.html", permission_all=True)):
             self.redirect(self.url("user", user.id))
         else:
             self.redirect(fallback_page)
-
-
 class AddParticipationHandler(BaseHandler):
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, user_id):
@@ -335,16 +333,15 @@ class AddParticipationHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
 
         try:
-            group_id: str = self.get_argument("group_id")
-            assert group_id != "null", "Please select a valid group"
+            contest_id: str = self.get_argument("contest_id")
+            assert contest_id != "null", "Please select a valid contest"
         except Exception as error:
             self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
             self.redirect(fallback_page)
             return
 
-        group = self.safe_get_item(Group, group_id)
-        self.contest = group.contest
+        self.contest = self.safe_get_item(Contest, contest_id)
 
         attrs = {}
         self.get_bool(attrs, "hidden")
@@ -352,6 +349,7 @@ class AddParticipationHandler(BaseHandler):
 
         # Create the participation.
         participation = Participation(contest=self.contest,
+                                      group=self.contest.main_group,
                                       user=user,
                                       hidden=attrs["hidden"],
                                       unrestricted=attrs["unrestricted"])
@@ -471,7 +469,7 @@ class AddGroupHandler(BaseHandler):
     """
     @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, contest_id):
-        fallback_page = self.url("contest", contest_id, "group", "add")
+        fallback_page = self.url("contest", contest_id, "groups", "add")
 
         try:
             attrs = dict()
@@ -482,6 +480,11 @@ class AddGroupHandler(BaseHandler):
                 "No name specified."
 
             attrs["contest"] = self.safe_get_item(Contest, contest_id)
+            
+            for key in ["start", "stop", "analysis_enabled", 
+                        "analysis_start", "analysis_stop", 
+                        "per_user_time"]:
+                attrs[key] = getattr(attrs["contest"].main_group, key)
 
             # Create the group.
             group = Group(**attrs)
@@ -525,19 +528,12 @@ class GroupHandler(BaseHandler):
 
             self.get_string(attrs, "name", empty=None)
 
-            self.get_datetime(attrs, "start")
-            self.get_datetime(attrs, "stop")
-            self.get_timedelta_sec(attrs, "per_user_time")
-
-            self.get_bool(attrs, "analysis_enabled")
-            self.get_datetime(attrs, "analysis_start")
-            self.get_datetime(attrs, "analysis_stop")
-
             assert attrs.get("name") is not None, \
                 "No group name specified."
 
             # Update the group.
-            group.set_attrs(attrs)
+            group.name = attrs["name"]
+            self.get_group_settings(group)
 
         except Exception as error:
             self.application.service.add_notification(

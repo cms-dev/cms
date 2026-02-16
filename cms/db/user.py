@@ -32,7 +32,7 @@ from datetime import datetime, timedelta
 from ipaddress import IPv4Network, IPv6Network
 
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
@@ -102,7 +102,7 @@ class Group(Base):
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
-        # nullable=False,
+        nullable=True,
         index=True)
     contest: Contest = relationship(
         Contest,
@@ -118,10 +118,9 @@ class Group(Base):
                     3 if the contest has ended and analysis mode is disabled or
                       has ended
 
-        timestamp (datetime): the time we are iterested in.
-        return (int): contest phase as above.
-
+        timestamp: the time we are iterested in.
         """
+        # NOTE: this logic is duplicated in aws_utils.js.
         if timestamp < self.start:
             return -1
         if timestamp <= self.stop:

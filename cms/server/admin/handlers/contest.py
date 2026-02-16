@@ -129,18 +129,7 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_string(attrs, "timezone", empty=None)
             self.get_int(attrs, "score_precision")
 
-            main_group_attrs = dict()
-            self.get_datetime(main_group_attrs, "start")
-            assert main_group_attrs.get("start") is not None, "No main group start time specified."
-            self.get_datetime(main_group_attrs, "stop")
-            assert main_group_attrs.get("stop") is not None, "No main group stop time specified."
-            self.get_timedelta_sec(main_group_attrs, "per_user_time")
-
-            self.get_bool(main_group_attrs, "analysis_enabled")
-            self.get_datetime(main_group_attrs, "analysis_start")
-            self.get_datetime(main_group_attrs, "analysis_stop")
-            contest.main_group.set_attrs(main_group_attrs)
-
+            self.get_group_settings(contest.main_group)
             # Update the contest.
             contest.set_attrs(attrs)
 

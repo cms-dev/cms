@@ -82,17 +82,13 @@ def add_participation(
             if contest is None:
                 logger.error("No contest with id `%s' found.", contest_id)
                 return False
-            if groupname is None:
-                logger.error("No group name provided.")
+            group: Group | None = \
+                session.query(Group) \
+                    .filter(Group.contest_id == contest_id,
+                            Group.name == groupname).first()
+            if group is None:
+                logger.error("No group with name `%s' found.", groupname)
                 return False
-            else:
-                group: Group | None = \
-                    session.query(Group) \
-                        .filter(Group.contest_id == contest_id,
-                                Group.name == groupname).first()
-                if group is None:
-                    logger.error("No group with name `%s' found.", groupname)
-                    return False
             team: Team | None = None
             if team_code is not None:
                 team = \
