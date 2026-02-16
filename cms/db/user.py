@@ -34,7 +34,7 @@ from ipaddress import IPv4Network, IPv6Network
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
-    UniqueConstraint
+    UniqueConstraint, ForeignKeyConstraint
 from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 
@@ -52,6 +52,7 @@ class Group(Base):
     __tablename__ = 'groups'
     __table_args__ = (
         UniqueConstraint('contest_id', 'name'),
+        UniqueConstraint('id', 'contest_id'),
         CheckConstraint("start <= stop"),
         CheckConstraint("stop <= analysis_start"),
         CheckConstraint("analysis_start <= analysis_stop"),
@@ -136,6 +137,7 @@ class Group(Base):
         "Participation",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        foreign_keys="[Participation.group_id]",
         back_populates="group")
 
 
@@ -313,9 +315,7 @@ class Participation(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    contest: Contest = relationship(
-        Contest,
-        back_populates="participations")
+    contest: Contest = relationship(Contest)
 
     # User (id and object) which is participating.
     user_id: int = Column(
@@ -327,7 +327,6 @@ class Participation(Base):
     user: User = relationship(
         User,
         back_populates="participations")
-    __table_args__ = (UniqueConstraint("contest_id", "user_id"),)
 
     # Group this user belongs to
     group_id: int = Column(
@@ -338,7 +337,12 @@ class Participation(Base):
         index=True)
     group: Group = relationship(
         Group,
+        foreign_keys="[Participation.group_id]",
         back_populates="participations")
+    __table_args__ = (
+        ForeignKeyConstraint(["group_id", "contest_id"], ["groups.id", "groups.contest_id"]),
+        UniqueConstraint("contest_id", "user_id")
+    )
 
     # Team (id and object) that the user is representing with this
     # participation.

@@ -103,7 +103,8 @@ class ContestImporter:
             contest.tasks = []
             logger.warning("Contest loader should not fill tasks.")
         if contest.participations != []:
-            contest.participations = []
+            for g in contest.groups:
+                g.participations = []
             logger.warning("Contest loader should not fill participations.")
         tasks = tasks if tasks is not None else []
         participations = participations if participations is not None else []
