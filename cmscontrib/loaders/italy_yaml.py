@@ -258,7 +258,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         # Groups
         main_group_name: str | None = load(conf, None, "main_group")
-        groups: Group | None = load(conf, None, "groups")
+        groups: list[dict] | None = load(conf, None, "groups")
 
         if groups is None:
             main_group["name"] = "default"
