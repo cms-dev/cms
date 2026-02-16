@@ -281,11 +281,9 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
-    participations: list["Participation"] = relationship(
-        "Participation",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-        back_populates="contest")
+    @property
+    def participations(self) -> list["Participation"]:
+        return sum((g.participations for g in self.groups), start=[])
 
 
 class Announcement(Base):
