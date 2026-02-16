@@ -16,13 +16,15 @@
  */
 
 function format_time(time, full) {
-    var h = Math.floor(time / 3600);
-    var m = Math.floor((time % 3600) / 60);
-    var s = Math.floor(time % 60);
+    var prefix = time < 0 ? "-" : "";
+    var abs_time = Math.abs(Math.floor(time));
+    var h = Math.floor(abs_time / 3600);
+    var m = Math.floor((abs_time % 3600) / 60);
+    var s = Math.floor(abs_time % 60);
     h = full && h < 10 ? "0" + h : "" + h;
     m = m < 10 ? "0" + m : "" + m;
     s = s < 10 ? "0" + s : "" + s;
-    return (h + ":" + m + ":" + s);
+    return (prefix + h + ":" + m + ":" + s);
 };
 
 function _get_time() {
@@ -142,10 +144,7 @@ var TimeView = new function () {
             }
         }
 
-        var time_str = format_time(Math.abs(Math.floor(time)), full_time);
-        if (time < 0) {
-            time_str = '-' + time_str;
-        }
+        var time_str = format_time(time, full_time);
 
         $("#TimeView_time").text(time_str);
     };
