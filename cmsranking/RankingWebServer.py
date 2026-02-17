@@ -32,12 +32,14 @@ from datetime import datetime
 
 import gevent
 from gevent.pywsgi import WSGIServer
+from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, \
     Forbidden, NotFound, NotAcceptable, UnsupportedMediaType
 from werkzeug.routing import Map, Rule
 from werkzeug.wrappers import Request, Response
-from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
-    DispatcherMiddleware
+from werkzeug.wsgi import responder, wrap_file
+from werkzeug.middleware.shared_data import SharedDataMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 # Needed for initialization. Do not remove.
 import cmsranking.Logger  # noqa
@@ -65,10 +67,7 @@ class CustomUnauthorized(Unauthorized):
 
     def get_response(self, environ=None):
         response = super().get_response(environ)
-        # XXX With werkzeug-0.9 a full-featured Response object is
-        # returned: there is no need for this.
-        response = Response.force_type(response)
-        response.www_authenticate.set_basic(self.realm_name)
+        response.www_authenticate = WWWAuthenticate('basic', {'realm': self.realm_name})
         return response
 
 
@@ -87,7 +86,7 @@ class StoreHandler:
             Rule("/", methods=["PUT"], endpoint="put_list"),
             Rule("/<key>", methods=["DELETE"], endpoint="delete"),
             Rule("/", methods=["DELETE"], endpoint="delete_list"),
-        ], encoding_errors="strict")
+        ])
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -101,7 +100,6 @@ class StoreHandler:
             return exc
 
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         response = Response()
 
@@ -293,7 +291,7 @@ class SubListHandler:
 
         self.router = Map([
             Rule("/<user_id>", methods=["GET"], endpoint="sublist"),
-        ], encoding_errors="strict")
+        ])
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -308,7 +306,6 @@ class SubListHandler:
         assert endpoint == "sublist"
 
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         if request.accept_mimetypes.quality("application/json") <= 0:
             raise NotAcceptable()
@@ -341,7 +338,6 @@ class HistoryHandler:
 
     def wsgi_app(self, environ, start_response):
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         if request.accept_mimetypes.quality("application/json") <= 0:
             raise NotAcceptable()
@@ -366,7 +362,6 @@ class ScoreHandler:
 
     def wsgi_app(self, environ, start_response):
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         if request.accept_mimetypes.quality("application/json") <= 0:
             raise NotAcceptable()
@@ -402,7 +397,7 @@ class ImageHandler:
 
         self.router = Map([
             Rule("/<name>", methods=["GET"], endpoint="get"),
-        ], encoding_errors="strict")
+        ])
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -418,7 +413,6 @@ class ImageHandler:
         location = self.location % args
 
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         response = Response()
 
@@ -458,7 +452,6 @@ class RootHandler:
     @responder
     def wsgi_app(self, environ, start_response):
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         response = Response()
         response.status_code = 200
@@ -484,7 +477,6 @@ class PublicConfigHandler:
     @responder
     def wsgi_app(self, environ, start_response):
         request = Request(environ)
-        request.encoding_errors = "strict"
 
         response = Response()
         response.status_code = 200
@@ -517,7 +509,7 @@ class RoutingHandler:
             Rule("/events", methods=["GET"], endpoint="events"),
             Rule("/logo", methods=["GET"], endpoint="logo"),
             Rule("/config", methods=["GET"], endpoint="public_config")
-        ], encoding_errors="strict")
+        ])
 
         self.event_handler = event_handler
         self.logo_handler = logo_handler
@@ -661,11 +653,13 @@ def main() -> int:
         http_server = WSGIServer(
             (config.bind_address, config.http_port), wsgi_app)
         servers.append(http_server)
+        logger.info(f"Listening to HTTP requests at {config.bind_address}:{config.http_port}")
     if config.https_port is not None:
         https_server = WSGIServer(
             (config.bind_address, config.https_port), wsgi_app,
             certfile=config.https_certfile, keyfile=config.https_keyfile)
         servers.append(https_server)
+        logger.info(f"Listening to HTTPS requests at {config.bind_address}:{config.https_port}")
 
     def sigterm_handler(*_):
         raise KeyboardInterrupt

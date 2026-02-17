@@ -322,7 +322,12 @@ class EventSource:
         # XMLHttpRequest it has been probably sent from a polyfill (not
         # from the native browser implementation) which will be able to
         # read the response body only when it has been fully received.
-        if environ["SERVER_PROTOCOL"] != "HTTP/1.1" or request.is_xhr:
+
+        # XXX: this used to also check request.is_xhr, which was removed in a
+        # newer werkzeug version. But all modern browsers support SSE natively
+        # so this check isn't necessary nowadays. (Well, the http/1.1 check
+        # probably isn't necessary either, to be honest...)
+        if environ["SERVER_PROTOCOL"] != "HTTP/1.1":
             one_shot = True
         else:
             one_shot = False

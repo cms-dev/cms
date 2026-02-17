@@ -24,20 +24,16 @@ dependencies = [
     "requests==2.32.3",       # https://pypi.python.org/pypi/requests
     "gevent==25.8.1",         # http://www.gevent.org/changelog.html
     "greenlet>=3.0rc1",
-    "werkzeug<1.0",           # https://github.com/pallets/werkzeug/blob/master/CHANGES
+    "werkzeug==3.1.5",        # https://werkzeug.palletsprojects.com/en/stable/changes/
     "backports.ssl-match-hostname==3.7.0.1", # required by tornado<5.0
     "patool>=1.12,<4.1",      # https://github.com/wummel/patool/blob/master/doc/changelog.txt
     "bcrypt>=3.1,<4.4",       # https://github.com/pyca/bcrypt/
     "chardet>=3.0,<5.3",      # https://pypi.python.org/pypi/chardet
     "babel==2.12.1",          # http://babel.pocoo.org/en/latest/changelog.html
     "pyxdg>=0.26,<0.29",      # https://freedesktop.org/wiki/Software/pyxdg/
-    "Jinja2>=2.10,<2.11",     # http://jinja.pocoo.org/docs/latest/changelog/
+    "Jinja2==3.1.6",          # https://jinja.palletsprojects.com/en/stable/changes/
     "markdown-it-py==3.0.0",  # https://github.com/executablebooks/markdown-it-py/blob/master/CHANGELOG.md
-    "setuptools>=80,<81",     # https://setuptools.pypa.io/en/latest/history.html
-
-    # See https://github.com/pallets/markupsafe/issues/286 but breaking change in
-    # MarkupSafe causes jinja to break
-    "MarkupSafe==2.0.1",
+    "MarkupSafe==3.0.3",      # https://markupsafe.palletsprojects.com/en/stable/changes/
 
     # Only for some importers:
     "pyyaml>=5.3,<6.1",       # http://pyyaml.org/wiki/PyYAML
@@ -63,12 +59,12 @@ devel = [
 
     # Only for building documentation
     # XXX: The version of Sphinx needed to build our documentation
-    # is incompatible with the old version of jinja2 we need.
+    # is incompatible with the old version of babel we need.
     # "Sphinx>=1.8,<1.9",
 ]
 
 [build-system]
-requires = ["setuptools>=80,<81", "babel==2.12.1"]
+requires = ["setuptools==82.0.0", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]

@@ -30,7 +30,7 @@ except:
 
 import tornado.wsgi
 from gevent.pywsgi import WSGIServer
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.middleware.shared_data import SharedDataMiddleware
 

@@ -19,28 +19,15 @@
 
 from collections.abc import Callable
 import json
+import math
+import typing
 
-from werkzeug.contrib.securecookie import SecureCookie
+from tornado.web import create_signed_value, decode_signed_value
 from werkzeug.local import Local, LocalManager
 from werkzeug.wrappers import Request, Response
 
 from cms import config
-from cmscommon.binary import hex_to_bin
 from cmscommon.datetime import make_timestamp
-
-
-class UTF8JSON:
-    @staticmethod
-    def dumps(d: object) -> bytes:
-        return json.dumps(d).encode('utf-8')
-
-    @staticmethod
-    def loads(e: bytes) -> object:
-        return json.loads(e.decode('utf-8'))
-
-
-class JSONSecureCookie(SecureCookie):
-    serialization_method = UTF8JSON
 
 
 class AWSAuthMiddleware:
@@ -70,7 +57,7 @@ class AWSAuthMiddleware:
         self.wsgi_app = self._local_manager.make_middleware(self.wsgi_app)
 
         self._request: Request = self._local("request")
-        self._cookie: JSONSecureCookie = self._local("cookie")
+        self._cookie: dict[str, typing.Any] = self._local("cookie")
 
     @property
     def admin_id(self) -> int | None:
@@ -128,9 +115,20 @@ class AWSAuthMiddleware:
 
         """
         self._local.request = Request(environ)
-        self._local.cookie = JSONSecureCookie.load_cookie(
-            self._request, AWSAuthMiddleware.COOKIE,
-            hex_to_bin(config.web_server.secret_key))
+        cookie_str = decode_signed_value(
+            bytes.fromhex(config.web_server.secret_key),
+            AWSAuthMiddleware.COOKIE,
+            self._request.cookies.get(AWSAuthMiddleware.COOKIE),
+            # We do our own expiry checking, so an upper bound is fine here
+            max_age_days=math.ceil(
+                config.admin_web_server.cookie_duration / 60 / 60 / 24
+            ),
+        )
+        if cookie_str is not None:
+            self._local.cookie = json.loads(cookie_str.decode())
+        else:
+            self._local.cookie = {}
+
         self._verify_cookie()
 
         def my_start_response(status, headers, exc_info=None):
@@ -142,9 +140,20 @@ class AWSAuthMiddleware:
 
             """
             response = Response(status=status, headers=headers)
-            self._cookie.save_cookie(
-                response, AWSAuthMiddleware.COOKIE, httponly=True,
-                max_age=config.admin_web_server.cookie_duration)
+            # json.dumps doesn't like LocalProxy objects, so we grab the actual
+            # underlying value here with _get_current_object
+            cookie_str = json.dumps(self._cookie._get_current_object())
+            cookie_signed = create_signed_value(
+                bytes.fromhex(config.web_server.secret_key),
+                AWSAuthMiddleware.COOKIE,
+                cookie_str,
+            ).decode()
+            response.set_cookie(
+                AWSAuthMiddleware.COOKIE,
+                cookie_signed,
+                httponly=True,
+                max_age=config.admin_web_server.cookie_duration,
+            )
             return start_response(
                 status, response.headers.to_wsgi_list(), exc_info)
 
