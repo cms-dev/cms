@@ -122,7 +122,7 @@ class TestRunner:
         """
         start_time = datetime.datetime.utcnow()
         stop_time = start_time + datetime.timedelta(1, 0, 0)
-        self.contest_id = self.framework.add_contest(
+        self.contest_id, self.group_id = self.framework.add_contest(
             name="testcontest_%s" % self.suffix,
             description="A test contest #%s." % self.suffix,
             languages=list(ALL_LANGUAGES),
@@ -165,7 +165,8 @@ class TestRunner:
             "method": "plaintext",
             "first_name": "Ms. Test",
             "last_name": "Wabbit the %d%s" % (self.num_users,
-                                              enumerify(self.num_users))
+                                              enumerify(self.num_users)),
+            "group_id": self.group_id
         }
 
         if username in users:

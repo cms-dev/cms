@@ -10,6 +10,9 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
 # Copyright © 2018 William Di Luigi <williamdiluigi@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
+# Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
+# Copyright © 2026 Jonathan Baumann <Jonathan.Baumann@edu.ruhr-uni-bochum.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,7 +32,7 @@
 """
 
 from cms import ServiceCoord, get_service_shards, get_service_address
-from cms.db import Contest, Participation, Submission
+from cms.db import Contest, Participation, Group, Submission
 from cmscommon.datetime import make_datetime
 
 from .base import BaseHandler, SimpleContestHandler, SimpleHandler, \
@@ -54,6 +57,12 @@ class AddContestHandler(
 
             # Create the contest.
             contest = Contest(**attrs)
+
+            # Add the default group
+            group = Group(name="default")
+            contest.groups.append(group)
+            contest.main_group = group
+
             self.sql_session.add(contest)
 
         except Exception as error:
@@ -117,17 +126,10 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_timedelta_sec(attrs, "min_submission_interval_grace_period")
             self.get_timedelta_sec(attrs, "min_user_test_interval")
 
-            self.get_datetime(attrs, "start")
-            self.get_datetime(attrs, "stop")
-
             self.get_string(attrs, "timezone", empty=None)
-            self.get_timedelta_sec(attrs, "per_user_time")
             self.get_int(attrs, "score_precision")
 
-            self.get_bool(attrs, "analysis_enabled")
-            self.get_datetime(attrs, "analysis_start")
-            self.get_datetime(attrs, "analysis_stop")
-
+            self.get_group_settings(contest.main_group)
             # Update the contest.
             contest.set_attrs(attrs)
 

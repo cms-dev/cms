@@ -50,6 +50,12 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             "description": "contest description 你好",
             "tasks": ["task_key"],
             "participations": ["part_key"],
+            "main_group": "group_key",
+        },
+        "group_key": {
+            "_class": "Group",
+            "contest": "contest_key",
+            "name": "default",
         },
         "task_key": {
             "_class": "Task",
@@ -87,6 +93,7 @@ class TestDumpImporter(DatabaseMixin, FileSystemMixin, unittest.TestCase):
             "_class": "Participation",
             "user": "user_key",
             "contest": "contest_key",
+            "group": "group_key",
             "submissions": ["sub_key"],
         },
         "sub_key": {

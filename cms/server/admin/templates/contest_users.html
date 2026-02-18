@@ -18,6 +18,13 @@
     </option>
     {% endfor %}
   </select>
+    <select name="group_id">
+    {% for g in contest.groups %}
+    <option value="{{ g.id }}" {% if contest.main_group_id == g.id %}selected{% endif %}>
+      {{ g.name }}
+    </option>
+    {% endfor %}
+  </select>
   <input type="submit"
 {% if not admin.permission_all %}
          disabled
@@ -42,17 +49,19 @@
         <th>Username</th>
         <th>First name</th>
         <th>Last name</th>
+        <th>Group</th>
       </tr>
     </thead>
     <tbody>
-      {% for u in contest.participations|map(attribute="user")|sort(attribute="username") %}
+      {% for u in contest.participations|sort(attribute="user.username") %}
       <tr>
         <td>
-          <input type="radio" name="user_id" value="{{ u.id }}"/>
+          <input type="radio" name="user_id" value="{{ u.user.id }}"/>
         </td>
-        <td><a href="{{ url("contest", contest.id, "user", u.id, "edit") }}">{{ u.username }}</a></td>
-        <td>{{ u.first_name }}</td>
-        <td>{{ u.last_name }}</td>
+        <td><a href="{{ url("contest", contest.id, "user", u.user.id, "edit") }}">{{ u.user.username }}</a></td>
+        <td>{{ u.user.first_name }}</td>
+        <td>{{ u.user.last_name }}</td>
+        <td>{{ u.group.name }}</td>
       </tr>
       {% endfor %}
     </tbody>
