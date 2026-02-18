@@ -6,7 +6,7 @@
   Group {{ group.name }} in <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a>
 </h1>
 
-<h2 id="title_submissions" class="toggling_on">Users</h2>
+<h2 id="title_users" class="toggling_on">Users</h2>
 <div id="users">
   {% if group.participations|length < 1 %}
   <p>No users found.</p>
