@@ -26,6 +26,9 @@ jobs:
 
       - name: Run tests
         run: |
+          # github runner kernel for some reason doesn't have ext4 quota
+          # support, but does have tmpfs quotas
+          export TEST_QUOTAS=tmpfs
           docker compose -p cms -f docker/docker-compose.test.yml run --rm testcms
 
       - name: Upload test results to Codecov
