@@ -42,7 +42,7 @@ from cms import TOKEN_MODE_DISABLED, TOKEN_MODE_FINITE, TOKEN_MODE_INFINITE
 from . import Codename, Base, Admin
 import typing
 if typing.TYPE_CHECKING:
-    from . import Task, Participation
+    from . import Task, Participation, Group
 
 
 class Contest(Base):
@@ -247,12 +247,13 @@ class Contest(Base):
         default=0)
 
     # Main group (id and Group object) of this contest
-    main_group_id: int = Column(
+    main_group_id: int | None = Column(
         Integer,
         ForeignKey("groups.id", use_alter=True, name="fk_contest_main_group_id",
                    onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
         index=True)
-    main_group = relationship(
+    main_group: "Group | None" = relationship(
         "Group",
         primaryjoin="Group.id==Contest.main_group_id",
         post_update=True)
@@ -281,9 +282,11 @@ class Contest(Base):
         passive_deletes=True,
         back_populates="contest")
 
-    @property
-    def participations(self) -> list["Participation"]:
-        return sum((g.participations for g in self.groups), start=[])
+    participations: list["Participation"] = relationship(
+        "Participation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        back_populates="contest")
 
 
 class Announcement(Base):

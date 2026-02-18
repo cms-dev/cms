@@ -102,7 +102,7 @@ class Group(Base):
         Integer,
         ForeignKey(Contest.id,
                    onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
         index=True)
     contest: Contest = relationship(
         Contest,
@@ -248,6 +248,12 @@ class Participation(Base):
 
     """
     __tablename__ = 'participations'
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ("group_id", "contest_id"),
+            (Group.id, Group.contest_id)),
+        UniqueConstraint("contest_id", "user_id"),
+    )
 
     # Auto increment primary key.
     id: int = Column(
@@ -314,7 +320,9 @@ class Participation(Base):
                    onupdate="CASCADE", ondelete="CASCADE"),
         nullable=False,
         index=True)
-    contest: Contest = relationship(Contest)
+    contest: Contest = relationship(
+        Contest,
+        back_populates="participations")
 
     # User (id and object) which is participating.
     user_id: int = Column(
@@ -336,12 +344,8 @@ class Participation(Base):
         index=True)
     group: Group = relationship(
         Group,
-        foreign_keys="[Participation.group_id]",
+        foreign_keys=[group_id],
         back_populates="participations")
-    __table_args__ = (
-        ForeignKeyConstraint(["group_id", "contest_id"], ["groups.id", "groups.contest_id"]),
-        UniqueConstraint("contest_id", "user_id")
-    )
 
     # Team (id and object) that the user is representing with this
     # participation.
