@@ -1,4 +1,4 @@
-{% macro rows(url, contest_url, translation, xsrf_form_html,
+{% macro rows(url, static_url, contest_url, translation, xsrf_form_html,
               actual_phase, task, submissions,
               can_use_tokens, can_play_token, can_play_token_now,
               submissions_download_allowed, official) -%}
@@ -6,6 +6,7 @@
 Render a submission table with all (un)official submissions passed.
 
 url (Url): the URL instance referring to the root of CWS.
+static_url: static url helper constructed from url
 contest_url (Url): the URL instance referring to the main contest page.
 translation (Translation): locale to use to show messages.
 xsrf_form_html (str): input element for the XSRF protection.
@@ -90,6 +91,7 @@ official (boolean): whether to display only the official (true) or unofficial
                 {# loop.revindex is broken: https://github.com/pallets/jinja/issues/794 #}
                 {{ row(
                     url,
+                    static_url,
                     contest_url,
                     translation,
                     xsrf_form_html,
@@ -108,7 +110,7 @@ official (boolean): whether to display only the official (true) or unofficial
 </table>
 {%- endmacro %}
 
-{% macro row(url, contest_url, translation, xsrf_form_html,
+{% macro row(url, static_url, contest_url, translation, xsrf_form_html,
              actual_phase, s, opaque_id, show_date,
              can_use_tokens, can_play_token, can_play_token_now,
              submissions_download_allowed) -%}
@@ -116,6 +118,7 @@ official (boolean): whether to display only the official (true) or unofficial
 Render a row in a submission table.
 
 url (Url): the URL instance referring to the root of CWS.
+static_url: static url helper constructed from url
 contest_url (Url): the URL instance referring to the main contest page.
 translation (Translation): locale to use to show messages.
 xsrf_form_html (str): input element for the XSRF protection.
@@ -146,16 +149,16 @@ submissions_download_allowed (bool): whether to allow users to download
     <td class="status">
 {% if status == SubmissionResult.COMPILING %}
         {% trans %}Compiling...{% endtrans %}
-      <img class="details" src="{{ url("static", "loading.gif") }}" />
+      <img class="details" src="{{ static_url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.COMPILATION_FAILED %}
         {% trans %}Compilation failed{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
 {% elif status == SubmissionResult.EVALUATING %}
         {% trans %}Evaluating...{% endtrans %}
-      <img class="details" src="{{ url("static", "loading.gif") }}" />
+      <img class="details" src="{{ static_url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.SCORING %}
         {% trans %}Scoring...{% endtrans %}
-      <img class="details" src="{{ url("static", "loading.gif") }}" />
+      <img class="details" src="{{ static_url("static", "loading.gif") }}" />
 {% elif status == SubmissionResult.SCORED %}
         {% trans %}Evaluated{% endtrans %}
         <a class="details">{% trans %}details{% endtrans %}</a>
