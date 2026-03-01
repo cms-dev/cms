@@ -36,6 +36,7 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import tornado.web
+from sqlalchemy import case
 
 from cms.db import Contest, Question, Participation
 from cmscommon.datetime import make_datetime
@@ -53,10 +54,20 @@ class QuestionsHandler(BaseHandler):
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
+        answered = case(
+            [(
+                (Question.reply_timestamp.is_(None)) &
+                (Question.ignored.is_(False)),
+                0
+            )],
+            else_=1
+        )
+
         self.r_params = self.render_params()
         self.r_params["questions"] = self.sql_session.query(Question)\
             .join(Participation)\
             .filter(Participation.contest_id == contest_id)\
+            .order_by(answered)\
             .order_by(Question.question_timestamp.desc())\
             .order_by(Question.id).all()
         self.render("questions.html", **self.r_params)
