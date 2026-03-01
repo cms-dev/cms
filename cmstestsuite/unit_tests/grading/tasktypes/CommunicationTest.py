@@ -330,7 +330,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         tt = Communication(parameters)
         job = self.job(executables, managers)
         self.evaluation_step_after_run.return_value = (True, True, STATS_OK)
-        self.extract_outcome_and_text.return_value = (OUTCOME, TEXT)
+        self.extract_outcome_and_text.return_value = (OUTCOME, TEXT, None)
         return tt, job
 
     def assertResultsInJob(self, job, success, outcome, text, stats):

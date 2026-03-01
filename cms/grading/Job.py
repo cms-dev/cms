@@ -93,6 +93,7 @@ class Job:
         info: str | None = None,
         success: bool | None = None,
         text: list[str] | None = None,
+        admin_text: str | None = None,
         files: dict[str, File] | None = None,
         managers: dict[str, Manager] | None = None,
         executables: dict[str, Executable] | None = None,
@@ -121,6 +122,8 @@ class Job:
             to be presented to the user. The first item is a string,
             potentially with %-escaping; the following items are the
             values to be %-formatted into the first.
+        admin_text: description of the outcome of the job,
+            to be shown to admins.
         files: files submitted by the user.
         managers: managers provided by the admins.
         executables: executables created in the compilation.
@@ -155,6 +158,7 @@ class Job:
 
         self.success = success
         self.text = text
+        self.admin_text = admin_text
 
         self.files = files
         self.managers = managers
@@ -178,6 +182,7 @@ class Job:
             'info': self.info,
             'success': self.success,
             'text': self.text,
+            'admin_text': self.admin_text,
             'files': dict((k, v.digest)
                           for k, v in self.files.items()),
             'managers': dict((k, v.digest)
@@ -316,6 +321,7 @@ class CompilationJob(Job):
         compilation_success: bool | None = None,
         executables: dict[str, Executable] | None = None,
         text: list[str] | None = None,
+        admin_text: str | None = None,
         plus: dict | None = None,
     ):
         """Initialization.
@@ -331,7 +337,7 @@ class CompilationJob(Job):
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox, archive_sandbox,
                      shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
-                     text, files, managers, executables)
+                     text, admin_text, files, managers, executables)
         self.compilation_success = compilation_success
         self.plus = plus
 
@@ -537,6 +543,7 @@ class EvaluationJob(Job):
         success: bool | None = None,
         outcome: str | None = None,
         text: list[str] | None = None,
+        admin_text: str | None = None,
         user_output: str | None = None,
         plus: dict | None = None,
         only_execution: bool | None = False,
@@ -567,7 +574,7 @@ class EvaluationJob(Job):
         Job.__init__(self, operation, task_type, task_type_parameters,
                      language, multithreaded_sandbox, archive_sandbox,
                      shard, keep_sandbox, sandboxes, sandbox_digests, info, success,
-                     text, files, managers, executables)
+                     text, admin_text, files, managers, executables)
         self.input = input
         self.output = output
         self.time_limit = time_limit
@@ -653,6 +660,7 @@ class EvaluationJob(Job):
 
         sr.evaluations += [Evaluation(
             text=self.text,
+            admin_text=self.admin_text,
             outcome=self.outcome,
             execution_time=self.plus.get('execution_time'),
             execution_wall_clock_time=self.plus.get(

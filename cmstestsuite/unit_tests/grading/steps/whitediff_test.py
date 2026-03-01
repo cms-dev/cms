@@ -31,7 +31,7 @@ class TestWhiteDiff(unittest.TestCase):
     @staticmethod
     def _diff(s1, s2):
         return _white_diff(
-            BytesIO(s1.encode("utf-8")), BytesIO(s2.encode("utf-8")))
+            BytesIO(s1.encode("utf-8")), BytesIO(s2.encode("utf-8")))[0]
 
     def test_no_diff_one_token(self):
         self.assertTrue(self._diff("", ""))
@@ -66,6 +66,11 @@ class TestWhiteDiff(unittest.TestCase):
         self.assertFalse(self._diff("\n1", "1"))
         self.assertFalse(self._diff("1 2", "1\n2"))
         self.assertFalse(self._diff("1\n\n2", "1\n2"))
+
+    def test_diff_wrong_long_line(self):
+        line1 = "1" * 1000
+        line2 = line1 + "0"
+        self.assertFalse(self._diff(line1, line2))
 
 
 if __name__ == "__main__":

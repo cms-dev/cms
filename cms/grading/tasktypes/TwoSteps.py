@@ -295,6 +295,7 @@ class TwoSteps(TaskType):
 
         outcome = None
         text = None
+        admin_text = None
 
         # Error in the sandbox: nothing to do!
         if not box_success:
@@ -333,7 +334,7 @@ class TwoSteps(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-                    box_success, outcome, text = eval_output(
+                    box_success, outcome, text, admin_text = eval_output(
                         file_cacher, job,
                         TwoSteps.CHECKER_CODENAME
                         if self._uses_checker() else None,
@@ -344,6 +345,7 @@ class TwoSteps(TaskType):
         job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        job.admin_text = admin_text
         job.plus = stats
 
         delete_sandbox(first_sandbox, job)

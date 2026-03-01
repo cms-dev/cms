@@ -47,35 +47,43 @@ class TestExtractOutcomeAndText(unittest.TestCase):
     def test_success(self):
         self.sandbox.fake_file("o", b"0.45\n")
         self.sandbox.fake_file("e", "你好.\n".encode("utf-8"))
-        outcome, text = extract_outcome_and_text(self.sandbox)
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
         self.assertEqual(outcome, 0.45)
         self.assertEqual(text, ["你好."])
+
+    def test_admin_message(self):
+        self.sandbox.fake_file("o", b"0.45\n")
+        self.sandbox.fake_file("e", b"Text to return.\nADMIN_MESSAGE: admin")
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
+        self.assertEqual(outcome, 0.45)
+        self.assertEqual(text, ["Text to return."])
+        self.assertEqual(admin_text, "admin")
 
     def test_following_lines_ignored(self):
         self.sandbox.fake_file("o", b"0.45\nNothing\n")
         self.sandbox.fake_file("e", b"Text to return.\nto see here")
-        outcome, text = extract_outcome_and_text(self.sandbox)
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
         self.assertEqual(outcome, 0.45)
         self.assertEqual(text, ["Text to return."])
 
     def test_works_without_newlines(self):
         self.sandbox.fake_file("o", b"0.45")
         self.sandbox.fake_file("e", b"Text to return.")
-        outcome, text = extract_outcome_and_text(self.sandbox)
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
         self.assertEqual(outcome, 0.45)
         self.assertEqual(text, ["Text to return."])
 
     def test_text_is_stripped(self):
         self.sandbox.fake_file("o", b"   0.45\t \nignored")
         self.sandbox.fake_file("e", b"\t  Text to return.\r\n")
-        outcome, text = extract_outcome_and_text(self.sandbox)
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
         self.assertEqual(outcome, 0.45)
         self.assertEqual(text, ["Text to return."])
 
     def test_text_is_translated(self):
         self.sandbox.fake_file("o", b"0.45\n")
         self.sandbox.fake_file("e", b"translate:success\n")
-        outcome, text = extract_outcome_and_text(self.sandbox)
+        outcome, text, admin_text = extract_outcome_and_text(self.sandbox)
         self.assertEqual(outcome, 0.45)
         self.assertEqual(text, ["Output is correct"])
 
@@ -260,7 +268,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (True, 0.123, ["Text."]))
+        self.assertEqual(ret, (True, 0.123, ["Text."], None))
         self.file_cacher.get_file_to_fobj.assert_has_calls([
             call("c_dig", ANY),
             call("i_dig", ANY),
@@ -278,7 +286,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_checker_failure(self):
@@ -288,28 +296,28 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_missing_checker(self):
         ret = checker_step(self.sandbox, None, "i_dig", "co_dig", "o")
 
         self.mock_trusted_step.assert_not_called()
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_checker_already_in_sandbox(self):
         self.sandbox.fake_file(trusted.CHECKER_FILENAME, b"something")
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_input_already_in_sandbox(self):
         self.sandbox.fake_file(trusted.CHECKER_INPUT_FILENAME, b"something")
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_correct_output_already_in_sandbox(self):
@@ -317,7 +325,7 @@ class TestCheckerStep(unittest.TestCase):
                                b"something")
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_invalid_checker_outcome(self):
@@ -326,7 +334,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_invalid_checker_text(self):
@@ -335,7 +343,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_missing_checker_outcome(self):
@@ -344,7 +352,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_missing_checker_text(self):
@@ -353,7 +361,7 @@ class TestCheckerStep(unittest.TestCase):
 
         ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
 
-        self.assertEqual(ret, (False, None, None))
+        self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
 

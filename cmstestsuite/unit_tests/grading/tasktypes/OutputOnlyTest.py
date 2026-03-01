@@ -58,7 +58,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
     def prepare(self, parameters, files):
         tt = OutputOnly(parameters)
         job = self.job(files)
-        self.eval_output.return_value = (True, OUTCOME, TEXT)
+        self.eval_output.return_value = (True, OUTCOME, TEXT, None)
         return tt, job
 
     def assertResultsInJob(self, job, success, outcome, text, stats):
@@ -95,7 +95,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             "output_001.txt": FILE_001,
             "output_023.txt": FILE_023
         })
-        self.eval_output.return_value = False, None, None
+        self.eval_output.return_value = False, None, None, None
 
         tt.evaluate(job, self.file_cacher)
 

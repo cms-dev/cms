@@ -305,7 +305,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt = Batch(parameters)
         job = self.job(executables)
         self.evaluation_step.return_value = (True, True, STATS_OK)
-        self.eval_output.return_value = (True, OUTCOME, TEXT)
+        self.eval_output.return_value = (True, OUTCOME, TEXT, None)
         return tt, job
 
     def assertResultsInJob(self, job):
@@ -325,7 +325,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         else:
             # User submission terminated correctly, output is evaluated.
             _, _, stats = self.evaluation_step.return_value
-            success, outcome, text = self.eval_output.return_value
+            success, outcome, text, admin_text = self.eval_output.return_value
             if isinstance(outcome, float):
                 outcome = str(outcome)
 
@@ -416,7 +416,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
 
     def test_stdio_diff_eval_output_failure_(self):
         tt, job = self.prepare(["alone", ["", ""], "diff"], {"foo": EXE_FOO})
-        self.eval_output.return_value = (False, None, None)
+        self.eval_output.return_value = (False, None, None, None)
         sandbox = self.expect_sandbox()
 
         tt.evaluate(job, self.file_cacher)
