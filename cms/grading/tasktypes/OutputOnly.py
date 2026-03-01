@@ -124,7 +124,7 @@ class OutputOnly(TaskType):
             return
 
         # First and only step: eval the user output.
-        box_success, outcome, text = eval_output(
+        box_success, outcome, text, admin_text = eval_output(
             file_cacher, job,
             OutputOnly.CHECKER_CODENAME if self._uses_checker() else None,
             user_output_digest=job.files[user_output_filename].digest)
@@ -133,5 +133,6 @@ class OutputOnly(TaskType):
         job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        job.admin_text = admin_text
         # There is no actual evaluation, so no statistics.
         job.plus = {} if box_success else None

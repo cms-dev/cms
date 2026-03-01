@@ -261,6 +261,7 @@
         <th>Outcome</th>
         <th>Visible</th>
         <th>Details</th>
+        <th>Admin Details</th>
         <th>Shard</th>
         <th>Resources</th>
         <th>Sandbox</th>
@@ -277,6 +278,13 @@
             <input type="checkbox" disabled{{ " checked" if s.token is not none or ev.testcase.public else "" }}>
           </td>
           <td id="eval_text_{{ ev.codename }}">{{ ev.text|format_status_text }}</td>
+          <td id="eval_admin_text_{{ ev.codename }}">
+            {% if ev.admin_text is not none %}
+            {{ ev.admin_text }}
+            {% else %}
+            N/A
+            {% endif %}
+          </td>
           <td>{{ ev.evaluation_shard }}</td>
           <td>
             {% if ev.execution_time is not none %}

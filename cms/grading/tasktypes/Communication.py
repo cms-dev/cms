@@ -396,6 +396,7 @@ class Communication(TaskType):
             and box_success_mgr and evaluation_success_mgr
         outcome = None
         text = None
+        admin_text = None
 
         # If at least one sandbox had problems, or the manager did not
         # terminate correctly, we report an error (and no need for user stats).
@@ -415,7 +416,7 @@ class Communication(TaskType):
 
         # Otherwise, we use the manager to obtain the outcome.
         else:
-            outcome, text = extract_outcome_and_text(sandbox_mgr)
+            outcome, text, admin_text = extract_outcome_and_text(sandbox_mgr)
 
         # If asked so, save the output file with additional information,
         # provided that it exists.
@@ -433,6 +434,7 @@ class Communication(TaskType):
         job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
         job.plus = stats_user
+        job.admin_text = admin_text
 
         delete_sandbox(sandbox_mgr, job)
         for s in sandbox_user:
