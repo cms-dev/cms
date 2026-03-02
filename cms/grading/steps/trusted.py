@@ -40,7 +40,6 @@ import re
 
 from cms import config
 from cms.grading.Sandbox import Sandbox
-from .evaluation import EVALUATION_MESSAGES
 from .utils import generic_step
 from .stats import StatsDict
 
@@ -117,13 +116,15 @@ def extract_outcome_and_text(sandbox: Sandbox) -> tuple[float, list[str]]:
     # If the text starts with translate, the manager is asking us to
     # use a stock message, that can be translated.
     if text.startswith("translate:"):
-        remaining = text[len("translate:"):].strip()
+        remaining = text.removeprefix("translate:").strip()
         if remaining in ["success", "partial", "wrong"]:
-            text = EVALUATION_MESSAGES.get(remaining).message
+            text = "evaluation:" + remaining
         else:
             remaining = remaining[:15]  # to avoid logging lots of text
             logger.warning("Manager asked to translate text, but string "
                            "'%s' is not recognized." % remaining)
+    else:
+        text = "custom:" + text
 
     return outcome, [text]
 
