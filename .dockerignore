@@ -1,7 +1,7 @@
 .dockerignore
 Dockerfile
 .vagrant/
-codecov/
+codecov-results/
 .dev/
 .venv/
 .git/
