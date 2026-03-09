@@ -64,7 +64,7 @@ devel = [
 ]
 
 [build-system]
-requires = ["setuptools==82.0.0", "babel==2.12.1"]
+requires = ["setuptools==82.0.1", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
