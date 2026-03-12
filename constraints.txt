@@ -5,7 +5,7 @@ backports.ssl_match_hostname==3.7.0.1
 bcrypt==4.3.0
 beautifulsoup4==4.13.5
 certifi==2026.1.4
-chardet==5.2.0
+chardet==7.1.0
 charset-normalizer==3.4.4
 coverage==7.9.2
 gevent==25.8.1
