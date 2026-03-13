@@ -90,6 +90,15 @@
         <input type="checkbox" id="allow_unofficial_submission_before_analysis_mode" name="allow_unofficial_submission_before_analysis_mode" {{ "checked" if contest.allow_unofficial_submission_before_analysis_mode else "" }}/>
       </td>
     </tr>
+    <tr>
+      <td>
+        <span class="info" title="Whether to show task scores in the overview page for contestants."></span>
+        <label for="show_task_scores_in_overview">Show task scores in overview page</label>
+      </td>
+      <td>
+        <input type="checkbox" id="show_task_scores_in_overview" name="show_task_scores_in_overview" {{ "checked" if contest.show_task_scores_in_overview else "" }}/>
+      </td>
+    </tr>
 
     <tr><td colspan=2><h2>Logging in</h2></td></tr>
     <tr>
