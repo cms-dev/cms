@@ -67,3 +67,12 @@ class CSharpMono(Language):
             self, executable_filename, main=None, args=None):
         """See Language.get_evaluation_commands."""
         return [["/usr/bin/mono", executable_filename]]
+
+    def configure_compilation_sandbox(self, sandbox):
+        # The Mono runtime looks in /etc/mono/config to obtain the
+        # default DllMap, which includes, in particular, the
+        # System.Native assembly.
+        sandbox.maybe_add_mapped_directory("/etc/mono", options="noexec")
+
+    def configure_evaluation_sandbox(self, sandbox):
+        sandbox.maybe_add_mapped_directory("/etc/mono", options="noexec")
