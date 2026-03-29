@@ -979,6 +979,10 @@ class IsolateSandbox(SandboxBase):
         # symlink to one out of many alternatives.
         self.maybe_add_mapped_directory("/etc/alternatives")
 
+        # On Arch Linux, pypy3 is installed in `/opt` and `/usr/bin/pypy3` is
+        # just a symlink.
+        self.maybe_add_mapped_directory("/opt/pypy3")
+
         # Likewise, needed by C# programs. The Mono runtime looks in
         # /etc/mono/config to obtain the default DllMap, which includes, in
         # particular, the System.Native assembly.
