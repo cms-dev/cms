@@ -196,6 +196,11 @@ ALL_TESTS = [
          languages=(LANG_CPP,),
          checks=[CheckCompilationFail()]),
 
+    Test('compile-memory-limit',
+         task=batch_fileio, filenames=['compile-memory-limit.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckCompilationFail()]),
+
     # Various timeout conditions.
 
     Test('timeout-cputime',
