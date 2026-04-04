@@ -138,8 +138,8 @@ def _match_file(
         return codename
 
     raise InvalidFiles(
-        "file %r/%r doesn't unambiguously match the submission format"
-        % (codename, filename))
+        "file %r/%r doesn't unambiguously match the submission format %r"
+        % (codename, filename, submission_format))
 
 
 def _match_files(

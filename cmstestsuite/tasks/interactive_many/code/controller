@@ -1,0 +1,59 @@
+#!/usr/bin/python3 -sS
+
+import sys
+import os
+
+
+def grade(score, msg, admin_msg=None):
+    print("SCORE: %.6f" % score, file=sys.stderr)
+    print("USER_MESSAGE: %s" % msg, file=sys.stderr)
+    if admin_msg:
+        print("ADMIN_MESSAGE: %s" % admin_msg, file=sys.stderr)
+    sys.stderr.flush()
+    sys.exit(0)
+
+
+def main():
+    num_solutions = 20
+    v = 0
+    for i in range(num_solutions):
+        print("START_SOLUTION")
+        sys.stdout.flush()
+
+        line = sys.stdin.readline()
+        if not line:
+            grade(0.0, "Ko!", "EOF on stdin at step %d" % i)
+        try:
+            fdin, fdout = map(int, line.split())
+        except Exception as e:
+            grade(0.0, "Ko!", "Failed to read FDs at step %d: %s" % (i, str(e)))
+
+        try:
+            to_sol = os.fdopen(fdin, "w")
+            from_sol = os.fdopen(fdout, "r")
+
+            to_sol.write("%d\n" % v)
+            to_sol.flush()
+
+            res = from_sol.readline()
+            if not res:
+                grade(0.0, "Ko!", "no output at step %d" % i)
+
+            v = int(res.strip())
+            if v != i + 1:
+                grade(
+                    0.0,
+                    "Ko!",
+                    "wrong output at step %d: expected %d, got %d" % (i, i + 1, v),
+                )
+
+            to_sol.close()
+            from_sol.close()
+        except Exception as e:
+            grade(0.0, "Ko!", "Internal error at step %d: %s" % (i, str(e)))
+
+    grade(1.0, "OK!")
+
+
+if __name__ == "__main__":
+    main()

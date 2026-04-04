@@ -33,6 +33,8 @@ import cmstestsuite.tasks.communication_many_stdio_stubbed \
 import cmstestsuite.tasks.communication_stdio as communication_stdio
 import cmstestsuite.tasks.communication_stdio_stubbed \
     as communication_stdio_stubbed
+import cmstestsuite.tasks.interactive as interactive
+import cmstestsuite.tasks.interactive_many as interactive_many
 import cmstestsuite.tasks.outputonly as outputonly
 import cmstestsuite.tasks.outputonly_comparator as outputonly_comparator
 import cmstestsuite.tasks.twosteps as twosteps
@@ -93,6 +95,66 @@ ALL_TESTS = [
          },
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(100, 100)]),
+
+    Test('interactive-correct',
+         task=interactive, filenames=['interactive-correct.%l'],
+         languages=(LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_CPP20, LANG_PYTHON3, LANG_PYPY3),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('interactive-wrong',
+         task=interactive, filenames=['interactive-wrong.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('interactive-sleep',
+         task=interactive, filenames=['interactive-sleep.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckTimeoutWall()]),
+
+    Test('interactive-tle',
+         task=interactive, filenames=['interactive-tle.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckTimeout()]),
+
+    Test('interactive-crash',
+         task=interactive, filenames=['interactive-crash.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
+
+    Test('interactive-wrong-protocol',
+         task=interactive, filenames=['interactive-wrong-protocol.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('interactive-many-correct',
+         task=interactive_many, filenames=['interactive-many-correct.%l'],
+         languages=(LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_CPP20),
+         checks=[CheckOverallScore(100, 100)]),
+
+    Test('interactive-many-wrong',
+         task=interactive_many, filenames=['interactive-many-wrong.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('interactive-many-early-wa',
+         task=interactive_many, filenames=['interactive-many-early-wa.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('interactive-many-sleep',
+         task=interactive_many, filenames=['interactive-many-sleep.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckTimeoutWall()]),
+
+    Test('interactive-many-tle',
+         task=interactive_many, filenames=['interactive-many-tle.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckTimeout()]),
+
+    Test('interactive-many-crash',
+         task=interactive_many, filenames=['interactive-many-crash.%l'],
+         languages=(LANG_CPP,),
+         checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
     Test('correct-freopen',
          task=batch_fileio, filenames=['correct-freopen.%l'],

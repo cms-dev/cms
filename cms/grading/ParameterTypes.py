@@ -134,6 +134,26 @@ class ParameterTypeString(ParameterType):
         return value
 
 
+class ParameterTypeBool(ParameterType):
+    """Type for a boolean parameter."""
+
+    TEMPLATE = GLOBAL_ENVIRONMENT.from_string("""
+<input type="checkbox"
+       name="{{ prefix ~ parameter.short_name }}"
+       {% if previous_value %}checked{% endif %} />
+""")
+
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Invalid value for bool parameter %s" % self.name)
+
+    def parse_handler(self, handler, prefix):
+        return handler.get_argument(prefix + self.short_name, None) is not None
+
+    def parse_string(self, value):
+        return value.lower() == "true"
+
+
 class ParameterTypeInt(ParameterType):
     """Type for an integer parameter."""
 
@@ -149,6 +169,23 @@ class ParameterTypeInt(ParameterType):
 
     def parse_string(self, value):
         return int(value)
+
+
+class ParameterTypeFloat(ParameterType):
+    """Type for a float parameter."""
+
+    TEMPLATE = GLOBAL_ENVIRONMENT.from_string("""
+<input type="text"
+       name="{{ prefix ~ parameter.short_name }}"
+       value="{{ previous_value }}" />
+""")
+
+    def validate(self, value):
+        if not isinstance(value, float) and not isinstance(value, int):
+            raise ValueError("Invalid value for float parameter %s" % self.name)
+
+    def parse_string(self, value):
+        return float(value)
 
 
 class ParameterTypeChoice(ParameterType):
