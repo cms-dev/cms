@@ -49,9 +49,10 @@ logger = logging.getLogger(__name__)
 EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
 
-def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
+def create_sandbox(box_index: int, file_cacher: FileCacher, name: str | None = None) -> Sandbox:
     """Create a sandbox, and return it.
 
+    box_index: the index of this sandbox within this service.
     file_cacher: a file cacher instance.
     name: name to include in the path of the sandbox.
 
@@ -61,7 +62,7 @@ def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
 
     """
     try:
-        sandbox = Sandbox(file_cacher, name=name)
+        sandbox = Sandbox(box_index, file_cacher, name=name)
     except OSError:
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)
@@ -259,7 +260,7 @@ def eval_output(
             return False, None, None, None
 
         # Create a brand-new sandbox just for checking.
-        sandbox = create_sandbox(file_cacher, name="check")
+        sandbox = create_sandbox(0, file_cacher, name="check")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put user output in the sandbox.

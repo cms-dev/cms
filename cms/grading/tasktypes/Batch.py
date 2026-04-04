@@ -233,7 +233,7 @@ class Batch(TaskType):
             filenames_to_compile, executable_filename)
 
         # Create the sandbox.
-        sandbox = create_sandbox(file_cacher, name="compile")
+        sandbox = create_sandbox(0, file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy required files in the sandbox (includes the grader if present).
@@ -295,7 +295,7 @@ class Batch(TaskType):
             files_allowing_write.append(self._actual_output)
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, name="evaluate")
+        sandbox = create_sandbox(0, file_cacher, name="evaluate")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put the required files into the sandbox

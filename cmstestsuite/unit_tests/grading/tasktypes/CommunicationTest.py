@@ -159,7 +159,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="compile")
         # We need all user source files, and the stub for the same language.
         sandbox.create_file_from_storage.assert_has_calls(
             [call("foo.l1", "digest of foo.l1"),
@@ -216,7 +216,8 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher,
                                              name="compile")
         # We need all user source files in addition to the stub.
         sandbox.create_file_from_storage.assert_has_calls(
@@ -244,7 +245,8 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher,
                                              name="compile")
         sandbox.create_file_from_storage.assert_called_once_with(
             "foo.l1", "digest of foo.l1")
@@ -268,7 +270,8 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher,
                                              name="compile")
         # The stub is put in the sandbox because it is a manager with an
         # extension that hints that it could be useful for compilations.
@@ -365,8 +368,8 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         # Sandboxes created with the correct file cacher and names.
         self.Sandbox.assert_has_calls([
-            call(self.file_cacher, name="manager_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
+            call(0, self.file_cacher, name="manager_evaluate"),
+            call(1, self.file_cacher, name="user_evaluate_0"),
         ], any_order=False)
         self.assertEqual(self.Sandbox.call_count, 2)
         # We need input (with the default filename for redirection) and
@@ -610,9 +613,9 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         # Sandboxes created with the correct file cacher and names.
         self.Sandbox.assert_has_calls([
-            call(self.file_cacher, name="manager_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
+            call(0, self.file_cacher, name="manager_evaluate"),
+            call(1, self.file_cacher, name="user_evaluate_0"),
+            call(2, self.file_cacher, name="user_evaluate_1"),
         ], any_order=False)
         self.assertEqual(self.Sandbox.call_count, 3)
         # We need input (with the default filename for redirection) and

@@ -23,10 +23,10 @@ import os
 from collections import deque
 from io import BytesIO, StringIO
 
-from cms.grading.Sandbox import IsolateSandbox
+from cms.grading.Sandbox import Sandbox
 
 
-class FakeIsolateSandbox(IsolateSandbox):
+class FakeSandbox(Sandbox):
     """Isolate, with some fakeness sprinkled on top.
 
     This fake redefines execute_without_std to skip running the command and
@@ -35,7 +35,7 @@ class FakeIsolateSandbox(IsolateSandbox):
 
     """
     def __init__(self, file_cacher, name=None, temp_dir=None):
-        super().__init__(file_cacher, name, temp_dir)
+        super().__init__(0, file_cacher, name, temp_dir)
         self._fake_files = {}
 
         self._fake_execute_data = deque()
@@ -92,7 +92,7 @@ class FakeIsolateSandbox(IsolateSandbox):
             logs.append("exitsig:%s" % signal)
         if message is not None:
             logs.append("message:%s" % message)
-        data["log"] = "\n".join(logs).encode("utf-8")
+        data["meta"] = "\n".join(logs).encode("utf-8")
 
         self._fake_execute_data.append(data)
 
@@ -123,12 +123,12 @@ class FakeIsolateSandbox(IsolateSandbox):
         assert len(self._fake_execute_data) > 0
 
         # Required for the correct operation of the base class.
-        self.log = None
+        self.meta = None
         self.exec_num += 1
 
         data = self._fake_execute_data.popleft()
         self.fake_file("%s.%d" % (self.info_basename, self.exec_num),
-                       data["log"])
+                       data["meta"])
         if data["stdout"] is not None:
             assert self.stdout_file is not None
             self.fake_file(self.stdout_file, data["stdout"])
@@ -141,5 +141,5 @@ class FakeIsolateSandbox(IsolateSandbox):
     def initialize_isolate(self):
         pass
 
-    def cleanup(self):
+    def cleanup(self, delete=False):
         pass

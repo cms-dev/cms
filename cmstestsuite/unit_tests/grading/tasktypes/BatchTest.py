@@ -145,7 +145,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="compile")
         # For alone, we only need the user source file.
         sandbox.create_file_from_storage.assert_has_calls(
             [call("foo.l1", "digest of foo.l1")], any_order=True)
@@ -180,7 +180,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="compile")
         # For alone, we only need the user source file.
         sandbox.create_file_from_storage.assert_has_calls(
             [call("foo.l1", "digest of foo.l1"),
@@ -241,7 +241,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="compile")
         # For grader we need the user source, the grader, and any other
         # relevant manager (in this case, the header).
         sandbox.create_file_from_storage.assert_has_calls([
@@ -341,7 +341,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="evaluate")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="evaluate")
         # We need input (with the default filename for redirection) and
         # executable copied in the sandbox.
         sandbox.create_file_from_storage.assert_has_calls([
@@ -462,7 +462,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="evaluate")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher, name="evaluate")
         # We need input (with the filename specified in the parameters) and
         # executable copied in the sandbox.
         sandbox.create_file_from_storage.assert_has_calls([
