@@ -24,8 +24,8 @@ from unittest.mock import ANY, MagicMock, call, patch
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import extract_outcome_and_text, trusted_step, \
     checker_step, trusted
-from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
-    import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.fakesandbox \
+    import FakeSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 
@@ -40,7 +40,7 @@ class TestExtractOutcomeAndText(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
         self.sandbox.stdout_file = "o"
         self.sandbox.stderr_file = "e"
 
@@ -109,7 +109,7 @@ class TestTrustedStep(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
 
         patcher = patch("cms.grading.steps.trusted.logger.error",
                         wraps=trusted.logger.error)
@@ -237,7 +237,7 @@ class TestCheckerStep(unittest.TestCase):
         super().setUp()
         # By default, any file request succeeds.
         self.file_cacher = MagicMock()
-        self.sandbox = FakeIsolateSandbox(self.file_cacher)
+        self.sandbox = FakeSandbox(self.file_cacher)
 
         patcher = patch("cms.grading.steps.trusted.trusted_step")
         self.addCleanup(patcher.stop)
