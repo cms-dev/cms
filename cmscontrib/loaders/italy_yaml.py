@@ -595,10 +595,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         # presuming that the task type is Batch, we retrieve graders
         # in the form sol/grader.%l
         graders = False
+        stubs = False
         for lang in LANGUAGES:
             if os.path.exists(os.path.join(
                     self.path, "sol", "grader%s" % lang.source_extension)):
                 graders = True
+                break
+            if os.path.exists(os.path.join(
+                    self.path, "sol", "stub%s" % lang.source_extension)):
+                stubs = True
                 break
         if graders:
             # Read grader for each language
@@ -615,6 +620,24 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         Manager("grader%s" % extension, digest)]
                 else:
                     logger.warning("Grader for language %s not found ", lang)
+            compilation_param = "grader"
+        elif stubs:
+            # Read grader for each language
+            for lang in LANGUAGES:
+                extension = lang.source_extension
+                grader_filename = os.path.join(
+                    self.path, "sol", "stub%s" % extension)
+                if os.path.exists(grader_filename):
+                    digest = self.file_cacher.put_file_from_path(
+                        grader_filename,
+                        "Stub for task %s and language %s" %
+                        (task.name, lang))
+                    args["managers"] += [
+                        Manager("stub%s" % extension, digest)]
+                else:
+                    logger.warning("Stub for language %s not found ", lang)
+            compilation_param = "stub"
+        if graders or stubs:
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
                 if any(other_filename.endswith(header)
@@ -624,7 +647,6 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                         "Manager %s for task %s" % (other_filename, task.name))
                     args["managers"] += [
                         Manager(other_filename, digest)]
-            compilation_param = "grader"
         else:
             compilation_param = "alone"
 
@@ -655,9 +677,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
         else:
             if "score_type" in conf or "score_type_parameters" in conf:
                 logger.warning("To override score type data, task.yaml must "
-                            "specify all 'score_type', "
-                            "'score_type_parameters' and "
-                            "'n_input'.")
+                               "specify all 'score_type', "
+                               "'score_type_parameters' and "
+                               "'n_input'.")
 
             # Detect subtasks by checking GEN
             gen_filename = os.path.join(self.path, 'gen', 'GEN')
@@ -747,88 +769,92 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             task.submission_format = \
                 ["output_%03d.txt" % i for i in range(n_input)]
 
+        # If there is check/controller (or equivalent), then the task
+        # type is Interactive
+        controller_path = None
+        for path in (os.path.join(self.path, "check", "controller"),
+                     os.path.join(self.path, "cor", "controller")):
+            if os.path.exists(path):
+                controller_path = path
+                break
+
         # If there is check/manager (or equivalent), then the task
         # type is Communication
+        manager_path = None
+        for path in (os.path.join(self.path, "check", "manager"),
+                     os.path.join(self.path, "cor", "manager")):
+            if os.path.exists(path):
+                manager_path = path
+                break
+
+        if controller_path is not None and manager_path is not None:
+            logger.fatal("Cannot have both a manager and a controller")
+
+        if controller_path is not None:
+            args["task_type"] = "Interactive"
+            logger.info("Task type Interactive")
+
+            process_limit = conf.get("controller_process_limit", 200)
+            concurrent = conf.get("interactive_concurrent", True)
+            controller_memory_limit_mb = conf.get("controller_memory_limit", None)
+            controller_time_limit = conf.get("controller_time_limit", None)
+            controller_wall_limit = conf.get("controller_wall_time_limit", None)
+
+            args["task_type_parameters"] = \
+                [process_limit, compilation_param, concurrent,
+                 controller_memory_limit_mb, controller_time_limit, controller_wall_limit]
+            digest = self.file_cacher.put_file_from_path(
+                controller_path,
+                "Controller for task %s" % task.name)
+            args["managers"] += [Manager("controller", digest)]
+        elif manager_path is not None:
+            num_processes = load(conf, None, "num_processes")
+            if num_processes is None:
+                num_processes = 1
+            io_type = load(conf, None, "user_io")
+            if io_type is not None:
+                if io_type not in ["std_io", "fifo_io"]:
+                    logger.warning("user_io incorrect. Valid options "
+                                   "are 'std_io' and 'fifo_io'. "
+                                   "Ignored.")
+                    io_type = None
+            logger.info("Task type Communication")
+            args["task_type"] = "Communication"
+            args["task_type_parameters"] = \
+                [num_processes, compilation_param,
+                 io_type or ("fifo_io" if compilation_param == "stub" else "std_io")]
+            digest = self.file_cacher.put_file_from_path(
+                manager_path,
+                "Manager for task %s" % task.name)
+            args["managers"] += [Manager("manager", digest)]
         else:
-            paths = [os.path.join(self.path, "check", "manager"),
-                     os.path.join(self.path, "cor", "manager")]
-            for path in paths:
-                if os.path.exists(path):
-                    num_processes = load(conf, None, "num_processes")
-                    if num_processes is None:
-                        num_processes = 1
-                    io_type = load(conf, None, "user_io")
-                    if io_type is not None:
-                        if io_type not in ["std_io", "fifo_io"]:
-                            logger.warning("user_io incorrect. Valid options "
-                                           "are 'std_io' and 'fifo_io'. "
-                                           "Ignored.")
-                            io_type = None
-                    logger.info("Task type Communication")
-                    args["task_type"] = "Communication"
-                    args["task_type_parameters"] = \
-                        [num_processes, "alone", io_type or "std_io"]
-                    digest = self.file_cacher.put_file_from_path(
-                        path,
-                        "Manager for task %s" % task.name)
-                    args["managers"] += [
-                        Manager("manager", digest)]
-                    for lang in LANGUAGES:
-                        stub_name = os.path.join(
-                            self.path, "sol", "stub%s" % lang.source_extension)
-                        if os.path.exists(stub_name):
-                            digest = self.file_cacher.put_file_from_path(
-                                stub_name,
-                                "Stub for task %s and language %s" % (
-                                    task.name, lang.name))
-                            args["task_type_parameters"] = \
-                                [num_processes, "stub", io_type or "fifo_io"]
-                            args["managers"] += [
-                                Manager(
-                                    "stub%s" % lang.source_extension, digest)]
-                        else:
-                            logger.warning("Stub for language %s not "
-                                           "found.", lang.name)
-                    for other_filename in os.listdir(os.path.join(self.path,
-                                                                  "sol")):
-                        if any(other_filename.endswith(header)
-                               for header in HEADER_EXTS):
-                            digest = self.file_cacher.put_file_from_path(
-                                os.path.join(self.path, "sol", other_filename),
-                                "Stub %s for task %s" % (other_filename,
-                                                         task.name))
-                            args["managers"] += [
-                                Manager(other_filename, digest)]
-                    break
-
             # Otherwise, the task type is Batch or BatchAndOutput
-            else:
-                args["task_type"] = "Batch"
-                args["task_type_parameters"] = [
-                    compilation_param,
-                    [infile_param, outfile_param],
-                    evaluation_param,
-                ]
+            args["task_type"] = "Batch"
+            args["task_type_parameters"] = [
+                compilation_param,
+                [infile_param, outfile_param],
+                evaluation_param,
+            ]
 
-                output_only_testcases = load(conf, None, "output_only_testcases",
-                                             conv=lambda x: "" if x is None else x)
-                output_optional_testcases = load(conf, None, "output_optional_testcases",
-                                             conv=lambda x: "" if x is None else x)
-                if len(output_only_testcases) > 0 or len(output_optional_testcases) > 0:
-                    args["task_type"] = "BatchAndOutput"
-                    output_only_codenames = set()
-                    if len(output_only_testcases) > 0:
-                        output_only_codenames = \
-                            {"%03d" % int(x.strip()) for x in output_only_testcases.split(',')}
-                        args["task_type_parameters"].append(','.join(output_only_codenames))
-                    else:
-                        args["task_type_parameters"].append("")
-                    output_codenames = set()
-                    if len(output_optional_testcases) > 0:
-                        output_codenames = \
-                            {"%03d" % int(x.strip()) for x in output_optional_testcases.split(',')}
-                    output_codenames.update(output_only_codenames)
-                    task.submission_format.extend(["output_%s.txt" % s for s in sorted(output_codenames)])
+            output_only_testcases = load(conf, None, "output_only_testcases",
+                                         conv=lambda x: "" if x is None else x)
+            output_optional_testcases = load(conf, None, "output_optional_testcases",
+                                         conv=lambda x: "" if x is None else x)
+            if len(output_only_testcases) > 0 or len(output_optional_testcases) > 0:
+                args["task_type"] = "BatchAndOutput"
+                output_only_codenames = set()
+                if len(output_only_testcases) > 0:
+                    output_only_codenames = \
+                        {"%03d" % int(x.strip()) for x in output_only_testcases.split(',')}
+                    args["task_type_parameters"].append(','.join(output_only_codenames))
+                else:
+                    args["task_type_parameters"].append("")
+                output_codenames = set()
+                if len(output_optional_testcases) > 0:
+                    output_codenames = \
+                        {"%03d" % int(x.strip()) for x in output_optional_testcases.split(',')}
+                output_codenames.update(output_only_codenames)
+                task.submission_format.extend(["output_%s.txt" % s for s in sorted(output_codenames)])
 
         args["testcases"] = []
         for i in range(n_input):
