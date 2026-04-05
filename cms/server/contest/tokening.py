@@ -11,6 +11,7 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -251,10 +252,10 @@ def tokens_available(
     # If the contest is USACO-style (i.e., each user starts when they
     # decide so), then the tokens start being generated at the user's
     # starting time; otherwise, at the start of the contest.
-    if contest.per_user_time is not None:
+    if participation.group.per_user_time is not None:
         start = participation.starting_time
     else:
-        start = contest.start
+        start = participation.group.start
 
     # Compute separately for contest and task.
     res_contest = _tokens_available(

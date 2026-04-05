@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block core %}
+
+<h1>
+  Group {{ group.name }} in <a href="{{ url("contest", contest.id) }}">{{ contest.name }}</a>
+</h1>
+
+<h2 id="title_users" class="toggling_on">Users</h2>
+<div id="users">
+  {% if group.participations|length < 1 %}
+  <p>No users found.</p>
+
+  {% else %}
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in group.participations %}
+      <tr>
+        <td><a href="{{ url("contest", contest.id, "user", p.user.id, "edit") }}">{{ p.user.username }}</a></td>
+        <td>{{ p.user.first_name }}</td>
+        <td>{{ p.user.last_name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_group_info" class="toggling_on">Group information</h2>
+<div id="group_info">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url("contest", contest.id, "group", group.id, "edit") }}" method="POST">
+      {{ xsrf_form_html|safe }}
+    <table>
+      <tr>
+        <td>
+          <span class="info" title="The name of this user group."></span>
+          Name
+        </td>
+        <td>
+          <input type="text" name="name" value="{{ group.name }}"/>
+        </td>
+      </tr>
+      {% include "fragments/group_settings.html" %}
+    </table>
+    <input type="submit"
+        value="Update"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+        />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+{% endblock core %}

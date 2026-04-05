@@ -8,7 +8,7 @@
 
   <form action="{{ url("user", user.id, "add_participation") }}" method="POST">
     {{ xsrf_form_html|safe }}
-    Add a new participation:
+    Add a new participation (in main group):
     <select name="contest_id">
       <option value="null" selected>Select a contest</option>
       {% for c in unassigned_contests %}
@@ -38,6 +38,7 @@
           <th>Unrestricted?</th>
           <th>Contest</th>
           <th>Contest description</th>
+          <th>Group</th>
         </tr>
       </thead>
       <tbody>
@@ -51,6 +52,7 @@
           <td>{{ p.unrestricted }}</td>
           <td><a href="{{ url("contest", p.contest.id) }}">{{ p.contest.name }}</a></td>
           <td>{{ p.contest.description }}</td>
+          <td>{{ p.group.name }}</td>
         </tr>
         {% endfor %}
       </tbody>

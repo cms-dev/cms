@@ -11,6 +11,9 @@
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Peyman Jabbarzade Ganje <peyman.jabarzade@gmail.com>
 # Copyright © 2017 Valentin Rosca <rosca.valentin2012@gmail.com>
+# Copyright © 2021 Manuel Gundlach <manuel.gundlach@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
+# Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,7 +43,8 @@ except:
 
 import tornado.web
 
-from cms.db import Contest, Message, Participation, Submission, User, Team
+from cms.db import Contest, Group, Message, Participation, Submission, User, \
+    Team
 from cmscommon.datetime import make_datetime
 from .base import BaseHandler, require_permission
 
@@ -153,6 +157,8 @@ class AddContestUserHandler(BaseHandler):
         try:
             user_id: str = self.get_argument("user_id")
             assert user_id != "null", "Please select a valid user"
+            group_id: str = self.get_argument("group_id")
+            assert group_id != "null", "Please select a valid group"
         except Exception as error:
             self.service.add_notification(
                 make_datetime(), "Invalid field(s)", repr(error))
@@ -160,9 +166,11 @@ class AddContestUserHandler(BaseHandler):
             return
 
         user = self.safe_get_item(User, user_id)
+        group = self.safe_get_item(Group, group_id)
 
         # Create the participation.
-        participation = Participation(contest=self.contest, user=user)
+        participation = Participation(contest=self.contest, user=user,
+                                      group=group)
         self.sql_session.add(participation)
 
         if self.try_commit():
@@ -233,6 +241,10 @@ class ParticipationHandler(BaseHandler):
 
             # Update the participation.
             participation.set_attrs(attrs)
+
+            # Update the group of the participant
+            group_id = self.get_argument("group_id")
+            participation.group = self.safe_get_item(Group, group_id)
 
             # Update the team
             self.get_string(attrs, "team")
