@@ -35,6 +35,10 @@ var TASK_LANGUAGES = {
 {% endfor %}
 };
 
+// If any existing submission has a played token, sidebar should show tokened
+// total score for this task.
+var sidebar_use_tokened_score = {% if submissions|selectattr("token")|list|length > 0 %}true{% else %}false{% endif %};
+
 $(document).on("click", ".submission_list tbody tr td.status .details", function (event) {
     var submission_id = $(this).parent().parent().attr("data-submission");
     var modal = $("#submission_detail");
@@ -117,6 +121,22 @@ update_score = function(score_elem, task_score_elem,
     task_score_elem.addClass(get_score_class(task_score, max_score));
 };
 
+update_sidebar_task_score = function(task_score, task_score_message, max_score) {
+    var task_header = $('.nav-list li.nav-header[data-task-name="{{ task.name }}"]');
+    if (task_header.length === 0) {
+        return;
+    }
+
+    var badge = task_header.find('.task_score_badge');
+    if (badge.length === 0) {
+        return;
+    }
+
+    badge.removeClass('score_0 score_0_100 score_100');
+    badge.addClass(get_score_class(task_score, max_score));
+    badge.text(task_score_message);
+};
+
 update_scores = function (submission_id, data) {
     var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
@@ -135,6 +155,29 @@ update_scores = function (submission_id, data) {
             data["public_score"], data["public_score_message"],
             data["task_public_score"], data["task_public_score_message"],
             data["task_score_is_partial"], data["max_public_score"]);
+
+        // If we can see full score for at least one submission (token played or
+        // analysis), switch sidebar to tokened total score.
+        if (data["score"] !== undefined) {
+            sidebar_use_tokened_score = true;
+        }
+
+        if (sidebar_use_tokened_score
+                && data["task_tokened_score"] !== undefined
+                && data["task_tokened_score_message"] !== undefined
+                && data["max_score"] !== undefined) {
+            update_sidebar_task_score(
+                data["task_tokened_score"],
+                data["task_tokened_score_message"],
+                data["max_score"]);
+        } else if (data["task_public_score"] !== undefined
+                && data["task_public_score_message"] !== undefined
+                && data["max_public_score"] !== undefined) {
+            update_sidebar_task_score(
+                data["task_public_score"],
+                data["task_public_score_message"],
+                data["max_public_score"]);
+        }
 {% if can_use_tokens %}
         update_score(
             row.children("td.total_score"), $("#task_score_tokened"),

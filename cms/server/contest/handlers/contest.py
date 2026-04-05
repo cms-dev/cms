@@ -245,6 +245,69 @@ class ContestHandler(BaseHandler):
             )
         return task_scores
 
+    def _compute_sidebar_task_scores(
+        self,
+        participation: Participation,
+        *,
+        actual_phase: int,
+    ) -> dict[int, tuple[float, float, str]]:
+        """Compute per-task scores for the sidebar.
+
+        By default the sidebar shows public scores. If a token has been played
+        on a task (or we're in analysis mode), it shows the tokened/total score
+        for that task instead.
+        """
+        task_scores: dict[int, tuple[float, float, str]] = {}
+
+        for task in participation.contest.tasks:
+            score_type = task.active_dataset.score_type_object
+
+            has_tokened_submission = any(
+                s.official and s.task_id == task.id and s.tokened()
+                for s in participation.submissions
+            )
+            show_tokened_total = (
+                score_type.max_public_score < score_type.max_score
+                and (has_tokened_submission or actual_phase == 3)
+            )
+
+            if show_tokened_total:
+                score_value, _ = task_score(
+                    participation, task, only_tokened=True, rounded=True
+                )
+                max_score_value = round(score_type.max_score, task.score_precision)
+                score_message = score_type.format_score(
+                    score_value,
+                    score_type.max_score,
+                    None,
+                    task.score_precision,
+                    translation=self.translation,
+                )
+            else:
+                max_public_score = round(
+                    score_type.max_public_score, task.score_precision
+                )
+
+                # Do not show a sidebar score if there is no public score.
+                if max_public_score <= 0:
+                    continue
+
+                score_value, _ = task_score(
+                    participation, task, public=True, rounded=True
+                )
+                max_score_value = max_public_score
+                score_message = score_type.format_score(
+                    score_value,
+                    score_type.max_public_score,
+                    None,
+                    task.score_precision,
+                    translation=self.translation,
+                )
+
+            task_scores[task.id] = (score_value, max_score_value, score_message)
+
+        return task_scores
+
     def render_params(self):
         ret = super().render_params()
 
@@ -293,9 +356,9 @@ class ContestHandler(BaseHandler):
                     ret["contest"] = self.contest
                     ret["participation"] = participation
                     ret["user"] = participation.user
-                    ret["sidebar_task_scores"] = self._compute_public_task_scores(
+                    ret["sidebar_task_scores"] = self._compute_sidebar_task_scores(
                         participation,
-                        hide_zero_max_public=True,
+                        actual_phase=ret["actual_phase"],
                     )
 
         # some information about token configuration
