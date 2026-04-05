@@ -48,7 +48,7 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import tornado.web
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest
@@ -207,8 +207,8 @@ class ContestHandler(BaseHandler):
                 joinedload(Participation.contest)
                 .joinedload(Contest.tasks)
                 .joinedload(Task.active_dataset),
-                joinedload(Participation.submissions).joinedload(Submission.token),
-                joinedload(Participation.submissions).joinedload(Submission.results),
+                selectinload(Participation.submissions).joinedload(Submission.token),
+                selectinload(Participation.submissions).joinedload(Submission.results),
             )
             .first()
         )
