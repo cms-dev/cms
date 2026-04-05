@@ -132,9 +132,10 @@ update_sidebar_task_score = function(task_score, task_score_message, max_score) 
         return;
     }
 
-    badge.removeClass('score_0 score_0_100 score_100');
+    badge.removeClass('undefined score_0 score_0_100 score_100');
     badge.addClass(get_score_class(task_score, max_score));
     badge.text(task_score_message);
+    badge.show();
 };
 
 update_scores = function (submission_id, data) {

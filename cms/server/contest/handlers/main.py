@@ -82,18 +82,26 @@ class MainHandler(ContestHandler):
         ret = super().render_params()
 
         if self.current_user is not None:
-            participation = self._load_participation_for_scores(self.current_user)
-            if participation is None:
-                return ret
+            participation = ret["participation"]
 
-            self.contest = participation.contest
-            # Ensure the template sees this fully-loaded version.
-            ret["contest"] = self.contest
-            ret["participation"] = participation
-            ret["user"] = participation.user
-
-            # Compute public scores for all tasks only if they will be shown
+            # ContestHandler may have already loaded a fully-joined participation
+            # while computing sidebar scores. Reuse it to avoid a duplicate query.
+            already_preloaded_for_scores = "sidebar_task_scores" in ret
             if self.contest.show_task_scores_in_overview:
+                if not already_preloaded_for_scores:
+                    loaded_participation = self._load_participation_for_scores(
+                        participation
+                    )
+                    if loaded_participation is None:
+                        return ret
+                    participation = loaded_participation
+
+                    self.contest = participation.contest
+                    # Ensure the template sees this fully-loaded version.
+                    ret["contest"] = self.contest
+                    ret["participation"] = participation
+                    ret["user"] = participation.user
+
                 ret["task_scores"] = self._compute_task_scores(
                     participation,
                     actual_phase=ret["actual_phase"],

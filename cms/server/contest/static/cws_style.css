@@ -473,6 +473,10 @@ td.token_rules p:last-child {
     color: #333;
     text-transform: none;
 }
+.nav-list .nav-header .task_score_badge.undefined {
+    color: #888;
+    background-color: transparent;
+}
 /*** Submit a solution */
 
 #submit_solution {
