@@ -266,10 +266,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["main_group"] = args["groups"][0]
         else:
             if main_group:
-                logger.warning("You should not specify `start', `stop', "
+                logger.critical("You should not specify `start', `stop', "
                                "`analysis_start', `analysis_end', or "
-                               "`analysis_enabled' when using groups; I'm "
-                               "going to ignore them")
+                               "`analysis_enabled' when using groups")
+                sys.exit(1)
 
             if main_group_name is None:
                 if len(groups) == 1:
