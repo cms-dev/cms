@@ -766,6 +766,9 @@ class Evaluation(Base):
         nullable=False,
         default=[])
 
+    # Admin-facing output from the grader.
+    admin_text: str | None = Column(String, nullable=True, default=None)
+
     # Evaluation's time and wall-clock time, in seconds.
     execution_time: float | None = Column(
         Float,

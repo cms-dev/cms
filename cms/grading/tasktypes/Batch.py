@@ -233,7 +233,7 @@ class Batch(TaskType):
             filenames_to_compile, executable_filename)
 
         # Create the sandbox.
-        sandbox = create_sandbox(file_cacher, name="compile")
+        sandbox = create_sandbox(0, file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy required files in the sandbox (includes the grader if present).
@@ -295,7 +295,7 @@ class Batch(TaskType):
             files_allowing_write.append(self._actual_output)
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, name="evaluate")
+        sandbox = create_sandbox(0, file_cacher, name="evaluate")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put the required files into the sandbox
@@ -364,10 +364,12 @@ class Batch(TaskType):
         return outcome, text, output_file_params, stats, box_success, sandbox
 
     def _evaluate_step(self, job, file_cacher, output_file_params, outcome, text, stats, box_success, sandbox, extra_args):
+        admin_text = None
+
         if box_success:
             assert (output_file_params is None) == (outcome is not None)
             if output_file_params is not None:
-                box_success, outcome, text = eval_output(
+                box_success, outcome, text, admin_text = eval_output(
                     file_cacher, job,
                     self.CHECKER_CODENAME
                     if self._uses_checker() else None,
@@ -378,6 +380,7 @@ class Batch(TaskType):
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
         job.plus = stats
+        job.admin_text = admin_text
 
         if sandbox is not None:
             delete_sandbox(sandbox, job)

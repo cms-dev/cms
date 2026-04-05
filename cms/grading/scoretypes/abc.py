@@ -144,8 +144,8 @@ class ScoreType(metaclass=ABCMeta):
                                             translation=translation,
                                             gettext=_, ngettext=n_)
             except Exception:
-                logger.error("Found an invalid score details string. "
-                             "Try invalidating scores.")
+                logger.exception("Found an invalid score details string. "
+                                 "Try invalidating scores.")
                 return _("Score details temporarily unavailable.")
 
     @abstractmethod

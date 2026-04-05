@@ -23,8 +23,8 @@ from unittest.mock import patch
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import COMPILATION_MESSAGES, compilation_step
-from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
-    import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.fakesandbox \
+    import FakeSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 
@@ -36,7 +36,7 @@ class TestCompilationStep(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
 
         patcher = patch("cms.grading.steps.compilation.logger.error")
         self.mock_logger_error = patcher.start()

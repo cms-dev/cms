@@ -22,8 +22,8 @@ import unittest
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps.utils import generic_step
-from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
-    import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.fakesandbox \
+    import FakeSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 
@@ -38,7 +38,7 @@ class TestGenericStep(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
 
     def test_single_command_success(self):
         self.sandbox.fake_execute_data(

@@ -40,6 +40,8 @@ ResourceService = [["localhost", 28000]]
 ScoringService = [["localhost", 28500]]
 Checker = [["localhost", 22000]]
 EvaluationService = [["localhost", 25000]]
+
+# NOTE: more than 64 workers on the same machine are not supported.
 Worker = [
     ["localhost", 26000],
     ["localhost", 26001],
@@ -83,9 +85,6 @@ keep_sandbox = false
 
 
 [sandbox]
-# Which sandbox implementation to use. Currently only isolate is
-# supported.
-sandbox_implementation = "isolate"
 # Do not allow contestants' solutions to write files bigger than this
 # size (expressed in KB; defaults to 1 GB).
 max_file_size = 1_048_576

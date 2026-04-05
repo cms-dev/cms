@@ -184,6 +184,12 @@ class Config:
     services: dict[ServiceCoord, Address] = dataclasses.field(init=False)
 
     def __post_init__(self):
+        if self.sandbox.sandbox_implementation != "isolate":
+            logger.warning("The 'sandbox_implementation' configuration option "
+                           "is deprecated and only 'isolate' is supported. "
+                           "Ignoring provided value '%s'.",
+                           self.sandbox.sandbox_implementation)
+
         self.services = {}
         for service_name, instances in self.services_.items():
             for shard_number, shard in enumerate(instances):

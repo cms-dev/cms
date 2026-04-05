@@ -186,7 +186,7 @@ class TwoSteps(TaskType):
             source_filenames, executable_filename)
 
         # Create the sandbox and put the required files in it.
-        sandbox = create_sandbox(file_cacher, name="compile")
+        sandbox = create_sandbox(0, file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         for filename, digest in files_to_get.items():
@@ -220,8 +220,8 @@ class TwoSteps(TaskType):
         executable_filename = next(iter(job.executables.keys()))
         executable_digest = job.executables[executable_filename].digest
 
-        first_sandbox = create_sandbox(file_cacher, name="first_evaluate")
-        second_sandbox = create_sandbox(file_cacher, name="second_evaluate")
+        first_sandbox = create_sandbox(0, file_cacher, name="first_evaluate")
+        second_sandbox = create_sandbox(1, file_cacher, name="second_evaluate")
         job.sandboxes.append(first_sandbox.get_root_path())
         job.sandboxes.append(second_sandbox.get_root_path())
 
@@ -295,6 +295,7 @@ class TwoSteps(TaskType):
 
         outcome = None
         text = None
+        admin_text = None
 
         # Error in the sandbox: nothing to do!
         if not box_success:
@@ -333,7 +334,7 @@ class TwoSteps(TaskType):
 
                 # Otherwise evaluate the output file.
                 else:
-                    box_success, outcome, text = eval_output(
+                    box_success, outcome, text, admin_text = eval_output(
                         file_cacher, job,
                         TwoSteps.CHECKER_CODENAME
                         if self._uses_checker() else None,
@@ -344,6 +345,7 @@ class TwoSteps(TaskType):
         job.success = box_success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+        job.admin_text = admin_text
         job.plus = stats
 
         delete_sandbox(first_sandbox, job)

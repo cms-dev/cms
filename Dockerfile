@@ -63,7 +63,8 @@ RUN <<EOF
 #!/bin/bash -ex
     # Need to set user ID manually: otherwise it'd be 1000 on debian
     # and 1001 on ubuntu.
-    useradd -ms /bin/bash -u 1001 cmsuser
+    # 1001 is taken by `isolate`.
+    useradd -ms /bin/bash -u 2000 cmsuser
     usermod -aG sudo cmsuser
     usermod -aG isolate cmsuser
     # Disable sudo password
@@ -79,12 +80,12 @@ COPY --chown=cmsuser:cmsuser install.py constraints.txt /home/cmsuser/src/
 
 WORKDIR /home/cmsuser/src
 
-RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=1001 ./install.py venv
+RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=2000 ./install.py venv
 ENV PATH="/home/cmsuser/cms/bin:$PATH"
 
 COPY --chown=cmsuser:cmsuser . /home/cmsuser/src
 
-RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=1001 ./install.py cms --devel
+RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=2000 ./install.py cms --devel
 
 RUN <<EOF
 #!/bin/bash -ex
