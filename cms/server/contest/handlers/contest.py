@@ -203,6 +203,7 @@ class ContestHandler(BaseHandler):
             self.sql_session.query(Participation)
             .filter(Participation.id == participation.id)
             .options(
+                joinedload(Participation.user),
                 joinedload(Participation.contest)
                 .joinedload(Contest.tasks)
                 .joinedload(Task.active_dataset),
@@ -226,23 +227,28 @@ class ContestHandler(BaseHandler):
         that task instead.
         """
         task_scores: dict[int, tuple[float, float, str]] = {}
+        tokened_task_ids = {
+            s.task_id for s in participation.submissions if s.official and s.tokened()
+        }
 
         for task in participation.contest.tasks:
             score_type = task.active_dataset.score_type_object
 
-            has_tokened_submission = any(
-                s.official and s.task_id == task.id and s.tokened()
-                for s in participation.submissions
-            )
+            has_tokened_submission = task.id in tokened_task_ids
             show_tokened_total = (
                 score_type.max_public_score < score_type.max_score
                 and (has_tokened_submission or actual_phase == 3)
             )
 
             if show_tokened_total:
-                score_value, _ = task_score(
-                    participation, task, only_tokened=True, rounded=True
-                )
+                if actual_phase == 3:
+                    # In analysis mode users can see full scores, so do not
+                    # restrict to tokened submissions.
+                    score_value, _ = task_score(participation, task, rounded=True)
+                else:
+                    score_value, _ = task_score(
+                        participation, task, only_tokened=True, rounded=True
+                    )
                 max_score_value = round(score_type.max_score, task.score_precision)
                 score_message = score_type.format_score(
                     score_value,
