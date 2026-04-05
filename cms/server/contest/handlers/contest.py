@@ -212,50 +212,18 @@ class ContestHandler(BaseHandler):
             .first()
         )
 
-    def _compute_public_task_scores(
-        self,
-        participation: Participation,
-        *,
-        hide_zero_max_public: bool,
-    ) -> dict[int, tuple[float, float, str]]:
-        """Compute per-task public scores for the given participation."""
-        task_scores: dict[int, tuple[float, float, str]] = {}
-        for task in participation.contest.tasks:
-            score_type = task.active_dataset.score_type_object
-            max_public_score = round(
-                score_type.max_public_score, task.score_precision
-            )
-
-            if hide_zero_max_public and max_public_score <= 0:
-                continue
-
-            public_score, _ = task_score(
-                participation, task, public=True, rounded=True
-            )
-            task_scores[task.id] = (
-                public_score,
-                max_public_score,
-                score_type.format_score(
-                    public_score,
-                    score_type.max_public_score,
-                    None,
-                    task.score_precision,
-                    translation=self.translation,
-                ),
-            )
-        return task_scores
-
-    def _compute_sidebar_task_scores(
+    def _compute_task_scores(
         self,
         participation: Participation,
         *,
         actual_phase: int,
+        hide_zero_max_public: bool = True,
     ) -> dict[int, tuple[float, float, str]]:
-        """Compute per-task scores for the sidebar.
+        """Compute per-task scores for UI task lists.
 
-        By default the sidebar shows public scores. If a token has been played
-        on a task (or we're in analysis mode), it shows the tokened/total score
-        for that task instead.
+        By default, this shows public scores. If a token has been played on a
+        task (or we're in analysis mode), it shows the tokened/total score for
+        that task instead.
         """
         task_scores: dict[int, tuple[float, float, str]] = {}
 
@@ -288,8 +256,8 @@ class ContestHandler(BaseHandler):
                     score_type.max_public_score, task.score_precision
                 )
 
-                # Do not show a sidebar score if there is no public score.
-                if max_public_score <= 0:
+                # Optionally hide entries with no public score.
+                if hide_zero_max_public and max_public_score <= 0:
                     continue
 
                 score_value, _ = task_score(
@@ -356,9 +324,10 @@ class ContestHandler(BaseHandler):
                     ret["contest"] = self.contest
                     ret["participation"] = participation
                     ret["user"] = participation.user
-                    ret["sidebar_task_scores"] = self._compute_sidebar_task_scores(
+                    ret["sidebar_task_scores"] = self._compute_task_scores(
                         participation,
                         actual_phase=ret["actual_phase"],
+                        hide_zero_max_public=True,
                     )
 
         # some information about token configuration

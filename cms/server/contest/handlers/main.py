@@ -94,8 +94,9 @@ class MainHandler(ContestHandler):
 
             # Compute public scores for all tasks only if they will be shown
             if self.contest.show_task_scores_in_overview:
-                ret["task_scores"] = self._compute_public_task_scores(
+                ret["task_scores"] = self._compute_task_scores(
                     participation,
+                    actual_phase=ret["actual_phase"],
                     hide_zero_max_public=False,
                 )
 
