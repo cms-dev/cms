@@ -48,13 +48,11 @@ except:
 
 import tornado.web
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import joinedload
 
 from cms import config
-from cms.db import User, Participation, Team, Submission, Task
+from cms.db import User, Participation, Team
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
-from cms.grading.scoring import task_score
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
@@ -84,51 +82,22 @@ class MainHandler(ContestHandler):
         ret = super().render_params()
 
         if self.current_user is not None:
-            # This massive joined load gets all the information which we will need
-            participation = (
-                self.sql_session.query(Participation)
-                .filter(Participation.id == self.current_user.id)
-                .options(
-                    joinedload(Participation.user),
-                    joinedload(Participation.contest)
-                    .joinedload(Contest.tasks)
-                    .joinedload(Task.active_dataset),
-                    joinedload(Participation.submissions).joinedload(Submission.token),
-                    joinedload(Participation.submissions).joinedload(
-                        Submission.results
-                    ),
-                )
-                .first()
-            )
+            participation = self._load_participation_for_scores(self.current_user)
+            if participation is None:
+                return ret
 
             self.contest = participation.contest
-            # Ensure the template sees this fully-loaded version
+            # Ensure the template sees this fully-loaded version.
             ret["contest"] = self.contest
             ret["participation"] = participation
+            ret["user"] = participation.user
 
             # Compute public scores for all tasks only if they will be shown
             if self.contest.show_task_scores_in_overview:
-                task_scores = {}
-                for task in self.contest.tasks:
-                    score_type = task.active_dataset.score_type_object
-                    max_public_score = round(
-                        score_type.max_public_score, task.score_precision
-                    )
-                    public_score, _ = task_score(
-                        participation, task, public=True, rounded=True
-                    )
-                    task_scores[task.id] = (
-                        public_score,
-                        max_public_score,
-                        score_type.format_score(
-                            public_score,
-                            score_type.max_public_score,
-                            None,
-                            task.score_precision,
-                            translation=self.translation,
-                        ),
-                    )
-                ret["task_scores"] = task_scores
+                ret["task_scores"] = self._compute_public_task_scores(
+                    participation,
+                    hide_zero_max_public=False,
+                )
 
         return ret
 

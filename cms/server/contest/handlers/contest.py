@@ -48,9 +48,11 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import tornado.web
+from sqlalchemy.orm import joinedload
 
 from cms import config, TOKEN_MODE_MIXED
 from cms.db import Contest, Submission, Task, UserTest
+from cms.grading.scoring import task_score
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -193,6 +195,56 @@ class ContestHandler(BaseHandler):
         self.impersonated_by_admin = impersonated
         return participation
 
+    def _load_participation_for_scores(
+        self, participation: Participation
+    ) -> Participation | None:
+        """Load participation with relationships needed for task score computation."""
+        return (
+            self.sql_session.query(Participation)
+            .filter(Participation.id == participation.id)
+            .options(
+                joinedload(Participation.contest)
+                .joinedload(Contest.tasks)
+                .joinedload(Task.active_dataset),
+                joinedload(Participation.submissions).joinedload(Submission.token),
+                joinedload(Participation.submissions).joinedload(Submission.results),
+            )
+            .first()
+        )
+
+    def _compute_public_task_scores(
+        self,
+        participation: Participation,
+        *,
+        hide_zero_max_public: bool,
+    ) -> dict[int, tuple[float, float, str]]:
+        """Compute per-task public scores for the given participation."""
+        task_scores: dict[int, tuple[float, float, str]] = {}
+        for task in participation.contest.tasks:
+            score_type = task.active_dataset.score_type_object
+            max_public_score = round(
+                score_type.max_public_score, task.score_precision
+            )
+
+            if hide_zero_max_public and max_public_score <= 0:
+                continue
+
+            public_score, _ = task_score(
+                participation, task, public=True, rounded=True
+            )
+            task_scores[task.id] = (
+                public_score,
+                max_public_score,
+                score_type.format_score(
+                    public_score,
+                    score_type.max_public_score,
+                    None,
+                    task.score_precision,
+                    translation=self.translation,
+                ),
+            )
+        return task_scores
+
     def render_params(self):
         ret = super().render_params()
 
@@ -229,6 +281,22 @@ class ContestHandler(BaseHandler):
 
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(participation.user, self.contest)
+
+            if self.contest.show_task_scores_in_sidebar and (
+                ret["actual_phase"] >= 0 or participation.unrestricted
+            ):
+                loaded_participation = self._load_participation_for_scores(participation)
+                if loaded_participation is not None:
+                    # Keep references synchronized with the fully loaded objects.
+                    participation = loaded_participation
+                    self.contest = participation.contest
+                    ret["contest"] = self.contest
+                    ret["participation"] = participation
+                    ret["user"] = participation.user
+                    ret["sidebar_task_scores"] = self._compute_public_task_scores(
+                        participation,
+                        hide_zero_max_public=True,
+                    )
 
         # some information about token configuration
         ret["tokens_contest"] = self.contest.token_mode

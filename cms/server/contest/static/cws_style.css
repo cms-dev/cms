@@ -462,6 +462,17 @@ td.token_rules p:last-child {
     background-color: hsla(120, 100%, 50%, 0.4);
 }
 
+.nav-list .nav-header .task_score_badge {
+    float: right;
+    margin-right: 5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 14px;
+    font-weight: bold;
+    color: #333;
+    text-transform: none;
+}
 /*** Submit a solution */
 
 #submit_solution {

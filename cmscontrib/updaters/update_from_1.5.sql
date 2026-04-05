@@ -52,4 +52,8 @@ ALTER TABLE public.tasks ADD COLUMN allowed_languages varchar[];
 -- https://github.com/cms-dev/cms/pull/1583
 DROP TABLE public.printjobs;
 
+-- Sidebar task score toggle
+ALTER TABLE contests ADD COLUMN show_task_scores_in_sidebar boolean NOT NULL DEFAULT false;
+ALTER TABLE contests ALTER COLUMN show_task_scores_in_sidebar DROP DEFAULT;
+
 COMMIT;
