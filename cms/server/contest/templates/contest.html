@@ -179,8 +179,17 @@ $(document).ready(function () {
                             </li>
     {% if actual_phase >= 0 or participation.unrestricted %}
         {% for t_iter in contest.tasks %}
-                            <li class="nav-header">
-                                {{ t_iter.name }}
+                            <li class="nav-header" data-task-name="{{ t_iter.name }}">
+                                <span>{{ t_iter.name }}</span>
+            {% if contest.show_task_scores_in_sidebar %}
+                {% if sidebar_task_scores is defined and t_iter.id in sidebar_task_scores %}
+                                <span class="task_score_badge task_score {{ get_score_class(sidebar_task_scores[t_iter.id][0], sidebar_task_scores[t_iter.id][1], t_iter.score_precision) }}">
+                                    {{ sidebar_task_scores[t_iter.id][2] }}
+                                </span>
+                {% else %}
+                                <span class="task_score_badge task_score score_0">0 / 0</span>
+                {% endif %}
+            {% endif %}
                             </li>
                             <li{% if page == "task_description" and task == t_iter %} class="active"{% endif %}>
                                 <a href="{{ contest_url("tasks", t_iter.name, "description") }}">{% trans %}Statement{% endtrans %}</a>
