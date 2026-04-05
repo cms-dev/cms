@@ -112,7 +112,7 @@ class Contest(Base):
     show_task_scores_in_overview: bool = Column(Boolean, nullable=False, default=True)
 
     # Whether to show task scores in the sidebar task list.
-    show_task_scores_in_sidebar: bool = Column(Boolean, nullable=False, default=False)
+    show_task_scores_in_sidebar: bool = Column(Boolean, nullable=False, default=True)
 
     # Whether to prevent hidden participations to log in.
     block_hidden_participations: bool = Column(

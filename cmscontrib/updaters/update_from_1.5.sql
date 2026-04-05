@@ -54,5 +54,4 @@ ALTER TABLE public.tasks ADD COLUMN allowed_languages varchar[];
 -- https://github.com/cms-dev/cms/pull/1583
 DROP TABLE public.printjobs;
 
-
 COMMIT;
