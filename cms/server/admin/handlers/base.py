@@ -52,7 +52,7 @@ from sqlalchemy.orm import Query, subqueryload
 
 from cms import __version__, config
 from cms.db import Admin, Contest, Participation, Question, Submission, \
-    SubmissionResult, Task, Team, User, UserTest
+    SubmissionResult, Task, Team, User, UserTest, Group
 import cms.db
 from cms.grading.scoretypes import get_score_type_class
 from cms.grading.tasktypes import get_task_type_class
@@ -659,6 +659,18 @@ class BaseHandler(CommonRequestHandler):
         """
         return self.url("login")
 
+    def get_group_settings(self, g: Group):
+        attrs = dict()
+        self.get_datetime(attrs, "start")
+        assert attrs.get("start") is not None, "No main group start time specified."
+        self.get_datetime(attrs, "stop")
+        assert attrs.get("stop") is not None, "No main group stop time specified."
+        self.get_timedelta_sec(attrs, "per_user_time")
+
+        self.get_bool(attrs, "analysis_enabled")
+        self.get_datetime(attrs, "analysis_start")
+        self.get_datetime(attrs, "analysis_stop")
+        g.set_attrs(attrs)
 
 class FileHandler(BaseHandler, FileHandlerMixin):
     pass

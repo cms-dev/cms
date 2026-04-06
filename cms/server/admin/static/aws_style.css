@@ -371,6 +371,16 @@ table.TaskTypeOptions {
     border: 1px solid gray;
     margin: 5px 0px;
 }
+table.NestedSettings {
+    margin-left: 32px;
+    display: inline-table;
+}
+table.NestedSettings h2 {
+    margin-left: -1em;
+}
+table.NestedSettings h2::before {
+    content: "\21B3";
+}
 
 table td.wrapping-options {
     display: flex;

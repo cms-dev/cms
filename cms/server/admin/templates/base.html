@@ -29,9 +29,11 @@ function init()
     utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }}, 0, 0, 0, 0, 0);
     {% else %}
     utils = new CMS.AWSUtils("{{ url() }}", {{ timestamp|make_timestamp }},
-        {{ contest.start|make_timestamp }}, {{ contest.stop|make_timestamp }},
-        {{ contest.analysis_start|make_timestamp }}, {{ contest.analysis_stop|make_timestamp }},
-        {{ contest.analysis_enabled | int }});
+        {{ contest.main_group.start|make_timestamp }}, 
+        {{ contest.main_group.stop|make_timestamp }},
+        {{ contest.main_group.analysis_start|make_timestamp }}, 
+        {{ contest.main_group.analysis_stop|make_timestamp }},
+        {{ contest.main_group.analysis_enabled | int }});
 
     utils.update_remaining_time();
     setInterval(function() { utils.update_remaining_time(); }, 1000);
@@ -223,6 +225,7 @@ $(document).ready(init);
             <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "submissions") }}">Submissions</a></li>
             {% if contest.allow_user_tests %}<li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "user_tests") }}">User tests</a></li>{% endif %}
             <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "users") }}">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "groups") }}">Groups</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "tasks") }}">Tasks</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url("contest", contest.id, "announcements") }}">Announcements</a></li>
             <li class="menu_entry">

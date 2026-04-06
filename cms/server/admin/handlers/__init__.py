@@ -101,7 +101,10 @@ from .user import \
     AddTeamHandler, \
     TeamHandler, \
     TeamListHandler, \
-    RemoveTeamHandler
+    RemoveTeamHandler, \
+    GroupListHandler, \
+    AddGroupHandler, \
+    GroupHandler 
 from .usertest import \
     UserTestHandler, \
     UserTestFileHandler
@@ -135,6 +138,12 @@ HANDLERS = [
     (r"/contest/([0-9]+)/user/([0-9]+)/remove", RemoveParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/edit", ParticipationHandler),
     (r"/contest/([0-9]+)/user/([0-9]+)/message", MessageHandler),
+
+    # Contest's groups
+
+    (r"/contest/([0-9]+)/groups", GroupListHandler),
+    (r"/contest/([0-9]+)/groups/add", AddGroupHandler),
+    (r"/contest/([0-9]+)/group/([0-9]+)/edit", GroupHandler),
 
     # Contest's tasks
 
