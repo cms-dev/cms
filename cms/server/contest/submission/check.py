@@ -221,7 +221,7 @@ def is_last_minutes(timestamp: datetime, participation: Participation):
         return False
 
     if participation.contest.per_user_time is None:
-        end_time = participation.contest.stop
+        end_time = participation.group.stop
     else:
         end_time = participation.starting_time + participation.contest.per_user_time
 
