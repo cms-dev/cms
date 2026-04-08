@@ -190,7 +190,7 @@ class TwoSteps(TaskType):
         job.sandboxes.append(sandbox.get_root_path())
 
         for filename, digest in files_to_get.items():
-            sandbox.create_file_from_storage(filename, digest)
+            sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
@@ -204,6 +204,7 @@ class TwoSteps(TaskType):
         if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
+                file_cacher,
                 "Executable %s for %s" %
                 (executable_filename, job.info))
             job.executables[executable_filename] = \
@@ -242,9 +243,10 @@ class TwoSteps(TaskType):
         for filename, digest in first_executables_to_get.items():
             first_sandbox.create_file_from_storage(filename,
                                                    digest,
+                                                   file_cacher,
                                                    executable=True)
         for filename, digest in first_files_to_get.items():
-            first_sandbox.create_file_from_storage(filename, digest)
+            first_sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         first = evaluation_step_before_run(
             first_sandbox,
@@ -265,9 +267,10 @@ class TwoSteps(TaskType):
         for filename, digest in second_executables_to_get.items():
             second_sandbox.create_file_from_storage(filename,
                                                     digest,
+                                                    file_cacher,
                                                     executable=True)
         for filename, digest in second_files_to_get.items():
-            second_sandbox.create_file_from_storage(filename, digest)
+            second_sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         second = evaluation_step_before_run(
             second_sandbox,
@@ -324,6 +327,7 @@ class TwoSteps(TaskType):
                 if job.get_output:
                     job.user_output = second_sandbox.get_file_to_storage(
                         TwoSteps.OUTPUT_FILENAME,
+                        file_cacher,
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 
