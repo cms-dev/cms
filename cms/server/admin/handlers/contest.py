@@ -13,6 +13,7 @@
 # Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 # Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
 # Copyright © 2026 Jonathan Baumann <Jonathan.Baumann@edu.ruhr-uni-bochum.de>
+# Copyright © 2026 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
