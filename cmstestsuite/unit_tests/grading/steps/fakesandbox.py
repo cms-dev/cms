@@ -34,8 +34,8 @@ class FakeSandbox(Sandbox):
     answer get_file or get_file_to_string.
 
     """
-    def __init__(self, file_cacher, name=None, temp_dir=None):
-        super().__init__(0, file_cacher, name, temp_dir)
+    def __init__(self, shard, name=None, temp_dir=None):
+        super().__init__(0, shard, name, temp_dir)
         self._fake_files = {}
 
         self._fake_execute_data = deque()
