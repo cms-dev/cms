@@ -46,9 +46,6 @@ __all__ = [
 ]
 
 
-__version__ = "1.6.dev0"
-
-
 # Instantiate or import these objects.
 
 
@@ -79,3 +76,7 @@ from .util import mkdir, rmtree, utf8_decoder, get_safe_shard, \
     get_service_address, get_service_shards, contest_id_from_args, \
     default_argument_parser
 from .plugin import plugin_list
+
+# Define version here for backwards compatibility, just in case anything reads it.
+import importlib.metadata
+__version__ = importlib.metadata.version("cms")
