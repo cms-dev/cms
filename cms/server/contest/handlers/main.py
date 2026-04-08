@@ -83,11 +83,14 @@ class MainHandler(ContestHandler):
 
         if self.current_user is not None:
             participation = ret["participation"]
+            should_show_task_overview = (
+                ret["actual_phase"] >= 0 or participation.unrestricted
+            )
 
             # ContestHandler may have already loaded a fully-joined participation
             # while computing sidebar scores. Reuse it to avoid a duplicate query.
             already_preloaded_for_scores = "sidebar_task_scores" in ret
-            if self.contest.show_task_scores_in_overview:
+            if self.contest.show_task_scores_in_overview and should_show_task_overview:
                 if not already_preloaded_for_scores:
                     loaded_participation = self._load_participation_for_scores(
                         participation

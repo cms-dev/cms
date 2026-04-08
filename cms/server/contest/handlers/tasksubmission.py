@@ -144,9 +144,14 @@ class TaskSubmissionsHandler(ContestHandler):
 
         public_score, is_public_score_partial = task_score(
             participation, task, public=True, rounded=True)
-        tokened_score, is_tokened_score_partial = task_score(
-            participation, task, only_tokened=True, rounded=True)
-        # These two should be the same, anyway.
+        if self.r_params["actual_phase"] == 3:
+            tokened_score, is_tokened_score_partial = task_score(
+                participation, task, rounded=True
+            )
+        else:
+            tokened_score, is_tokened_score_partial = task_score(
+                participation, task, only_tokened=True, rounded=True
+            )
         is_score_partial = is_public_score_partial or is_tokened_score_partial
 
         submissions_left_contest = None
