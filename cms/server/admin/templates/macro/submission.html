@@ -84,7 +84,7 @@ dataset (Dataset|None): the dataset to show results for, or if not defined use
 <tr>
   <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-old" data-submission="{{ s.id }}"></td>
   <td class="diff-only"><input type=radio class="diff-radio" name="diff-radio-new" data-submission="{{ s.id }}"></td>
-  <td><a href="{{ url("submission", s.id) }}">{{ s.timestamp }}</a></td>
+  <td><a href="{{ url("submission", s.id, dataset.id) }}">{{ s.timestamp }}</a></td>
   <td><a href="{{ url("contest", s.participation.contest.id, "user", s.participation.user.id, "edit") }}">{{ s.participation.user.username }}</a></td>
   <td><a href="{{ url("task", s.task.id) }}">{{ s.task.name }}</a></td>
   <td>
