@@ -4,6 +4,9 @@
 # Copyright © 2017 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2017 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2021 Manuel Gundlach <manuel.gundlach@gmail.com>
+# Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
+# Copyright © 2026 Jonathan Baumann <Jonathan.Baumann@edu.ruhr-uni-bochum.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,8 +39,8 @@ import sys
 from sqlalchemy.exc import IntegrityError
 
 from cms import utf8_decoder
-from cms.db import Contest, Participation, SessionGen, Team, User, \
-    ask_for_contest
+from cms.db import Contest, Participation, SessionGen, Team, Group, \
+    User, ask_for_contest
 from cmscommon.crypto import build_password, hash_password
 
 
@@ -56,6 +59,7 @@ def add_participation(
     team_code: str | None,
     hidden: bool,
     unrestricted: bool,
+    groupname: str
 ):
     logger.info("Creating the user's participation in the database.")
     delay_time = delay_time if delay_time is not None else 0
@@ -78,6 +82,13 @@ def add_participation(
             if contest is None:
                 logger.error("No contest with id `%s' found.", contest_id)
                 return False
+            group: Group | None = \
+                session.query(Group) \
+                    .filter(Group.contest_id == contest_id,
+                            Group.name == groupname).first()
+            if group is None:
+                logger.error("No group with name `%s' found.", groupname)
+                return False
             team: Team | None = None
             if team_code is not None:
                 team = \
@@ -94,6 +105,7 @@ def add_participation(
             participation = Participation(
                 user=user,
                 contest=contest,
+                group=group,
                 ip=[ipaddress.ip_network(ip)] if ip is not None else None,
                 delay_time=datetime.timedelta(seconds=delay_time),
                 extra_time=datetime.timedelta(seconds=extra_time),
@@ -122,6 +134,8 @@ def main():
                         help="username to add to the contest")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of the contest the users will be attached to")
+    parser.add_argument("-g", "--group", action="store", type=str,
+                        help="name of the group the users will be attached to")
     parser.add_argument("-i", "--ip", action="store", type=utf8_decoder,
                         help="ip address of this user")
     parser.add_argument("-d", "--delay_time", action="store", type=int,
@@ -156,13 +170,48 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
+    if args.group is None:
+        with SessionGen() as session:
+            groups = session.query(Group).filter(Group.contest_id == args.contest_id).all()
+            main_group_id = session.query(Contest).filter(Contest.id == args.contest_id).first().main_group_id
+
+            matches = {}
+            default_group_name = ""
+            n_groups = len(groups)
+            if n_groups == 1:
+                print("Using only available group for this contest.")
+                args.group = groups[0].name
+            else:
+                print("Groups available for this contest:")
+                for i, row in enumerate(groups):
+                    print("%3d  -  ID: %d  -  Name: %s" %
+                          (i + 1, row.id, row.name), end='')
+                    matches[i + 1] = row.name
+                    if row.id == main_group_id:
+                        print(" (default)")
+                        default_group_name = row.name
+                    else:
+                        print()
+
+                group_number = input("Insert the row number next to the group "
+                                       "you want to load (not the id): ")
+                if len(group_number) == 0:
+                    args.group = default_group_name
+                else:
+                    try:
+                        args.group = matches[int(group_number)]
+                    except (ValueError, KeyError):
+                        print("Insert a correct number.")
+                        sys.exit(1)
+
     success = add_participation(
         args.username, args.contest_id,
         args.ip, args.delay_time, args.extra_time,
         args.plaintext_password or args.hashed_password,
         args.method or "plaintext",
         args.hashed_password is not None, args.team,
-        args.hidden, args.unrestricted)
+        args.hidden, args.unrestricted,
+        args.group)
     return 0 if success is True else 1
 
 

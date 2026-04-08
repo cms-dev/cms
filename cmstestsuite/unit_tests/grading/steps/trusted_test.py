@@ -24,8 +24,8 @@ from unittest.mock import ANY, MagicMock, call, patch
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import extract_outcome_and_text, trusted_step, \
     checker_step, trusted
-from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
-    import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.fakesandbox \
+    import FakeSandbox
 from cmstestsuite.unit_tests.grading.steps.stats_test import get_stats
 
 
@@ -40,7 +40,7 @@ class TestExtractOutcomeAndText(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
         self.sandbox.stdout_file = "o"
         self.sandbox.stderr_file = "e"
 
@@ -109,7 +109,7 @@ class TestTrustedStep(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
 
         patcher = patch("cms.grading.steps.trusted.logger.error",
                         wraps=trusted.logger.error)
@@ -237,7 +237,7 @@ class TestCheckerStep(unittest.TestCase):
         super().setUp()
         # By default, any file request succeeds.
         self.file_cacher = MagicMock()
-        self.sandbox = FakeIsolateSandbox(self.file_cacher)
+        self.sandbox = FakeSandbox(None)
 
         patcher = patch("cms.grading.steps.trusted.trusted_step")
         self.addCleanup(patcher.stop)
@@ -266,7 +266,7 @@ class TestCheckerStep(unittest.TestCase):
         self.mock_trusted_step.return_value = (True, True, {})
         self.set_checker_output(b"0.123\n", b"Text.\n")
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (True, 0.123, ["Text."], None))
         self.file_cacher.get_file_to_fobj.assert_has_calls([
@@ -284,7 +284,7 @@ class TestCheckerStep(unittest.TestCase):
         # Output files are ignored.
         self.set_checker_output(b"0.123\n", b"Text.\n")
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -294,13 +294,13 @@ class TestCheckerStep(unittest.TestCase):
         # Output files are ignored.
         self.set_checker_output(b"0.123\n", b"Text.\n")
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_missing_checker(self):
-        ret = checker_step(self.sandbox, None, "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, None, "i_dig", "co_dig", "o")
 
         self.mock_trusted_step.assert_not_called()
         self.assertEqual(ret, (False, None, None, None))
@@ -308,14 +308,14 @@ class TestCheckerStep(unittest.TestCase):
 
     def test_checker_already_in_sandbox(self):
         self.sandbox.fake_file(trusted.CHECKER_FILENAME, b"something")
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
 
     def test_input_already_in_sandbox(self):
         self.sandbox.fake_file(trusted.CHECKER_INPUT_FILENAME, b"something")
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -323,7 +323,7 @@ class TestCheckerStep(unittest.TestCase):
     def test_correct_output_already_in_sandbox(self):
         self.sandbox.fake_file(trusted.CHECKER_CORRECT_OUTPUT_FILENAME,
                                b"something")
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -332,7 +332,7 @@ class TestCheckerStep(unittest.TestCase):
         self.mock_trusted_step.return_value = (True, True, {})
         self.set_checker_output(b"A0.123\n", b"Text.\n")
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -341,7 +341,7 @@ class TestCheckerStep(unittest.TestCase):
         self.mock_trusted_step.return_value = (True, True, {})
         self.set_checker_output(b"0.123\n", INVALID_UTF8)
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -350,7 +350,7 @@ class TestCheckerStep(unittest.TestCase):
         self.mock_trusted_step.return_value = (True, True, {})
         self.set_checker_output(None, b"Text.\n")
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()
@@ -359,7 +359,7 @@ class TestCheckerStep(unittest.TestCase):
         self.mock_trusted_step.return_value = (True, True, {})
         self.set_checker_output(b"0.123\n", None)
 
-        ret = checker_step(self.sandbox, "c_dig", "i_dig", "co_dig", "o")
+        ret = checker_step(self.sandbox, self.file_cacher, "c_dig", "i_dig", "co_dig", "o")
 
         self.assertEqual(ret, (False, None, None, None))
         self.assertLoggedError()

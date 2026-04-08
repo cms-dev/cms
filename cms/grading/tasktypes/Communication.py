@@ -218,12 +218,12 @@ class Communication(TaskType):
             filenames_to_compile, executable_filename)
 
         # Create the sandbox.
-        sandbox = create_sandbox(file_cacher, name="compile")
+        sandbox = create_sandbox(0, file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy all required files in the sandbox.
         for filename, digest in filenames_and_digests_to_get.items():
-            sandbox.create_file_from_storage(filename, digest)
+            sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
@@ -237,6 +237,7 @@ class Communication(TaskType):
         if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
+                file_cacher,
                 "Executable %s for %s" % (executable_filename, job.info))
             job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
@@ -279,20 +280,21 @@ class Communication(TaskType):
             os.path.join(sandbox_fifo_dir[i], "m_to_u%d" % i) for i in indices]
 
         # Create the manager sandbox and copy manager and input.
-        sandbox_mgr = create_sandbox(file_cacher, name="manager_evaluate")
+        sandbox_mgr = create_sandbox(0, file_cacher, name="manager_evaluate")
         job.sandboxes.append(sandbox_mgr.get_root_path())
         sandbox_mgr.create_file_from_storage(
-            self.MANAGER_FILENAME, manager_digest, executable=True)
+            self.MANAGER_FILENAME, manager_digest, file_cacher, executable=True)
         sandbox_mgr.create_file_from_storage(
-            self.INPUT_FILENAME, job.input)
+            self.INPUT_FILENAME, job.input, file_cacher)
 
         # Create the user sandbox(es) and copy the executable.
-        sandbox_user = [create_sandbox(file_cacher, name="user_evaluate")
-                        for i in indices]
+        sandbox_user = [
+            create_sandbox(i+1, file_cacher, name="user_evaluate_" + str(i))
+            for i in indices]
         job.sandboxes.extend(s.get_root_path() for s in sandbox_user)
         for i in indices:
             sandbox_user[i].create_file_from_storage(
-                executable_filename, executable_digest, executable=True)
+                executable_filename, executable_digest, file_cacher, executable=True)
 
         # Start the manager. Redirecting to stdin is unnecessary, but for
         # historical reasons the manager can choose to read from there
@@ -424,6 +426,7 @@ class Communication(TaskType):
             if sandbox_mgr.file_exists(self.OUTPUT_FILENAME):
                 job.user_output = sandbox_mgr.get_file_to_storage(
                     self.OUTPUT_FILENAME,
+                    file_cacher,
                     "Output file in job %s" % job.info,
                     trunc_len=100 * 1024)
             else:

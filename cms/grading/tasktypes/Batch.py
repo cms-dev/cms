@@ -233,12 +233,12 @@ class Batch(TaskType):
             filenames_to_compile, executable_filename)
 
         # Create the sandbox.
-        sandbox = create_sandbox(file_cacher, name="compile")
+        sandbox = create_sandbox(0, file_cacher, name="compile")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Copy required files in the sandbox (includes the grader if present).
         for filename, digest in filenames_and_digests_to_get.items():
-            sandbox.create_file_from_storage(filename, digest)
+            sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
@@ -252,6 +252,7 @@ class Batch(TaskType):
         if box_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
+                file_cacher,
                 "Executable %s for %s" % (executable_filename, job.info))
             job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
@@ -295,14 +296,14 @@ class Batch(TaskType):
             files_allowing_write.append(self._actual_output)
 
         # Create the sandbox
-        sandbox = create_sandbox(file_cacher, name="evaluate")
+        sandbox = create_sandbox(0, file_cacher, name="evaluate")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put the required files into the sandbox
         for filename, digest in executables_to_get.items():
-            sandbox.create_file_from_storage(filename, digest, executable=True)
+            sandbox.create_file_from_storage(filename, digest, file_cacher, executable=True)
         for filename, digest in files_to_get.items():
-            sandbox.create_file_from_storage(filename, digest)
+            sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         # Actually performs the execution
         box_success, evaluation_success, stats = evaluation_step(
@@ -346,6 +347,7 @@ class Batch(TaskType):
                 if job.get_output:
                     job.user_output = sandbox.get_file_to_storage(
                         self._actual_output,
+                        file_cacher,
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 

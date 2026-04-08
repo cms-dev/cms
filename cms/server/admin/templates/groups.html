@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Groups list</h1>
+</div>
+
+<form action="{{ url("contest", contest.id, "groups", "add") }}" method="POST">
+    {{ xsrf_form_html|safe }}
+  Add a new group named
+  <input type="text" name="name"/>
+  <input type="submit"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         value="Add group" />
+</form>
+
+<form action="{{ url("contest", contest.id, "groups") }}" method="POST">
+    {{ xsrf_form_html|safe }}
+  Edit selected group:
+  <input type="submit"
+         name="operation"
+         value="Make main group"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         />
+  <input type="submit"
+         name="operation"
+         value="Delete selected group"
+{% if not admin.permission_all %}
+         disabled
+{% endif %}
+         />
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Name</th>
+        <th>Start (in UTC)</th>
+        <th>End (in UTC)</th>
+        <th>Max. contest length (in seconds)</th>
+        <th>Analysis</th>
+        <th>Analysis start</th>
+        <th>Analysis end</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for g in contest.groups %}
+      <tr>
+        <td>
+          <input type="radio" name="group_id" value="{{ g.id }}"/>
+        </td>
+        <td><a href="{{ url("contest", contest.id, "group", g.id, "edit") }}">{{ g.name }} {% if g.id == g.contest.main_group_id %}(main group){% endif %}</a></td>
+        <td>{{ g.start }}</td>
+        <td>{{ g.stop }}</td>
+        <td>
+        {% if g.per_user_time is not none %}
+        {{ g.per_user_time.total_seconds() }}
+        {% endif %}
+        </td>
+        <td><input type="checkbox" disabled{{ " checked" if g.analysis_enabled else "" }}></td>
+        <td>{{ g.analysis_start }}</td>
+        <td>{{ g.analysis_stop }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</form>
+
+{% endblock core %}

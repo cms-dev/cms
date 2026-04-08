@@ -159,11 +159,11 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher, name="compile")
+        self.Sandbox.assert_called_once_with(0, self.file_cacher.service.shard, name="compile")
         # We need all user source files, and the stub for the same language.
         sandbox.create_file_from_storage.assert_has_calls(
-            [call("foo.l1", "digest of foo.l1"),
-             call("stub.l1", "digest of stub.l1")], any_order=True)
+            [call("foo.l1", "digest of foo.l1", self.file_cacher),
+             call("stub.l1", "digest of stub.l1", self.file_cacher)], any_order=True)
         self.assertEqual(sandbox.create_file_from_storage.call_count, 2)
         # Compilation step called correctly.
         self.compilation_step.assert_called_once_with(
@@ -171,7 +171,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
                 COMPILATION_COMMAND_1, ["stub.l1", "foo.l1"], "foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
-        sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
+        sandbox.get_file_to_storage.assert_called_once_with("foo", self.file_cacher, ANY)
         sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_one_file_compilation_failure(self):
@@ -216,13 +216,14 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher.service.shard,
                                              name="compile")
         # We need all user source files in addition to the stub.
         sandbox.create_file_from_storage.assert_has_calls(
-            [call("foo.l1", "digest of foo.l1"),
-             call("bar.l1", "digest of bar.l1"),
-             call("stub.l1", "digest of stub.l1")], any_order=True)
+            [call("foo.l1", "digest of foo.l1", self.file_cacher),
+             call("bar.l1", "digest of bar.l1", self.file_cacher),
+             call("stub.l1", "digest of stub.l1", self.file_cacher)], any_order=True)
         self.assertEqual(sandbox.create_file_from_storage.call_count, 3)
         # Compilation step called correctly.
         self.compilation_step.assert_called_once_with(
@@ -231,7 +232,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
                 "bar_foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
-        sandbox.get_file_to_storage.assert_called_once_with("bar_foo", ANY)
+        sandbox.get_file_to_storage.assert_called_once_with("bar_foo", self.file_cacher, ANY)
         sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_no_stub_success(self):
@@ -244,17 +245,18 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher.service.shard,
                                              name="compile")
         sandbox.create_file_from_storage.assert_called_once_with(
-            "foo.l1", "digest of foo.l1")
+            "foo.l1", "digest of foo.l1", self.file_cacher)
         # Compilation step called correctly, without the stub.
         self.compilation_step.assert_called_once_with(
             sandbox, fake_compilation_commands(
                 COMPILATION_COMMAND_1, ["foo.l1"], "foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
-        sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
+        sandbox.get_file_to_storage.assert_called_once_with("foo", self.file_cacher, ANY)
         sandbox.cleanup.assert_called_once_with(delete=True)
 
     def test_no_stub_but_stub_given_success(self):
@@ -268,13 +270,14 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
         tt.compile(job, self.file_cacher)
 
         # Sandbox created with the correct file cacher and name.
-        self.Sandbox.assert_called_once_with(self.file_cacher,
+        self.Sandbox.assert_called_once_with(0,
+                                             self.file_cacher.service.shard,
                                              name="compile")
         # The stub is put in the sandbox because it is a manager with an
         # extension that hints that it could be useful for compilations.
         sandbox.create_file_from_storage.assert_has_calls(
-            [call("foo.l1", "digest of foo.l1"),
-             call("stub.l1", "digest of stub.l1")], any_order=True)
+            [call("foo.l1", "digest of foo.l1", self.file_cacher),
+             call("stub.l1", "digest of stub.l1", self.file_cacher)], any_order=True)
         self.assertEqual(sandbox.create_file_from_storage.call_count, 2)
         # Compilation step called correctly, without the stub.
         self.compilation_step.assert_called_once_with(
@@ -282,7 +285,7 @@ class TestCompile(TaskTypeTestMixin, unittest.TestCase):
                 COMPILATION_COMMAND_1, ["foo.l1"], "foo"))
         # Results put in job, executable stored and sandbox deleted.
         self.assertResultsInJob(job, True, True, TEXT, STATS_OK)
-        sandbox.get_file_to_storage.assert_called_once_with("foo", ANY)
+        sandbox.get_file_to_storage.assert_called_once_with("foo", self.file_cacher, ANY)
         sandbox.cleanup.assert_called_once_with(delete=True)
 
 
@@ -365,19 +368,19 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         # Sandboxes created with the correct file cacher and names.
         self.Sandbox.assert_has_calls([
-            call(self.file_cacher, name="manager_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
+            call(0, self.file_cacher.service.shard, name="manager_evaluate"),
+            call(1, self.file_cacher.service.shard, name="user_evaluate_0"),
         ], any_order=False)
         self.assertEqual(self.Sandbox.call_count, 2)
         # We need input (with the default filename for redirection) and
         # executable copied in the sandbox.
         sandbox_mgr.create_file_from_storage.assert_has_calls([
-            call("manager", "digest of manager", executable=True),
-            call("input.txt", "digest of input"),
+            call("manager", "digest of manager", self.file_cacher, executable=True),
+            call("input.txt", "digest of input", self.file_cacher),
         ], any_order=True)
         self.assertEqual(sandbox_mgr.create_file_from_storage.call_count, 2)
         sandbox_usr.create_file_from_storage.assert_has_calls([
-            call("foo", "digest of foo", executable=True),
+            call("foo", "digest of foo", self.file_cacher, executable=True),
         ], any_order=True)
         self.assertEqual(sandbox_usr.create_file_from_storage.call_count, 1)
         # Evaluation step called with the right arguments, in particular
@@ -558,7 +561,7 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
         # With get_output, submission is run, output is eval'd, and in addition
         # we store (a truncation of) the user output.
         sandbox_mgr.get_file_to_storage.assert_called_once_with(
-            "output.txt", ANY, trunc_len=ANY)
+            "output.txt", self.file_cacher, ANY, trunc_len=ANY)
         self.assertEqual(job.user_output, "digest of output.txt")
         self.evaluation_step_after_run.assert_called()
         self.extract_outcome_and_text.assert_called_once()
@@ -610,22 +613,22 @@ class TestEvaluate(TaskTypeTestMixin, FileSystemMixin, unittest.TestCase):
 
         # Sandboxes created with the correct file cacher and names.
         self.Sandbox.assert_has_calls([
-            call(self.file_cacher, name="manager_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
-            call(self.file_cacher, name="user_evaluate"),
+            call(0, self.file_cacher.service.shard, name="manager_evaluate"),
+            call(1, self.file_cacher.service.shard, name="user_evaluate_0"),
+            call(2, self.file_cacher.service.shard, name="user_evaluate_1"),
         ], any_order=False)
         self.assertEqual(self.Sandbox.call_count, 3)
         # We need input (with the default filename for redirection) and
         # executable copied in the sandbox.
         sandbox_mgr.create_file_from_storage.assert_has_calls([
-            call("manager", "digest of manager", executable=True),
-            call("input.txt", "digest of input"),
+            call("manager", "digest of manager", self.file_cacher, executable=True),
+            call("input.txt", "digest of input", self.file_cacher),
         ], any_order=True)
         self.assertEqual(sandbox_mgr.create_file_from_storage.call_count, 2)
         # Same content in both user sandboxes.
         for s in [sandbox_usr0, sandbox_usr1]:
             s.create_file_from_storage.assert_has_calls([
-                call("foo", "digest of foo", executable=True),
+                call("foo", "digest of foo", self.file_cacher, executable=True),
             ], any_order=True)
             self.assertEqual(s.create_file_from_storage.call_count, 1)
         # Evaluation step called with the right arguments, in particular

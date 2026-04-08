@@ -51,4 +51,55 @@ DROP TABLE public.printjobs;
 -- https://github.com/cms-dev/cms/pull/1642
 ALTER TABLE evaluations ADD COLUMN admin_text VARCHAR;
 
+-- https://github.com/cms-dev/cms/pull/1621
+CREATE TABLE groups (
+    id SERIAL PRIMARY KEY,
+    name varchar NOT NULL,
+    start timestamp without time zone NOT NULL,
+    stop timestamp without time zone NOT NULL,
+    analysis_enabled boolean NOT NULL,
+    analysis_start timestamp without time zone NOT NULL,
+    analysis_stop timestamp without time zone NOT NULL,
+    per_user_time interval,
+    contest_id integer NOT NULL,
+    CONSTRAINT groups_check CHECK ((start <= stop)),
+    CONSTRAINT groups_check1 CHECK ((stop <= analysis_start)),
+    CONSTRAINT groups_check2 CHECK ((analysis_start <= analysis_stop)),
+    CONSTRAINT groups_per_user_time_check CHECK ((per_user_time >= '00:00:00'::interval)),
+    UNIQUE (contest_id, name),
+    UNIQUE (id, contest_id)
+);
+-- create one group for each contest, make it the main group, and move all participants into it.
+INSERT INTO groups (contest_id, name, start, stop, analysis_enabled, analysis_start, analysis_stop, per_user_time)
+    SELECT id, 'default', start, stop, analysis_enabled, analysis_start, analysis_stop, per_user_time FROM contests;
+ALTER TABLE contests ADD COLUMN main_group_id INTEGER;
+UPDATE contests SET main_group_id = (SELECT id FROM groups WHERE groups.contest_id = contests.id);
+ALTER TABLE participations ADD COLUMN group_id INTEGER;
+UPDATE participations SET group_id = (SELECT id FROM groups WHERE groups.contest_id = participations.contest_id);
+ALTER TABLE participations ALTER COLUMN group_id SET NOT NULL;
+
+CREATE INDEX ix_contests_main_group_id ON contests USING btree (main_group_id);
+CREATE INDEX ix_groups_contest_id ON groups USING btree (contest_id);
+CREATE INDEX ix_participations_group_id ON participations USING btree (group_id);
+
+ALTER TABLE contests ADD CONSTRAINT fk_contest_main_group_id
+    FOREIGN KEY (main_group_id) REFERENCES groups(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE groups ADD CONSTRAINT groups_contest_id_fkey
+    FOREIGN KEY (contest_id) REFERENCES contests(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE participations ADD CONSTRAINT participations_group_id_contest_id_fkey
+    FOREIGN KEY (group_id, contest_id) REFERENCES groups(id, contest_id);
+ALTER TABLE participations ADD CONSTRAINT participations_group_id_fkey
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE contests DROP CONSTRAINT contests_check;
+ALTER TABLE contests DROP CONSTRAINT contests_check1;
+ALTER TABLE contests DROP CONSTRAINT contests_check2;
+ALTER TABLE contests RENAME CONSTRAINT contests_check3 TO contests_check;
+
+ALTER TABLE contests DROP COLUMN start;
+ALTER TABLE contests DROP COLUMN stop;
+ALTER TABLE contests DROP COLUMN analysis_enabled;
+ALTER TABLE contests DROP COLUMN analysis_start;
+ALTER TABLE contests DROP COLUMN analysis_stop;
+
 COMMIT;

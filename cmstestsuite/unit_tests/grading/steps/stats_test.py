@@ -22,8 +22,8 @@ import unittest
 
 from cms.grading.Sandbox import Sandbox
 from cms.grading.steps import execution_stats, merge_execution_stats
-from cmstestsuite.unit_tests.grading.steps.fakeisolatesandbox \
-    import FakeIsolateSandbox
+from cmstestsuite.unit_tests.grading.steps.fakesandbox \
+    import FakeSandbox
 
 
 INVALID_UTF8 = b"\xc3\x28"
@@ -50,7 +50,7 @@ class TestExecutionStats(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.sandbox = FakeIsolateSandbox(None)
+        self.sandbox = FakeSandbox(None)
         self.sandbox.stdout_file = "stdout.txt"
         self.sandbox.stderr_file = "stderr.txt"
 

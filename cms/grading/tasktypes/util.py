@@ -49,9 +49,10 @@ logger = logging.getLogger(__name__)
 EVAL_USER_OUTPUT_FILENAME = "user_output.txt"
 
 
-def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
+def create_sandbox(box_index: int, file_cacher: FileCacher, name: str | None = None) -> Sandbox:
     """Create a sandbox, and return it.
 
+    box_index: the index of this sandbox within this service.
     file_cacher: a file cacher instance.
     name: name to include in the path of the sandbox.
 
@@ -61,7 +62,8 @@ def create_sandbox(file_cacher: FileCacher, name: str | None = None) -> Sandbox:
 
     """
     try:
-        sandbox = Sandbox(file_cacher, name=name)
+        shard = file_cacher.service.shard if file_cacher.service is not None else None
+        sandbox = Sandbox(box_index, shard, name=name)
     except OSError:
         err_msg = "Couldn't create sandbox."
         logger.error(err_msg, exc_info=True)
@@ -259,7 +261,7 @@ def eval_output(
             return False, None, None, None
 
         # Create a brand-new sandbox just for checking.
-        sandbox = create_sandbox(file_cacher, name="check")
+        sandbox = create_sandbox(0, file_cacher, name="check")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put user output in the sandbox.
@@ -271,12 +273,13 @@ def eval_output(
             # function, but the type checker isn't smart enough for that
             assert user_output_digest is not None
             sandbox.create_file_from_storage(EVAL_USER_OUTPUT_FILENAME,
-                                             user_output_digest)
+                                             user_output_digest,
+                                             file_cacher)
 
         checker_digest = job.managers[checker_codename].digest \
             if checker_codename in job.managers else None
         success, outcome, text, admin_text = checker_step(
-            sandbox, checker_digest, job.input, job.output,
+            sandbox, file_cacher, checker_digest, job.input, job.output,
             EVAL_USER_OUTPUT_FILENAME, extra_args)
 
         delete_sandbox(sandbox, job, success)
