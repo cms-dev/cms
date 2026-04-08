@@ -30,7 +30,7 @@ pycryptodomex==3.23.0
 Pygments==2.19.2
 pytest==9.0.2
 pytest-cov==6.3.0
-python-telegram-bot==21.11.1
+python-telegram-bot==22.7
 pyxdg==0.28
 PyYAML==6.0.3
 requests==2.32.3
