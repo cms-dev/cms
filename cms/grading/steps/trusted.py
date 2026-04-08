@@ -34,6 +34,7 @@ can be translated by writing "translate:x" where x is "success", "partial" or
 "wrong".
 
 """
+from cms.db.filecacher import FileCacher
 
 import logging
 import re
@@ -209,6 +210,7 @@ def trusted_step(
 
 def checker_step(
     sandbox: Sandbox,
+    file_cacher: FileCacher,
     checker_digest: str | None,
     input_digest: str,
     correct_output_digest: str,
@@ -220,6 +222,7 @@ def checker_step(
     sandbox: the sandbox to run the checker in; should already
         contain input, correct output, and user output; the checker is instead
         copied from the managers.
+    file_cacher: the file cacher to use to load the checker.
     checker_digest: digest of the checker, will be fetched as
         "checker"; if None, an appropriate error for bad configuration of the
         task will be generated.
@@ -250,12 +253,12 @@ def checker_step(
         logger.error("Configuration error: missing checker in task managers.")
         return False, None, None, None
     sandbox.create_file_from_storage(CHECKER_FILENAME, checker_digest,
-                                     executable=True)
+                                     file_cacher, executable=True)
 
     # Copy input and correct output in the sandbox.
-    sandbox.create_file_from_storage(CHECKER_INPUT_FILENAME, input_digest)
+    sandbox.create_file_from_storage(CHECKER_INPUT_FILENAME, input_digest, file_cacher)
     sandbox.create_file_from_storage(CHECKER_CORRECT_OUTPUT_FILENAME,
-                                     correct_output_digest)
+                                     correct_output_digest, file_cacher)
 
     # Execute the checker and ensure success, or log an error.
     command = ["./%s" % CHECKER_FILENAME,

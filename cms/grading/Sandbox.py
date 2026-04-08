@@ -198,7 +198,7 @@ class Sandbox:
     def __init__(
         self,
         box_index: int,
-        file_cacher: FileCacher | None,
+        shard: int | None,
         name: str | None = None,
         temp_dir: str | None = None,
     ):
@@ -207,15 +207,13 @@ class Sandbox:
         box_index: index of this sandbox within the service that wants
             to run it. No two boxes with the same `box_index` should exist
             at the same time.
-        file_cacher: an instance of the FileCacher class
-            (to interact with FS), if the sandbox needs it.
+        shard: the shard index of the service this sandbox runs in, if any.
         name: name of the sandbox, which might appear in the
             path and in system logs.
         temp_dir: temporary directory to use; if None, use the
             default temporary directory specified in the configuration.
 
         """
-        self.file_cacher: FileCacher | None = file_cacher
         self.name: str = name if name is not None else "unnamed"
         self.temp_dir: str = (
             temp_dir if temp_dir is not None else config.global_.temp_dir
@@ -226,12 +224,11 @@ class Sandbox:
         # the range [0, 1000) for other uses (command-line scripts like cmsMake
         # or direct console users of isolate). Inside each range ids are
         # assigned sequentially, with a wrap-around.
-        if file_cacher is None or file_cacher.service is None:
+        if shard is None:
             box_id = box_index
         else:
             BOXES_PER_SHARD = 1000
             assert box_index < BOXES_PER_SHARD
-            shard = file_cacher.service.shard
             # Note that "shard % 64" might hide misconfiguration.
             # However, since shard numbers are global, there is no good way
             # to have a number in the [0, num_workers_on_this_machine) range.
@@ -510,18 +507,18 @@ class Sandbox:
         return file_
 
     def create_file_from_storage(
-        self, path: str, digest: str, executable: bool = False
+        self, path: str, digest: str, file_cacher: FileCacher, executable: bool = False
     ):
         """Write a file taken from FS in the sandbox.
 
         path: relative path of the file inside the sandbox.
         digest: digest of the file in FS.
+        file_cacher: a FileCacher instance.
         executable: to set permissions.
 
         """
-        assert self.file_cacher is not None
         with self.create_file(path, executable) as dest_fobj:
-            self.file_cacher.get_file_to_fobj(digest, dest_fobj)
+            file_cacher.get_file_to_fobj(digest, dest_fobj)
 
     def create_file_from_string(
         self, path: str, content: bytes, executable: bool = False
@@ -592,11 +589,16 @@ class Sandbox:
                 return file_.read(maxlen)
 
     def get_file_to_storage(
-        self, path: str, description: str = "", trunc_len: int | None = None
+        self,
+        path: str,
+        file_cacher: FileCacher,
+        description: str = "",
+        trunc_len: int | None = None,
     ) -> str:
         """Put a sandbox file in FS and return its digest.
 
         path: relative path of the file inside the sandbox.
+        file_cacher: a FileCacher instance.
         description: the description for FS.
         trunc_len: if None, does nothing; otherwise, before
             returning truncate it at the specified length.
@@ -604,9 +606,8 @@ class Sandbox:
         return: the digest of the file.
 
         """
-        assert self.file_cacher is not None
         with self.get_file(path, trunc_len=trunc_len) as file_:
-            return self.file_cacher.put_file_from_fobj(file_, description)
+            return file_cacher.put_file_from_fobj(file_, description)
 
     def stat_file(self, path: str) -> os.stat_result:
         """Return the stats of a file in the sandbox.
