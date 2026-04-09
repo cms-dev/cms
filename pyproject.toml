@@ -23,7 +23,7 @@ dependencies = [
     "pycryptodomex==3.23.0",  # https://github.com/Legrandin/pycryptodome/blob/master/Changelog.rst
     "psutil>=5.5,<7.1",       # https://github.com/giampaolo/psutil/blob/master/HISTORY.rst
     "requests==2.32.3",       # https://pypi.python.org/pypi/requests
-    "gevent==25.8.1",         # http://www.gevent.org/changelog.html
+    "gevent==26.4.0",         # http://www.gevent.org/changelog.html
     "greenlet>=3.0rc1",
     "werkzeug==3.1.5",        # https://werkzeug.palletsprojects.com/en/stable/changes/
     "backports.ssl-match-hostname==3.7.0.1", # required by tornado<5.0

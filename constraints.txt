@@ -8,7 +8,7 @@ certifi==2026.1.4
 chardet==5.2.0
 charset-normalizer==3.4.4
 coverage==7.9.2
-gevent==25.8.1
+gevent==26.4.0
 greenlet==3.3.1
 h11==0.16.0
 httpcore==1.0.9
