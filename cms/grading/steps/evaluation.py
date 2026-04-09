@@ -136,8 +136,8 @@ def evaluation_step(
     for command in commands:
         success = evaluation_step_before_run(
             sandbox, command, time_limit, memory_limit,
-            dirs_map, writable_files, stdin_redirect, stdout_redirect,
-            multiprocess, wait=True)
+            None, dirs_map, writable_files, stdin_redirect,
+            stdout_redirect, multiprocess, wait=True)
         if not success:
             logger.debug("Job failed in evaluation_step_before_run.")
             return False, None, None
@@ -154,11 +154,13 @@ def evaluation_step_before_run(
     command: list[str],
     time_limit: float | None = None,
     memory_limit: int | None = None,
+    wall_limit: float | None = None,
     dirs_map: dict[str, tuple[str | None, str | None]] | None = None,
     writable_files: list[str] | None = None,
-    stdin_redirect: str | None = None,
-    stdout_redirect: str | None = None,
+    stdin_redirect: str | int | None = None,
+    stdout_redirect: str | int | None = "stdout.txt",
     multiprocess: bool = False,
+    close_fds: bool = True,
     wait: bool = False,
 ) -> bool | subprocess.Popen:
     """First part of an evaluation step, up to the execution, included.
@@ -175,6 +177,8 @@ def evaluation_step_before_run(
     # Ensure parameters are appropriate.
     if time_limit is not None and time_limit <= 0:
         raise ValueError("Time limit must be positive, is %s" % time_limit)
+    if wall_limit is not None and wall_limit <= 0:
+        raise ValueError("Wall limit must be positive, is %s" % wall_limit)
     if memory_limit is not None and memory_limit <= 0:
         raise ValueError(
             "Memory limit must be positive, is %s" % memory_limit)
@@ -184,8 +188,6 @@ def evaluation_step_before_run(
         dirs_map = {}
     if writable_files is None:
         writable_files = []
-    if stdout_redirect is None:
-        stdout_redirect = "stdout.txt"
 
     # Set sandbox parameters suitable for evaluation.
     if time_limit is not None:
@@ -194,6 +196,9 @@ def evaluation_step_before_run(
     else:
         sandbox.timeout = None
         sandbox.wallclock_timeout = None
+
+    if wall_limit is not None:
+        sandbox.wallclock_timeout = wall_limit
 
     if memory_limit is not None:
         sandbox.address_space = memory_limit
@@ -210,11 +215,12 @@ def evaluation_step_before_run(
     for src, (dest, options) in dirs_map.items():
         sandbox.add_mapped_directory(src, dest=dest, options=options)
     for name in [sandbox.stderr_file, sandbox.stdout_file]:
-        if name is not None:
+        if isinstance(name, str):
             writable_files.append(name)
     sandbox.allow_writing_only(writable_files)
 
     sandbox.set_multiprocess(multiprocess)
+    sandbox.close_fds = close_fds
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")

@@ -1,0 +1,67 @@
+#!/usr/bin/python3 -sS
+
+import sys
+import os
+
+
+def grade(score, msg, admin_msg=None):
+    print("SCORE: %.6f" % score, file=sys.stderr)
+    print("USER_MESSAGE: %s" % msg, file=sys.stderr)
+    if admin_msg:
+        print("ADMIN_MESSAGE: %s" % admin_msg, file=sys.stderr)
+    sys.stderr.flush()
+    sys.exit(0)
+
+
+def main():
+    try:
+        with open("input.txt", "r") as f:
+            line = f.read().split()
+            if len(line) < 3:
+                grade(0.0, "Failed to read input", "split failed")
+            a, b, c = map(int, line[:3])
+    except Exception as e:
+        grade(0.0, "Failed to read input", str(e))
+
+    print("START_SOLUTION")
+    sys.stdout.flush()
+
+    line = sys.stdin.readline()
+    if not line:
+        grade(0.0, "Failed to read FDs", "EOF on stdin")
+    try:
+        fdin, fdout = map(int, line.split())
+    except Exception as e:
+        grade(0.0, "Failed to read FDs", str(e))
+
+    try:
+        to_sol = os.fdopen(fdin, "w")
+        from_sol = os.fdopen(fdout, "r")
+
+        to_sol.write("%d %d\n" % (a, b))
+        to_sol.flush()
+
+        res1 = from_sol.readline()
+        if not res1:
+            grade(0.0, "Ko1!", "EOF from solution 1")
+        res1 = int(res1.strip())
+
+        to_sol.write("%d %d\n" % (res1, c))
+        to_sol.flush()
+
+        res2 = from_sol.readline()
+        if not res2:
+            grade(0.0, "Ko2!", "EOF from solution 2")
+        res2 = int(res2.strip())
+
+        if res2 == (a + b) * c:
+            grade(1.0, "OK!")
+        else:
+            grade(0.0, "Wrong answer", "Expected %d, got %d" % ((a + b) * c, res2))
+
+    except Exception as e:
+        grade(0.0, "Internal error in controller", str(e))
+
+
+if __name__ == "__main__":
+    main()

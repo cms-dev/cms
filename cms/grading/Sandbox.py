@@ -241,10 +241,10 @@ class Sandbox:
         # we need to ensure that they can read and write to the directory.
         # But we don't want everybody on the system to, which is why the
         # outer directory exists with no read permissions.
-        self._outer_dir = tempfile.mkdtemp(
+        self._outer_dir: str = tempfile.mkdtemp(
             dir=self.temp_dir, prefix="cms-%s-" % (self.name)
         )
-        self._home = os.path.join(self._outer_dir, "home")
+        self._home: str = os.path.join(self._outer_dir, "home")
         self._home_dest = "/tmp"
         os.mkdir(self._home)
 
@@ -266,15 +266,16 @@ class Sandbox:
         self.inherit_env: list[str] = []  # -E
         self.set_env: dict[str, str] = {}  # -E
         self.fsize: int | None = None  # -f
-        self.stdin_file: str | None = None  # -i
-        self.stdout_file: str | None = None  # -o
-        self.stderr_file: str | None = None  # -r
+        self.stdin_file: str | int | None = None  # -i
+        self.stdout_file: str | int | None = None  # -o
+        self.stderr_file: str | int | None = None  # -r
         self.stack_space: int | None = None  # -k
         self.address_space: int | None = None  # -m
         self.timeout: float | None = None  # -t
         self.verbosity: int = 0  # -v
         self.wallclock_timeout: float | None = None  # -w
         self.extra_timeout: float | None = None  # -x
+        self.close_fds = True
 
         self.max_processes: int = 1
 
@@ -656,13 +657,15 @@ class Sandbox:
             return the Popen object from subprocess.
 
         """
-        popen = self._popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=True,
+        stdin = self.stdin_file if isinstance(self.stdin_file, int) else subprocess.PIPE
+        stdout = (
+            self.stdout_file if isinstance(self.stdout_file, int) else subprocess.PIPE
         )
+        stderr = (
+            self.stderr_file if isinstance(self.stderr_file, int) else subprocess.PIPE
+        )
+
+        popen = self._popen(command, stdin=stdin, stdout=stdout, stderr=stderr)
 
         # If the caller wants us to wait for completion, we also avoid
         # std*** to interfere with command. Otherwise we let the
@@ -730,12 +733,13 @@ class Sandbox:
                     self._home_dest,
                 ],
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.DEVNULL,
             )
 
         # Tell isolate to cleanup the sandbox.
         subprocess.check_call(
-            exe + ["--cleanup"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+            exe + ["--cleanup"],
+            stdout=subprocess.DEVNULL,
         )
 
         if delete:
@@ -878,7 +882,7 @@ class Sandbox:
         if self.fsize is not None:
             # Isolate wants file size as KiB.
             res += ["--fsize=%d" % (self.fsize // 1024)]
-        if self.stdin_file is not None:
+        if isinstance(self.stdin_file, str):
             res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
             # Isolate wants stack size as KiB.
@@ -886,13 +890,13 @@ class Sandbox:
         if self.address_space is not None:
             # Isolate wants memory size as KiB.
             res += ["--cg-mem=%d" % (self.address_space // 1024)]
-        if self.stdout_file is not None:
+        if isinstance(self.stdout_file, str):
             res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
             res += ["--processes=%d" % self.max_processes]
         else:
             res += ["--processes"]
-        if self.stderr_file is not None:
+        if isinstance(self.stderr_file, str):
             res += ["--stderr=%s" % self.inner_absolute_path(self.stderr_file)]
         if self.timeout is not None:
             res += ["--time=%g" % self.timeout]
@@ -901,6 +905,8 @@ class Sandbox:
             res += ["--wall-time=%g" % self.wallclock_timeout]
         if self.extra_timeout is not None:
             res += ["--extra-time=%g" % self.extra_timeout]
+        if not self.close_fds:
+            res += ["--inherit-fds", "--open-files=0"]
         res += ["--meta=%s" % ("%s.%d" % (self.info_basename, self.exec_num))]
         res += ["--run"]
         return res
@@ -958,7 +964,6 @@ class Sandbox:
         stdin: int | None = None,
         stdout: int | None = None,
         stderr: int | None = None,
-        close_fds: bool = True,
     ) -> subprocess.Popen:
         """Execute the given command in the sandbox using
         subprocess.Popen, assigning the corresponding standard file
@@ -968,7 +973,6 @@ class Sandbox:
         stdin: a file descriptor.
         stdout: a file descriptor.
         stderr: a file descriptor.
-        close_fds: close all file descriptor before executing.
 
         return: popen object.
 
@@ -989,7 +993,11 @@ class Sandbox:
         os.chmod(self._home, prev_permissions)
         try:
             p = subprocess.Popen(
-                args, stdin=stdin, stdout=stdout, stderr=stderr, close_fds=close_fds
+                args,
+                stdin=stdin,
+                stdout=stdout,
+                stderr=stderr,
+                close_fds=self.close_fds,
             )
         except OSError:
             logger.critical(
@@ -1005,6 +1013,6 @@ class Sandbox:
         """Initialize isolate's box."""
         init_cmd = ["isolate", "--box-id=%d" % self.box_id, "--cg", "--init"]
         try:
-            subprocess.check_call(init_cmd)
+            subprocess.check_call(init_cmd, stdout=subprocess.DEVNULL)
         except subprocess.CalledProcessError as e:
             raise SandboxInterfaceException("Failed to initialize sandbox") from e
