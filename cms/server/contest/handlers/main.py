@@ -10,6 +10,8 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
+# Copyright © 2025 kk@cscmu-cnx
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -76,6 +78,40 @@ class MainHandler(ContestHandler):
     def get(self):
         self.render("overview.html", **self.r_params)
 
+    def render_params(self):
+        ret = super().render_params()
+
+        if self.current_user is not None:
+            participation = ret["participation"]
+            should_show_task_overview = (
+                ret["actual_phase"] >= 0 or participation.unrestricted
+            )
+
+            # ContestHandler may have already loaded a fully-joined participation
+            # while computing sidebar scores. Reuse it to avoid a duplicate query.
+            already_preloaded_for_scores = "sidebar_task_scores" in ret
+            if self.contest.show_task_scores_in_overview and should_show_task_overview:
+                if not already_preloaded_for_scores:
+                    loaded_participation = self._load_participation_for_scores(
+                        participation
+                    )
+                    if loaded_participation is None:
+                        return ret
+                    participation = loaded_participation
+
+                    self.contest = participation.contest
+                    # Ensure the template sees this fully-loaded version.
+                    ret["contest"] = self.contest
+                    ret["participation"] = participation
+                    ret["user"] = participation.user
+
+                ret["task_scores"] = self._compute_task_scores(
+                    participation,
+                    actual_phase=ret["actual_phase"],
+                    hide_zero_max_public=False,
+                )
+
+        return ret
 
 class RegistrationHandler(ContestHandler):
     """Registration handler.

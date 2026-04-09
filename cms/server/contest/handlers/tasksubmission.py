@@ -144,9 +144,14 @@ class TaskSubmissionsHandler(ContestHandler):
 
         public_score, is_public_score_partial = task_score(
             participation, task, public=True, rounded=True)
-        tokened_score, is_tokened_score_partial = task_score(
-            participation, task, only_tokened=True, rounded=True)
-        # These two should be the same, anyway.
+        if self.r_params["actual_phase"] == 3:
+            tokened_score, is_tokened_score_partial = task_score(
+                participation, task, rounded=True
+            )
+        else:
+            tokened_score, is_tokened_score_partial = task_score(
+                participation, task, only_tokened=True, rounded=True
+            )
         is_score_partial = is_public_score_partial or is_tokened_score_partial
 
         submissions_left_contest = None
@@ -207,8 +212,9 @@ class SubmissionStatusHandler(ContestHandler):
         task: task for which we want the score.
         data: where to put the data; all fields will start with "task",
             followed by "public" if referring to the public scores, or
-            "tokened" if referring to the total score (always limited to
-            tokened submissions); for both public and tokened, the fields are:
+            "tokened" if referring to the total score (limited to tokened
+            submissions during contest, full score in analysis mode); for both
+            public and tokened, the fields are:
             "score" and "score_message"; in addition we have
             "task_is_score_partial" as partial info is the same for both.
 
@@ -222,8 +228,14 @@ class SubmissionStatusHandler(ContestHandler):
             .all()
         data["task_public_score"], public_score_is_partial = \
             task_score(participation, task, public=True, rounded=True)
-        data["task_tokened_score"], tokened_score_is_partial = \
-            task_score(participation, task, only_tokened=True, rounded=True)
+        if self.r_params["actual_phase"] == 3:
+            data["task_tokened_score"], tokened_score_is_partial = task_score(
+                participation, task, rounded=True
+            )
+        else:
+            data["task_tokened_score"], tokened_score_is_partial = task_score(
+                participation, task, only_tokened=True, rounded=True
+            )
         # These two should be the same, anyway.
         data["task_score_is_partial"] = \
             public_score_is_partial or tokened_score_is_partial
