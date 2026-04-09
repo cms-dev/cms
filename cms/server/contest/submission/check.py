@@ -220,10 +220,10 @@ def is_last_minutes(timestamp: datetime, participation: Participation):
             or participation.contest.min_submission_interval_grace_period is None:
         return False
 
-    if participation.contest.per_user_time is None:
-        end_time = participation.contest.stop
+    if participation.group.per_user_time is None:
+        end_time = participation.group.stop
     else:
-        end_time = participation.starting_time + participation.contest.per_user_time
+        end_time = participation.starting_time + participation.group.per_user_time
 
     end_time += participation.delay_time + participation.extra_time
     time_left = end_time - timestamp
