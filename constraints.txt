@@ -41,4 +41,4 @@ typing_extensions==4.15.0
 urllib3==2.6.3
 Werkzeug==3.1.5
 zope.event==6.1
-zope.interface==8.2
+zope.interface==8.3
