@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
-sudo chown cmsuser:cmsuser ./codecov
+sudo chown cmsuser:cmsuser ./codecov-results
 
 dropdb --if-exists --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
-pytest --cov . --cov-report xml:codecov/unittests.xml --junitxml=codecov/junit.xml -o junit_family=legacy
+pytest --cov . --cov-report xml:codecov-results/unittests.xml --junitxml=codecov-results/junit.xml -o junit_family=legacy
 UNIT=$?
 
 dropdb --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
-cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
+cmsRunFunctionalTests -v --coverage codecov-results/functionaltests.xml
 FUNC=$?
 
 # This check is needed because otherwise failing unit tests aren't reported in
