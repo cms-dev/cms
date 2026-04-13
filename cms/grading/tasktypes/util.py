@@ -215,6 +215,7 @@ def check_manager_present(job: Job, codename: str) -> bool:
 def eval_output(
     file_cacher: FileCacher,
     job: Job,
+    box_index: int,
     checker_codename: str | None,
     user_output_path: str | None = None,
     user_output_digest: str | None = None,
@@ -225,6 +226,7 @@ def eval_output(
 
     file_cacher: file cacher to use to get files.
     job: the job triggering this checker run.
+    box_index: which sandbox index to use for the checker.
     checker_codename: codename of the checker amongst the manager,
         or None to use white diff.
     user_output_path: full path of the user output file, None if
@@ -258,7 +260,7 @@ def eval_output(
             return False, None, None, None
 
         # Create a brand-new sandbox just for checking.
-        sandbox = create_sandbox(0, file_cacher, name="check")
+        sandbox = create_sandbox(box_index, file_cacher, name="check")
         job.sandboxes.append(sandbox.get_root_path())
 
         # Put user output in the sandbox.

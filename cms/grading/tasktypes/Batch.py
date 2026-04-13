@@ -368,7 +368,7 @@ class Batch(TaskType):
             assert (output_file_params is None) == (outcome is not None)
             if output_file_params is not None:
                 box_success, outcome, text, admin_text = eval_output(
-                    file_cacher, job,
+                    file_cacher, job, 1,
                     self.CHECKER_CODENAME
                     if self._uses_checker() else None,
                     **output_file_params, extra_args=extra_args)
