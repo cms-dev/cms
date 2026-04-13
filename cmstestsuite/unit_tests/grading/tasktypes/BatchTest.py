@@ -360,7 +360,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             multiprocess=True)
         # Check eval_output was called correctly.
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None,
+            self.file_cacher, job, 1, None,
             user_output_path="/path/0/output.txt", user_output_filename="", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
@@ -480,7 +480,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
             multiprocess=True)
         # Check eval_output was called correctly.
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None, user_output_path="/path/0/myout",
+            self.file_cacher, job, 1, None, user_output_path="/path/0/myout",
             user_output_filename="myout", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
@@ -495,7 +495,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
 
         # We only perform checks for the final eval step (checker).
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, "checker",
+            self.file_cacher, job, 1, "checker",
             user_output_path="/path/0/output.txt", user_output_filename="", extra_args=None)
         # Results put in job and sandbox deleted.
         self.assertResultsInJob(job)
@@ -510,7 +510,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
 
         # We only perform checks for the final eval step (checker).
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, "checker",
+            self.file_cacher, job, 1, "checker",
             user_output_path="/path/0/myout",
             user_output_filename="myout", extra_args=None)
         # Results put in job and sandbox deleted.

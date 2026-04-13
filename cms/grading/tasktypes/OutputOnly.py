@@ -125,7 +125,7 @@ class OutputOnly(TaskType):
 
         # First and only step: eval the user output.
         box_success, outcome, text, admin_text = eval_output(
-            file_cacher, job,
+            file_cacher, job, 0,
             OutputOnly.CHECKER_CODENAME if self._uses_checker() else None,
             user_output_digest=job.files[user_output_filename].digest)
 
