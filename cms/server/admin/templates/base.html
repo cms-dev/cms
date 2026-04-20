@@ -2,18 +2,18 @@
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="{{ url("static", "favicon.ico") }}" />
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "reset.css") }}">
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "aws_style.css") }}">
-    <script src="{{ url("static", "web_rpc.js") }}"></script>
-    <script src="{{ url("static", "aws_utils.js") }}"></script>
-    <script src="{{ url("static", "jq", "jquery-3.6.0.min.js") }}"></script>
-    <script src="{{ url("static", "jq", "jquery.jqplot.min.js") }}"></script>
-    <script src="{{ url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
-    <script src="{{ url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "jq", "jquery.jqplot.min.css") }}"/>
-    <link rel="stylesheet" type="text/css" href="{{ url("static", "prism.css") }}">
-    <script src="{{ url("static", "prism.js") }}" data-manual></script>
+    <link rel="shortcut icon" href="{{ static_url("static", "favicon.ico") }}" />
+    <link rel="stylesheet" type="text/css" href="{{ static_url("static", "reset.css") }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_url("static", "aws_style.css") }}">
+    <script src="{{ static_url("static", "web_rpc.js") }}"></script>
+    <script src="{{ static_url("static", "aws_utils.js") }}"></script>
+    <script src="{{ static_url("static", "jq", "jquery-3.6.0.min.js") }}"></script>
+    <script src="{{ static_url("static", "jq", "jquery.jqplot.min.js") }}"></script>
+    <script src="{{ static_url("static", "jq", "jqplot.dateAxisRenderer.min.js") }}"></script>
+    <script src="{{ static_url("static", "jq", "jqplot.enhancedLegendRenderer.min.js") }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ static_url("static", "jq", "jquery.jqplot.min.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ static_url("static", "prism.css") }}">
+    <script src="{{ static_url("static", "prism.js") }}" data-manual></script>
 
     {% if contest is none %}
     <title>Admin</title>

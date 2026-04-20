@@ -7,4 +7,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 30
+    # Disable all dependabot updates, except when we explicitly ask for them.
+    # This does not disable security updates: those have a hardcoded limit of
+    # 10 which is separate from this limit.
+    open-pull-requests-limit: 0

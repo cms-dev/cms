@@ -136,6 +136,7 @@ class BaseHandler(CommonRequestHandler):
         ret["now"] = self.timestamp
         ret["utc"] = utc_tzinfo
         ret["url"] = self.url
+        ret["static_url"] = self.static_url_helper
 
         ret["available_translations"] = self.available_translations
 
