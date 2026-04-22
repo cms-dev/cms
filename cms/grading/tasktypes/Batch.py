@@ -25,6 +25,8 @@ import logging
 import os
 
 from cms.db import Executable
+from cms.db.filecacher import FileCacher
+from cms.grading.Job import CompilationJob, EvaluationJob
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.language import Language
@@ -196,15 +198,15 @@ class Batch(TaskType):
                                for codename in codenames))
         return name + language.executable_extension
 
-    def _do_compile(self, job, file_cacher):
+    def _do_compile(self, job: CompilationJob, file_cacher: FileCacher):
         language = get_language(job.language)
         source_ext = language.source_extension
 
         # Create the list of filenames to be passed to the compiler. If we use
         # a grader, it needs to be in first position in the command line, and
         # we check that it exists.
-        filenames_to_compile = []
-        filenames_and_digests_to_get = {}
+        filenames_to_compile: list[str] = []
+        filenames_and_digests_to_get: dict[str, str] = {}
         # The grader, that must have been provided (copy and add to
         # compilation).
         if self._uses_grader():
@@ -258,16 +260,16 @@ class Batch(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup.
-        delete_sandbox(sandbox, job)
+        delete_sandbox(sandbox, job, file_cacher)
 
-    def compile(self, job, file_cacher):
+    def compile(self, job: CompilationJob, file_cacher: FileCacher):
         """See TaskType.compile."""
         if not check_files_number(job, 1, or_more=True):
             return
 
         self._do_compile(job, file_cacher)
 
-    def _execution_step(self, job, file_cacher):
+    def _execution_step(self, job: EvaluationJob, file_cacher: FileCacher):
         # Prepare the execution
         executable_filename = next(iter(job.executables.keys()))
         language = get_language(job.language)
@@ -385,7 +387,7 @@ class Batch(TaskType):
         job.admin_text = admin_text
 
         if sandbox is not None:
-            delete_sandbox(sandbox, job)
+            delete_sandbox(sandbox, job, file_cacher)
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""

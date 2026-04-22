@@ -102,4 +102,7 @@ ALTER TABLE contests DROP COLUMN analysis_enabled;
 ALTER TABLE contests DROP COLUMN analysis_start;
 ALTER TABLE contests DROP COLUMN analysis_stop;
 
+-- https://github.com/cms-dev/cms/pull/1672
+ALTER TABLE contests DROP COLUMN per_user_time;
+
 COMMIT;

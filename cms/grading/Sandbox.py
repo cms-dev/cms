@@ -743,16 +743,15 @@ class Sandbox:
             # Delete the working directory.
             rmtree(self._outer_dir)
 
-    def archive(self) -> str | None:
+    def archive(self, file_cacher: FileCacher) -> str | None:
         """Archive the directory where the sandbox operated.
 
         Stores the archived sandbox in the file cacher and returns its digest.
         Returns None if archiving failed.
 
+        file_cacher: the FileCacher instance to use.
         """
         logger.info("Archiving sandbox in %s.", self.get_root_path())
-
-        assert self.file_cacher is not None
 
         with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
             # Archive the working directory
@@ -766,7 +765,7 @@ class Sandbox:
 
             # Put archive to FS
             sandbox_archive.seek(0)
-            return self.file_cacher.put_file_from_fobj(
+            return file_cacher.put_file_from_fobj(
                 sandbox_archive, "Sandbox %s" % self.get_root_path()
             )
 

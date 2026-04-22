@@ -430,9 +430,9 @@ class TestIsLastMinutes(DatabaseMixin, unittest.TestCase):
             is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
 
     def test_per_user_time_and_last_minutes(self):
-        self.participation.contest.per_user_time = timedelta(hours=5)
-        self.participation.contest.start = self.timestamp - timedelta(hours=10)
-        self.participation.contest.stop = self.timestamp
+        self.participation.group.per_user_time = timedelta(hours=5)
+        self.participation.group.start = self.timestamp - timedelta(hours=10)
+        self.participation.group.stop = self.timestamp
         self.participation.starting_time = self.timestamp - timedelta(hours=5)
         self.contest.min_submission_interval_grace_period = timedelta(minutes=15)
 
@@ -440,9 +440,9 @@ class TestIsLastMinutes(DatabaseMixin, unittest.TestCase):
             is_last_minutes(self.timestamp - timedelta(minutes=15), self.participation))
 
     def test_per_user_time_and_not_last_minutes(self):
-        self.participation.contest.per_user_time = timedelta(hours=5)
-        self.participation.contest.start = self.timestamp - timedelta(hours=10)
-        self.participation.contest.stop = self.timestamp
+        self.participation.group.per_user_time = timedelta(hours=5)
+        self.participation.group.start = self.timestamp - timedelta(hours=10)
+        self.participation.group.stop = self.timestamp
         self.participation.starting_time = self.timestamp - timedelta(hours=5)
         self.contest.min_submission_interval_grace_period = timedelta(minutes=10)
 
@@ -474,9 +474,9 @@ class TestIsLastMinutes(DatabaseMixin, unittest.TestCase):
         self.assertFalse(is_last_minutes(self.timestamp, self.participation))
 
     def setup_contest_with_no_user_time(self):
-        self.participation.contest.per_user_time = None
-        self.participation.contest.start = self.timestamp - timedelta(hours=5)
-        self.participation.contest.stop = self.timestamp
+        self.participation.group.per_user_time = None
+        self.participation.group.start = self.timestamp - timedelta(hours=5)
+        self.participation.group.stop = self.timestamp
 
 
 if __name__ == "__main__":

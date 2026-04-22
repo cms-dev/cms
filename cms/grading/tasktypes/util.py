@@ -71,7 +71,7 @@ def create_sandbox(box_index: int, file_cacher: FileCacher, name: str | None = N
     return sandbox
 
 
-def delete_sandbox(sandbox: Sandbox, job: Job, success: bool | None = None):
+def delete_sandbox(sandbox: Sandbox, job: Job, file_cacher: FileCacher, success: bool | None = None):
     """Delete the sandbox, if the configuration and job was ok.
 
     sandbox: the sandbox to delete.
@@ -85,7 +85,7 @@ def delete_sandbox(sandbox: Sandbox, job: Job, success: bool | None = None):
 
     # Archive the sandbox if required
     if job.archive_sandbox:
-        sandbox_digest = sandbox.archive()
+        sandbox_digest = sandbox.archive(file_cacher)
         if sandbox_digest is not None:
             job.sandbox_digests[sandbox.get_root_path()] = sandbox_digest
 
@@ -282,7 +282,7 @@ def eval_output(
             sandbox, file_cacher, checker_digest, job.input, job.output,
             EVAL_USER_OUTPUT_FILENAME, extra_args)
 
-        delete_sandbox(sandbox, job, success)
+        delete_sandbox(sandbox, job, file_cacher, success)
         return success, outcome, text, admin_text
 
     else:

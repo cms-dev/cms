@@ -30,6 +30,8 @@ import typing
 
 from cms import config, rmtree
 from cms.db import Executable
+from cms.db.filecacher import FileCacher
+from cms.grading.Job import CompilationJob, EvaluationJob
 from cms.grading.ParameterTypes import ParameterTypeChoice, ParameterTypeInt
 from cms.grading.Sandbox import wait_without_std, Sandbox
 from cms.grading.language import Language
@@ -181,7 +183,7 @@ class Communication(TaskType):
                                for codename in codenames))
         return name + language.executable_extension
 
-    def compile(self, job, file_cacher):
+    def compile(self, job: CompilationJob, file_cacher: FileCacher):
         """See TaskType.compile."""
         language = get_language(job.language)
         source_ext = language.source_extension
@@ -243,9 +245,9 @@ class Communication(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup.
-        delete_sandbox(sandbox, job)
+        delete_sandbox(sandbox, job, file_cacher)
 
-    def evaluate(self, job, file_cacher):
+    def evaluate(self, job: EvaluationJob, file_cacher: FileCacher):
         """See TaskType.evaluate."""
         if not check_executables_number(job, 1):
             return
@@ -439,9 +441,9 @@ class Communication(TaskType):
         job.plus = stats_user
         job.admin_text = admin_text
 
-        delete_sandbox(sandbox_mgr, job)
+        delete_sandbox(sandbox_mgr, job, file_cacher)
         for s in sandbox_user:
-            delete_sandbox(s, job)
+            delete_sandbox(s, job, file_cacher)
         if job.success and not config.worker.keep_sandbox and not job.keep_sandbox:
             for d in fifo_dir:
                 rmtree(d)

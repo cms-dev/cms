@@ -28,9 +28,6 @@
 
 """
 
-import os
-import re
-
 from setuptools import setup, find_packages
 from setuptools.command.build import build
 
@@ -92,18 +89,6 @@ PACKAGE_DATA = {
     ],
 }
 
-
-def find_version():
-    """Return the version string obtained from cms/__init__.py"""
-    path = os.path.join("cms", "__init__.py")
-    with open(path, "rt", encoding="utf-8") as f:
-        version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
-                                  f.read(), re.M)
-    if version_match is not None:
-        return version_match.group(1)
-    raise RuntimeError("Unable to find version string.")
-
-
 # We piggyback the translation catalogs compilation onto build since
 # the po and mofiles will be part of the package data for cms.locale,
 # which is collected at this stage.
@@ -113,7 +98,6 @@ class build_with_l10n(build):
 
 setup(
     name="cms",
-    version=find_version(),
     packages=find_packages(),
     package_data=PACKAGE_DATA,
     cmdclass={"build": build_with_l10n},

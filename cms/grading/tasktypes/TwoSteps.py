@@ -28,6 +28,8 @@ import typing
 
 from cms import config
 from cms.db import Executable
+from cms.db.filecacher import FileCacher
+from cms.grading.Job import CompilationJob, EvaluationJob
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.Sandbox import wait_without_std
 from cms.grading.languagemanager import LANGUAGES, get_language
@@ -138,7 +140,7 @@ class TwoSteps(TaskType):
     def _uses_checker(self) -> bool:
         return self.output_eval == TwoSteps.OUTPUT_EVAL_CHECKER
 
-    def compile(self, job, file_cacher):
+    def compile(self, job: CompilationJob, file_cacher: FileCacher):
         """See TaskType.compile."""
         language = get_language(job.language)
         source_ext = language.source_extension
@@ -211,9 +213,9 @@ class TwoSteps(TaskType):
                 Executable(executable_filename, digest)
 
         # Cleanup
-        delete_sandbox(sandbox, job)
+        delete_sandbox(sandbox, job, file_cacher)
 
-    def evaluate(self, job, file_cacher):
+    def evaluate(self, job: EvaluationJob, file_cacher: FileCacher):
         """See TaskType.evaluate."""
         if not check_executables_number(job, 1):
             return
@@ -352,5 +354,5 @@ class TwoSteps(TaskType):
         job.admin_text = admin_text
         job.plus = stats
 
-        delete_sandbox(first_sandbox, job)
-        delete_sandbox(second_sandbox, job)
+        delete_sandbox(first_sandbox, job, file_cacher)
+        delete_sandbox(second_sandbox, job, file_cacher)
