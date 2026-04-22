@@ -33,6 +33,7 @@ import json
 import logging
 import os.path
 import re
+from urllib.parse import urlsplit
 
 import collections
 
@@ -217,8 +218,13 @@ class LoginHandler(ContestHandler):
         next_page: str | None = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            if next_page != "/":
-                next_page = self.url(*next_page.strip("/").split("/"))
+            split = urlsplit(next_page)
+            if split.scheme or split.netloc or not split.path.startswith("/"):
+                next_page = self.contest_url()
+            elif split.path != "/":
+                next_page = self.url(*split.path.strip("/").split("/"))
+                if split.query:
+                    next_page += "?" + split.query
             else:
                 next_page = self.url()
         else:

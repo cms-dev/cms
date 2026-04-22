@@ -27,6 +27,7 @@
 
 import json
 import logging
+from urllib.parse import urlsplit
 
 from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Admin, Contest, Question
@@ -48,8 +49,13 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
         next_page: str = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            if next_page != "/":
-                next_page = self.url(*next_page.strip("/").split("/"))
+            split = urlsplit(next_page)
+            if split.scheme or split.netloc or not split.path.startswith("/"):
+                next_page = self.url()
+            elif split.path != "/":
+                next_page = self.url(*split.path.strip("/").split("/"))
+                if split.query:
+                    next_page += "?" + split.query
             else:
                 next_page = self.url()
         else:
