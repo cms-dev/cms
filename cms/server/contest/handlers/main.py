@@ -222,9 +222,13 @@ class LoginHandler(ContestHandler):
             if split.scheme or split.netloc or not split.path.startswith("/"):
                 next_page = self.contest_url()
             elif split.path != "/":
-                next_page = self.url(*split.path.strip("/").split("/"))
-                if split.query:
-                    next_page += "?" + split.query
+                path_segments = split.path.strip("/").split("/")
+                if any(segment in ("", ".", "..") for segment in path_segments):
+                    next_page = self.contest_url()
+                else:
+                    next_page = self.url(*path_segments)
+                    if split.query:
+                        next_page += "?" + split.query
             else:
                 next_page = self.url()
         else:
