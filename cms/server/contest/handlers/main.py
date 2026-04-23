@@ -33,7 +33,6 @@ import json
 import logging
 import os.path
 import re
-from urllib.parse import urlsplit
 
 import collections
 
@@ -53,6 +52,7 @@ from cms.db import User, Participation, Team
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
+from cms.server.util import normalize_login_next_page
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cmscommon.crypto import hash_password, validate_password
@@ -218,24 +218,7 @@ class LoginHandler(ContestHandler):
         next_page: str | None = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            split = urlsplit(next_page)
-            path = split.path or "/"
-            if split.scheme or split.netloc or not path.startswith("/"):
-                next_page = self.contest_url()
-            elif path != "/":
-                path_segments = path.strip("/").split("/")
-                if any(segment in ("", ".", "..") for segment in path_segments):
-                    next_page = self.contest_url()
-                else:
-                    next_page = self.url(*path_segments)
-                    if split.query:
-                        next_page += "?" + split.query
-            else:
-                next_page = self.url()
-                if split.query:
-                    next_page += "?" + split.query
-        else:
-            next_page = self.contest_url()
+        next_page = normalize_login_next_page(next_page, self.url, self.contest_url())
         error_page = self.contest_url(**error_args)
 
         username: str = self.get_argument("username", "")
