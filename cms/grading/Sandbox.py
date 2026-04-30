@@ -712,6 +712,28 @@ class Sandbox:
             # Delete the working directory.
             rmtree(self._outer_dir)
 
+    def archive_to_fobj(self, fobj: typing.IO[bytes]) -> bool:
+        """Archive the directory where the sandbox operated.
+
+        fobj: the file object the archive will be written to.
+        return: whether archiving succeeded.
+        """
+        metadata_path = self.get_root_path()
+        box_dir = self._home
+        with tarfile.open(fileobj=fobj, mode='w:gz') as tar_file:
+            try:
+                # Add metadata files
+                for x in os.listdir(metadata_path):
+                    tar_file.add(os.path.join(metadata_path, x), x)
+                # Add the box directory
+                tar_file.add(box_dir, "box")
+            except Exception:
+                logger.warning(
+                    "Failed to add files to sandbox archive", exc_info=True
+                )
+                return False
+        return True
+
     def archive(self, file_cacher: FileCacher) -> str | None:
         """Archive the directory where the sandbox operated.
 
@@ -724,20 +746,9 @@ class Sandbox:
 
         with tempfile.TemporaryFile(dir=self.temp_dir) as sandbox_archive:
             # Archive the working directory
-            metadata_path = self.get_root_path()
-            box_dir = self._home
-            with tarfile.open(fileobj=sandbox_archive, mode='w:gz') as tar_file:
-                try:
-                    # Add metadata files
-                    for x in os.listdir(metadata_path):
-                        tar_file.add(os.path.join(metadata_path, x), x)
-                    # Add the box directory
-                    tar_file.add(box_dir, "box")
-                except Exception:
-                    logger.warning(
-                        "Failed to add files to sandbox archive", exc_info=True
-                    )
-
+            ok = self.archive_to_fobj(sandbox_archive)
+            if not ok:
+                return None
             # Put archive to FS
             sandbox_archive.seek(0)
             return file_cacher.put_file_from_fobj(
