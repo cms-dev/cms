@@ -706,10 +706,18 @@ class Sandbox:
         exe = ["isolate", "--box-id=%d" % self.box_id, "--cg"]
 
         # Tell isolate to cleanup the sandbox.
-        subprocess.check_call(
-            exe + ["--cleanup"],
-            stdout=subprocess.DEVNULL,
-        )
+        try:
+            subprocess.run(
+                exe + ["--cleanup"],
+                check=True, capture_output=True, encoding="utf-8"
+            )
+        except subprocess.CalledProcessError as e:
+            raise SandboxInterfaceException(
+                "Failed to cleanup sandbox. isolate output: "
+                + e.stdout.strip()
+                + "\n"
+                + e.stderr.strip()
+            ) from e
 
         if delete:
             logger.debug("Deleting sandbox in %s.", self._outer_dir)
@@ -956,4 +964,9 @@ class Sandbox:
                 init_cmd, check=True, capture_output=True, encoding="utf-8"
             ).stdout.strip()
         except subprocess.CalledProcessError as e:
-            raise SandboxInterfaceException("Failed to initialize sandbox") from e
+            raise SandboxInterfaceException(
+                "Failed to initialize sandbox. isolate output: "
+                + e.stdout.strip()
+                + "\n"
+                + e.stderr.strip()
+            ) from e
