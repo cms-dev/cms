@@ -143,9 +143,9 @@ class TaskSubmissionsHandler(ContestHandler):
         )
 
         public_score, is_public_score_partial = task_score(
-            participation, task, public=True, rounded=True)
+            participation, task, public=True)
         tokened_score, is_tokened_score_partial = task_score(
-            participation, task, only_tokened=True, rounded=True)
+            participation, task, only_tokened=True)
         # These two should be the same, anyway.
         is_score_partial = is_public_score_partial or is_tokened_score_partial
 
@@ -221,9 +221,9 @@ class SubmissionStatusHandler(ContestHandler):
             .options(joinedload(Submission.results))\
             .all()
         data["task_public_score"], public_score_is_partial = \
-            task_score(participation, task, public=True, rounded=True)
+            task_score(participation, task, public=True)
         data["task_tokened_score"], tokened_score_is_partial = \
-            task_score(participation, task, only_tokened=True, rounded=True)
+            task_score(participation, task, only_tokened=True)
         # These two should be the same, anyway.
         data["task_score_is_partial"] = \
             public_score_is_partial or tokened_score_is_partial
@@ -267,26 +267,22 @@ class SubmissionStatusHandler(ContestHandler):
 
             score_type = task.active_dataset.score_type_object
             if score_type.max_public_score > 0:
-                data["max_public_score"] = \
-                    round(score_type.max_public_score, task.score_precision)
+                data["max_public_score"] = score_type.max_public_score
                 if data["status"] == SubmissionResult.SCORED:
-                    data["public_score"] = \
-                        round(sr.public_score, task.score_precision)
+                    data["public_score"] = sr.public_score
                     data["public_score_message"] = score_type.format_score(
                         sr.public_score, score_type.max_public_score,
-                        sr.public_score_details, task.score_precision,
+                        sr.public_score_details,
                         translation=self.translation)
             if score_type.max_public_score < score_type.max_score:
-                data["max_score"] = \
-                    round(score_type.max_score, task.score_precision)
+                data["max_score"] = score_type.max_score
                 if data["status"] == SubmissionResult.SCORED \
                         and (submission.token is not None
                              or self.r_params["actual_phase"] == 3):
-                    data["score"] = \
-                        round(sr.score, task.score_precision)
+                    data["score"] = sr.score
                     data["score_message"] = score_type.format_score(
                         sr.score, score_type.max_score,
-                        sr.score_details, task.score_precision,
+                        sr.score_details,
                         translation=self.translation)
 
         self.write(data)

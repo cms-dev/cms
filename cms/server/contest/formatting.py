@@ -130,7 +130,7 @@ def format_token_rules(
     return result
 
 
-def get_score_class(score: float, max_score: float, score_precision: int) -> str:
+def get_score_class(score: float, max_score: float) -> str:
     """Return a CSS class to visually represent the score/max_score
 
     score: the score of the submission.
@@ -139,8 +139,6 @@ def get_score_class(score: float, max_score: float, score_precision: int) -> str
     return: class name
 
     """
-    score = round(score, score_precision)
-    max_score = round(max_score, score_precision)
     if score <= 0:
         return "score_0"
     elif score >= max_score:

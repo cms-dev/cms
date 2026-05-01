@@ -42,55 +42,55 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
 
     def test_paramaters_correct(self):
         """Test that correct parameters do not throw."""
-        GroupThreshold([], self._public_testcases)
+        GroupThreshold([], self._public_testcases, 2)
         GroupThreshold([[40, 2, 500], [60.0, 2, 1000]],
-                       self._public_testcases)
+                       self._public_testcases, 2)
         GroupThreshold([[40, "1_*", 500.5], [60.0, "2_*", 1000]],
-                       self._public_testcases)
+                       self._public_testcases, 2)
 
     def test_paramaters_invalid_types(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([1], self._public_testcases)
+            GroupThreshold([1], self._public_testcases, 2)
         with self.assertRaises(ValueError):
-            GroupThreshold(1, self._public_testcases)
+            GroupThreshold(1, self._public_testcases, 2)
 
     def test_paramaters_invalid_wrong_item_len(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[]], self._public_testcases)
+            GroupThreshold([[]], self._public_testcases, 2)
         with self.assertRaises(ValueError):
-            GroupThreshold([[1]], self._public_testcases)
+            GroupThreshold([[1]], self._public_testcases, 2)
 
     @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_wrong_item_len_not_caught(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[1, 2]], self._public_testcases)
+            GroupThreshold([[1, 2]], self._public_testcases, 2)
 
     def test_parameter_invalid_wrong_max_score_type(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([["a", 10, 1000]], self._public_testcases)
+            GroupThreshold([["a", 10, 1000]], self._public_testcases, 2)
 
     def test_parameter_invalid_wrong_testcases_type(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[100, 1j, 1000]], self._public_testcases)
+            GroupThreshold([[100, 1j, 1000]], self._public_testcases, 2)
 
     def test_parameter_invalid_inconsistent_testcases_type(self):
         with self.assertRaises(ValueError):
             GroupThreshold([[40, 10, 500], [40, "1_*", 1000]],
-                           self._public_testcases)
+                           self._public_testcases, 2)
 
     @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_testcases_too_many(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[100, 20, 1000]], self._public_testcases)
+            GroupThreshold([[100, 20, 1000]], self._public_testcases, 2)
 
     def test_parameter_invalid_testcases_regex_no_match_type(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[100, "9_*", 1000]], self._public_testcases)
+            GroupThreshold([[100, "9_*", 1000]], self._public_testcases, 2)
 
     @unittest.skip("Not yet detected.")
     def test_parameter_invalid_wrong_threshold_type_not_caught(self):
         with self.assertRaises(ValueError):
-            GroupThreshold([[100, 1, 1000j]], self._public_testcases)
+            GroupThreshold([[100, 1, 1000j]], self._public_testcases, 2)
 
     def test_max_scores_regexp(self):
         """Test max score is correct when groups are regexp-defined."""
@@ -102,21 +102,21 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, s1, header))
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, s1 + s2 + s3, header))
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, 0, header))
 
     def test_max_scores_number(self):
@@ -129,28 +129,28 @@ class TestGroupThreshold(ScoreTypeTestMixin, unittest.TestCase):
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, s1, header))
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, s1 + s2 + s3, header))
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
         self.assertEqual(
-            GroupThreshold(parameters, public_testcases).max_scores(),
+            GroupThreshold(parameters, public_testcases, 2).max_scores(),
             (s1 + s2 + s3, 0, header))
 
     def test_compute_score(self):
         s1, s2, s3 = 10.5, 30.5, 59
         parameters = [[0, "0_*", 0],
                       [s1, "1_*", 10], [s2, "2_*", 20], [s3, "3_*", 30]]
-        st = GroupThreshold(parameters, self._public_testcases)
+        st = GroupThreshold(parameters, self._public_testcases, 2)
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct (below threshold).
