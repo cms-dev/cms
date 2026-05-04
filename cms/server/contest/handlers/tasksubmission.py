@@ -231,10 +231,10 @@ class SubmissionStatusHandler(ContestHandler):
         score_type = task.active_dataset.score_type_object
         data["task_public_score_message"] = score_type.format_score(
             data["task_public_score"], score_type.max_public_score, None,
-            task.score_precision, translation=self.translation)
+            translation=self.translation)
         data["task_tokened_score_message"] = score_type.format_score(
             data["task_tokened_score"], score_type.max_score, None,
-            task.score_precision, translation=self.translation)
+            translation=self.translation)
 
     @api_login_required
     @actual_phase_required(0, 1, 2, 3, 4)
