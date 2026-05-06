@@ -49,7 +49,7 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Remove a team from CMS .")
+        description="Remove a team from CMS.")
     parser.add_argument("code", action="store", type=utf8_decoder,
                         help="the team code")
     args = parser.parse_args()
