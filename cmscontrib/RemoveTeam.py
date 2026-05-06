@@ -25,7 +25,7 @@ import logging
 import sys
 
 from cms import utf8_decoder
-from cms.db import SessionGen, Team
+from cms.db import Participation, SessionGen, Team
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,10 @@ def remove_team(code: str) -> bool:
         if team is None:
             logger.error("Team %s does not exist.", code)
             return False
+
+        session.query(Participation).filter(Participation.team_id == team.id).update(
+            {Participation.team_id: None}
+        )
 
         session.delete(team)
         session.commit()
