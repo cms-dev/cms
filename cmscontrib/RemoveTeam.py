@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 def remove_team(code: str) -> bool:
     with SessionGen() as session:
+        team = session.query(Team).filter(Team.code == code).first()
         if team is None:
             logger.error("Team %s does not exist.", code)
             return False
@@ -48,9 +49,9 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        description="Remove a team from CMS.")
+        description="Remove a team from CMS .")
     parser.add_argument("code", action="store", type=utf8_decoder,
-                        help="code of the team, e.g. country code")
+                        help="the team code")
     args = parser.parse_args()
 
     success = remove_team(code=args.code)
