@@ -252,7 +252,11 @@ class Interactive(TaskType):
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
             )
-            stdout, _ = p.communicate(timeout=self.controller_wall_limit * 2)
+            try:
+                stdout, _ = p.communicate(timeout=self.controller_wall_limit * 2)
+            except subprocess.TimeoutExpired:
+                p.kill()
+                stdout, _ = p.communicate()
 
             KEEPER_ERROR_MESSAGE = "Internal error in interactive keeper"
 
