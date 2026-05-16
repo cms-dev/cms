@@ -123,8 +123,11 @@ def validate_login(
         return None, None
 
     if admin_token != "":
-        if (config.contest_web_server.contest_admin_token is not None
-            and admin_token != config.contest_web_server.contest_admin_token):
+        if config.contest_web_server.contest_admin_token is None:
+            log_failed_attempt("admin token not configured")
+            return None, None
+
+        if admin_token != config.contest_web_server.contest_admin_token:
             log_failed_attempt("invalid admin token")
             return None, None
 
