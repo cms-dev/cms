@@ -244,37 +244,29 @@ class ContestHandler(BaseHandler):
                 if actual_phase == 3:
                     # In analysis mode users can see full scores, so do not
                     # restrict to tokened submissions.
-                    score_value, _ = task_score(participation, task, rounded=True)
+                    score_value, _ = task_score(participation, task)
                 else:
-                    score_value, _ = task_score(
-                        participation, task, only_tokened=True, rounded=True
-                    )
-                max_score_value = round(score_type.max_score, task.score_precision)
+                    score_value, _ = task_score(participation, task, only_tokened=True)
+                max_score_value = score_type.max_score
                 score_message = score_type.format_score(
                     score_value,
                     score_type.max_score,
                     None,
-                    task.score_precision,
                     translation=self.translation,
                 )
             else:
-                max_public_score = round(
-                    score_type.max_public_score, task.score_precision
-                )
+                max_public_score = score_type.max_public_score
 
                 # Optionally hide entries with no public score.
                 if hide_zero_max_public and max_public_score <= 0:
                     continue
 
-                score_value, _ = task_score(
-                    participation, task, public=True, rounded=True
-                )
+                score_value, _ = task_score(participation, task, public=True)
                 max_score_value = max_public_score
                 score_message = score_type.format_score(
                     score_value,
                     score_type.max_public_score,
                     None,
-                    task.score_precision,
                     translation=self.translation,
                 )
 
