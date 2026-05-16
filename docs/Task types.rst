@@ -16,7 +16,7 @@ An exception to this is when the contestant's source fails (for example, exceedi
 Standard task types
 ===================
 
-CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The first three are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. TwoSteps is a somewhat simpler way to implement a special case of a Communication task, but it is substantially less secure with respect to cheating. We suggest avoiding TwoSteps for new tasks, and migrating old tasks to Communication.
+CMS ships with five task types: Batch, OutputOnly, Communication, Interactive, TwoSteps. The first three are well tested and reasonably strong against cheating attempts and stable with respect to the evaluation times. Interactive is a more recent addition and is not yet as well-tested. TwoSteps is a somewhat simpler way to implement a special case of a Communication task, but it is substantially less secure with respect to cheating. We suggest avoiding TwoSteps for new tasks, and migrating old tasks to Communication.
 
 OutputOnly does not involve programming languages. Batch is tested with all languages CMS supports out of the box, (C, C++, Pascal, Java, C#, Python, PHP, Haskell, Rust), but only with the first five when using a grader. Communication is tested with C, C++, Pascal and Java. TwoSteps only with C. Regardless, with some work all task types should work with all languages.
 
@@ -101,6 +101,47 @@ The submission format must contain one or more filenames ending with ``.%l``. Mu
 Communication supports user tests. In addition to the input file, contestant must provide the stub and their source file. The admin-provided manager will be used; the output returned to the contestant will be what the manager writes to the file :file:`output.txt`.
 
 .. note:: Particular care must be taken for tasks where the communication through the FIFOs is particularly large or frequent. In these cases, the time to send the data may dominate the actual algorithm runtime, thus making it hard to distinguish between different complexities.
+
+
+.. _tasktypes_interactive:
+
+Interactive
+-----------
+
+Interactive tasks are similar to Communication tasks, but they allow the admin-provided manager (called a ``controller``) to dynamically spawn and interact with multiple solution instances.
+
+The admins must provide an executable manager called ``controller``. The controller is responsible for communicating with CMS to spawn solution processes and for evaluating their behavior.
+
+The communication between the controller and CMS follows a specific protocol:
+
+- To start a new solution process, the controller must print ``START_SOLUTION`` followed by a newline to its standard output.
+- After each such command, the controller must read two integers from its standard input. These represent the file descriptors (fds) for writing to and reading from the solution process, respectively.
+- The controller can then use these file descriptors (for example, with ``fdopen``) to communicate with the solution.
+
+The controller must report the final outcome of the testcase by writing to its standard error using the following prefixes:
+
+- ``SCORE: <score>``: the outcome of the testcase, as a floating point number between 0.0 and 1.0.
+- ``USER_MESSAGE: <message>``: a message for the contestant.
+- ``ADMIN_MESSAGE: <message>``: an optional message for the administrators.
+
+Special messages like ``translate:success``, ``translate:wrong`` and ``translate:partial`` are supported for the user message.
+
+Interactive has six parameters:
+
+- whether the contestant's source is compiled on its own (``alone``) or with an admin-provided stub called :file:`stub.{ext}` (``stub``);
+- the maximum number of solution instances the controller can spawn (``process_limit``);
+- whether the spawned solutions are assumed to run concurrently (``concurrent``);
+- the maximum memory (in MB) that the controller can use;
+- the maximum CPU time (in seconds) that the controller can use;
+- the maximum wall time (in seconds) that the controller can use.
+
+The ``concurrent`` parameter controls how the total wall clock time and total memory usage of the submission is computed. If concurrent, then wall clock times are max'd and memory usages added; if not concurrent, then wall clock times are added and memory usages max'd. This only affects the display of statistics, not the actual verdict (for the verdict, each spawned solution gets the full time/memory limit). Also note that CPU times are always added.
+
+Note that in the current implementation, all file descriptors for communication are preallocated before running the controller, which means that the controller always uses (at least) ``2*process_limit`` file descriptors. Thus it is not a good idea to set process_limit significantly higher than necessary.
+
+Admins can provide a manager called :file:`stub.{ext}` for each allowed language. The stub serves the same purpose as in the Communication task type.
+
+Interactive supports user tests. Contestants must provide the stub and their source file. The admin-provided controller will be used.
 
 
 TwoSteps

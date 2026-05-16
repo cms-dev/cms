@@ -500,7 +500,8 @@ class Dataset(Base):
             from cms.grading.scoretypes import get_score_type
             # This can raise.
             self._cached_score_type_object = get_score_type(
-                self.score_type, self.score_type_parameters, public_testcases)
+                self.score_type, self.score_type_parameters, public_testcases,
+                self.task.score_precision)
             # If an exception is raised these updates don't take place:
             # that way, next time this property is accessed, we get a
             # cache miss again and the same exception is raised again.

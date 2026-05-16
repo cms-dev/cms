@@ -31,6 +31,7 @@ import logging
 from cms import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Admin, Contest, Question
 from cms.server.jinja2_toolbox import markdown_filter
+from cms.server.util import normalize_login_next_page
 from cmscommon.crypto import validate_password
 from cmscommon.datetime import make_datetime, make_timestamp
 from .base import BaseHandler, SimpleHandler, require_permission
@@ -48,12 +49,7 @@ class LoginHandler(SimpleHandler("login.html", authenticated=False)):
         next_page: str = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            if next_page != "/":
-                next_page = self.url(*next_page.strip("/").split("/"))
-            else:
-                next_page = self.url()
-        else:
-            next_page = self.url()
+        next_page = normalize_login_next_page(next_page, self.url, self.url())
         error_page = self.url("login", **error_args)
 
         username: str = self.get_argument("username", "")

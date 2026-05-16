@@ -42,47 +42,47 @@ class TestGroupMul(ScoreTypeTestMixin, unittest.TestCase):
 
     def test_paramaters_correct(self):
         """Test that correct parameters do not throw."""
-        GroupMul([], self._public_testcases)
-        GroupMul([[40, 2], [60.0, 2]], self._public_testcases)
-        GroupMul([[40, "1_*"], [60.0, "2_*"]], self._public_testcases)
+        GroupMul([], self._public_testcases, 2)
+        GroupMul([[40, 2], [60.0, 2]], self._public_testcases, 2)
+        GroupMul([[40, "1_*"], [60.0, "2_*"]], self._public_testcases, 2)
 
     def test_paramaters_invalid_types(self):
         with self.assertRaises(ValueError):
-            GroupMul([1], self._public_testcases)
+            GroupMul([1], self._public_testcases, 2)
         with self.assertRaises(ValueError):
-            GroupMul(1, self._public_testcases)
+            GroupMul(1, self._public_testcases, 2)
 
     def test_paramaters_invalid_wrong_item_len(self):
         with self.assertRaises(ValueError):
-            GroupMul([[]], self._public_testcases)
+            GroupMul([[]], self._public_testcases, 2)
         with self.assertRaises(ValueError):
-            GroupMul([[1]], self._public_testcases)
+            GroupMul([[1]], self._public_testcases, 2)
 
     @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_wrong_item_len_not_caught(self):
         with self.assertRaises(ValueError):
-            GroupMul([[1, 2, 3]], self._public_testcases)
+            GroupMul([[1, 2, 3]], self._public_testcases, 2)
 
     def test_parameter_invalid_wrong_max_score_type(self):
         with self.assertRaises(ValueError):
-            GroupMul([["a", 10]], self._public_testcases)
+            GroupMul([["a", 10]], self._public_testcases, 2)
 
     def test_parameter_invalid_wrong_testcases_type(self):
         with self.assertRaises(ValueError):
-            GroupMul([[100, 1j]], self._public_testcases)
+            GroupMul([[100, 1j]], self._public_testcases, 2)
 
     def test_parameter_invalid_inconsistent_testcases_type(self):
         with self.assertRaises(ValueError):
-            GroupMul([[40, 10], [40, "1_*"]], self._public_testcases)
+            GroupMul([[40, 10], [40, "1_*"]], self._public_testcases, 2)
 
     @unittest.skip("Not yet detected.")
     def test_paramaters_invalid_testcases_too_many(self):
         with self.assertRaises(ValueError):
-            GroupMul([[100, 20]], self._public_testcases)
+            GroupMul([[100, 20]], self._public_testcases, 2)
 
     def test_parameter_invalid_testcases_regex_no_match_type(self):
         with self.assertRaises(ValueError):
-            GroupMul([[100, "9_*"]], self._public_testcases)
+            GroupMul([[100, "9_*"]], self._public_testcases, 2)
 
     def test_max_scores_regexp(self):
         """Test max score is correct when groups are regexp-defined."""
@@ -93,19 +93,19 @@ class TestGroupMul(ScoreTypeTestMixin, unittest.TestCase):
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, s1, header))
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, s1 + s2 + s3, header))
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, 0, header))
 
     def test_max_scores_number(self):
@@ -117,25 +117,25 @@ class TestGroupMul(ScoreTypeTestMixin, unittest.TestCase):
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, s1, header))
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, s1 + s2 + s3, header))
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
-        self.assertEqual(GroupMul(parameters, public_testcases).max_scores(),
+        self.assertEqual(GroupMul(parameters, public_testcases, 2).max_scores(),
                          (s1 + s2 + s3, 0, header))
 
     def test_compute_score(self):
         s1, s2, s3 = 10.5, 30.5, 59
         parameters = [[0, "0_*"], [s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
-        gmul = GroupMul(parameters, self._public_testcases)
+        gmul = GroupMul(parameters, self._public_testcases, 2)
         sr = self.get_submission_result(self._public_testcases)
 
         # All correct.

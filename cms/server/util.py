@@ -28,7 +28,7 @@
 
 import logging
 from functools import wraps
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urlsplit
 
 import collections
 try:
@@ -166,6 +166,38 @@ class Url:
 
         """
         return self.__class__(self.__call__(component))
+
+
+def normalize_login_next_page(next_page: str | None, url: Url, default_url: str) -> str:
+    """Normalize a login redirection target.
+
+    Accept only local absolute-path targets (plus optional query), and
+    rebase them through the provided URL builder. Query-only values are
+    treated as "/" and preserved.
+
+    next_page: raw value of the "next" parameter.
+    url: URL builder for local paths.
+    default_url: fallback when next_page is missing or invalid.
+
+    return: normalized redirect target.
+    """
+    if next_page is None:
+        return default_url
+
+    split = urlsplit(next_page)
+    path = split.path or "/"
+    if split.scheme or split.netloc or not path.startswith("/"):
+        return default_url
+
+    if path != "/":
+        normalized = url(*path.strip("/").split("/"))
+    else:
+        normalized = url()
+
+    if split.query:
+        normalized += "?" + split.query
+
+    return normalized
 
 
 class CommonRequestHandler(RequestHandler):

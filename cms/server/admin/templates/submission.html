@@ -129,9 +129,9 @@
         <td>Score as seen by user</td>
         <td>
           {% if s.token is not none %}
-            {{ st.format_score(sr.score, st.max_score, sr.score_details, s.task.score_precision) }}
+            {{ st.format_score(sr.score, st.max_score, sr.score_details) }}
           {% else %}
-            {{ st.format_score(sr.public_score, st.max_public_score, sr.public_score_details, s.task.score_precision) }}
+            {{ st.format_score(sr.public_score, st.max_public_score, sr.public_score_details) }}
           {% endif %}
         </td>
       </tr>

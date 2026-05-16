@@ -59,7 +59,8 @@ class ScoreType(metaclass=ABCMeta):
 
     TEMPLATE = ""
 
-    def __init__(self, parameters: object, public_testcases: dict[str, bool]):
+    def __init__(self, parameters: object, public_testcases: dict[str, bool],
+                 score_precision: int):
         """Initializer.
 
         parameters: format is specified in the subclasses.
@@ -70,6 +71,7 @@ class ScoreType(metaclass=ABCMeta):
         """
         self.parameters = parameters
         self.public_testcases = public_testcases
+        self.score_precision = score_precision
 
         # Preload the maximum possible scores.
         try:
@@ -87,7 +89,6 @@ class ScoreType(metaclass=ABCMeta):
         score: float,
         max_score: float,
         unused_score_details: object,
-        score_precision: int,
         translation: Translation = DEFAULT_TRANSLATION,
     ) -> str:
         """Produce the string of the score that is shown in CWS.
@@ -102,16 +103,14 @@ class ScoreType(metaclass=ABCMeta):
         max_score: the maximum score that can be achieved.
         unused_score_details: the opaque data structure that
             the ScoreType produced for the submission when scoring it.
-        score_precision: the maximum number of digits of the
-            fractional digits to show.
         translation: the translation to use.
 
         return: the message to show.
 
         """
         return "%s / %s" % (
-            translation.format_decimal(round(score, score_precision)),
-            translation.format_decimal(round(max_score, score_precision)))
+            translation.format_decimal(score),
+            translation.format_decimal(max_score))
 
     def get_html_details(
         self,
@@ -348,9 +347,17 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
     def get_max_score(self, group_parameter: ScoreTypeGroupParameters) -> float:
         if isinstance(group_parameter, tuple) or isinstance(group_parameter, list):
-            return group_parameter[0]
+            score = group_parameter[0]
         else:
-            return group_parameter["max_score"]
+            score = group_parameter["max_score"]
+        assert (
+            round(
+                score, 
+                self.score_precision
+            ) == score
+        ), (f"The max score for a subtask"
+            "has more precision than the task allows.")
+        return score
 
     def get_testcases(self, group_parameter: ScoreTypeGroupParameters) -> int | str | list[str]:
         if isinstance(group_parameter, tuple) or isinstance(group_parameter, list):
@@ -507,7 +514,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     tc["show_in_oi_restricted_feedback"] = (
                         tc["idx"] == tc_first_lowest_idx)
 
-            score += st_score
+            score += rounded_score
             subtasks.append({
                 "idx": st_idx,
                 # We store the fraction so that an "example" testcase
@@ -519,12 +526,17 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 "max_score": self.get_max_score(parameter),
                 "testcases": testcases})
             if all(self.public_testcases[tc_idx] for tc_idx in target):
-                public_score += st_score
+                public_score += rounded_score
                 public_subtasks.append(subtasks[-1])
             else:
                 public_subtasks.append({"idx": st_idx,
                                         "testcases": public_testcases})
-            ranking_details.append("%g" % st_score)
+            ranking_details.append("%g" % rounded_score)
+        
+        # The following line should be unnecessary since subtask scores 
+        # are rounded. However we are using floats not Decimals 
+        # and this can cause errors. So we round again to be sure. 
+        score = round(score, score_precision)
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 

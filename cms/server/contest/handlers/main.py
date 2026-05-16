@@ -54,6 +54,7 @@ from cms.db import User, Participation, Team
 from cms.grading.languagemanager import get_language
 from cms.grading.steps import COMPILATION_MESSAGES, EVALUATION_MESSAGES
 from cms.server import multi_contest
+from cms.server.util import normalize_login_next_page
 from cms.server.contest.authentication import validate_login
 from cms.server.contest.communication import get_communications
 from cmscommon.crypto import hash_password, validate_password
@@ -253,12 +254,7 @@ class LoginHandler(ContestHandler):
         next_page: str | None = self.get_argument("next", None)
         if next_page is not None:
             error_args["next"] = next_page
-            if next_page != "/":
-                next_page = self.url(*next_page.strip("/").split("/"))
-            else:
-                next_page = self.url()
-        else:
-            next_page = self.contest_url()
+        next_page = normalize_login_next_page(next_page, self.url, self.contest_url())
         error_page = self.contest_url(**error_args)
 
         username: str = self.get_argument("username", "")

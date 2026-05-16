@@ -108,7 +108,6 @@ def task_score(
     task: Task,
     public: bool = False,
     only_tokened: bool = False,
-    rounded: bool = False,
 ) -> tuple[float, bool]:
     """Return the score of a contest's user on a task.
 
@@ -122,7 +121,6 @@ def task_score(
         at the results of tokened submissions (that is, the score that the user
         would obtain if all non-tokened submissions scored 0.0, or equivalently
         had not been scored yet).
-    rounded: if True, round the score to the task's score_precision.
 
     return: the score of user on task, and True if not
         all submissions of the participation in the task have been scored.
@@ -177,8 +175,12 @@ def task_score(
         score = _task_score_max_tokened_last(score_details_tokened)
     else:
         raise ValueError("Unknown score mode '%s'" % task.score_mode)
-    if rounded:
-        score = round(score, task.score_precision)
+    
+    # The following line should be unnecessary since subtask scores 
+    # are rounded. However we are using floats not Decimals 
+    # and this can cause errors. So we round again to be sure. 
+    score = round(score, task.score_precision)
+    
     return score, partial
 
 

@@ -405,7 +405,6 @@ class ProxyService(TriggeredService[ProxyOperation, ProxyExecutor]):
 
         # This check is probably useless.
         if submission_result is not None and submission_result.scored():
-            # We're sending the unrounded score to RWS
             subchange_data["score"] = submission_result.score
             subchange_data["extra"] = submission_result.ranking_score_details
 

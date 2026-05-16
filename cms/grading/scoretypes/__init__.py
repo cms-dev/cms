@@ -46,7 +46,8 @@ def get_score_type_class(name: str):
 
 
 def get_score_type(
-    name: str, parameters: object, public_testcases: dict[str, bool]
+    name: str, parameters: object, public_testcases: dict[str, bool],
+    score_precision: int,
 ) -> ScoreType:
     """Construct the ScoreType specified by parameters.
 
@@ -63,4 +64,4 @@ def get_score_type(
 
     """
     class_ = get_score_type_class(name)
-    return class_(parameters, public_testcases)
+    return class_(parameters, public_testcases, score_precision)

@@ -46,10 +46,9 @@ class TaskScoreMixin(DatabaseMixin):
     def at(self, timestamp):
         return self.timestamp + timedelta(seconds=timestamp)
 
-    def call(self, public=False, only_tokened=False, rounded=False):
+    def call(self, public=False, only_tokened=False):
         return task_score(self.participation, self.task,
-                          public=public, only_tokened=only_tokened,
-                          rounded=rounded)
+                          public=public, only_tokened=only_tokened)
 
     def add_result(self, timestamp, score, tokened=False, score_details=None,
                    public_score=None, public_score_details=None):
@@ -245,21 +244,6 @@ class TestTaskScoreMaxSubtask(TaskScoreMixin, unittest.TestCase):
         self.session.flush()
         self.assertEqual(self.call(), (30 * 0.2 + 40 * 0.5 + 30 * 0.2, True))
 
-    def test_rounding(self):
-        # No rounding should happen at the subtask or task level.
-        self.add_result(self.at(1), 80 + 0.000_2,
-                        score_details=[
-                            self.subtask(1, 80, 1.0),
-                            self.subtask(2, 20, 0.000_01),
-                        ])
-        self.add_result(self.at(2), 0.000_4,
-                        score_details=[
-                            self.subtask(1, 80, 0.0),
-                            self.subtask(2, 20, 0.000_02),
-                        ])
-        self.session.flush()
-        self.assertEqual(self.call(), (80 + 0.000_4, False))
-
     def test_public(self):
         self.add_result(self.at(1),
                         30 * 1.0 + 40 * 1.0 + 30 * 1.0,
@@ -369,17 +353,11 @@ class TestTaskScoreMax(TaskScoreMixin, unittest.TestCase):
         self.session.flush()
         self.assertEqual(self.call(only_tokened=True), (44.4, False))
 
-    def test_unrounded(self):
-        self.add_result(self.at(1), 44.44444, tokened=False)
-        self.add_result(self.at(2), 44.44443, tokened=False)
-        self.session.flush()
-        self.assertEqual(self.call(), (44.44444, False))
-
     def test_rounded(self):
         self.add_result(self.at(1), 44.44444, tokened=False)
         self.add_result(self.at(2), 44.44443, tokened=False)
         self.session.flush()
-        self.assertEqual(self.call(rounded=True), (44.44, False))
+        self.assertEqual(self.call(), (44.44, False))
 
 
 if __name__ == "__main__":
