@@ -165,6 +165,10 @@ class TestValidateLogin(DatabaseMixin, unittest.TestCase):
     def test_unsuccessful_impersonation(self):
         self.assertFailure("myuser", "", "127.0.0.1", "bad-admin-token")
 
+    def test_impersonation_with_no_config(self):
+        with patch.object(config.contest_web_server, "contest_admin_token", None):
+            self.assertFailure("myuser", "", "127.0.0.1", "admin-token")
+
     def test_impersonation_overrides_unallowed_password_authentication(self):
         self.contest.allow_password_authentication = False
 
