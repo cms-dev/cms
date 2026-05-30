@@ -163,8 +163,7 @@ def main():
                 wait=False,
             )
 
-            # We do not close p["c_to_u"][0] -- it only risks crashing the
-            # controller with SIGPIPE if the submission exits early.
+            os.close(p["c_to_u"][0])
             os.close(p["u_to_c"][1])
 
             try:
