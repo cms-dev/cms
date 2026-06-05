@@ -87,10 +87,8 @@ def main():
     for i in range(process_limit):
         c_to_u_r, c_to_u_w = os.pipe()
         u_to_c_r, u_to_c_w = os.pipe()
-        os.set_inheritable(c_to_u_r, True)
         os.set_inheritable(c_to_u_w, True)
         os.set_inheritable(u_to_c_r, True)
-        os.set_inheritable(u_to_c_w, True)
         pipes.append({"c_to_u": (c_to_u_r, c_to_u_w), "u_to_c": (u_to_c_r, u_to_c_w)})
 
     controller_sandbox = Sandbox(0, shard, name="controller", temp_dir=temp_dir)
