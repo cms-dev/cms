@@ -77,8 +77,8 @@ class ContestImporter:
         update_tasks: bool,
         no_statements: bool,
         delete_stale_participations: bool,
-        auto_import_users: bool,
-        auto_import_teams: bool,
+        no_auto_import_users: bool,
+        no_auto_import_teams: bool,
         loader_class: type[ContestLoader],
     ):
         self.yes = yes
@@ -88,8 +88,8 @@ class ContestImporter:
         self.update_tasks = update_tasks
         self.no_statements = no_statements
         self.delete_stale_participations = delete_stale_participations
-        self.auto_import_users = auto_import_users
-        self.auto_import_teams = auto_import_teams
+        self.no_auto_import_users = no_auto_import_users
+        self.no_auto_import_teams = no_auto_import_teams
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
@@ -293,7 +293,7 @@ class ContestImporter:
             session.query(User).filter(User.username == new_p["username"]).first()
         )
         if user is None:
-            if not self.auto_import_users:
+            if self.no_auto_import_users:
                 raise ImportDataError("User \"%s\" not found in database. "
                                       "Use cmsImportUser to import it." %
                                       new_p["username"])
@@ -314,7 +314,7 @@ class ContestImporter:
             session.query(Team).filter(Team.code == new_p.get("team")).first()
         )
         if team is None and new_p.get("team") is not None:
-            if not self.auto_import_teams:
+            if self.no_auto_import_teams:
                 raise ImportDataError("Team \"%s\" not found in database. "
                                       "Use cmsImportTeam to import it."
                                       % new_p.get("team"))
@@ -532,10 +532,8 @@ If updating a contest already in the DB:
         update_tasks=args.update_tasks,
         no_statements=args.no_statements,
         delete_stale_participations=args.delete_stale_participations,
-        auto_import_users=not (
-            args.no_auto_import or args.no_auto_import_users),
-        auto_import_teams=not (
-            args.no_auto_import or args.no_auto_import_teams),
+        no_auto_import_users=args.no_auto_import_users,
+        no_auto_import_teams=args.no_auto_import_teams,
         loader_class=loader_class)
     success = importer.do_import()
     return 0 if success is True else 1
