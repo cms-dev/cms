@@ -532,8 +532,8 @@ If updating a contest already in the DB:
         update_tasks=args.update_tasks,
         no_statements=args.no_statements,
         delete_stale_participations=args.delete_stale_participations,
-        auto_import_users=args.auto_import_users,
-        auto_import_teams=args.auto_import_teams,
+        auto_import_users=args.import_users,
+        auto_import_teams=args.import_teams,
         loader_class=loader_class)
     success = importer.do_import()
     return 0 if success is True else 1
