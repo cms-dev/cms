@@ -162,6 +162,12 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
     def get_task_loader(self, taskname):
         return YamlLoader(os.path.join(self.path, taskname), self.file_cacher)
 
+    def get_user_loader(self, username):
+        return YamlLoader(os.path.join(self.path, username), self.file_cacher)
+
+    def get_team_loader(self, teamcode):
+        return YamlLoader(os.path.join(self.path, teamcode), self.file_cacher)
+
     def get_contest(self):
         """See docstring in class ContestLoader."""
         if not os.path.exists(os.path.join(self.path, "contest.yaml")):

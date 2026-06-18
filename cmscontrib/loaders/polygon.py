@@ -358,6 +358,10 @@ class PolygonContestLoader(ContestLoader):
         taskpath = os.path.join(self.path, "problems", taskname)
         return PolygonTaskLoader(taskpath, self.file_cacher)
 
+    def get_user_loader(self, username):
+        userpath = os.path.join(self.path, username)
+        return PolygonUserLoader(userpath, self.file_cacher)
+
     def get_contest(self):
         """See docstring in class Loader.
 

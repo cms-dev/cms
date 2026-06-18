@@ -335,3 +335,23 @@ class ContestLoader(BaseLoader):
 
         """
         pass
+
+    def get_user_loader(self, username: str) -> UserLoader | None:
+        """Return a loader class for the user with the given username.
+
+        username: username of the user.
+
+        return: loader for the user with username.
+
+        """
+        return None
+
+    def get_team_loader(self, teamcode: str) -> TeamLoader | None:
+        """Return a loader class for the team with the given code.
+
+        teamcode: code of the team.
+
+        return: loader for the team with code teamcode.
+
+        """
+        return None
