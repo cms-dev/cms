@@ -30,12 +30,9 @@ import logging
 from functools import wraps
 from urllib.parse import quote, urlencode, urlsplit
 
-import collections
-try:
-    collections.MutableMapping
-except:
-    # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
-    collections.MutableMapping = collections.abc.MutableMapping
+import collections.abc
+# Ensure collections.MutableMapping is available for Tornado 4.5.3 compat
+collections.MutableMapping = collections.abc.MutableMapping
 
 import typing
 
