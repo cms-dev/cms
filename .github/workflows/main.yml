@@ -44,6 +44,14 @@ jobs:
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Upload browser test results to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ !cancelled() }}
+        with:
+          files: ./codecov/browsertests.xml
+          flags: browsertests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Upload functional test coverage results to Codecov
         uses: codecov/codecov-action@v4
         if: ${{ !cancelled() }}

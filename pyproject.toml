@@ -57,6 +57,7 @@ devel = [
     "coverage>=4.5,<7.10",
     "pytest",
     "pytest-cov",
+    "pytest-playwright",
 
     # Only for building documentation
     # XXX: The version of Sphinx needed to build our documentation

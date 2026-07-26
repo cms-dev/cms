@@ -13,6 +13,13 @@ dropdb --host=testdb --username=postgres cmsdbfortesting
 createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
+bash cmstestsuite/browser_tests/runservice.sh --junitxml=codecov/browsertests.xml
+BROWSER=$?
+
+dropdb --host=testdb --username=postgres cmsdbfortesting
+createdb --host=testdb --username=postgres cmsdbfortesting
+cmsInitDB
+
 cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
 FUNC=$?
 
@@ -20,7 +27,7 @@ FUNC=$?
 # the CI as long as the functional tests are passing. Ideally we should get rid
 # of `cmsRunFunctionalTests` and make those tests work with pytest so they can
 # be auto-discovered and run in a single command.
-if [ $UNIT -ne 0 ] || [ $FUNC -ne 0 ]
+if [ $UNIT -ne 0 ] || [ $BROWSER -ne 0 ] || [ $FUNC -ne 0 ]
 then
     exit 1
 else

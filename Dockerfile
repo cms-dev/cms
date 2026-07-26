@@ -87,6 +87,8 @@ COPY --chown=cmsuser:cmsuser . /home/cmsuser/src
 
 RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=2000 ./install.py cms --devel
 
+RUN playwright install --with-deps chromium
+
 RUN <<EOF
 #!/bin/bash -ex
     sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:5432/cmsdbfortesting"|' \
