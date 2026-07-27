@@ -2,47 +2,90 @@
 
 set -e
 
-echo "Creating test contest..."
-CONTEST_ID=$(python3 << 'EOF'
-from cms.db import Contest, SessionGen
-
-with SessionGen() as session:
-    contest = Contest(
-        name="test_contest",
-        description="Browser test contest",
-    )
-    session.add(contest)
-    session.commit()
-    print(contest.id)
-EOF
-)
-
-echo "Created contest with ID: $CONTEST_ID"
-
-# Start minimal services for browser tests
+# Start LogService first (needed by AdminWebServer)
 echo "Starting LogService..."
 cmsLogService 0 &
 LOG_PID=$!
 sleep 2
 
+# Start AdminWebServer (needed to create contest properly)
 echo "Starting AdminWebServer..."
 cmsAdminWebServer 0 &
 AWS_PID=$!
 
+# Wait for AdminWebServer to be ready
+echo "Waiting for AdminWebServer..."
+for i in {1..20}; do
+    if curl -s http://localhost:8889 > /dev/null 2>&1; then
+        break
+    fi
+    if [ $i -eq 20 ]; then
+        echo "AdminWebServer failed to start"
+        kill $AWS_PID $LOG_PID 2>/dev/null || true
+        exit 1
+    fi
+    sleep 1
+done
+
+# Create admin and contest via FunctionalTestFramework (creates proper main_group)
+echo "Setting up admin and contest..."
+CONTEST_ID=$(python3 << 'EOF'
+import datetime
+import os
+import sys
+
+from cms import TOKEN_MODE_FINITE
+from cmscommon.datetime import get_system_timezone
+from cmstestsuite import CONFIG
+from cmstestsuite.functionaltestframework import FunctionalTestFramework
+
+CONFIG["CONFIG_PATH"] = os.path.join(sys.prefix, "etc/cms.toml")
+if "CMS_CONFIG" in os.environ:
+    CONFIG["CONFIG_PATH"] = os.environ["CMS_CONFIG"]
+
+framework = FunctionalTestFramework()
+framework.initialize_aws()
+
+start_time = datetime.datetime.utcnow()
+stop_time = start_time + datetime.timedelta(hours=2)
+
+contest_id, _ = framework.add_contest(
+    name="test_contest",
+    description="Browser test contest",
+    languages=["C++17 / g++"],
+    allow_password_authentication="checked",
+    start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
+    stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
+    timezone=get_system_timezone(),
+    allow_user_tests="checked",
+    token_mode=TOKEN_MODE_FINITE,
+    token_max_number="100",
+    token_min_interval="0",
+    token_gen_initial="100",
+    token_gen_number="0",
+    token_gen_interval="1",
+    token_gen_max="100",
+)
+print(contest_id)
+EOF
+)
+
+echo "Created contest with ID: $CONTEST_ID"
+
+# Start ContestWebServer with the proper contest
 echo "Starting ContestWebServer for contest $CONTEST_ID..."
 cmsContestWebServer -c $CONTEST_ID 0 &
 CWS_PID=$!
 
-# Wait for services to be ready
-echo "Waiting for services to be ready..."
-for i in {1..30}; do
-    if curl -s http://localhost:8889 > /dev/null 2>&1 && \
-       curl -s http://localhost:8888 > /dev/null 2>&1; then
+# Wait for ContestWebServer to be ready
+echo "Waiting for ContestWebServer..."
+for i in {1..20}; do
+    if curl -s http://localhost:8888 > /dev/null 2>&1; then
         echo "Services are ready!"
         break
     fi
-    if [ $i -eq 30 ]; then
-        echo "Services failed to start within 30 seconds"
+    if [ $i -eq 20 ]; then
+        echo "ContestWebServer failed to start"
         kill $CWS_PID $AWS_PID $LOG_PID 2>/dev/null || true
         exit 1
     fi

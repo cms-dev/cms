@@ -9,16 +9,10 @@ cmsInitDB
 pytest --cov . --cov-report xml:codecov/unittests.xml --junitxml=codecov/junit.xml -o junit_family=legacy
 UNIT=$?
 
-dropdb --host=testdb --username=postgres cmsdbfortesting
-createdb --host=testdb --username=postgres cmsdbfortesting
 cmsInitDB
 
 bash cmstestsuite/browser_tests/runservice.sh --junitxml=codecov/browsertests.xml
 BROWSER=$?
-
-dropdb --host=testdb --username=postgres cmsdbfortesting
-createdb --host=testdb --username=postgres cmsdbfortesting
-cmsInitDB
 
 cmsRunFunctionalTests -v --coverage codecov/functionaltests.xml
 FUNC=$?
