@@ -200,7 +200,7 @@ class PrometheusExporter(Service, Collector):
         data = (
             session.query(func.count(Question.id))
             .select_from(Question)
-            .filter(Question.ignored == True)
+            .filter((Question.ignored == True) & (Question.reply_timestamp == None))
             .all()
         )
         metric.add_metric(["ignored"], data[0][0])
