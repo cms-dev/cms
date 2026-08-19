@@ -221,9 +221,9 @@ class Sandbox:
 
         # Isolate, by default, only accepts ids up to 65000. We assign
         # the range [(shard+1)*1000, (shard+2)*1000) to each Worker and keep
-        # the range [0, 1000) for other uses (command-line scripts like cmsMake
-        # or direct console users of isolate). Inside each range ids are
-        # assigned sequentially, with a wrap-around.
+        # the range [0, 1000) for other uses (command-line scripts or direct
+        # console users of isolate). Inside each range ids are assigned
+        # sequentially, with a wrap-around.
         if shard is None:
             box_id = box_index
         else:
