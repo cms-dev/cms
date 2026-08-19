@@ -415,11 +415,15 @@ class Sandbox:
                 return self.EXIT_TIMEOUT_WALL
             else:
                 return self.EXIT_TIMEOUT
+        elif 'cg-oom-killed' in self.meta:
+            # OOM killer was activated in the sandbox. It killed either the
+            # main process (in which case the exit status is SG) or a
+            # subprocess (in which case the main process gets to decide how to
+            # handle it, but probably RE). In both cases, we want to
+            # "root-cause" the verdict as "memory limit exceeded".
+            return self.EXIT_MEM_LIMIT
         elif "SG" in status_list:
-            if "cg-oom-killed" in self.meta:
-                return self.EXIT_MEM_LIMIT
-            else:
-                return self.EXIT_SIGNAL
+            return self.EXIT_SIGNAL
         elif "RE" in status_list:
             return self.EXIT_NONZERO_RETURN
         # OK status is not reported in the meta file, it's implicit.
