@@ -79,26 +79,26 @@ Communication tasks are similar to Batch tasks, but should be used when the inpu
 In practice, Communication tasks have two processes, running in two different sandboxes:
 
 - the first (called manager) is entirely controlled by the admins; it reads the input, communicates with the other one, and writes a :ref:`standard manager output<tasktypes_standard_manager_output>`;
-- the second is where the contestant's code runs, optionally after being compiled together with an admin-provided stub that helps with the communication with the first process; it doesn't have access to the input, just to what the manager communicates.
+- the second is where the contestant's code runs, optionally after being compiled together with an admin-provided grader that helps with the communication with the first process; it doesn't have access to the input, just to what the manager communicates.
 
 This setup ensures that the contestant's code cannot access forbidden data, even in the case they have full knowledge of the admin code.
 
 The admins must provide an executable manager called ``manager``. It can read the testcase input from stdin, and will also receive as argument the filenames of two FIFOs, from and to the contestant process (in this order). It must write to stdout the outcome and to stderr the message for the contestant (see :ref:`details about the format<tasktypes_standard_manager_output>`). If the contestant's process fails, the output of the manager is ignored, and the outcome will be 0.0 and the message will explain the reason.
 
-Admins can also provide a manager called :file:`stub.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. The task type can be set up to compile the stub with the contestant's source. Usually, a stub takes care of the communication with the manager, so that the contestants have to implement only a function. As for Batch, admins can also add header file that will be used when compiling the stub and the contestant's source.
+Admins can also provide a manager called :file:`grader.{ext}` for each allowed language, where :file:`{ext}` is the standard extension of a source file in that language. The task type can be set up to compile the grader with the contestant's source. Usually, a grader takes care of the communication with the manager, so that the contestants have to implement only a function. As for Batch, admins can also add header files that will be used when compiling the grader and the contestant's source.
 
-The contestant's program, regardless of whether it's compiled with or without a stub, can be set up to communicate with the manager in two ways: through the standard input and output, or through FIFOs (in which case the FIFOs' filenames will be given as arguments, first the one from the manager and then the one to it).
+The contestant's program, regardless of whether it's compiled with or without a grader, can be set up to communicate with the manager in two ways: through the standard input and output, or through FIFOs (in which case the FIFOs' filenames will be given as arguments, first the one from the manager and then the one to it).
 
 The first parameter of the task type controls the number of user processes. If it is equal to 1, the behavior will be as explained above. If it is an integer N greater than 1, there are a few differences:
 
-- there will be N processes with the contestant's code and the stub (if present) running;
+- there will be N processes with the contestant's code and the grader (if present) running;
 - there will be N pairs of FIFOs, one for each process running the contestant's program; the manager will receive as argument all pairs in order, and each contestant program will receive its own (as arguments or redirected through stdin/stdout);
 - each copy of the contestant's program will receive as an additional argument its 0-based index within the running programs;
 - the time limit is checked against the total user time of all the contestant's processes.
 
 The submission format must contain one or more filenames ending with ``.%l``. Multiple source files are simply linked together. Usually the number of files to submit is equal to the number of processes.
 
-Communication supports user tests. In addition to the input file, contestant must provide the stub and their source file. The admin-provided manager will be used; the output returned to the contestant will be what the manager writes to the file :file:`output.txt`.
+Communication supports user tests. In addition to the input file, contestant must provide the grader and their source file. The admin-provided manager will be used; the output returned to the contestant will be what the manager writes to the file :file:`output.txt`.
 
 .. note:: Particular care must be taken for tasks where the communication through the FIFOs is particularly large or frequent. In these cases, the time to send the data may dominate the actual algorithm runtime, thus making it hard to distinguish between different complexities.
 
@@ -161,7 +161,7 @@ TwoSteps has one parameter, similar to Batch's third, that specifies whether to 
 
 TwoSteps supports user tests; contestants must provide the manager in addition to the input and their sources.
 
-**How to migrate from TwoSteps to Communication.** Any TwoSteps task can be implemented as a Communication task with two processes. The functionalities in the stub should be migrated to Communication's manager, which also must enforce any restriction in the computed data.
+**How to migrate from TwoSteps to Communication.** Any TwoSteps task can be implemented as a Communication task with two processes. The functionalities in the manager should be migrated to Communication's manager, which also must enforce any restriction in the computed data.
 
 
 .. _tasktypes_white_diff:

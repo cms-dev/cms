@@ -1,4 +1,4 @@
-program stub;
+program grader;
 uses communication;
 
 var

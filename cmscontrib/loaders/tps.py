@@ -102,7 +102,7 @@ class TpsTaskLoader(TaskLoader):
             par_processes = '%s_num_processes' % par_prefix
             if par_processes not in task_type_parameters:
                 task_type_parameters[par_processes] = 1
-            return [task_type_parameters[par_processes], "stub", "std_io"]
+            return [task_type_parameters[par_processes], "grader", "std_io"]
 
         if task_type == 'TwoSteps' or task_type == 'OutputOnly':
             return [evaluation_param]
@@ -318,14 +318,22 @@ class TpsTaskLoader(TaskLoader):
                 [filename
                  for filename in os.listdir(graders_dir)
                  if filename != 'manager.cpp']
+
+        if data['task_type'] == 'Communication':
+            stubs = [f for f in graders_list if os.path.splitext(f)[0] == 'stub']
+            graders = [f for f in graders_list if os.path.splitext(f)[0] == 'grader']
+            if stubs and graders:
+                logger.fatal("Task contains both stub and grader in %s", graders_dir)
+                return None
+
         for grader_name in graders_list:
             grader_src = os.path.join(graders_dir, grader_name)
             digest = self.file_cacher.put_file_from_path(
                 grader_src,
                 "Manager for task %s" % name)
             if data['task_type'] == 'Communication' \
-                    and os.path.splitext(grader_name)[0] == 'grader':
-                grader_name = 'stub' + os.path.splitext(grader_name)[1]
+                    and os.path.splitext(grader_name)[0] == 'stub':
+                grader_name = 'grader' + os.path.splitext(grader_name)[1]
             args["managers"][grader_name] = Manager(grader_name, digest)
 
         # Manager

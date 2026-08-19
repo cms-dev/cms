@@ -57,12 +57,12 @@ class Communication(TaskType):
 
     The task type will run *manager*, an admin-provided executable, and one or
     more instances of the user solution, optionally compiled together with a
-    language-specific stub.
+    language-specific grader.
 
     During the evaluation, the manager and each of the user processes
     communicate via FIFOs. The manager will read the input, send it (possibly
     with some modifications) to the user process(es). The user processes, either
-    via functions provided by the stub or by themselves, will communicate with
+    via functions provided by the grader or by themselves, will communicate with
     the manager. Finally, the manager will decide outcome and text, and print
     them on stdout and stderr.
 
@@ -82,9 +82,9 @@ class Communication(TaskType):
     """
     # Filename of the manager (the stand-alone, admin-provided program).
     MANAGER_FILENAME = "manager"
-    # Basename of the stub, used in the stub filename and as the main class in
-    # languages that require us to specify it.
-    STUB_BASENAME = "stub"
+    # Basename of the grader, used in the grader filename and as the main class
+    # in languages that require us to specify it.
+    GRADER_BASENAME = "grader"
     # Filename of the input in the manager sandbox. The content will be
     # redirected to stdin, and managers should read from there.
     INPUT_FILENAME = "input.txt"
@@ -94,7 +94,7 @@ class Communication(TaskType):
 
     # Constants used in the parameter definition.
     COMPILATION_ALONE = "alone"
-    COMPILATION_STUB = "stub"
+    COMPILATION_GRADER = "grader"
     USER_IO_STD = "std_io"
     USER_IO_FIFOS = "fifo_io"
 
@@ -110,7 +110,7 @@ class Communication(TaskType):
         "compilation",
         "",
         {COMPILATION_ALONE: "Submissions are self-sufficient",
-         COMPILATION_STUB: "Submissions are compiled with a stub"})
+         COMPILATION_GRADER: "Submissions are compiled with a grader"})
 
     _USER_IO = ParameterTypeChoice(
         "User I/O",
@@ -137,14 +137,14 @@ class Communication(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         codenames_to_compile = []
-        if self._uses_stub():
-            codenames_to_compile.append(self.STUB_BASENAME + ".%l")
+        if self._uses_grader():
+            codenames_to_compile.append(self.GRADER_BASENAME + ".%l")
         codenames_to_compile.extend(submission_format)
         res = dict()
         for language in LANGUAGES:
             source_ext = language.source_extension
             executable_filename = self._executable_filename(submission_format,
-                                                            language)
+                                                             language)
             res[language.name] = language.get_compilation_commands(
                 [codename.replace(".%l", source_ext)
                  for codename in codenames_to_compile],
@@ -153,8 +153,8 @@ class Communication(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        if self._uses_stub():
-            return [self.STUB_BASENAME + ".%l"]
+        if self._uses_grader():
+            return [self.GRADER_BASENAME + ".%l"]
         else:
             return []
 
@@ -162,8 +162,8 @@ class Communication(TaskType):
         """See TaskType.get_auto_managers."""
         return [self.MANAGER_FILENAME]
 
-    def _uses_stub(self) -> bool:
-        return self.compilation == self.COMPILATION_STUB
+    def _uses_grader(self) -> bool:
+        return self.compilation == self.COMPILATION_GRADER
 
     def _uses_fifos(self) -> bool:
         return self.io == self.USER_IO_FIFOS
@@ -180,7 +180,7 @@ class Communication(TaskType):
 
         """
         name = "_".join(sorted(codename.replace(".%l", "")
-                               for codename in codenames))
+                                for codename in codenames))
         return name + language.executable_extension
 
     def compile(self, job: CompilationJob, file_cacher: FileCacher):
@@ -195,14 +195,14 @@ class Communication(TaskType):
         # compilation command.
         filenames_to_compile = []
         filenames_and_digests_to_get = {}
-        # The stub, that must have been provided (copy and add to compilation).
-        if self._uses_stub():
-            stub_filename = self.STUB_BASENAME + source_ext
-            if not check_manager_present(job, stub_filename):
+        # The grader, that must have been provided (copy and add to compilation).
+        if self._uses_grader():
+            grader_filename = self.GRADER_BASENAME + source_ext
+            if not check_manager_present(job, grader_filename):
                 return
-            filenames_to_compile.append(stub_filename)
-            filenames_and_digests_to_get[stub_filename] = \
-                job.managers[stub_filename].digest
+            filenames_to_compile.append(grader_filename)
+            filenames_and_digests_to_get[grader_filename] = \
+                job.managers[grader_filename].digest
         # User's submitted file(s) (copy and add to compilation).
         for codename, file_ in job.files.items():
             filename = codename.replace(".%l", source_ext)
@@ -335,9 +335,9 @@ class Communication(TaskType):
         # but it's only bool if wait=True, which it isn't here.
         manager = typing.cast(subprocess.Popen, manager_)
 
-        # Start the user submissions compiled with the stub.
+        # Start the user submissions compiled with the grader.
         language = get_language(job.language)
-        main = self.STUB_BASENAME if self._uses_stub() \
+        main = self.GRADER_BASENAME if self._uses_grader() \
                else os.path.splitext(executable_filename)[0]
         processes: list[subprocess.Popen] = [None for i in indices]
         for i in indices:
