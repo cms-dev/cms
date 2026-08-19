@@ -600,12 +600,14 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             if os.path.exists(os.path.join(
                     self.path, "sol", "grader%s" % lang.source_extension)):
                 graders = True
-                break
             if os.path.exists(os.path.join(
                     self.path, "sol", "stub%s" % lang.source_extension)):
                 stubs = True
-                break
-        if graders:
+
+        if graders and stubs:
+            logger.fatal("Task contains both sol/grader and sol/stub")
+            return None
+        elif graders:
             # Read grader for each language
             for lang in LANGUAGES:
                 extension = lang.source_extension
@@ -622,21 +624,24 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                     logger.warning("Grader for language %s not found ", lang)
             compilation_param = "grader"
         elif stubs:
-            # Read grader for each language
+            # Read stub for each language, storing as grader
             for lang in LANGUAGES:
                 extension = lang.source_extension
-                grader_filename = os.path.join(
+                stub_filename = os.path.join(
                     self.path, "sol", "stub%s" % extension)
-                if os.path.exists(grader_filename):
+                if os.path.exists(stub_filename):
+                    logger.info(
+                        "Found legacy stub for language %s, importing as grader%s",
+                        lang, extension)
                     digest = self.file_cacher.put_file_from_path(
-                        grader_filename,
-                        "Stub for task %s and language %s" %
+                        stub_filename,
+                        "Grader for task %s and language %s" %
                         (task.name, lang))
                     args["managers"] += [
-                        Manager("stub%s" % extension, digest)]
+                        Manager("grader%s" % extension, digest)]
                 else:
                     logger.warning("Stub for language %s not found ", lang)
-            compilation_param = "stub"
+            compilation_param = "grader"
         if graders or stubs:
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(self.path, "sol")):
@@ -822,7 +827,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             args["task_type"] = "Communication"
             args["task_type_parameters"] = \
                 [num_processes, compilation_param,
-                 io_type or ("fifo_io" if compilation_param == "stub" else "std_io")]
+                 io_type or ("fifo_io" if compilation_param == "grader" else "std_io")]
             digest = self.file_cacher.put_file_from_path(
                 manager_path,
                 "Manager for task %s" % task.name)
