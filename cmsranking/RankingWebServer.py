@@ -59,6 +59,11 @@ from cmsranking.User import User
 logger = logging.getLogger(__name__)
 
 
+def public_cache_control(cache_interval: int) -> str:
+    """Build a Cache-Control value with max-age of cache_interval - 1."""
+    return "public, max-age=%d" % max(0, cache_interval - 1)
+
+
 class CustomUnauthorized(Unauthorized):
 
     def __init__(self, realm_name: str):
@@ -73,11 +78,19 @@ class CustomUnauthorized(Unauthorized):
 
 class StoreHandler:
 
-    def __init__(self, store: Store, username: str, password: str, realm_name: str):
+    def __init__(
+        self,
+        store: Store,
+        username: str,
+        password: str,
+        realm_name: str,
+        cache_interval: int = 1,
+    ):
         self.store = store
         self.username = username
         self.password = password
         self.realm_name = realm_name
+        self.cache_interval = cache_interval
 
         self.router = Map([
             Rule("/<key>", methods=["GET"], endpoint="get"),
@@ -138,12 +151,14 @@ class StoreHandler:
 
         response.status_code = 200
         response.headers['Timestamp'] = "%0.6f" % time.time()
+        response.headers['Cache-Control'] = public_cache_control(self.cache_interval)
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve(key))
 
     def get_list(self, request: Request, response: Response):
         response.status_code = 200
         response.headers['Timestamp'] = "%0.6f" % time.time()
+        response.headers['Cache-Control'] = public_cache_control(self.cache_interval)
         response.mimetype = "application/json"
         response.data = json.dumps(self.store.retrieve_list())
 
@@ -242,9 +257,15 @@ class StoreHandler:
 class DataWatcher(EventSource):
     """Receive the messages from the entities store and redirect them."""
 
-    def __init__(self, stores: dict[str, Store], buffer_size: int):
+    def __init__(
+        self,
+        stores: dict[str, Store],
+        buffer_size: int,
+        retry_backoff_seconds: int = 0,
+        cache_interval: int = 1,
+    ):
         self._CACHE_SIZE = buffer_size
-        EventSource.__init__(self)
+        EventSource.__init__(self, retry_backoff_seconds, cache_interval)
 
         stores["contest"].add_create_callback(
             functools.partial(self.callback, "contest", "create"))
@@ -285,9 +306,10 @@ class DataWatcher(EventSource):
 
 class SubListHandler:
 
-    def __init__(self, stores: dict[str, Store]):
+    def __init__(self, stores: dict[str, Store], cache_interval: int = 1):
         self.task_store: Store[Task] = stores["task"]
         self.scoring_store: ScoringStore = stores["scoring"]
+        self.cache_interval = cache_interval
 
         self.router = Map([
             Rule("/<user_id>", methods=["GET"], endpoint="sublist"),
@@ -322,6 +344,7 @@ class SubListHandler:
 
         response = Response()
         response.status_code = 200
+        response.headers['Cache-Control'] = public_cache_control(self.cache_interval)
         response.mimetype = "application/json"
         response.data = json.dumps(result)
 
@@ -330,8 +353,9 @@ class SubListHandler:
 
 class HistoryHandler:
 
-    def __init__(self, stores: dict[str, Store]):
+    def __init__(self, stores: dict[str, Store], cache_interval: int = 1):
         self.scoring_store: ScoringStore = stores["scoring"]
+        self.cache_interval = cache_interval
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -346,6 +370,7 @@ class HistoryHandler:
 
         response = Response()
         response.status_code = 200
+        response.headers['Cache-Control'] = public_cache_control(self.cache_interval)
         response.mimetype = "application/json"
         response.data = json.dumps(result)
 
@@ -354,8 +379,9 @@ class HistoryHandler:
 
 class ScoreHandler:
 
-    def __init__(self, stores: dict[str, Store]):
+    def __init__(self, stores: dict[str, Store], cache_interval: int = 1):
         self.scoring_store: ScoringStore = stores["scoring"]
+        self.cache_interval = cache_interval
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
@@ -375,6 +401,7 @@ class ScoreHandler:
         response = Response()
         response.status_code = 200
         response.headers['Timestamp'] = "%0.6f" % time.time()
+        response.headers['Cache-Control'] = public_cache_control(self.cache_interval)
         response.mimetype = "application/json"
         response.data = json.dumps(result)
 
@@ -411,24 +438,39 @@ class ImageHandler:
             return exc
 
         location = self.location % args
-
         request = Request(environ)
+        request.encoding_errors = "strict"
 
+        # Determine which path to serve
+        path = None
+        
+        if os.path.isfile(location):
+            # Exact path exists, check if extension is supported
+            _, ext = os.path.splitext(location)
+            ext = ext.lstrip('.')
+            if ext in self.EXT_TO_MIME:
+                path = location
+                mimetype = self.EXT_TO_MIME[ext]
+
+        if path is None:
+            # Check available extensions
+            available: list[str] = list()
+            for extension, mimetype in self.EXT_TO_MIME.items():
+                if os.path.isfile(location + '.' + extension):
+                    available.append(mimetype)
+            
+            mimetype = request.accept_mimetypes.best_match(available)
+            if mimetype is not None:
+                path = "%s.%s" % (location, self.MIME_TO_EXT[mimetype])
+            else:
+                path = self.fallback
+                mimetype = 'image/png'  # FIXME Hardcoded type.
+
+        # Serve the file
         response = Response()
-
-        available: list[str] = list()
-        for extension, mimetype in self.EXT_TO_MIME.items():
-            if os.path.isfile(location + '.' + extension):
-                available.append(mimetype)
-        mimetype = request.accept_mimetypes.best_match(available)
-        if mimetype is not None:
-            path = "%s.%s" % (location, self.MIME_TO_EXT[mimetype])
-        else:
-            path = self.fallback
-            mimetype = 'image/png'  # FIXME Hardcoded type.
-
         response.status_code = 200
         response.mimetype = mimetype
+        
         response.last_modified = \
             datetime.utcfromtimestamp(os.path.getmtime(path))\
                     .replace(microsecond=0)
@@ -480,6 +522,8 @@ class PublicConfigHandler:
 
         response = Response()
         response.status_code = 200
+        response.headers['Cache-Control'] = public_cache_control(
+            self.pub_config.cache_interval)
         response.mimetype = "application/json"
         print(str(self.pub_config))
         response.data = json.dumps(
@@ -609,43 +653,53 @@ def main() -> int:
     stores["scoring"] = ScoringStore(stores)
     stores["scoring"].init_store()
 
+    cache_interval = config.public.cache_interval
+
     toplevel_handler = RoutingHandler(
         RootHandler(web_dir),
-        DataWatcher(stores, config.buffer_size),
+        DataWatcher(
+            stores, config.buffer_size, config.public.retry_backoff_seconds,
+            cache_interval),
         ImageHandler(
             os.path.join(config.lib_dir, '%(name)s'),
             os.path.join(web_dir, 'img', 'logo.png')),
-        ScoreHandler(stores),
-        HistoryHandler(stores),
+        ScoreHandler(stores, cache_interval),
+        HistoryHandler(stores, cache_interval),
         PublicConfigHandler(config.public))
 
     wsgi_app = SharedDataMiddleware(DispatcherMiddleware(
         toplevel_handler, {
             '/contests': StoreHandler(
                 stores["contest"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/tasks': StoreHandler(
                 stores["task"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/teams': StoreHandler(
                 stores["team"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/users': StoreHandler(
                 stores["user"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/submissions': StoreHandler(
                 stores["submission"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/subchanges': StoreHandler(
                 stores["subchange"],
-                config.username, config.password, config.realm_name),
+                config.username, config.password, config.realm_name,
+                cache_interval),
             '/faces': ImageHandler(
                 os.path.join(config.lib_dir, 'faces', '%(name)s'),
                 os.path.join(web_dir, 'img', 'face.png')),
             '/flags': ImageHandler(
                 os.path.join(config.lib_dir, 'flags', '%(name)s'),
                 os.path.join(web_dir, 'img', 'flag.png')),
-            '/sublist': SubListHandler(stores),
+            '/sublist': SubListHandler(stores, cache_interval),
         }), {'/': web_dir})
 
     servers: list[WSGIServer] = list()

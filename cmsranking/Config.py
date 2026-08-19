@@ -40,6 +40,10 @@ def default_path(name):
 @dataclass
 class PublicConfig:
     show_id_column: bool = False
+    flags_extension: str = ""
+    faces_extension: str = ""
+    cache_interval: int = 1
+    retry_backoff_seconds: int = 0
 
 
 @dataclass

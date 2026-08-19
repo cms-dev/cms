@@ -6,7 +6,7 @@ var reTrim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g;
 
 var EventSource = function (url) {
   var eventsource = this,
-      interval = 500, // polling interval
+      interval = Math.max(500, PublicConfig.retry_backoff_seconds * 1000), // polling interval
       lastEventId = null,
       cache = '';
 

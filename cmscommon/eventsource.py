@@ -96,6 +96,8 @@ class Publisher:
         # and have the ones at the other end be dropped when the total
         # number exceeds the given limit.
         self._cache = deque(maxlen=size)
+        key = int(time.time() * 1_000_000)
+        self._cache.append((key, None))
         # We use a WeakSet as we want queues to be vanish automatically
         # when no one else is using (i.e. fetching from) them.
         self._sub_queues = WeakSet()
@@ -141,11 +143,13 @@ class Publisher:
             if len(self._cache) > 0 and last_event_key >= self._cache[0][0]:
                 # All missed events are in cache.
                 for key, msg in self._cache:
+                    if msg is None:
+                        continue
                     if key > last_event_key:
                         queue.put(msg)
             else:
                 # Some events may be missing. Ask to reinit.
-                queue.put(b"event:reinit\n\n")
+                queue.put(b"event:reinit\ndata:reinit\n\n")
         # Store the queue and return a subscriber bound to it.
         self._sub_queues.add(queue)
         return Subscriber(queue)
@@ -211,14 +215,17 @@ class EventSource:
     _GLOBAL_TIMEOUT = 600
     _WRITE_TIMEOUT = 30
     _PING_TIMEOUT = 15
+    _ONE_SHOT_POLL_TIMEOUT = 5
 
     _CACHE_SIZE = 250
 
-    def __init__(self):
+    def __init__(self, retry_backoff_seconds: int = 0, cache_interval: int = 1):
         """Create an event source.
 
         """
         self._pub = Publisher(self._CACHE_SIZE)
+        self.retry_backoff_seconds = retry_backoff_seconds
+        self.cache_interval = cache_interval
 
     def send(self, event: str, data: str):
         """Send the event to the stream.
@@ -298,22 +305,6 @@ class EventSource:
         if request.accept_mimetypes.quality("text/event-stream") <= 0:
             return NotAcceptable()(environ, start_response)
 
-        # Initialize the response and get the write() callback. The
-        # Cache-Control header is useless for conforming clients, as
-        # the spec. already imposes that behavior on them, but we set
-        # it explicitly to avoid unwanted caching by unaware proxies and
-        # middlewares.
-        write = start_response(
-            "200 OK", [("Content-Type", "text/event-stream; charset=utf-8"),
-                       ("Cache-Control", "no-cache")])
-
-        # This is a part of the fourth hack (see above).
-        if hasattr(start_response, "__self__") and \
-                isinstance(start_response.__self__, WSGIHandler):
-            handler = start_response.__self__
-        else:
-            handler = None
-
         # One-shot means that we will terminate the request after the
         # first batch of sent events. We do this when we believe the
         # client doesn't support chunked transfer. As this encoding has
@@ -327,10 +318,34 @@ class EventSource:
         # newer werkzeug version. But all modern browsers support SSE natively
         # so this check isn't necessary nowadays. (Well, the http/1.1 check
         # probably isn't necessary either, to be honest...)
-        if environ["SERVER_PROTOCOL"] != "HTTP/1.1":
+        if (environ["SERVER_PROTOCOL"] != "HTTP/1.1" or
+            request.headers.get("X-Response-Mode", "eventstream") == "one-shot"):
             one_shot = True
         else:
             one_shot = False
+
+        if one_shot:
+            ping_timeout = self._ONE_SHOT_POLL_TIMEOUT
+            # Allow CDNs to reuse finished one-shot responses briefly.
+            # Empty responses can stick for at most this long.
+            max_age = max(0, self.cache_interval - 1)
+            cache_control = "public, max-age=%d" % max_age
+        else:
+            ping_timeout = self._PING_TIMEOUT
+            # Long-lived streams must not be cached by intermediaries.
+            cache_control = "no-cache"
+
+        # Initialize the response and get the write() callback.
+        write = start_response(
+            "200 OK", [("Content-Type", "text/event-stream; charset=utf-8"),
+                       ("Cache-Control", cache_control)])
+
+        # This is a part of the fourth hack (see above).
+        if hasattr(start_response, "__self__") and \
+                isinstance(start_response.__self__, WSGIHandler):
+            handler = start_response.__self__
+        else:
+            handler = None
 
         # As for the Server-Sent Events [1] spec., this is the way for
         # the client to tell us the ID of the last event it received
@@ -348,6 +363,12 @@ class EventSource:
 
         # We subscribe to the publisher to receive events.
         sub = self._pub.get_subscriber(last_event_id)
+        
+
+        if self.retry_backoff_seconds > 0:
+            # Sned how long the client should wait before retrying
+            # the connection.
+            write("retry: {}\n".format(self.retry_backoff_seconds * 1000).encode("utf-8"))
 
         # Send some data down the pipe. We need that to make the user
         # agent announces the connection (see the spec.). Since it's a
@@ -369,7 +390,7 @@ class EventSource:
                 # seconds, sending a ping (i.e. a comment) if there's
                 # no real data.
                 try:
-                    with Timeout(self._PING_TIMEOUT):
+                    with Timeout(ping_timeout):
                         data = b"".join(sub.get())
                         got_sth = True
                 except Timeout:
@@ -391,10 +412,8 @@ class EventSource:
                         handler.response_use_chunked = False
                     break
 
-                # If we decided this is one-shot, stop the long-poll as
-                # soon as we sent the client some real data.
-                if one_shot and got_sth:
+                # If we decided this is one-shot, stop the long-poll.
+                if one_shot:
                     break
-
         # An empty iterable tells the server not to send anything.
         return []
