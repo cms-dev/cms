@@ -22,35 +22,51 @@ import unittest
 
 from cmstestsuite.unit_tests.databasemixin import DatabaseMixin
 
-from cms.db import Contest, SessionGen, Submission, User
+from cms.db import Contest, SessionGen, Submission, Team, User
 from cmscontrib.ImportContest import ContestImporter
-from cmscontrib.loaders.base_loader import ContestLoader, TaskLoader
+from cmscontrib.loaders.base_loader import (
+    ContestLoader,
+    TaskLoader,
+    TeamLoader,
+    UserLoader,
+)
 
 
 def fake_loader_factory(
     contest: Contest,
     contest_has_changed: bool = False,
     tasks: list[tuple[str, bool]] | None = None,
-    usernames: list[str] | None = None,
+    participations: list[dict] | None = None,
+    users: list[User] | None = None,
+    teams: list[Team] | None = None,
 ):
     """Return a Loader class always returning the same information
 
     contest: the contest to return
     contest_has_changed: what to return from contest_has_changed
     tasks: list of task names and whether they have changed
-    usernames: list of usernames of participations
+    participations: list of participations
+    users: list of importable users
+    teams: list of importable teams
 
     """
 
     tasks = tasks if tasks is not None else []
-    usernames = usernames if usernames is not None else []
+    participations = participations if participations is not None else []
+    users = users if users is not None else []
+    teams = teams if teams is not None else []
 
     task_name_list = [t.name for t, has_changed in tasks]
     tasks_by_name = dict((t.name, {
         "task": t,
         "has_changed": has_changed
     }) for t, has_changed in tasks)
-    participations = [{"username": u} for u in usernames]
+    users_by_name = (
+        users if isinstance(users, dict) else dict((u.username, u) for u in users)
+    )
+    teams_by_code = (
+        teams if isinstance(teams, dict) else dict((t.code, t) for t in teams)
+    )
 
     class FakeLoader(ContestLoader):
         @staticmethod
@@ -77,6 +93,36 @@ def fake_loader_factory(
                     return tasks_by_name.get(taskname, None)["has_changed"]
 
             return FakeTaskLoader(self.path, self.file_cacher)
+
+        def get_user_loader(self, username):
+
+            class FakeUserLoader(UserLoader):
+                @staticmethod
+                def detect(path):
+                    return True
+
+                def get_user(self):
+                    return users_by_name.get(username, None)
+
+                def user_has_changed(self):
+                    return True
+
+            return FakeUserLoader(self.path, self.file_cacher)
+
+        def get_team_loader(self, teamcode):
+
+            class FakeTeamLoader(TeamLoader):
+                @staticmethod
+                def detect(path):
+                    return True
+
+                def get_team(self):
+                    return teams_by_code.get(teamcode, None)
+
+                def team_has_changed(self):
+                    return True
+
+            return FakeTeamLoader(self.path, self.file_cacher)
 
     return FakeLoader
 
@@ -115,13 +161,21 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
     def do_import(contest, tasks, participations,
                   contest_has_changed=False, update_contest=False,
                   import_tasks=False, update_tasks=False,
-                  delete_stale_participations=False):
+                  delete_stale_participations=False,
+                  auto_import_users=True, auto_import_teams=True,
+                  users=None, teams=None):
         """Create an importer and call do_import in a convenient way"""
+        participations = [
+            p if isinstance(p, dict) else {"username": p}
+            for p in participations
+        ]
         return ContestImporter(
             "path", True, False, import_tasks, update_contest, update_tasks,
             False, delete_stale_participations,
+            auto_import_users, auto_import_teams,
             fake_loader_factory(contest, contest_has_changed,
-                                tasks, participations)).do_import()
+                                tasks, participations, users, teams)
+        ).do_import()
 
     def assertContestInDb(self, name, description, task_names_and_titles,
                           usernames_and_last_names):
@@ -150,6 +204,15 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
         """Assert that we have that many submissions in the DB"""
         with SessionGen() as session:
             self.assertEqual(session.query(Submission).count(), count)
+
+    def assertTeamInDb(self, code, name):
+        """Assert that the team with the given data is in the DB"""
+        with SessionGen() as session:
+            db_teams = session.query(Team).filter(Team.code == code).all()
+            self.assertEqual(len(db_teams), 1)
+            team = db_teams[0]
+            self.assertEqual(team.code, code)
+            self.assertEqual(team.name, name)
 
     def test_import_task_in_db_not_attached(self):
         # Completely new contest, the task is already in the DB, not attached
@@ -295,14 +358,118 @@ class TestImportContest(DatabaseMixin, unittest.TestCase):
                                [(self.username, self.last_name)])
         self.assertSubmissionCount(1)
 
-    def test_import_participation_not_in_db(self):
+    def test_import_participation_not_in_db_imported(self):
+        # Completely new contest, no tasks, a new participation whose user is
+        # not in the DB but can be imported by the loader.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        username = "new_username"
+        last_name = "new_last_name"
+        user = self.get_user(username=username, last_name=last_name)
+        ret = self.do_import(contest, [], [username], users=[user])
+
+        self.assertTrue(ret)
+        self.assertContestInDb(name, description, [], [(username, last_name)])
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_not_in_db_fail_without_user_auto_import(self):
         # Completely new contest, no tasks, a new participation but the user
-        # is not in the DB, so it should fail.
+        # is not in the DB and auto import is disabled, so it should fail.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        username = "new_username"
+        user = self.get_user(username=username)
+        ret = self.do_import(
+            contest, [], [username], auto_import_users=False, users=[user])
+
+        self.assertFalse(ret)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_not_in_db_fail_if_user_loader_missing(self):
+        # Completely new contest, no tasks, a new participation whose user is
+        # neither in the DB nor available through the loader, so it should fail.
         name = "new_name"
         description = "new_desc"
         contest = self.get_contest(name=name, description=description)
         username = "new_username"
         ret = self.do_import(contest, [], [username])
+
+        self.assertFalse(ret)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_not_in_db_fail_if_user_loader_duplicates(self):
+        # If the loader produces a user that already exists under a different
+        # referenced username, treat it like cmsImportUser and fail.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        user = self.get_user(username=self.username)
+        ret = self.do_import(
+            contest, [], ["new_username"], users={"new_username": user})
+
+        self.assertFalse(ret)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_team_not_in_db_imported(self):
+        # Completely new contest, no tasks, a new participation whose team is
+        # not in the DB but can be imported by the loader.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        team_code = "new_team_code"
+        team_name = "new_team_name"
+        team = self.get_team(code=team_code, name=team_name)
+        ret = self.do_import(
+            contest, [], [{"username": self.username, "team": team_code}],
+            teams=[team])
+
+        self.assertTrue(ret)
+        self.assertContestInDb(name, description, [],
+                               [(self.username, self.last_name)])
+        self.assertTeamInDb(team_code, team_name)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_team_not_in_db_fail_without_team_auto_import(self):
+        # Completely new contest, no tasks, a new participation whose team is
+        # not in the DB and auto import is disabled, so it should fail.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        team_code = "new_team_code"
+        team = self.get_team(code=team_code)
+        ret = self.do_import(
+            contest, [], [{"username": self.username, "team": team_code}],
+            auto_import_teams=False, teams=[team])
+
+        self.assertFalse(ret)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_team_not_in_db_fail_if_team_loader_missing(self):
+        # Completely new contest, no tasks, a new participation whose team is
+        # neither in the DB nor available through the loader, so it should fail.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        team_code = "new_team_code"
+        ret = self.do_import(
+            contest, [], [{"username": self.username, "team": team_code}])
+
+        self.assertFalse(ret)
+        self.assertSubmissionCount(1)
+
+    def test_import_participation_team_not_in_db_fail_if_team_loader_duplicates(self):
+        # If the loader produces a team that already exists under a different
+        # referenced code, treat it like cmsImportTeam and fail.
+        name = "new_name"
+        description = "new_desc"
+        contest = self.get_contest(name=name, description=description)
+        team = self.get_team(code=self.add_team().code)
+        self.session.commit()
+        ret = self.do_import(
+            contest, [], [{"username": self.username, "team": "new_team_code"}],
+            teams={"new_team_code": team})
 
         self.assertFalse(ret)
         self.assertSubmissionCount(1)
