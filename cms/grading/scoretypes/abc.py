@@ -138,9 +138,7 @@ class ScoreType(metaclass=ABCMeta):
         _ = translation.gettext
         n_ = translation.ngettext
         if score_details is None:
-            logger.error(
-                "Found a null score details string. " "Try invalidating scores."
-            )
+            logger.error("Found a null score details string. Try invalidating scores.")
             return _("Score details temporarily unavailable.")
         else:
             # FIXME we should provide to the template all the variables
@@ -155,7 +153,7 @@ class ScoreType(metaclass=ABCMeta):
                 )
             except Exception:
                 logger.exception(
-                    "Found an invalid score details string. " "Try invalidating scores."
+                    "Found an invalid score details string. Try invalidating scores."
                 )
                 return _("Score details temporarily unavailable.")
 
@@ -365,9 +363,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
             score = group_parameter[0]
         else:
             score = group_parameter["max_score"]
-        assert round(score, self.score_precision) == score, (
-            f"The max score for a subtask" "has more precision than the task allows."
-        )
+        assert (
+            round(score, self.score_precision) == score
+        ), "The max score for a subtask has more precision than the task allows."
         return score
 
     def get_testcases(
