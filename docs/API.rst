@@ -102,6 +102,71 @@ Additional details on the submission's results can be retrieved by making an
 authenticated ``GET`` request to ``/tasks/{taskname}/submissions/{id}/details``.
 The endpoint will return an HTML snippet matching what is seen by contestants.
 
+Submission details (JSON)
+=========================
+
+An authenticated ``GET`` request to
+``/api/{taskname}/submissions/{id}/details`` will return a JSON object with the
+submission details filtered according to the task's feedback level:
+
+.. sourcecode:: json
+
+  {
+    "details": [
+      {
+        "idx": 0,
+        "score": 10.0,
+        "max_score": 10.0,
+        "score_fraction": 1.0,
+        "testcases": [
+          {
+            "idx": "0_0",
+            "outcome": "Correct",
+            "text": ["Output is correct"]
+          }
+        ]
+      }
+    ]
+  }
+
+If the task uses a non-subtask score type such as ``Sum``, ``details`` will
+contain a list of testcase objects directly.
+
+Unfiltered submission details (JSON)
+====================================
+
+An authenticated ``GET`` request to
+``/api/{taskname}/submissions/{id}/full_details`` will return a JSON object with
+the complete, unfiltered submission details (including all testcase execution
+times and memory usage). For example:
+
+.. sourcecode:: json
+
+  {
+    "details": [
+      {
+        "idx": 0,
+        "score": 10.0,
+        "max_score": 10.0,
+        "score_fraction": 1.0,
+        "testcases": [
+          {
+            "idx": "0_0",
+            "outcome": "Correct",
+            "text": ["Output is correct"],
+            "time": 0.001,
+            "time_limit": 2.0,
+            "time_limit_was_exceeded": false,
+            "memory": 262144
+          }
+        ]
+      }
+    ]
+  }
+
+This endpoint requires an impersonated authentication token (see `Impersonation
+of users`_ below) and returns ``403 Forbidden`` for regular contestants.
+
 Impersonation of users
 ======================
 
