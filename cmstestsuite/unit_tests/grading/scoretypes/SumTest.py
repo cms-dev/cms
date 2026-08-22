@@ -100,6 +100,38 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
             [{"idx": "0"}, {"idx": "1"}, {"idx": "2"}, {"idx": "3"}],
         )
 
+    def test_get_json_details(self):
+        from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+
+        st = Sum(10, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        _, testcases, _, _, _ = st.compute_score(sr)
+
+        full = st.get_json_details(testcases, FEEDBACK_LEVEL_FULL)
+        self.assertEqual(len(full), 4)
+        self.assertIn("time", full[0])
+        self.assertIn("memory", full[0])
+
+        restricted = st.get_json_details(testcases, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertEqual(len(restricted), 4)
+        self.assertNotIn("time", restricted[0])
+        self.assertNotIn("memory", restricted[0])
+
+    def test_get_html_details(self):
+        from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+
+        st = Sum(10, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        _, testcases, _, _, _ = st.compute_score(sr)
+
+        html_full = st.get_html_details(testcases, FEEDBACK_LEVEL_FULL)
+        self.assertIn("execution-time", html_full)
+        self.assertIn("memory-used", html_full)
+
+        html_restricted = st.get_html_details(testcases, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertNotIn("execution-time", html_restricted)
+        self.assertNotIn("memory-used", html_restricted)
+
 
 if __name__ == "__main__":
     unittest.main()

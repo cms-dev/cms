@@ -35,7 +35,11 @@ import re
 from typing import TypedDict, NotRequired
 from abc import ABCMeta, abstractmethod
 
-from cms import FEEDBACK_LEVEL_RESTRICTED
+from cms import (
+    FEEDBACK_LEVEL_FULL,
+    FEEDBACK_LEVEL_RESTRICTED,
+    FEEDBACK_LEVEL_OI_RESTRICTED,
+)
 from cms.db import SubmissionResult
 from cms.grading.steps import EVALUATION_MESSAGES
 from cms.locale import Translation, DEFAULT_TRANSLATION
@@ -118,6 +122,23 @@ class ScoreType(metaclass=ABCMeta):
             translation.format_decimal(max_score),
         )
 
+    def get_json_details(
+        self,
+        score_details: object,
+        feedback_level: str = FEEDBACK_LEVEL_RESTRICTED,
+    ) -> object:
+        """Return a JSON-serializable object representing the score details
+        of a submission filtered according to the feedback level.
+
+        score_details: the data saved by the score type
+            itself in the database; can be public or private.
+        feedback_level: the level of details to show to users.
+
+        return: JSON-serializable filtered score details.
+
+        """
+        return score_details
+
     def get_html_details(
         self,
         score_details: object,
@@ -144,8 +165,9 @@ class ScoreType(metaclass=ABCMeta):
             # FIXME we should provide to the template all the variables
             # of a typical CWS context as it's entitled to expect them.
             try:
+                filtered_details = self.get_json_details(score_details, feedback_level)
                 return self.template.render(
-                    details=score_details,
+                    details=filtered_details,
                     feedback_level=feedback_level,
                     translation=translation,
                     gettext=_,
@@ -248,6 +270,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
     N_("N/A")
     TEMPLATE = """\
 {% for st in details %}
+{% set show_timing = (st["testcases"]|any("contains", "time")
+                      or st["testcases"]|any("contains", "memory")) %}
     {% if "score_fraction" in st %}
         {% if st["score_fraction"] >= 1.0 %}
 <div class="subtask correct">
@@ -287,7 +311,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <th class="details">
                         {% trans %}Details{% endtrans %}
                     </th>
-    {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+    {% if show_timing %}
                     <th class="execution-time">
                         {% trans %}Execution time{% endtrans %}
                     </th>
@@ -299,13 +323,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             </thead>
             <tbody>
     {% for tc in st["testcases"] %}
-        {% set show_tc = "outcome" in tc
-               and ((feedback_level == FEEDBACK_LEVEL_FULL)
-               or (feedback_level == FEEDBACK_LEVEL_RESTRICTED
-               and tc["show_in_restricted_feedback"])
-               or (feedback_level == FEEDBACK_LEVEL_OI_RESTRICTED
-               and tc["show_in_oi_restricted_feedback"])) %}
-        {% if show_tc %}
+        {% if "outcome" in tc %}
             {% if tc["outcome"] == "Correct" %}
                 <tr class="correct">
             {% elif tc["outcome"] == "Not correct" %}
@@ -318,7 +336,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td class="details">
                       {{ tc["text"]|format_status_text }}
                     </td>
-            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+            {% if show_timing %}
                     <td class="execution-time">
                 {% if "time_limit_was_exceeded" in tc and tc["time_limit_was_exceeded"] %}
                         &gt; {{ tc["time_limit"]|format_duration }}
@@ -338,10 +356,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% endif %}
                 </tr>
         {% else %}
-            {% if feedback_level != FEEDBACK_LEVEL_OI_RESTRICTED %}
                 <tr class="undefined">
                     <td class="idx">{{ loop.index }}</td>
-                {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+                {% if show_timing %}
                     <td colspan="4">
                 {% else %}
                     <td colspan="2">
@@ -349,7 +366,6 @@ class ScoreTypeGroup(ScoreTypeAlone):
                         {% trans %}N/A{% endtrans %}
                     </td>
                 </tr>
-            {% endif %}
         {% endif %}
     {% endfor %}
             </tbody>
@@ -357,6 +373,65 @@ class ScoreTypeGroup(ScoreTypeAlone):
     </div>
 </div>
 {% endfor %}"""
+
+    def get_json_details(
+        self,
+        score_details: object,
+        feedback_level: str = FEEDBACK_LEVEL_RESTRICTED,
+    ) -> object:
+        """Filter score_details for subtask-based score types according to
+        the feedback level.
+
+        """
+        if not isinstance(score_details, list):
+            return score_details
+
+        filtered_subtasks = []
+        for st in score_details:
+            filtered_st = {
+                "idx": st["idx"],
+                "score_fraction": st["score_fraction"],
+                "score": st["score"],
+                "max_score": st["max_score"],
+            }
+
+            filtered_testcases = []
+            for tc in st.get("testcases", []):
+                if feedback_level == FEEDBACK_LEVEL_FULL:
+                    show_tc = True
+                elif feedback_level == FEEDBACK_LEVEL_RESTRICTED:
+                    show_tc = tc.get("show_in_restricted_feedback", False)
+                elif feedback_level == FEEDBACK_LEVEL_OI_RESTRICTED:
+                    show_tc = tc.get("show_in_oi_restricted_feedback", False)
+                else:
+                    raise ValueError(f"Invalid feedback level {feedback_level}")
+
+                if show_tc and "outcome" in tc:
+                    filtered_tc = {
+                        "idx": tc["idx"],
+                        "outcome": tc["outcome"],
+                        "text": tc.get("text"),
+                    }
+                    if feedback_level == FEEDBACK_LEVEL_FULL:
+                        if "time" in tc:
+                            filtered_tc["time"] = tc["time"]
+                        if "time_limit" in tc:
+                            filtered_tc["time_limit"] = tc["time_limit"]
+                        if "time_limit_was_exceeded" in tc:
+                            filtered_tc["time_limit_was_exceeded"] = tc[
+                                "time_limit_was_exceeded"
+                            ]
+                        if "memory" in tc:
+                            filtered_tc["memory"] = tc["memory"]
+                    filtered_testcases.append(filtered_tc)
+                else:
+                    if feedback_level != FEEDBACK_LEVEL_OI_RESTRICTED:
+                        filtered_testcases.append({"idx": tc.get("idx")})
+
+            filtered_st["testcases"] = filtered_testcases
+            filtered_subtasks.append(filtered_st)
+
+        return filtered_subtasks
 
     def get_max_score(self, group_parameter: ScoreTypeGroupParameters) -> float:
         if isinstance(group_parameter, tuple) or isinstance(group_parameter, list):

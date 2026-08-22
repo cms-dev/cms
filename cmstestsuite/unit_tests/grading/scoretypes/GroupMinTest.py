@@ -201,6 +201,44 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
             [{"idx": 0}, {"idx": 1}, {"idx": 2}, {"idx": 3}],
         )
 
+    def test_get_json_details(self):
+        from cms import (
+            FEEDBACK_LEVEL_FULL,
+            FEEDBACK_LEVEL_RESTRICTED,
+            FEEDBACK_LEVEL_OI_RESTRICTED,
+        )
+
+        parameters = [[10.0, "1_*"], [20.0, "2_*"]]
+        gmin = GroupMin(parameters, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        self.set_outcome(sr, "1_0", 0.0)
+        self.set_outcome(sr, "1_1", 0.0)
+        _, subtasks, _, _, _ = gmin.compute_score(sr)
+
+        # FULL feedback level includes all testcases and times/memory
+        full = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_FULL)
+        self.assertEqual(len(full), 2)
+        self.assertEqual(len(full[0]["testcases"]), 2)
+        self.assertIn("time", full[0]["testcases"][0])
+        self.assertIn("memory", full[0]["testcases"][0])
+        self.assertIn("outcome", full[0]["testcases"][0])
+
+        # RESTRICTED feedback level strips time and keeps placeholders for
+        # hidden testcases
+        restricted = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertEqual(len(restricted), 2)
+        self.assertNotIn("time", restricted[0]["testcases"][0])
+        self.assertNotIn("memory", restricted[0]["testcases"][0])
+        self.assertEqual(restricted[0]["testcases"][0]["outcome"], "Not correct")
+        # 1_1 was hidden because 1_0 was lowest, but placeholder exists
+        self.assertNotIn("outcome", restricted[0]["testcases"][1])
+        self.assertEqual(restricted[0]["testcases"][1]["idx"], "1_1")
+
+        # OI_RESTRICTED feedback level omits non-visible testcases
+        oi = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_OI_RESTRICTED)
+        self.assertEqual(len(oi[0]["testcases"]), 1)
+        self.assertEqual(oi[0]["testcases"][0]["idx"], "1_0")
+
 
 if __name__ == "__main__":
     unittest.main()
