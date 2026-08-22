@@ -23,89 +23,77 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .taskusertest import \
-    UserTestInterfaceHandler, \
-    UserTestHandler, \
-    UserTestStatusHandler, \
-    UserTestDetailsHandler, \
-    UserTestIOHandler, \
-    UserTestFileHandler
-from .tasksubmission import \
-    SubmitHandler, \
-    TaskSubmissionsHandler, \
-    SubmissionStatusHandler, \
-    SubmissionDetailsHandler, \
-    SubmissionFileHandler, \
-    UseTokenHandler
-from .task import \
-    TaskDescriptionHandler, \
-    TaskStatementViewHandler, \
-    TaskAttachmentViewHandler
-from .main import \
-    LoginHandler, \
-    LogoutHandler, \
-    RegistrationHandler, \
-    StartHandler, \
-    NotificationsHandler, \
-    DocumentationHandler
-from .communication import \
-    CommunicationHandler, \
-    QuestionHandler
-from .api import \
-    ApiLoginHandler, \
-    ApiSubmissionListHandler, \
-    ApiSubmitHandler, \
-    ApiTaskListHandler
-
+from .taskusertest import (
+    UserTestInterfaceHandler,
+    UserTestHandler,
+    UserTestStatusHandler,
+    UserTestDetailsHandler,
+    UserTestIOHandler,
+    UserTestFileHandler,
+)
+from .tasksubmission import (
+    SubmitHandler,
+    TaskSubmissionsHandler,
+    SubmissionStatusHandler,
+    SubmissionDetailsHandler,
+    SubmissionFileHandler,
+    UseTokenHandler,
+)
+from .task import (
+    TaskDescriptionHandler,
+    TaskStatementViewHandler,
+    TaskAttachmentViewHandler,
+)
+from .main import (
+    LoginHandler,
+    LogoutHandler,
+    RegistrationHandler,
+    StartHandler,
+    NotificationsHandler,
+    DocumentationHandler,
+)
+from .communication import CommunicationHandler, QuestionHandler
+from .api import (
+    ApiLoginHandler,
+    ApiSubmissionListHandler,
+    ApiSubmitHandler,
+    ApiTaskListHandler,
+)
 
 HANDLERS = [
-
     # Main
-
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/register", RegistrationHandler),
     (r"/start", StartHandler),
     (r"/notifications", NotificationsHandler),
     (r"/documentation", DocumentationHandler),
-
     # Tasks
-
     (r"/tasks/(.*)/description", TaskDescriptionHandler),
     (r"/tasks/(.*)/statements/([^/]*)(?:/.*)?", TaskStatementViewHandler),
     (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
-
     # Task submissions
-
     (r"/tasks/(.*)/submit", SubmitHandler),
     (r"/tasks/(.*)/submissions", TaskSubmissionsHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)", SubmissionStatusHandler),
-    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details",
-     SubmissionDetailsHandler),
-    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)",
-     SubmissionFileHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details", SubmissionDetailsHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)", SubmissionFileHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)/token", UseTokenHandler),
-
     # Task usertests
-
     (r"/testing", UserTestInterfaceHandler),
     (r"/tasks/(.*)/test", UserTestHandler),
     (r"/tasks/(.*)/tests/([1-9][0-9]*)", UserTestStatusHandler),
     (r"/tasks/(.*)/tests/([1-9][0-9]*)/details", UserTestDetailsHandler),
     (r"/tasks/(.*)/tests/([1-9][0-9]*)/(input|output)", UserTestIOHandler),
     (r"/tasks/(.*)/tests/([1-9][0-9]*)/files/(.*)", UserTestFileHandler),
-
     # Communications
-
     (r"/communication", CommunicationHandler),
     (r"/question", QuestionHandler),
-
     # API
     (r"/api/login", ApiLoginHandler),
     (r"/api/task_list", ApiTaskListHandler),
     (r"/api/(.*)/submit", ApiSubmitHandler),
     (r"/api/(.*)/submission_list", ApiSubmissionListHandler),
-
     # The following prefixes are handled by WSGI middlewares:
     # * /static, defined in cms/io/web_service.py
     # * /docs, defined in cms/server/contest/server.py

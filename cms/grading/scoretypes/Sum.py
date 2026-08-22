@@ -31,6 +31,7 @@ class Sum(ScoreTypeAlone):
     multiplied by the integer parameter.
 
     """
+
     parameters: int
     # Mark strings for localization.
     N_("#")
@@ -120,8 +121,7 @@ class Sum(ScoreTypeAlone):
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
-        evaluations = dict((ev.codename, ev)
-                           for ev in submission_result.evaluations)
+        evaluations = dict((ev.codename, ev) for ev in submission_result.evaluations)
         testcases = []
         public_testcases = []
         score = 0.0
@@ -131,13 +131,15 @@ class Sum(ScoreTypeAlone):
             this_score = float(evaluations[idx].outcome) * self.parameters
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score
-            testcases.append({
-                "idx": idx,
-                "outcome": tc_outcome,
-                "text": evaluations[idx].text,
-                "time": evaluations[idx].execution_time,
-                "memory": evaluations[idx].execution_memory,
-                })
+            testcases.append(
+                {
+                    "idx": idx,
+                    "outcome": tc_outcome,
+                    "text": evaluations[idx].text,
+                    "time": evaluations[idx].execution_time,
+                    "memory": evaluations[idx].execution_memory,
+                }
+            )
             if self.public_testcases[idx]:
                 public_score += this_score
                 public_testcases.append(testcases[-1])

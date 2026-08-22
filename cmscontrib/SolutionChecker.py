@@ -52,19 +52,19 @@ class RedAlertFormatter(logging.Formatter):
 
     YELLOW_FORMAT = YELLOW + "%(levelname)8s" + RSET + " %(message)s"
 
-
     FORMATS = {
         logging.DEBUG: BASE_FORMAT,
         logging.INFO: BASE_FORMAT,
         logging.WARNING: YELLOW_FORMAT,
         logging.ERROR: RED_FORMAT,
-        logging.CRITICAL: RED_FORMAT
+        logging.CRITICAL: RED_FORMAT,
     }
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno, self.BASE_FORMAT)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
+
 
 class SolutionChecker:
     def __init__(
@@ -116,7 +116,9 @@ class SolutionChecker:
         response.raise_for_status()
         return response.json().get("id")
 
-    def poll_status(self, task_name: str, filename: str, submission_id: str) -> Dict[str, Any]:
+    def poll_status(
+        self, task_name: str, filename: str, submission_id: str
+    ) -> Dict[str, Any]:
         status_url = f"{self.base_url}/tasks/{task_name}/submissions/{submission_id}"
         while True:
             response = self.session.get(status_url, headers=self.auth_header)
