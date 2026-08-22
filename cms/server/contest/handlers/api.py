@@ -21,6 +21,7 @@
 import ipaddress
 import logging
 
+from cms import FEEDBACK_LEVEL_FULL
 from cms.db.submission import Submission
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
@@ -208,3 +209,78 @@ class ApiSubmissionListHandler(ApiContestHandler):
             .all()
         )
         self.json({"list": [{"id": str(s.opaque_id)} for s in submissions]})
+
+
+class ApiSubmissionDetailsHandler(ApiContestHandler):
+    """Retrieves the feedback-level-restricted details of a submission
+    on a task.
+
+    """
+
+    @api_login_required
+    @actual_phase_required(0, 1, 2, 3, 4)
+    @multi_contest
+    def get(self, task_name: str, opaque_id: str):
+        task = self.get_task(task_name)
+        if task is None:
+            self.json({"error": "Task not found"}, 404)
+            return
+
+        submission = self.get_submission(task, opaque_id)
+        if submission is None:
+            self.json({"error": "Submission not found"}, 404)
+            return
+
+        sr = submission.get_result(task.active_dataset)
+        score_type = task.active_dataset.score_type_object
+
+        details = None
+        if sr is not None and sr.scored():
+            is_analysis_mode = self.r_params["actual_phase"] == 3
+            if submission.tokened() or is_analysis_mode:
+                raw_details = sr.score_details
+            else:
+                raw_details = sr.public_score_details
+
+            if is_analysis_mode:
+                feedback_level = FEEDBACK_LEVEL_FULL
+            else:
+                feedback_level = task.feedback_level
+
+            details = score_type.get_json_details(raw_details, feedback_level)
+
+        self.json({"details": details})
+
+
+class ApiSubmissionFullDetailsHandler(ApiContestHandler):
+    """Retrieves the unfiltered details of a submission on a task
+    (admin only).
+
+    """
+
+    @api_login_required
+    @actual_phase_required(0, 1, 2, 3, 4)
+    @multi_contest
+    def get(self, task_name: str, opaque_id: str):
+        if not self.impersonated_by_admin:
+            self.json({"error": "Admin impersonation required"}, 403)
+            return
+
+        task = self.get_task(task_name)
+        if task is None:
+            self.json({"error": "Task not found"}, 404)
+            return
+
+        submission = self.get_submission(task, opaque_id)
+        if submission is None:
+            self.json({"error": "Submission not found"}, 404)
+            return
+
+        sr = submission.get_result(task.active_dataset)
+        score_type = task.active_dataset.score_type_object
+
+        details = None
+        if sr is not None and sr.scored():
+            details = score_type.get_json_details(sr.score_details, FEEDBACK_LEVEL_FULL)
+
+        self.json({"details": details})

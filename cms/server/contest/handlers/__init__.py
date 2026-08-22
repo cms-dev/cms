@@ -55,6 +55,8 @@ from .main import (
 from .communication import CommunicationHandler, QuestionHandler
 from .api import (
     ApiLoginHandler,
+    ApiSubmissionDetailsHandler,
+    ApiSubmissionFullDetailsHandler,
     ApiSubmissionListHandler,
     ApiSubmitHandler,
     ApiTaskListHandler,
@@ -94,6 +96,14 @@ HANDLERS = [
     (r"/api/task_list", ApiTaskListHandler),
     (r"/api/(.*)/submit", ApiSubmitHandler),
     (r"/api/(.*)/submission_list", ApiSubmissionListHandler),
+    (
+        r"/api/(.*)/submissions/([1-9][0-9]*)/details",
+        ApiSubmissionDetailsHandler,
+    ),
+    (
+        r"/api/(.*)/submissions/([1-9][0-9]*)/full_details",
+        ApiSubmissionFullDetailsHandler,
+    ),
     # The following prefixes are handled by WSGI middlewares:
     # * /static, defined in cms/io/web_service.py
     # * /docs, defined in cms/server/contest/server.py
