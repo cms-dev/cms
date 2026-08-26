@@ -32,6 +32,7 @@ from cms.grading.steps.evaluation import (
 )
 from cms.grading.steps.stats import merge_execution_stats
 from cms.grading.steps import trusted_step
+from cms.grading.languagemanager import get_language
 
 # Note: we keep a separate interactive keeper (running in a separate
 # process) to avoid opening many file descriptors in the main worker.
@@ -72,6 +73,7 @@ def main():
     solution_commands = config["solution_commands"]
     controller_files = config["controller_files"]
     solution_files = config["solution_files"]
+    solution_language = config["solution_language"]
     controller_wall_limit = config.get("controller_wall_limit")
     controller_time_limit = config.get("controller_time_limit")
     controller_memory_limit = config.get("controller_memory_limit")
@@ -97,9 +99,12 @@ def main():
             with open(os.path.join(temp_dir, path), "rb") as g:
                 shutil.copyfileobj(g, f)
 
+    language = get_language(solution_language)
+
     controller_proc = evaluation_step_before_run(
         controller_sandbox,
         controller_command,
+        None,
         time_limit=controller_time_limit,
         memory_limit=controller_memory_limit,
         wall_limit=controller_wall_limit,
@@ -147,6 +152,7 @@ def main():
             sol_proc = evaluation_step_before_run(
                 sandbox_sol,
                 solution_commands[-1],
+                language,
                 time_limit=solution_time_limit,
                 wall_limit=controller_wall_limit,
                 # the wall-clock limit mostly exists to eventually kill stuck

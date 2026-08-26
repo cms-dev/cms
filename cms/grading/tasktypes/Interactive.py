@@ -176,7 +176,7 @@ class Interactive(TaskType):
             sandbox.create_file_from_storage(filename, digest, file_cacher)
 
         box_success, compilation_success, text, stats = compilation_step(
-            sandbox, commands
+            sandbox, commands, language
         )
 
         job.success = box_success
@@ -231,6 +231,7 @@ class Interactive(TaskType):
                     "input.txt",
                 ],
                 "solution_files": [executable_filename],
+                "solution_language": job.language,
                 "controller_wall_limit": self.controller_wall_limit,
                 "controller_time_limit": self.controller_time_limit,
                 "controller_memory_limit": self.controller_memory_limit,
