@@ -462,6 +462,21 @@ td.token_rules p:last-child {
     background-color: hsla(120, 100%, 50%, 0.4);
 }
 
+.nav-list .nav-header .task_score_badge {
+    float: right;
+    margin-right: 5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 14px;
+    font-weight: bold;
+    color: #333;
+    text-transform: none;
+}
+.nav-list .nav-header .task_score_badge.undefined {
+    color: #888;
+    background-color: transparent;
+}
 /*** Submit a solution */
 
 #submit_solution {
@@ -559,27 +574,33 @@ td.token_rules p:last-child {
     color: #AAA;
 }
 
-.submission_list td.public_score.score_0 {
+.submission_list td.public_score.score_0,
+.main_task_list td.public_score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.4);
 }
 
-.submission_list tr:hover td.public_score.score_0 {
+.submission_list tr:hover td.public_score.score_0,
+.main_task_list tr:hover td.public_score.score_0 {
     background-color: hsla(0, 100%, 50%, 0.5);
 }
 
-.submission_list td.public_score.score_0_100 {
+.submission_list td.public_score.score_0_100,
+.main_task_list td.public_score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.4);
 }
 
-.submission_list tr:hover td.public_score.score_0_100 {
+.submission_list tr:hover td.public_score.score_0_100,
+.main_task_list tr:hover td.public_score.score_0_100 {
     background-color: hsla(60, 100%, 50%, 0.5);
 }
 
-.submission_list td.public_score.score_100 {
+.submission_list td.public_score.score_100,
+.main_task_list td.public_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.4);
 }
 
-.submission_list tr:hover td.public_score.score_100 {
+.submission_list tr:hover td.public_score.score_100,
+.main_task_list tr:hover td.public_score.score_100 {
     background-color: hsla(120, 100%, 50%, 0.5);
 }
 
