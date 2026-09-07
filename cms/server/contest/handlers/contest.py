@@ -49,9 +49,9 @@ except:
 
 import tornado.web
 
-from cms import config, TOKEN_MODE_MIXED
+from cms import config, TOKEN_MODE_MIXED, FEEDBACK_LEVEL_FULL
 from cms.db import Contest, Submission, Task, UserTest
-from cms.locale import filter_language_codes
+from cms.locale import filter_language_codes, Translation, DEFAULT_TRANSLATION
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
 from cmscommon.datetime import get_timezone
@@ -65,6 +65,89 @@ logger = logging.getLogger(__name__)
 NOTIFICATION_ERROR = "error"
 NOTIFICATION_WARNING = "warning"
 NOTIFICATION_SUCCESS = "success"
+
+
+def get_submission_raw_details_and_feedback_level(
+    submission: Submission,
+    is_analysis_mode: bool = False,
+    task: Task | None = None,
+    full_details: bool = False,
+) -> tuple[object | None, str]:
+    """Determine the raw score details and feedback level for a submission.
+
+    submission: the submission to inspect.
+    is_analysis_mode: whether the contest is currently in analysis mode.
+    task: the task for the submission (defaults to submission.task).
+    full_details: whether to return full unfiltered details (admin view).
+
+    return: (raw_details, feedback_level) or (None, task.feedback_level) if not scored.
+
+    """
+    if task is None:
+        task = submission.task
+
+    sr = submission.get_result(task.active_dataset)
+    if sr is None or not sr.scored():
+        return None, task.feedback_level
+
+    if full_details:
+        return sr.score_details, FEEDBACK_LEVEL_FULL
+
+    if submission.tokened() or is_analysis_mode:
+        raw_details = sr.score_details
+    else:
+        raw_details = sr.public_score_details
+
+    if is_analysis_mode:
+        feedback_level = FEEDBACK_LEVEL_FULL
+    else:
+        feedback_level = task.feedback_level
+
+    return raw_details, feedback_level
+
+
+def get_submission_details(
+    submission: Submission,
+    task: Task | None = None,
+    is_analysis_mode: bool = False,
+    *,
+    as_json: bool = False,
+    full_details: bool = False,
+    translation: Translation = DEFAULT_TRANSLATION,
+) -> object | str | None:
+    """Return formatted submission details according to feedback level and mode.
+
+    submission: the submission to get details for.
+    task: optional task object; if None, submission.task is used.
+    is_analysis_mode: whether the contest is currently in analysis mode.
+    as_json: if True, returns JSON-serializable details; if False, returns HTML.
+    full_details: if True, returns unfiltered details (for admin).
+    translation: translation to use for HTML rendering.
+
+    return: details as JSON or HTML string, or None if not scored.
+
+    """
+    if task is None:
+        task = submission.task
+
+    sr = submission.get_result(task.active_dataset)
+    if sr is None or not sr.scored():
+        return None
+
+    raw_details, feedback_level = get_submission_raw_details_and_feedback_level(
+        submission,
+        is_analysis_mode=is_analysis_mode,
+        task=task,
+        full_details=full_details,
+    )
+
+    score_type = task.active_dataset.score_type_object
+    if as_json:
+        return score_type.get_json_details(raw_details, feedback_level)
+    else:
+        return score_type.get_html_details(
+            raw_details, feedback_level, translation=translation
+        )
 
 
 class ContestHandler(BaseHandler):
@@ -281,6 +364,35 @@ class ContestHandler(BaseHandler):
             .filter(Submission.task == task) \
             .filter(Submission.opaque_id == int(opaque_id)) \
             .first()
+
+    def get_submission_details(
+        self,
+        submission: Submission,
+        task: Task | None = None,
+        *,
+        as_json: bool = False,
+        full_details: bool = False,
+    ) -> object | str | None:
+        """Return formatted submission details for this contest and phase.
+
+        submission: the submission to get details for.
+        task: optional task object; if None, submission.task is used.
+        as_json: if True, returns JSON-serializable details; if False, returns HTML.
+        full_details: if True, returns unfiltered details (for admin).
+
+        return: details as JSON or HTML string, or None if not scored.
+
+        """
+        is_analysis_mode = getattr(self, "r_params", {}).get("actual_phase") == 3
+        translation = getattr(self, "translation", DEFAULT_TRANSLATION)
+        return get_submission_details(
+            submission,
+            task=task,
+            is_analysis_mode=is_analysis_mode,
+            as_json=as_json,
+            full_details=full_details,
+            translation=translation,
+        )
 
     def get_user_test(self, task: Task, user_test_num: int) -> UserTest | None:
         """Return the num-th contestant's test on the given task.

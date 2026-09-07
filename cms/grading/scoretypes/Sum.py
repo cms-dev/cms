@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
 from . import ScoreTypeAlone
 
 
@@ -31,6 +32,7 @@ class Sum(ScoreTypeAlone):
     multiplied by the integer parameter.
 
     """
+
     parameters: int
     # Mark strings for localization.
     N_("#")
@@ -40,6 +42,8 @@ class Sum(ScoreTypeAlone):
     N_("Memory used")
     N_("N/A")
     TEMPLATE = """\
+{% set show_timing = (details|any("contains", "time")
+                      or details|any("contains", "memory")) %}
 <table class="testcase-list">
     <thead>
         <tr>
@@ -52,7 +56,7 @@ class Sum(ScoreTypeAlone):
             <th class="details">
                 {% trans %}Details{% endtrans %}
             </th>
-    {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+    {% if show_timing %}
             <th class="execution-time">
                 {% trans %}Execution time{% endtrans %}
             </th>
@@ -75,16 +79,16 @@ class Sum(ScoreTypeAlone):
             <td class="idx">{{ loop.index }}</td>
             <td class="outcome">{{ _(tc["outcome"]) }}</td>
             <td class="details">{{ tc["text"]|format_status_text }}</td>
-            {% if feedback_level == FEEDBACK_LEVEL_FULL %}
+            {% if show_timing %}
             <td class="execution-time">
-                {% if tc["time"] is not none %}
+                {% if "time" in tc and tc["time"] is not none %}
                 {{ tc["time"]|format_duration }}
                 {% else %}
                 {% trans %}N/A{% endtrans %}
                 {% endif %}
             </td>
             <td class="memory-used">
-                {% if tc["memory"] is not none %}
+                {% if "memory" in tc and tc["memory"] is not none %}
                 {{ tc["memory"]|format_size }}
                 {% else %}
                 {% trans %}N/A{% endtrans %}
@@ -93,7 +97,11 @@ class Sum(ScoreTypeAlone):
             {% endif %}
         {% else %}
         <tr class="undefined">
+        {% if show_timing %}
             <td colspan="5">
+        {% else %}
+            <td colspan="3">
+        {% endif %}
                 {% trans %}N/A{% endtrans %}
             </td>
         </tr>
@@ -101,6 +109,38 @@ class Sum(ScoreTypeAlone):
     {% endfor %}
     </tbody>
 </table>"""
+
+    def get_json_details(
+        self,
+        score_details: object,
+        feedback_level: str = FEEDBACK_LEVEL_RESTRICTED,
+    ) -> object:
+        """Filter score_details for Sum score type according to the
+        feedback level.
+
+        """
+        if score_details is None:
+            return None
+        if not isinstance(score_details, list):
+            return score_details
+
+        filtered_testcases = []
+        for tc in score_details:
+            if "outcome" in tc and "text" in tc:
+                filtered_tc = {
+                    "idx": tc["idx"],
+                    "outcome": tc["outcome"],
+                    "text": tc["text"],
+                }
+                if feedback_level == FEEDBACK_LEVEL_FULL:
+                    if "time" in tc:
+                        filtered_tc["time"] = tc["time"]
+                    if "memory" in tc:
+                        filtered_tc["memory"] = tc["memory"]
+                filtered_testcases.append(filtered_tc)
+            else:
+                filtered_testcases.append({"idx": tc.get("idx")})
+        return filtered_testcases
 
     def max_scores(self):
         """See ScoreType.max_score."""
@@ -120,8 +160,7 @@ class Sum(ScoreTypeAlone):
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
-        evaluations = dict((ev.codename, ev)
-                           for ev in submission_result.evaluations)
+        evaluations = dict((ev.codename, ev) for ev in submission_result.evaluations)
         testcases = []
         public_testcases = []
         score = 0.0
@@ -131,13 +170,15 @@ class Sum(ScoreTypeAlone):
             this_score = float(evaluations[idx].outcome) * self.parameters
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score
-            testcases.append({
-                "idx": idx,
-                "outcome": tc_outcome,
-                "text": evaluations[idx].text,
-                "time": evaluations[idx].execution_time,
-                "memory": evaluations[idx].execution_memory,
-                })
+            testcases.append(
+                {
+                    "idx": idx,
+                    "outcome": tc_outcome,
+                    "text": evaluations[idx].text,
+                    "time": evaluations[idx].execution_time,
+                    "memory": evaluations[idx].execution_memory,
+                }
+            )
             if self.public_testcases[idx]:
                 public_score += this_score
                 public_testcases.append(testcases[-1])

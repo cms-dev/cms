@@ -46,7 +46,7 @@ except:
 import tornado.web
 from sqlalchemy.orm import joinedload
 
-from cms import config, FEEDBACK_LEVEL_FULL
+from cms import config
 from cms.db import Submission, SubmissionResult
 from cms.grading.languagemanager import get_language
 from cms.grading.scoring import task_score
@@ -305,25 +305,7 @@ class SubmissionDetailsHandler(ContestHandler):
             raise tornado.web.HTTPError(404)
 
         sr = submission.get_result(task.active_dataset)
-        score_type = task.active_dataset.score_type_object
-
-        details = None
-        if sr is not None and sr.scored():
-            # During analysis mode we show the full feedback regardless of
-            # what the task says.
-            is_analysis_mode = self.r_params["actual_phase"] == 3
-            if submission.tokened() or is_analysis_mode:
-                raw_details = sr.score_details
-            else:
-                raw_details = sr.public_score_details
-
-            if is_analysis_mode:
-                feedback_level = FEEDBACK_LEVEL_FULL
-            else:
-                feedback_level = task.feedback_level
-
-            details = score_type.get_html_details(
-                raw_details, feedback_level, translation=self.translation)
+        details = self.get_submission_details(submission, task)
 
         self.render("submission_details.html", sr=sr, details=details,
                     **self.r_params)
