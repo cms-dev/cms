@@ -21,7 +21,6 @@
 import ipaddress
 import logging
 
-from cms import FEEDBACK_LEVEL_FULL
 from cms.db.submission import Submission
 from cms.server import multi_contest
 from cms.server.contest.authentication import validate_login
@@ -231,24 +230,7 @@ class ApiSubmissionDetailsHandler(ApiContestHandler):
             self.json({"error": "Submission not found"}, 404)
             return
 
-        sr = submission.get_result(task.active_dataset)
-        score_type = task.active_dataset.score_type_object
-
-        details = None
-        if sr is not None and sr.scored():
-            is_analysis_mode = self.r_params["actual_phase"] == 3
-            if submission.tokened() or is_analysis_mode:
-                raw_details = sr.score_details
-            else:
-                raw_details = sr.public_score_details
-
-            if is_analysis_mode:
-                feedback_level = FEEDBACK_LEVEL_FULL
-            else:
-                feedback_level = task.feedback_level
-
-            details = score_type.get_json_details(raw_details, feedback_level)
-
+        details = self.get_submission_details(submission, task, as_json=True)
         self.json({"details": details})
 
 
@@ -276,11 +258,7 @@ class ApiSubmissionFullDetailsHandler(ApiContestHandler):
             self.json({"error": "Submission not found"}, 404)
             return
 
-        sr = submission.get_result(task.active_dataset)
-        score_type = task.active_dataset.score_type_object
-
-        details = None
-        if sr is not None and sr.scored():
-            details = score_type.get_json_details(sr.score_details, FEEDBACK_LEVEL_FULL)
-
+        details = self.get_submission_details(
+            submission, task, as_json=True, full_details=True
+        )
         self.json({"details": details})
