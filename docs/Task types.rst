@@ -128,7 +128,7 @@ Special messages like ``translate:success``, ``translate:wrong`` and ``translate
 
 Interactive has six parameters:
 
-- whether the contestant's source is compiled on its own (``alone``) or with an admin-provided stub called :file:`stub.{ext}` (``stub``);
+- whether the contestant's source is compiled on its own (``alone``) or with an admin-provided grader called :file:`grader.{ext}` (``grader``);
 - the maximum number of solution instances the controller can spawn (``process_limit``);
 - whether the spawned solutions are assumed to run concurrently (``concurrent``);
 - the maximum memory (in MB) that the controller can use;
@@ -139,9 +139,9 @@ The ``concurrent`` parameter controls how the total wall clock time and total me
 
 Note that in the current implementation, all file descriptors for communication are preallocated before running the controller, which means that the controller always uses (at least) ``2*process_limit`` file descriptors. Thus it is not a good idea to set process_limit significantly higher than necessary.
 
-Admins can provide a manager called :file:`stub.{ext}` for each allowed language. The stub serves the same purpose as in the Communication task type.
+Admins can provide a manager called :file:`grader.{ext}` for each allowed language. The grader serves the same purpose as in the Communication task type.
 
-Interactive supports user tests. Contestants must provide the stub and their source file. The admin-provided controller will be used.
+Interactive supports user tests. Contestants must provide the grader and their source file. The admin-provided controller will be used.
 
 
 TwoSteps

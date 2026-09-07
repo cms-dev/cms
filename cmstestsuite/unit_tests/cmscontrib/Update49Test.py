@@ -100,6 +100,80 @@ class TestUpdate49(unittest.TestCase):
         self.assertEqual(res["9"]["task_type_parameters"], ["alone", ["input.txt", "output.txt"], "diff"])
         self.assertEqual(res["10"]["filename"], "stub.cpp")
 
+    def test_interactive_migration(self):
+        data = {
+            "_version": 48,
+            "1": {
+                "_class": "Task",
+                "name": "inter_task",
+            },
+            "2": {
+                "_class": "Dataset",
+                "task": "1",
+                "task_type": "Interactive",
+                "task_type_parameters": [200, "stub", True, 128.0, 1.0, 5.0],
+            },
+            "3": {
+                "_class": "Manager",
+                "dataset": "2",
+                "filename": "stub.cpp",
+                "digest": "abc",
+            },
+            "4": {
+                "_class": "Manager",
+                "dataset": "2",
+                "filename": "stub.py",
+                "digest": "def",
+            },
+            "5": {
+                "_class": "Manager",
+                "dataset": "2",
+                "filename": "controller",
+                "digest": "ghi",
+            },
+            "6": {
+                "_class": "UserTest",
+                "task": "1",
+            },
+            "7": {
+                "_class": "UserTestManager",
+                "user_test": "6",
+                "filename": "stub.cpp",
+                "digest": "abc",
+            },
+            "8": {
+                "_class": "Task",
+                "name": "batch_task",
+            },
+            "9": {
+                "_class": "Dataset",
+                "task": "8",
+                "task_type": "Batch",
+                "task_type_parameters": ["alone", ["input.txt", "output.txt"], "diff"],
+            },
+            "10": {
+                "_class": "Manager",
+                "dataset": "9",
+                "filename": "stub.cpp",
+                "digest": "xyz",
+            },
+        }
+
+        updater = Updater(copy.deepcopy(data))
+        res = updater.run()
+
+        # Interactive dataset parameters updated
+        self.assertEqual(res["2"]["task_type_parameters"], [200, "grader", True, 128.0, 1.0, 5.0])
+        # Managers on interactive dataset renamed
+        self.assertEqual(res["3"]["filename"], "grader.cpp")
+        self.assertEqual(res["4"]["filename"], "grader.py")
+        self.assertEqual(res["5"]["filename"], "controller")
+        # UserTestManager on interactive task renamed
+        self.assertEqual(res["7"]["filename"], "grader.cpp")
+        # Batch dataset and its managers untouched
+        self.assertEqual(res["9"]["task_type_parameters"], ["alone", ["input.txt", "output.txt"], "diff"])
+        self.assertEqual(res["10"]["filename"], "stub.cpp")
+
     def test_conflict_dataset_raises(self):
         data = {
             "_version": 48,

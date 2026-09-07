@@ -115,13 +115,15 @@ The following are optional files, that must be present for certain task types or
 
 - :file:`gen/GEN`: in the Italian environment, this file describes the parameters for the input generator: each line not composed entirely by white spaces or comments (comments start with ``#`` and end with the end of the line) represents an input file. Here, it is used, in case it contains specially formatted comments, to signal that the score type is :ref:`scoretypes_groupmin`. If a line contains only a comment of the form :samp:`# ST: {score}` then it marks the beginning of a new group assigning at most :samp:`{score}` points, containing all subsequent testcases until the next special comment. If the file does not exists, or does not contain any special comments, the task is given the :ref:`scoretypes_sum` score type.
 
-- :file:`sol/grader.{%l}` (where :samp:`{%l}` here and after means a supported language extension): for tasks of type :ref:`tasktypes_batch` or :ref:`tasktypes_communication`, it is the piece of code that gets compiled together with the submitted solution, and usually takes care of reading the input and writing the output (or managing communication with :file:`manager`). If one grader is present, the graders for all supported languages must be provided.
+- :file:`sol/grader.{%l}` (where :samp:`{%l}` here and after means a supported language extension): for tasks of type :ref:`tasktypes_batch`, :ref:`tasktypes_communication` or :ref:`tasktypes_interactive`, it is the piece of code that gets compiled together with the submitted solution, and usually takes care of reading the input and writing the output (or managing communication with :file:`manager` or :file:`controller`). If one grader is present, the graders for all supported languages must be provided.
 
 - :file:`sol/*.h` and :file:`sol/*lib.pas`: if a grader is present, all other files in the :file:`sol` directory that end with ``.h`` or ``lib.pas`` are treated as auxiliary files needed by the compilation of the grader with the submitted solution.
 
 - :file:`check/checker` (also accepted: :file:`cor/correttore`): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. It must be a statically linked executable (for example, if compiled from a C or C++ source, the :samp:`-static` option must be used) because otherwise the sandbox will prevent it from accessing its dependencies. It is going to be executed on the workers, so it must be compiled for their architecture. If instead the file is not present, a simple diff is used to compare the correct and the contestant's output files.
 
 - :file:`check/manager`: (also accepted: :file:`cor/manager`) for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
+
+- :file:`check/controller`: (also accepted: :file:`cor/controller`) for tasks of type :ref:`tasktypes_interactive`, this executable is the program that communicates with CMS to spawn and interact with the user solutions.
 
 - :file:`att/*`: each file in this folder is added as an attachment to the task, named as the file's filename.
 

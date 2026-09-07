@@ -106,22 +106,22 @@ ALTER TABLE contests DROP COLUMN analysis_stop;
 ALTER TABLE contests DROP COLUMN per_user_time;
 
 -- https://github.com/cms-dev/cms/pull/1711
--- Rename Communication task type compilation parameter from 'stub' to 'grader'
+-- Rename Communication and Interactive task type compilation parameter from 'stub' to 'grader'
 UPDATE datasets
 SET task_type_parameters = jsonb_set(task_type_parameters, '{1}', '"grader"')
-WHERE task_type = 'Communication'
+WHERE task_type IN ('Communication', 'Interactive')
   AND jsonb_array_length(task_type_parameters) >= 2
   AND task_type_parameters->>1 = 'stub';
 
--- Rename Manager filenames from 'stub.%' to 'grader.%' for Communication datasets
+-- Rename Manager filenames from 'stub.%' to 'grader.%' for Communication and Interactive datasets
 UPDATE managers
 SET filename = 'grader' || substring(filename from 5)
 FROM datasets
 WHERE managers.dataset_id = datasets.id
-  AND datasets.task_type = 'Communication'
+  AND datasets.task_type IN ('Communication', 'Interactive')
   AND managers.filename LIKE 'stub.%';
 
--- Rename UserTestManager filenames from 'stub.%' to 'grader.%' for Communication tasks
+-- Rename UserTestManager filenames from 'stub.%' to 'grader.%' for Communication and Interactive tasks
 UPDATE user_test_managers
 SET filename = 'grader' || substring(filename from 5)
 WHERE user_test_managers.user_test_id IN (
@@ -129,7 +129,7 @@ WHERE user_test_managers.user_test_id IN (
     FROM user_tests ut
     JOIN tasks t ON ut.task_id = t.id
     JOIN datasets d ON d.task_id = t.id
-    WHERE d.task_type = 'Communication'
+    WHERE d.task_type IN ('Communication', 'Interactive')
 )
 AND user_test_managers.filename LIKE 'stub.%';
 
