@@ -75,7 +75,7 @@ MANAGER_LANGUAGES = [
     lang for lang in ALL_LANGUAGES if lang not in (LANG_HS, LANG_PHP, LANG_RUST)
 ]
 
-# Languages for which solutions to be linked to a stub for communication tasks
+# Languages for which solutions to be linked to a grader for communication tasks
 # are present under `code/`.
 # TODO: this should be the same as `ALL_LANGUAGES`.
 COMMUNICATION_LANGUAGES = [

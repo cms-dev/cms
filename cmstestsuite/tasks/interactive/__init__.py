@@ -26,7 +26,7 @@ task_info = {
     "time_limit_{{dataset_id}}": "1.0",
     "memory_limit_{{dataset_id}}": "128",
     "task_type_{{dataset_id}}": "Interactive",
-    "TaskTypeOptions_{{dataset_id}}_Interactive_compilation": "stub",
+    "TaskTypeOptions_{{dataset_id}}_Interactive_compilation": "grader",
     "TaskTypeOptions_{{dataset_id}}_Interactive_process_limit": "200",
     "TaskTypeOptions_{{dataset_id}}_Interactive_concurrent": "true",
     "TaskTypeOptions_{{dataset_id}}_Interactive_controller_time_limit": "1.0",
@@ -38,8 +38,8 @@ task_info = {
 
 managers = [
     "controller",
-    "stub.cpp",
-    "stub.py",
+    "grader.cpp",
+    "grader.py",
 ]
 
 test_cases = [

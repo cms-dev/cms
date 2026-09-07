@@ -20,7 +20,7 @@
 
 Used by DumpImporter and DumpUpdater.
 
-Renames Communication task managers from stub.%l to grader.%l and updates
+Renames Communication and Interactive task managers from stub.%l to grader.%l and updates
 the compilation parameter from "stub" to "grader".
 
 """
@@ -34,16 +34,16 @@ class Updater:
 
     def run(self):
         datasets_task_type = {}
-        communication_tasks = set()
+        tasks_to_update = set()
 
         for k, v in self.objs.items():
             if k.startswith("_"):
                 continue
             if v.get("_class") == "Dataset":
                 datasets_task_type[k] = v.get("task_type")
-                if v.get("task_type") == "Communication":
+                if v.get("task_type") in ("Communication", "Interactive"):
                     if "task" in v:
-                        communication_tasks.add(v["task"])
+                        tasks_to_update.add(v["task"])
                     params = v.get("task_type_parameters")
                     if isinstance(params, list) and len(params) >= 2:
                         if params[1] == "stub":
@@ -67,7 +67,7 @@ class Updater:
                 continue
             if v.get("_class") == "Manager":
                 dataset_key = v.get("dataset")
-                if datasets_task_type.get(dataset_key) == "Communication":
+                if datasets_task_type.get(dataset_key) in ("Communication", "Interactive"):
                     fn = v.get("filename", "")
                     if fn.startswith("stub."):
                         new_fn = "grader" + fn[4:]
@@ -82,7 +82,7 @@ class Updater:
                 user_test_key = v.get("user_test")
                 user_test_obj = self.objs.get(user_test_key, {})
                 task_key = user_test_obj.get("task")
-                if task_key in communication_tasks:
+                if task_key in tasks_to_update:
                     fn = v.get("filename", "")
                     if fn.startswith("stub."):
                         new_fn = "grader" + fn[4:]
