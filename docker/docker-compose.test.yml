@@ -15,7 +15,7 @@ services:
       # - https://github.com/actions/runner/issues/241
       PYTEST_ADDOPTS: --color=yes
     volumes:
-      - "../codecov:/home/cmsuser/src/codecov"
+      - "../codecov-results:/home/cmsuser/src/codecov-results"
     privileged: true
     cgroup: host
     command: wait-for-it testdb:5432 -- docker/_cms-test-internal.sh
