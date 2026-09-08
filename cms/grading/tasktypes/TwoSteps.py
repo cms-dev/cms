@@ -341,7 +341,7 @@ class TwoSteps(TaskType):
                 # Otherwise evaluate the output file.
                 else:
                     box_success, outcome, text, admin_text = eval_output(
-                        file_cacher, job,
+                        file_cacher, job, 2,
                         TwoSteps.CHECKER_CODENAME
                         if self._uses_checker() else None,
                         user_output_path=second_sandbox.relative_path(

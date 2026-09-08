@@ -22,8 +22,10 @@ import errno
 import os
 from collections import deque
 from io import BytesIO, StringIO
+import tempfile
 
 from cms.grading.Sandbox import Sandbox
+from cms.util import rmtree
 
 
 class FakeSandbox(Sandbox):
@@ -139,7 +141,10 @@ class FakeSandbox(Sandbox):
         return data["success"]
 
     def initialize_isolate(self):
-        pass
+        tmpd = tempfile.mkdtemp(dir=self.temp_dir, prefix="cms-fake-sandbox-")
+        os.mkdir(tmpd+"/box")
+        return tmpd
 
     def cleanup(self, delete=False):
-        pass
+        if hasattr(self, '_outer_dir'):
+            rmtree(self._outer_dir)

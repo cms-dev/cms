@@ -240,7 +240,7 @@ class Interactive(TaskType):
                 "concurrent": self.concurrent,
                 "temp_dir": tempdir,
                 "shard": file_cacher.service.shard if file_cacher.service else None,
-                "delete_sandbox": not (job.keep_sandbox or job.archive_sandbox),
+                "archive_sandbox": job.archive_sandbox,
             }
 
             keeper_path = os.path.join(
@@ -288,6 +288,11 @@ class Interactive(TaskType):
             job.text = result["text"]
             job.admin_text = result.get("admin_text")
             job.plus = result.get("stats", {})
+            job.sandboxes = result["sandboxes"]
+            for k,v in result["sandbox_archives"].items():
+                digest = file_cacher.put_file_from_path(v, f"Sandbox {k}")
+                job.sandbox_digests[k] = digest
+
 
     def _executable_filename(self, codenames, language):
         """Return the filename of the executable."""

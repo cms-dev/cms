@@ -76,7 +76,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None, user_output_digest="digest of 023")
+            self.file_cacher, job, 0, None, user_output_digest="digest of 023")
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, {})
 
     def test_diff_missing_file(self):
@@ -100,7 +100,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, None, user_output_digest="digest of 023")
+            self.file_cacher, job, 0, None, user_output_digest="digest of 023")
         self.assertResultsInJob(job, False, None, None, None)
 
     def test_comparator_success(self):
@@ -112,7 +112,7 @@ class TestEvaluate(TaskTypeTestMixin, unittest.TestCase):
         tt.evaluate(job, self.file_cacher)
 
         self.eval_output.assert_called_once_with(
-            self.file_cacher, job, "checker",
+            self.file_cacher, job, 0, "checker",
             user_output_digest="digest of 023")
         self.assertResultsInJob(job, True, str(OUTCOME), TEXT, {})
 

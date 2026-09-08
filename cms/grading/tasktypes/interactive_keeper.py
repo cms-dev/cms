@@ -23,6 +23,7 @@ import os
 import shutil
 import sys
 from functools import reduce
+import tempfile
 
 from cms.grading.Sandbox import Sandbox, wait_without_std
 from cms.grading.steps.evaluation import (
@@ -81,7 +82,7 @@ def main():
     concurrent = config.get("concurrent")
     temp_dir = config.get("temp_dir")
     shard = config.get("shard")
-    delete_sandbox = config.get("delete_sandbox")
+    archive_sandbox = config.get("archive_sandbox")
 
     pipes = []
     for i in range(process_limit):
@@ -257,19 +258,32 @@ def main():
             outcome = score if score is not None else 0.0
             text = controller_text
 
+    job_sandboxes = []
+    job_sandbox_archives = {}
+
+    for box in [controller_sandbox] + solution_sandboxes:
+        job_sandboxes.append(box.get_root_path())
+        if archive_sandbox or not success:
+            with tempfile.NamedTemporaryFile('wb', dir=temp_dir, delete=False) as f:
+                ok = box.archive_to_fobj(f)
+                if ok:
+                    job_sandbox_archives[box.get_root_path()] = f.name
+
     result = {
         "success": success,
         "outcome": outcome,
         "text": text,
         "admin_text": admin_text,
         "stats": stats_user,
+        "sandboxes": job_sandboxes,
+        "sandbox_archives": job_sandbox_archives,
     }
     # Communicate results back to the worker
     print(json.dumps(result), flush=True)
 
-    controller_sandbox.cleanup(delete=delete_sandbox)
+    controller_sandbox.cleanup(delete=True)
     for s in solution_sandboxes:
-        s.cleanup(delete=delete_sandbox)
+        s.cleanup(delete=True)
 
 
 if __name__ == "__main__":

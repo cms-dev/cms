@@ -95,11 +95,6 @@ class TaskTypeTestMixin:
         """
         self.tasktype = tasktype
 
-        # Ensure we don't retain all sandboxes so we can verify delete().
-        patcher = patch.object(config.worker, "keep_sandbox", False)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
         # Mock the set of languages (if the task type uses it). Child classes
         # can update this dict before the test to change the set of languages
         # CMS understands.
