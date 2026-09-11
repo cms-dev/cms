@@ -10,6 +10,7 @@
 # Copyright © 2021 Manuel Gundlach <manuel.gundlach@gmail.com>
 # Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 # Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
+# Copyright © 2026 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -50,8 +51,10 @@ from cms.db import SessionGen, User, Team, Participation, Task, Contest, Group
 from cms.db.filecacher import FileCacher
 from cmscontrib.importing import ImportDataError, update_contest, \
     update_group, update_task
+from cmscontrib.ImportTeam import TeamImporter
+from cmscontrib.ImportUser import UserImporter
 from cmscontrib.loaders import choose_loader, build_epilog
-from cmscontrib.loaders.base_loader import BaseLoader, ContestLoader
+from cmscontrib.loaders.base_loader import ContestLoader
 
 
 logger = logging.getLogger(__name__)
@@ -74,6 +77,8 @@ class ContestImporter:
         update_tasks: bool,
         no_statements: bool,
         delete_stale_participations: bool,
+        auto_import_users: bool,
+        auto_import_teams: bool,
         loader_class: type[ContestLoader],
     ):
         self.yes = yes
@@ -83,6 +88,8 @@ class ContestImporter:
         self.update_tasks = update_tasks
         self.no_statements = no_statements
         self.delete_stale_participations = delete_stale_participations
+        self.auto_import_users = auto_import_users
+        self.auto_import_teams = auto_import_teams
         self.file_cacher = FileCacher()
 
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
@@ -265,9 +272,8 @@ class ContestImporter:
         task.contest = contest
         return task
 
-    @staticmethod
     def _participation_to_db(
-        session: Session, contest: Contest, new_p: dict
+        self, session: Session, contest: Contest, new_p: dict
     ) -> Participation:
         """Add the new participation to the DB and attach it to the contest
 
@@ -287,19 +293,42 @@ class ContestImporter:
             session.query(User).filter(User.username == new_p["username"]).first()
         )
         if user is None:
-            # FIXME: it would be nice to automatically try to import.
-            raise ImportDataError("User \"%s\" not found in database. "
-                                  "Use cmsImportUser to import it." %
-                                  new_p["username"])
+            if not self.auto_import_users:
+                raise ImportDataError("User \"%s\" not found in database. "
+                                      "Use cmsImportUser to import it." %
+                                      new_p["username"])
+            user_loader = self.loader.get_user_loader(new_p["username"])
+            if user_loader is None:
+                raise ImportDataError(
+                    "User \"%s\" not found in database. "
+                    "Use cmsImportUser to import it." %
+                    new_p["username"])
+            user = user_loader.get_user()
+            if user is None:
+                raise ImportDataError(
+                    "Could not import user \"%s\"." %
+                    new_p["username"])
+            user = UserImporter._user_to_db(session, user)
 
         team: Team | None = (
             session.query(Team).filter(Team.code == new_p.get("team")).first()
         )
         if team is None and new_p.get("team") is not None:
-            # FIXME: it would be nice to automatically try to import.
-            raise ImportDataError("Team \"%s\" not found in database. "
-                                  "Use cmsImportTeam to import it."
-                                  % new_p.get("team"))
+            if not self.auto_import_teams:
+                raise ImportDataError("Team \"%s\" not found in database. "
+                                      "Use cmsImportTeam to import it."
+                                      % new_p.get("team"))
+            team_loader = self.loader.get_team_loader(new_p.get("team"))
+            if team_loader is None:
+                raise ImportDataError(
+                    "Team \"%s\" not found in database. "
+                    "Use cmsImportTeam to import it."
+                    % new_p.get("team"))
+            team = team_loader.get_team()
+            if team is None:
+                raise ImportDataError(
+                    "Could not import team \"%s\"." % new_p.get("team"))
+            team = TeamImporter._team_to_db(session, team)
 
         # Check that the participation is not already defined.
         p: Participation | None = (
@@ -465,6 +494,16 @@ If updating a contest already in the DB:
         help="do not import / update task statements"
     )
     parser.add_argument(
+        "-iu", "--import-users",
+        action="store_true",
+        help="import users if they do not exist"
+    )
+    parser.add_argument(
+        "-it", "--import-teams",
+        action="store_true",
+        help="import teams if they do not exist"
+    )
+    parser.add_argument(
         "--delete-stale-participations",
         action="store_true",
         help="when updating a contest, delete the participations not in the "
@@ -493,6 +532,8 @@ If updating a contest already in the DB:
         update_tasks=args.update_tasks,
         no_statements=args.no_statements,
         delete_stale_participations=args.delete_stale_participations,
+        auto_import_users=args.import_users,
+        auto_import_teams=args.import_teams,
         loader_class=loader_class)
     success = importer.do_import()
     return 0 if success is True else 1
