@@ -144,6 +144,7 @@ setup(
             "cmsRemoveParticipation=cmscontrib.RemoveParticipation:main",
             "cmsRemoveSubmissions=cmscontrib.RemoveSubmissions:main",
             "cmsRemoveTask=cmscontrib.RemoveTask:main",
+            "cmsRemoveTeam=cmscontrib.RemoveTeam:main",
             "cmsRemoveUser=cmscontrib.RemoveUser:main",
             "cmsSolutionChecker=cmscontrib.SolutionChecker:main",
             "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
