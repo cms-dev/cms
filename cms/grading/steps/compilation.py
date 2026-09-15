@@ -42,7 +42,7 @@ def N_(message: str):
     return message
 
 
-COMPILATION_MESSAGES = MessageCollection([
+COMPILATION_MESSAGES = MessageCollection("compilation", [
     HumanMessage("success",
                  N_("Compilation succeeded"),
                  N_("Your submission successfully compiled to an "
@@ -54,14 +54,20 @@ COMPILATION_MESSAGES = MessageCollection([
                  N_("Compilation timed out"),
                  N_("Your submission exceeded the time limit while compiling. "
                     "This might be caused by an excessive use of C++ "
-                    "templates, for example.")),
+                    "templates, for example."),
+                 inline_help=True),
+    HumanMessage("memorylimit",
+                 N_("Compilation memory limit exceeded"),
+                 N_("Your submission exceeded the memory limit while compiling. "
+                    "This might be caused by an excessive use of C++ "
+                    "templates, or too large global variables, for example."),
+                 inline_help=True),
     HumanMessage("signal",
-                 N_("Compilation killed with signal %s (could be triggered "
-                    "by violating memory limits)"),
+                 N_("Compilation killed with signal %s"),
                  N_("Your submission was killed with the specified signal. "
-                    "Among other things, this might be caused by exceeding "
-                    "the memory limit for the compilation, and in turn by an "
-                    "excessive use of C++ templates, for example.")),
+                    "This might be caused by a bug in the compiler, "
+                    "for example."),
+                 inline_help=True),
 ])
 
 
@@ -86,8 +92,9 @@ def compilation_step(
             executable, False if not, None if success is False;
         * text: a human readable, localized message to inform contestants
             of the status; it is either an empty list (for no message) or a
-            list of strings were the second to the last are formatting
-            arguments for the first, or None if success is False;
+            list of strings were the first is a message ID and the rest are
+            format arguments for that message, if the message takes any; or
+            None if success is False;
         * stats: a dictionary with statistics about the compilation, or None
             if success is False.
 
@@ -118,14 +125,14 @@ def compilation_step(
     if exit_status == Sandbox.EXIT_OK:
         # Execution finished successfully and the executable was generated.
         logger.debug("Compilation successfully finished.")
-        text = [COMPILATION_MESSAGES.get("success").message]
+        text = ["compilation:success"]
         return True, True, text, stats
 
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         # Error in compilation: no executable was generated, and we return
         # an error to the user.
         logger.debug("Compilation failed.")
-        text = [COMPILATION_MESSAGES.get("fail").message]
+        text = ["compilation:fail"]
         return True, False, text, stats
 
     elif exit_status == Sandbox.EXIT_TIMEOUT or \
@@ -133,7 +140,14 @@ def compilation_step(
         # Timeout: we assume it is the user's fault, and we return the error
         # to them.
         logger.debug("Compilation timed out.")
-        text = [COMPILATION_MESSAGES.get("timeout").message]
+        text = ["compilation:timeout"]
+        return True, False, text, stats
+
+    elif exit_status == Sandbox.EXIT_MEM_LIMIT:
+        # Memory limit: we assume it is the user's fault, and we return the
+        # error to them.
+        logger.debug("Compilation memory limit exceeded.")
+        text = ["compilation:memorylimit"]
         return True, False, text, stats
 
     elif exit_status == Sandbox.EXIT_SIGNAL:
@@ -141,7 +155,7 @@ def compilation_step(
         # we return the error to them.
         signal = stats["signal"]
         logger.debug("Compilation killed with signal %s.", signal)
-        text = [COMPILATION_MESSAGES.get("signal").message, str(signal)]
+        text = ["compilation:signal", str(signal)]
         return True, False, text, stats
 
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
