@@ -244,7 +244,7 @@ class Batch(TaskType):
 
         # Run the compilation.
         box_success, compilation_success, text, stats = \
-            compilation_step(sandbox, commands)
+            compilation_step(sandbox, commands, language)
 
         # Retrieve the compiled executables.
         job.success = box_success
@@ -311,6 +311,7 @@ class Batch(TaskType):
         box_success, evaluation_success, stats = evaluation_step(
             sandbox,
             commands,
+            language,
             job.time_limit,
             job.memory_limit,
             writable_files=files_allowing_write,
