@@ -390,6 +390,7 @@ div.register_box {
 
 .compilation_command {
     display: block;
+    white-space: pre-wrap;
 }
 
 .compilation_command + .compilation_command {
