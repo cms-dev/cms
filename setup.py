@@ -171,6 +171,7 @@ setup(
             "C++20 / g++=cms.grading.languages.cpp20_gpp:Cpp20Gpp",
             "C11 / gcc=cms.grading.languages.c11_gcc:C11Gcc",
             "C# / Mono=cms.grading.languages.csharp_mono:CSharpMono",
+            "C# / dotnet=cms.grading.languages.csharp_dotnet:CSharpDotnet",
             "Haskell / ghc=cms.grading.languages.haskell_ghc:HaskellGhc",
             "Java / JDK=cms.grading.languages.java_jdk:JavaJDK",
             "Pascal / fpc=cms.grading.languages.pascal_fpc:PascalFpc",

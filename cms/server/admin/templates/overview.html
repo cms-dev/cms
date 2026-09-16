@@ -151,10 +151,13 @@ function update_workers_status(response)
 
 function link_submissions(s)
 {
-    return s.replace(/submission ([0-9]+)/g,
+    s = s.replace(/submission ([0-9]+)/g,
                      function (match, n, offset, string) {
                          return 'submission <a href="' + utils.url("submission", n) + '">' + n + '</a>';
                      });
+    s = s.replace(/sandbox\("([^"]+)", hash=([0-9a-f]+)\)/g,
+      function(match, path, hash) {return 'sandbox("<a href="' + utils.url("file", hash, "sandbox.tar.gz") + '">' + path + '</a>")'});
+    return s;
 }
 
 function escape_html(s)

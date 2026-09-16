@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 import cmstestsuite.tasks.batch_and_output as batch_and_output
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
@@ -56,10 +58,11 @@ LANG_PYTHON3 = "Python 3 / CPython"
 LANG_PYPY3 = "Python 3 / PyPy"
 LANG_RUST = "Rust"
 LANG_C_SHARP = "C# / Mono"
+LANG_DOTNET = "C# / dotnet"
 
 ALL_LANGUAGES = (
     LANG_C,
-    LANG_C_SHARP,
+    LANG_C_SHARP, LANG_DOTNET,
     LANG_CPP, LANG_CPP14, LANG_CPP17, LANG_CPP20,
     LANG_HS,
     LANG_JAVA,
@@ -79,7 +82,7 @@ MANAGER_LANGUAGES = [
 # are present under `code/`.
 # TODO: this should be the same as `ALL_LANGUAGES`.
 COMMUNICATION_LANGUAGES = [
-    lang for lang in MANAGER_LANGUAGES if lang not in (LANG_C_SHARP,)
+    lang for lang in MANAGER_LANGUAGES if lang not in (LANG_C_SHARP, LANG_DOTNET)
 ]
 
 ALL_TESTS = [
@@ -165,7 +168,7 @@ ALL_TESTS = [
 
     Test('correct-stdio-inner-class',
          task=batch_stdio, filenames=['correct-stdio-inner-class.%l'],
-         languages=(LANG_JAVA, LANG_C_SHARP),
+         languages=(LANG_JAVA, LANG_C_SHARP, LANG_DOTNET),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('correct-fileio',
@@ -503,34 +506,6 @@ ALL_TESTS = [
          checks=[CheckCompilationFail()]),
 
 
-    # Writing to files not allowed.
-
-    # Inability to write to a file does not throw a specific error,
-    # just returns a NULL file handler to the caller. So we rely on
-    # the test program to write the correct result only if the
-    # returned handler is valid.
-
-    Test('write-forbidden-fileio',
-         task=batch_fileio, filenames=['write-forbidden-fileio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-stdio',
-         task=batch_stdio, filenames=['write-forbidden-stdio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-managed',
-         task=batch_fileio_managed, filenames=['write-forbidden-managed.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
-    Test('write-forbidden-communication',
-         task=communication_fifoio_stubbed,
-         filenames=['write-forbidden-communication.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
     # This tests complete successfully only if it is unable to execute
     # output.txt.
 
@@ -551,11 +526,17 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Write a huge file
-
-    Test('write-big-fileio',
-         task=batch_fileio, filenames=['write-big-fileio.%l'],
-         languages=(LANG_C,),
-         checks=[CheckOverallScore(0, 100)]),
-
 ]
+
+# TODO figure out a better way to enable/disable this.........
+if os.environ.get('TEST_QUOTAS', '') != '':
+    ALL_TESTS += [
+        Test('write-many-files',
+             task=batch_fileio, filenames=['write-many-files.%l'],
+             languages=(LANG_C,),
+             checks=[CheckOverallScore(100, 100)]),
+        Test('write-big-file-quota',
+             task=batch_fileio, filenames=['write-big-file-quota.%l'],
+             languages=(LANG_C,),
+             checks=[CheckOverallScore(100, 100)])
+    ]

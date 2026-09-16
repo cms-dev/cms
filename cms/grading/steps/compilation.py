@@ -107,6 +107,8 @@ def compilation_step(
     sandbox.timeout = config.sandbox.compilation_sandbox_max_time_s
     sandbox.wallclock_timeout = 2 * sandbox.timeout + 1
     sandbox.address_space = config.sandbox.compilation_sandbox_max_memory_kib * 1024
+    # allow flock() (needed by dotnet)
+    sandbox.remove_syscall_restrictions = 4
 
     # Run the compilation commands, copying stdout and stderr to stats.
     stats = generic_step(sandbox, commands, "compilation", collect_output=True)
