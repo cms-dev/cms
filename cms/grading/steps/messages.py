@@ -37,28 +37,31 @@ class HumanMessage:
 
     """
 
-    def __init__(self, shorthand: str, message: str, help_text: str):
+    def __init__(self, shorthand: str, message: str, help_text: str, inline_help: bool = False):
         """Initialization.
 
         shorthand: what to call this message in the code.
         message: the message itself.
         help_text: a longer explanation for the help page.
+        inline_help: Whether to show a help tooltip for this message whenever it is shown.
 
         """
         self.shorthand = shorthand
         self.message = message
         self.help_text = help_text
+        self.inline_help = inline_help
 
 
 class MessageCollection:
     """Represent a collection of messages, with error checking."""
 
-    def __init__(self, messages: list[HumanMessage] | None = None):
+    def __init__(self, namespace: str, messages: list[HumanMessage] | None = None):
         self._messages: dict[str, HumanMessage] = {}
         self._ordering: list[str] = []
         if messages is not None:
             for message in messages:
                 self.add(message)
+        MESSAGE_REGISTRY.add(namespace, self)
 
     def add(self, message: HumanMessage):
         if message.shorthand in self._messages:
@@ -81,3 +84,28 @@ class MessageCollection:
         for shorthand in self._ordering:
             ret.append(self._messages[shorthand])
         return ret
+
+class MessageRegistry:
+    """Represents a collection of message collections, organized by a namespace
+    prefix. This is a singleton that is automatically populated by
+    MessageCollection."""
+
+    def __init__(self):
+        self._namespaces: dict[str, MessageCollection] = {}
+
+    def add(self, namespace: str, collection: MessageCollection):
+        if namespace in self._namespaces:
+            logger.error(f"Trying to register duplicate namespace {namespace}")
+            return
+        self._namespaces[namespace] = collection
+
+    def get(self, message_id: str) -> HumanMessage:
+        if ':' not in message_id:
+            raise KeyError(f"Invalid message ID {message_id}")
+        namespace, message = message_id.split(':', 1)
+        if namespace not in self._namespaces:
+            raise KeyError(f"Message namespace {namespace} not found")
+        collection = self._namespaces[namespace]
+        return collection.get(message)
+
+MESSAGE_REGISTRY = MessageRegistry()
