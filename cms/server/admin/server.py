@@ -34,7 +34,6 @@ from cms import config, ServiceCoord, get_service_shards
 from cms.db import SessionGen, Dataset, Submission, SubmissionResult, Task
 from cms.io import WebService, rpc_method
 from cms.service import EvaluationService
-from cmscommon.binary import hex_to_bin
 from .authentication import AWSAuthMiddleware
 from .handlers import HANDLERS
 from .jinja2_toolbox import AWS_ENVIRONMENT
@@ -52,7 +51,7 @@ class AdminWebServer(WebService):
         parameters = {
             "static_files": [("cms.server", "static"),
                              ("cms.server.admin", "static")],
-            "cookie_secret": hex_to_bin(config.web_server.secret_key),
+            "cookie_secret": bytes.fromhex(config.web_server.secret_key),
             "debug": config.web_server.tornado_debug,
             "num_proxies_used": config.admin_web_server.num_proxies_used,
             "auth_middleware": AWSAuthMiddleware,

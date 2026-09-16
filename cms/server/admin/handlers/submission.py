@@ -30,6 +30,15 @@ import json
 import logging
 import difflib
 
+import collections
+try:
+    collections.MutableMapping
+except:
+    # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
+    collections.MutableMapping = collections.abc.MutableMapping
+
+import tornado.web
+
 from cms.db import Dataset, File, Submission
 from cms.grading.languagemanager import safe_get_lang_filename
 from cmscommon.datetime import make_datetime
@@ -47,8 +56,18 @@ class SubmissionHandler(BaseHandler):
 
     """
     @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, submission_id, dataset_id=None):
-        submission = self.safe_get_item(Submission, submission_id)
+    def get(self, submission_id: str, dataset_id=None):
+        if submission_id.startswith("opaque_"):
+            oid = int(submission_id.removeprefix("opaque_"))
+            submission = (
+                self.sql_session.query(Submission)
+                .filter(Submission.opaque_id == oid)
+                .first()
+            )
+            if submission is None:
+                raise tornado.web.HTTPError(404)
+        else:
+            submission = self.safe_get_item(Submission, submission_id)
         task = submission.task
         self.contest = task.contest
 

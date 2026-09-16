@@ -32,6 +32,8 @@ from datetime import datetime
 import logging
 import typing
 
+from cms.db.util import generate_opaque_id
+
 if typing.TYPE_CHECKING:
     from tornado.httputil import HTTPFile
 
@@ -270,7 +272,7 @@ def accept_submission(
 
     submission = Submission(
         timestamp=timestamp,
-        opaque_id=Submission.generate_opaque_id(sql_session, participation.id),
+        opaque_id=generate_opaque_id(Submission, sql_session, participation.id),
         language=language.name if language is not None else None,
         task=task,
         participation=participation,
@@ -486,6 +488,7 @@ def accept_user_test(
 
     user_test = UserTest(
         timestamp=timestamp,
+        opaque_id=generate_opaque_id(UserTest, sql_session, participation.id),
         language=language.name if language is not None else None,
         input=digests["input"],
         participation=participation,
