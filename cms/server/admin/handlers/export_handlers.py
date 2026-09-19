@@ -155,10 +155,19 @@ def _export_task_to_yaml_format(task, dataset, file_cacher, export_dir):
         manager_path = os.path.join(managers_dir, filename)
         file_cacher.get_file_to_path(manager.digest, manager_path)
 
+    if task.primary_statements:
+        primary_language = task.primary_statements[0]
+    elif task.statements:
+        # No statement marked as primary: fall back to the first
+        # available statement language instead of assuming 'he'.
+        primary_language = sorted(task.statements.keys())[0]
+    else:
+        primary_language = "he"
+
     task_config = {
-        'name': task.name,
-        'title': task.title,
-        'primary_language': task.primary_statements[0] if task.primary_statements else 'he',
+        "name": task.name,
+        "title": task.title,
+        "primary_language": primary_language,
     }
 
     if dataset.description:

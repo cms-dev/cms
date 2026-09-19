@@ -93,6 +93,10 @@ class BatchAndOutput(Batch):
         return "BatchAndOutput"
 
     def __init__(self, parameters):
+        # Backward compatibility: accept parameter lists without the real
+        # precision exponent, which used to be omitted by some loaders.
+        if isinstance(parameters, list) and len(parameters) == 4:
+            parameters.insert(3, 6)
         super().__init__(parameters)
 
         # Data in the parameters that is not in Batch.

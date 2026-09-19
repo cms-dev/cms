@@ -350,6 +350,26 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
+def normalize_testcase_codename(codename: str) -> str:
+    """Normalize a testcase codename as written by an admin in task.yaml.
+
+    Purely numeric codenames refer to the legacy input%d.txt/output%d.txt
+    numbering, whose codenames are zero-padded to three digits; all the other
+    codenames (e.g. those coming from a testcase archive, like "7-01") are
+    used verbatim.
+
+    codename: the codename as written in task.yaml.
+
+    return: the codename as stored in the dataset.
+
+    """
+    codename = codename.strip()
+    try:
+        return "%03d" % int(codename)
+    except ValueError:
+        return codename
+
+
 def _convert_filename_to_codename(filename: str, submission_format: list[str]) -> str:
     """Convert a disk filename to its codename format for submission files.
 
@@ -1298,10 +1318,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 evaluation_param,
             ]
 
-            if evaluation_param == "realprecision":
-                args["task_type_parameters"].append(
-                    exponent if exponent is not None else 6
-                )
+            args["task_type_parameters"].append(
+                exponent if exponent is not None else 6
+            )
 
             output_only_testcases = load(
                 conf,
@@ -1320,7 +1339,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 output_only_codenames = set()
                 if len(output_only_testcases) > 0:
                     output_only_codenames = {
-                        "%03d" % int(x.strip())
+                        normalize_testcase_codename(x)
                         for x in output_only_testcases.split(",")
                     }
                     args["task_type_parameters"].append(",".join(output_only_codenames))
@@ -1329,12 +1348,15 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 output_codenames = set()
                 if len(output_optional_testcases) > 0:
                     output_codenames = {
-                        "%03d" % int(x.strip())
+                        normalize_testcase_codename(x)
                         for x in output_optional_testcases.split(",")
                     }
                 output_codenames.update(output_only_codenames)
                 task.submission_format.extend(
-                    ["output_%s.txt" % s for s in sorted(output_codenames)]
+                    filename
+                    for filename in ("output_%s.txt" % s
+                                     for s in sorted(output_codenames))
+                    if filename not in task.submission_format
                 )
             # If task_type is explicitly BatchAndOutput but no output_only_testcases specified
             elif configured_type == "BatchAndOutput":
