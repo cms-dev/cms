@@ -1,0 +1,42 @@
+<!-- Import Training Program Modal Fragment -->
+<!-- Required context: admin, url, handler -->
+
+{% from "macro/modal.html" import modal_header, modal_footer %}
+{% from "macro/bulma_file_input.html" import bulma_file_input %}
+{% if admin is defined and admin.permission_all %}
+<div class="modal modal--wide" id="modal-import-training-program" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-import-training-program-title">
+            {{ modal_header("Import Training Program from ZIP", "modal-import-training-program-title") }}
+            <form enctype="multipart/form-data" action="{{ url("training_programs", "import") }}" method="POST" id="import-training-program-form">
+                <input type="hidden" name="_xsrf" value="{{ handler.xsrf_token.decode() }}"/>
+                <main class="modal__content">
+                    <div class="modal__form-group">
+                        <label>
+                            Training Program Archive (ZIP)
+                            <span class="has-text-danger">*</span>
+                        </label>
+                        {{ bulma_file_input("import-training-program-file", "training_program_file", ".zip", required=true, button_text="Choose ZIP archive...") }}
+                        <small class="modal__hint">Upload a zip file produced by the training program exporter (contest.yaml, task directories and training_program.yaml).</small>
+                    </div>
+
+                    <div class="modal__form-group">
+                        <label class="checkbox">
+                            <input type="checkbox" name="no_statements" value="true">
+                            Do not import task statements
+                        </label>
+                    </div>
+
+                    <div class="modal__warning" style="margin-top: 16px;">
+                        The archive is imported as a new training program with all its
+                        tasks, students, archived training days, rankings and attendance.
+                        A training program or contest with the same name must not already
+                        exist. Students whose users do not exist in the database are skipped.
+                    </div>
+                </main>
+                {{ modal_footer("Import Training Program", submit_icon="#icon-upload") }}
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

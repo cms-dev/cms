@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import handlers for AWS - allows importing tasks and contests from
-zip files.
+"""Import handlers for AWS - allows importing tasks, contests and
+training programs from zip files.
 
 """
 
@@ -39,6 +39,8 @@ from cmscontrib.loaders.base_loader import LoaderValidationError
 
 from .base import BaseHandler, require_permission
 from .dataset import validate_template
+from .trainingprogram_transfer import TrainingProgramImporter, \
+    load_training_program_yaml
 
 
 logger = logging.getLogger(__name__)
@@ -370,3 +372,90 @@ class ImportContestHandler(BaseHandler):
         except Exception as error:
             _handle_import_error(self, error, "Contest", fallback_page,
                                  log_error=True)
+
+
+class ImportTrainingProgramHandler(BaseHandler):
+    """Handler for importing a training program from a zip file produced
+    by the training program exporter.
+
+    The archive is a contest archive (managing contest and its tasks)
+    plus training_program.yaml with students and archived training days.
+    Everything is imported in a single transaction.
+    """
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def get(self):
+        self.redirect(self.url("training_programs"))
+
+    @require_permission(BaseHandler.PERMISSION_ALL)
+    def post(self):
+        fallback_page = self.url("training_programs")
+
+        program_file = _validate_zip_upload(
+            self, "training_program_file", fallback_page)
+        if program_file is None:
+            return
+
+        no_statements = bool(self.get_argument("no_statements", False))
+
+        def notify(title, text):
+            self.service.add_notification(make_datetime(), title, text)
+
+        try:
+            with _extract_uploaded_zip(
+                    program_file, "cms_import_training_program_",
+                    "training_program.zip") as program_path:
+                def error_callback(msg):
+                    raise ValueError(msg)
+
+                config = load_training_program_yaml(program_path)
+
+                loader_class = choose_loader(
+                    "italy_yaml", program_path, error_callback)
+
+                importer = ContestImporter(
+                    path=program_path,
+                    yes=True,
+                    zero_time=False,
+                    import_tasks=True,
+                    update_contest=False,
+                    update_tasks=False,
+                    no_statements=no_statements,
+                    delete_stale_participations=False,
+                    loader_class=loader_class,
+                    raise_import_errors=True
+                )
+
+                _setup_importer_with_notifier(importer, self.service)
+
+                tp_importer = TrainingProgramImporter(
+                    self.sql_session, importer, config, notify)
+                training_program = tp_importer.do_import()
+
+            committed = self.try_commit()
+
+        except (LoaderValidationError, ImportDataError) as error:
+            self.sql_session.rollback()
+            _handle_import_error(self, error, "Training program", fallback_page)
+            return
+        except Exception as error:
+            self.sql_session.rollback()
+            _handle_import_error(self, error, "Training program", fallback_page,
+                                 log_error=True)
+            return
+
+        if not committed:
+            self.redirect(fallback_page)
+            return
+
+        tp_importer.notify_skipped()
+        importer.notify_model_solutions()
+        try:
+            self.service.proxy_service.reinitialize()
+        except Exception:
+            logger.exception("Proxy service reinitialization failed after "
+                             "training program import")
+        self.service.add_notification(
+            make_datetime(),
+            "Training program imported successfully",
+            "")
+        self.redirect(self.url("training_program", training_program.id))

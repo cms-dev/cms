@@ -90,9 +90,19 @@ class ContestImporter:
         # Track submission IDs for triggering evaluation after commit
         self._imported_model_solution_submission_ids: list[int] = []
 
-    def do_import(self):
-        """Get the contest from the Loader and store it."""
+    def import_into_session(self, session: Session) -> Contest:
+        """Get the contest from the Loader and add it to the given session.
 
+        Nothing is committed: the caller owns the session and decides when
+        to commit (and should call notify_model_solutions() afterwards).
+
+        session: the session to add the contest, tasks and participations to.
+
+        return: the contest in the session.
+
+        raise (ImportDataError): if the data cannot be imported.
+
+        """
         # We need to check whether the contest has changed *before* calling
         # get_contest() as that method might reset the "has_changed" bit.
         contest_has_changed = False
@@ -116,24 +126,45 @@ class ContestImporter:
             contest.start = datetime.datetime(1970, 1, 1)
             contest.stop = datetime.datetime(1970, 1, 1)
 
+        contest = self._contest_to_db(session, contest, contest_has_changed)
+        # Detach all tasks before reattaching them
+        for t in list(contest.tasks):
+            t.contest = None
+        for tasknum, taskname in enumerate(tasks):
+            self._task_to_db(session, contest, tasknum, taskname)
+        # Delete stale participations if asked to, then import all
+        # others.
+        if self.delete_stale_participations:
+            self._delete_stale_participations(
+                session, contest,
+                set(p["username"] for p in participations))
+        for p in participations:
+            self._participation_to_db(session, contest, p)
+
+        return contest
+
+    def notify_model_solutions(self) -> None:
+        """Trigger evaluation for imported model solutions.
+
+        Must be called after the session has been committed. This is a
+        non-blocking attempt: if EvaluationService is not running, the
+        model solutions will be picked up when it starts.
+
+        """
+        for submission_id in self._imported_model_solution_submission_ids:
+            try:
+                maybe_send_notification(submission_id)
+            except Exception as e:
+                logger.warning(
+                    "Failed to notify EvaluationService about model solution "
+                    "submission %d: %s", submission_id, e)
+
+    def do_import(self):
+        """Get the contest from the Loader and store it."""
+
         with SessionGen() as session:
             try:
-                contest = self._contest_to_db(
-                    session, contest, contest_has_changed)
-                # Detach all tasks before reattaching them
-                for t in list(contest.tasks):
-                    t.contest = None
-                for tasknum, taskname in enumerate(tasks):
-                    self._task_to_db(session, contest, tasknum, taskname)
-                # Delete stale participations if asked to, then import all
-                # others.
-                if self.delete_stale_participations:
-                    self._delete_stale_participations(
-                        session, contest,
-                        set(p["username"] for p in participations))
-                for p in participations:
-                    self._participation_to_db(session, contest, p)
-
+                contest = self.import_into_session(session)
             except ImportDataError as e:
                 if self.raise_import_errors:
                     raise
@@ -144,16 +175,7 @@ class ContestImporter:
             session.commit()
             contest_id = contest.id
 
-        # Trigger evaluation for imported model solutions (after commit)
-        # This is a non-blocking attempt - if EvaluationService is not running,
-        # the model solutions will be picked up when it starts
-        for submission_id in self._imported_model_solution_submission_ids:
-            try:
-                maybe_send_notification(submission_id)
-            except Exception as e:
-                logger.warning(
-                    "Failed to notify EvaluationService about model solution "
-                    "submission %d: %s", submission_id, e)
+        self.notify_model_solutions()
 
         logger.info("Import finished (new contest id: %s).", contest_id)
         return True

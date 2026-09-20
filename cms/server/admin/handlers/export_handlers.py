@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Export handlers for AWS - allows exporting tasks and contests to
-zip files in YamlLoader format.
+"""Export handlers for AWS - allows exporting tasks, contests and
+training programs to zip files in YamlLoader format.
 
 """
 
@@ -35,6 +35,8 @@ from cmscommon.datetime import make_datetime
 from cmscontrib.loaders.base_loader import LANGUAGE_MAP
 
 from .base import BaseHandler, require_permission
+from .trainingprogram_transfer import build_training_program_config, \
+    write_training_program_yaml
 
 
 logger = logging.getLogger(__name__)
@@ -552,11 +554,14 @@ class ExportContestHandler(BaseHandler):
     - /contest/{id}/export
     - /training_program/{id}/export
 
-    For training programs, exports all tasks from the managing contest.
+    For training programs, exports all tasks from the managing contest
+    plus a training_program.yaml with students, archived training days
+    and their ranking and attendance data.
     """
     @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, entity_type: str, entity_id: str):
         # Determine the contest and export name based on entity type
+        training_program = None
         if entity_type == "training_program":
             training_program = self.safe_get_item(TrainingProgram, entity_id)
             contest = training_program.managing_contest
@@ -568,6 +573,18 @@ class ExportContestHandler(BaseHandler):
             export_name = contest.name
             fallback_url = self.url("contest", entity_id)
             error_prefix = "Contest"
+
+        if training_program is not None:
+            missing = [task.name for task in contest.tasks
+                       if task.active_dataset is None]
+            if missing:
+                self.service.add_notification(
+                    make_datetime(),
+                    f"{error_prefix} export failed",
+                    "Tasks without an active dataset cannot be exported: "
+                    + ", ".join(missing))
+                self.redirect(fallback_url)
+                return
 
         temp_dir = None
         try:
@@ -581,6 +598,18 @@ class ExportContestHandler(BaseHandler):
                 self.service.file_cacher,
                 contest_dir
             )
+
+            if training_program is not None:
+                config, skipped_days = build_training_program_config(
+                    training_program)
+                write_training_program_yaml(config, contest_dir)
+                if skipped_days:
+                    self.service.add_notification(
+                        make_datetime(),
+                        "Active training days not exported",
+                        "Only archived training days are exported. "
+                        "Skipped: " + ", ".join(
+                            td.contest.name for td in skipped_days))
 
             zip_path = os.path.join(temp_dir, f"{export_name}.zip")
             _zip_directory(contest_dir, zip_path, temp_dir)

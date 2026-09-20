@@ -176,10 +176,18 @@
             <div class="has-text-weight-bold has-text-primary mb-1 is-size-5">Create New Program</div>
             <div class="has-text-grey is-size-s">Start a new training season</div>
         </button>
+        <button type="button" class="tp-create-card" onclick="MicroModal.show('modal-import-training-program')">
+            <div class="tp-create-icon">
+                <svg class="icon"><use href="#icon-upload"/></svg>
+            </div>
+            <div class="has-text-weight-bold has-text-primary mb-1 is-size-5">Import Program</div>
+            <div class="has-text-grey is-size-s">Restore an exported training program</div>
+        </button>
         {% endif %}
     </div>
 
 {% include "fragments/modal_remove_training_program.html" %}
+{% include "fragments/modal_import_training_program.html" %}
 
 <script>
 function closeAllMenus() {

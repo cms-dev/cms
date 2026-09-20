@@ -146,6 +146,7 @@ from .task import (
 from .import_handlers import (
     ImportTaskHandler,
     ImportContestHandler,
+    ImportTrainingProgramHandler,
 )
 from .user import \
     AddUserHandler, \
@@ -401,6 +402,7 @@ HANDLERS = [
     (r"/training_programs", TrainingProgramListHandler),
     (r"/training_programs/([0-9]+)/remove", RemoveTrainingProgramHandler),
     (r"/training_programs/add", AddTrainingProgramHandler),
+    (r"/training_programs/import", ImportTrainingProgramHandler),
     (r"/training_program/([0-9]+)", TrainingProgramHandler),
     # Training Program tabs
     (r"/training_program/([0-9]+)/students", TrainingProgramStudentsHandler),
