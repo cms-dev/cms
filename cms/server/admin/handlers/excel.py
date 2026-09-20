@@ -26,6 +26,8 @@ import io
 import json
 import logging
 import re
+from datetime import tzinfo
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
 from openpyxl import Workbook
@@ -34,6 +36,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.worksheet import Worksheet
 
 from cms.db import TrainingDay, TrainingProgram, Student
+from cmscommon.datetime import get_timezone, utc_to_local
 from .analysis import (
     PairInfo,
     apply_bad_day_bonus,
@@ -714,3 +717,154 @@ class ExportAnalysedRankingHandler(ExportAttendanceHandler):
                 )
 
         self._serve_excel(wb, build_filename(tp.name, "analysed", ctx))
+
+
+# ----------------------------------------------------------------------------
+# Archived task score distributions
+# ----------------------------------------------------------------------------
+
+def format_score_distribution(scores: list[float]) -> str:
+    """Format scores as the "Scores (high to low)" text of the histogram modal.
+
+    One line per distinct score (rounded to one decimal), highest first:
+    ``<score>: <count> student(s) (<pct>%)``.
+    """
+    if not scores:
+        return ""
+    groups: dict[str, int] = {}
+    for score in scores:
+        # Round half up like JavaScript's toFixed(1) in the histogram modal.
+        key = str(Decimal(score).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
+        groups[key] = groups.get(key, 0) + 1
+    total = len(scores)
+    lines = []
+    for key in sorted(groups, key=float, reverse=True):
+        count = groups[key]
+        pct = count / total * 100
+        plural = "" if count == 1 else "s"
+        lines.append(f"{key}: {count} student{plural} ({pct:.1f}%)")
+    return "\n".join(lines)
+
+
+def collect_archived_task_scores(
+    td: TrainingDay,
+) -> tuple[dict[str, list[tuple[list[str], float]]], set[str]]:
+    """Collect per-task scores of participating students of an archived TD.
+
+    Returns ``({task_id: [(student_tags, score), ...]}, tags_seen)``.
+    Only students whose archived attendance status is "participated" are
+    included, mirroring the histogram shown in the training days page.
+    """
+    participated = {
+        att.student_id for att in td.archived_attendances
+        if att.status == "participated"
+    }
+    task_scores: dict[str, list[tuple[list[str], float]]] = {
+        task_id: [] for task_id in (td.archived_tasks_data or {})
+    }
+    tags_seen: set[str] = set()
+    for ranking in td.archived_student_rankings:
+        tags = list(ranking.student_tags or [])
+        tags_seen.update(tags)
+        if ranking.student_id not in participated or not ranking.task_scores:
+            continue
+        for task_id, score in ranking.task_scores.items():
+            if task_id in task_scores:
+                task_scores[task_id].append(
+                    (tags, float(score) if score is not None else 0.0)
+                )
+    return task_scores, tags_seen
+
+
+ALIGN_TOP_LEFT_WRAP = Alignment(horizontal="left", vertical="top", wrap_text=True)
+
+
+def _write_task_scores_row(
+    ws: Worksheet,
+    row: int,
+    td: TrainingDay,
+    task_id: str,
+    task_info: dict,
+    entries: list[tuple[list[str], float]],
+    all_tags: list[str],
+    tz: tzinfo,
+):
+    """Write one (training day, task) row of the task scores sheet."""
+    local_start = utc_to_local(td.start_time, tz) if td.start_time else None
+    values: list[Any] = [
+        td.name or "",
+        td.description or "",
+        local_start.date() if local_start else None,
+        task_info.get("name", f"Task {task_id}"),
+        task_info.get("max_score", 100),
+    ]
+    for tag in all_tags:
+        values.append(format_score_distribution(
+            [s for tags, s in entries if tag in tags]
+        ))
+    values.append(format_score_distribution([s for _, s in entries]))
+
+    for col, val in enumerate(values, start=1):
+        cell = ws.cell(row=row, column=col, value=excel_safe(val))
+        cell.border = STYLE_BORDER_THIN
+        cell.alignment = ALIGN_TOP_LEFT_WRAP
+        if col == 3 and val is not None:
+            cell.number_format = numbers.FORMAT_DATE_YYYYMMDD2
+
+
+def generate_task_scores_sheet(
+    ws: Worksheet, training_days: list[TrainingDay], tz: tzinfo
+):
+    """Populate a worksheet with score distributions of archived tasks.
+
+    One row per (training day, task); one column per student tag holding the
+    distribution of the students having that tag, plus a column for all
+    participants.
+    """
+    per_td = [(td, *collect_archived_task_scores(td)) for td in training_days]
+    all_tags = sorted({tag for _, _, tags in per_td for tag in tags})
+
+    headers = ["Training Day", "Description", "Date", "Task", "Max Score"]
+    headers += all_tags + ["All Participants"]
+    for col, title in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col, value=excel_safe(title))
+        cell.font = STYLE_HEADER_FONT_WHITE
+        cell.fill = STYLE_FILL_GREY if col > 5 else STYLE_FILL_BLUE
+        cell.border = STYLE_BORDER_THIN
+        cell.alignment = ALIGN_CENTER
+
+    row = 2
+    for td, task_scores, _ in per_td:
+        for task_id, task_info in (td.archived_tasks_data or {}).items():
+            _write_task_scores_row(
+                ws, row, td, task_id, task_info,
+                task_scores.get(task_id, []), all_tags, tz,
+            )
+            row += 1
+
+    ws.freeze_panes = "E2"
+    widths = [20, 30, 12, 20, 10] + [26] * (len(all_tags) + 1)
+    for i, width in enumerate(widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = width
+
+
+class ExportArchivedTaskScoresHandler(ExportAttendanceHandler):
+    """Export score distributions of all archived training day tasks."""
+
+    @require_permission(BaseHandler.AUTHENTICATED)
+    def get(self, training_program_id: str):
+        tp = self.safe_get_item(TrainingProgram, training_program_id)
+        archived = [td for td in tp.training_days if td.contest is None]
+
+        if not archived:
+            self.redirect(self.url("training_program", tp.id, "training_days"))
+            return
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Task Scores"
+        tz = get_timezone(None, tp.managing_contest)
+        generate_task_scores_sheet(ws, archived, tz)
+
+        slug = re.sub(SLUG_REGEX, "_", tp.name)
+        self._serve_excel(wb, f"{slug}_archived_task_scores.xlsx")

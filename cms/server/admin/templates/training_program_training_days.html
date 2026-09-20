@@ -330,6 +330,13 @@ window.showArchivedTaskHistogram = function(trainingDayId, taskId, taskName) {
     <!-- Archived Training Days Section -->
     <div class="tp-section-header" style="margin-top: 40px;">
         <h2>Archived Training Days ({{ training_program.training_days | rejectattr("contest") | list | length }})</h2>
+        {% if training_program.training_days | rejectattr("contest") | list %}
+        <a href="{{ url('training_program', training_program.id, 'training_days', 'export_task_scores') }}"
+           class="button" title="Export score distributions of all archived tasks to Excel">
+            <svg class="icon is-small"><use href="#icon-download"/></svg>
+            <span>Export Task Scores</span>
+        </a>
+        {% endif %}
     </div>
 
     {{ info_alert.alert(

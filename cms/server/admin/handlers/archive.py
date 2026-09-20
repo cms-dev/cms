@@ -71,6 +71,7 @@ from .training_analytics import (
 )
 from .excel import (
     ExportAnalysedRankingHandler,
+    ExportArchivedTaskScoresHandler,
     ExportAttendanceHandler,
     ExportCombinedRankingHandler,
     build_filename,
@@ -81,6 +82,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "ArchiveTrainingDayHandler",
     "ExportAnalysedRankingHandler",
+    "ExportArchivedTaskScoresHandler",
     "ExportAttendanceHandler",
     "ExportCombinedRankingHandler",
     "TrainingProgramAttendanceHandler",

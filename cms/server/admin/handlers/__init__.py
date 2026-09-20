@@ -224,7 +224,8 @@ from .archive import \
     UpdateAttendanceHandler, \
     ExportAttendanceHandler, \
     ExportCombinedRankingHandler, \
-    ExportAnalysedRankingHandler
+    ExportAnalysedRankingHandler, \
+    ExportArchivedTaskScoresHandler
 from .import_contest_as_td import \
     ImportContestAsTrainingDayHandler
 from .import_td_from_csv import \
@@ -466,6 +467,10 @@ HANDLERS = [
     (
         r"/training_program/([0-9]+)/import_contest_as_training_day",
         ImportContestAsTrainingDayHandler,
+    ),
+    (
+        r"/training_program/([0-9]+)/training_days/export_task_scores",
+        ExportArchivedTaskScoresHandler,
     ),
     (r"/training_program/([0-9]+)/attendance", TrainingProgramAttendanceHandler),
     (r"/training_program/([0-9]+)/attendance/export", ExportAttendanceHandler),
