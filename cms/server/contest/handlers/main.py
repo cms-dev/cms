@@ -79,40 +79,6 @@ class MainHandler(ContestHandler):
     def get(self):
         self.render("overview.html", **self.r_params)
 
-    def render_params(self):
-        ret = super().render_params()
-
-        if self.current_user is not None:
-            participation = ret["participation"]
-            should_show_task_overview = (
-                ret["actual_phase"] >= 0 or participation.unrestricted
-            )
-
-            # ContestHandler may have already loaded a fully-joined participation
-            # while computing sidebar scores. Reuse it to avoid a duplicate query.
-            already_preloaded_for_scores = "sidebar_task_scores" in ret
-            if self.contest.show_task_scores_in_overview and should_show_task_overview:
-                if not already_preloaded_for_scores:
-                    loaded_participation = self._load_participation_for_scores(
-                        participation
-                    )
-                    if loaded_participation is None:
-                        return ret
-                    participation = loaded_participation
-
-                    self.contest = participation.contest
-                    # Ensure the template sees this fully-loaded version.
-                    ret["contest"] = self.contest
-                    ret["participation"] = participation
-                    ret["user"] = participation.user
-
-                ret["task_scores"] = self._compute_task_scores(
-                    participation,
-                    actual_phase=ret["actual_phase"],
-                    hide_zero_max_public=False,
-                )
-
-        return ret
 
 class RegistrationHandler(ContestHandler):
     """Registration handler.
