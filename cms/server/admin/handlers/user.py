@@ -218,6 +218,7 @@ class TeamHandler(BaseHandler):
     If referred by GET, this handler will return a pre-filled HTML form.
     If referred by POST, this handler will sync the team data with the form's.
     """
+    @require_permission(BaseHandler.AUTHENTICATED)
     def get(self, team_id):
         team = self.safe_get_item(Team, team_id)
 
@@ -225,6 +226,7 @@ class TeamHandler(BaseHandler):
         self.r_params["team"] = team
         self.render("team.html", **self.r_params)
 
+    @require_permission(BaseHandler.PERMISSION_ALL)
     def post(self, team_id):
         fallback_page = self.url("team", team_id)
 

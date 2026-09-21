@@ -135,6 +135,16 @@ services running when the user is not logged in. (Beware that the lingering user
 instance of systemd does not automatically gain new privileges when you add the
 to a new group. You might need to ``sudo loginctl terminate-user ...``.)
 
+CMS depends on configured networking, but unfortunately, ``systemd`` does not allow
+dependencies between user services and system services. A possible work-around is
+to make system-wide ``user@UID.service`` (where ``UID`` is the user ID of the user
+running CMS) depend on ``network-online.target`` by adding a drop-in configuration file
+with::
+
+   [Unit]
+   After=network-online.target
+   Wants=network-online.target
+
 
 Recommended setup
 =================

@@ -21,8 +21,9 @@
 import unittest
 
 from cms.grading.scoretypes.GroupMin import GroupMin
-from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils \
-    import ScoreTypeTestMixin
+from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils import (
+    ScoreTypeTestMixin,
+)
 
 
 class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
@@ -88,49 +89,69 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
         """Test max score is correct when groups are regexp-defined."""
         s1, s2, s3 = 10.5, 30.5, 59
         parameters = [[0, "0_*"], [s1, "1_*"], [s2, "2_*"], [s3, "3_*"]]
-        header = ["Subtask 0 (0)",
-                  "Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
+        header = [
+            "Subtask 0 (0)",
+            "Subtask 1 (10.5)",
+            "Subtask 2 (30.5)",
+            "Subtask 3 (59)",
+        ]
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, s1, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, s1, header),
+        )
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, s1 + s2 + s3, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, s1 + s2 + s3, header),
+        )
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, 0, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, 0, header),
+        )
 
     def test_max_scores_number(self):
         """Test max score is correct when groups are number-defined."""
         s1, s2, s3 = 10.5, 30.5, 59
         parameters = [[0, 1], [s1, 2], [s2, 2], [s3, 2]]
-        header = ["Subtask 0 (0)",
-                  "Subtask 1 (10.5)", "Subtask 2 (30.5)", "Subtask 3 (59)"]
+        header = [
+            "Subtask 0 (0)",
+            "Subtask 1 (10.5)",
+            "Subtask 2 (30.5)",
+            "Subtask 3 (59)",
+        ]
 
         # Only group 1_* is public.
         public_testcases = dict(self._public_testcases)
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, s1, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, s1, header),
+        )
 
         # All groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = True
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, s1 + s2 + s3, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, s1 + s2 + s3, header),
+        )
 
         # No groups are public
         for testcase in public_testcases.keys():
             public_testcases[testcase] = False
-        self.assertEqual(GroupMin(parameters, public_testcases, 2).max_scores(),
-                         (s1 + s2 + s3, 0.0, header))
+        self.assertEqual(
+            GroupMin(parameters, public_testcases, 2).max_scores(),
+            (s1 + s2 + s3, 0.0, header),
+        )
 
     def test_compute_score(self):
         s1, s2, s3 = 10.5, 30.5, 59
@@ -141,23 +162,21 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
         # All correct.
         self.assertComputeScore(
             gmin.compute_score(sr),
-            s1 + s2 + s3, s1, [0, s1, s2, s3], [
-                {"idx": 0},
-                {"idx": 1},
-                {"idx": 2},
-                {"idx": 3}
-            ])
+            s1 + s2 + s3,
+            s1,
+            [0, s1, s2, s3],
+            [{"idx": 0}, {"idx": 1}, {"idx": 2}, {"idx": 3}],
+        )
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3_1", 0.0)
         self.assertComputeScore(
             gmin.compute_score(sr),
-            s1 + s2, s1, [0, s1, s2, 0], [
-                {"idx": 0},
-                {"idx": 1},
-                {"idx": 2},
-                {"idx": 3}
-            ])
+            s1 + s2,
+            s1,
+            [0, s1, s2, 0],
+            [{"idx": 0}, {"idx": 1}, {"idx": 2}, {"idx": 3}],
+        )
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1_0", 0.0)
@@ -165,24 +184,60 @@ class TestGroupMin(ScoreTypeTestMixin, unittest.TestCase):
         sr.evaluations[1].outcome = 0.0
         self.assertComputeScore(
             gmin.compute_score(sr),
-            s2, 0.0, [0, 0, s2, 0], [
-                {"idx": 0},
-                {"idx": 1},
-                {"idx": 2},
-                {"idx": 3}
-            ])
+            s2,
+            0.0,
+            [0, 0, s2, 0],
+            [{"idx": 0}, {"idx": 1}, {"idx": 2}, {"idx": 3}],
+        )
 
         # Some partial results.
         self.set_outcome(sr, "3_0", 0.5)
         self.set_outcome(sr, "3_1", 0.1)
         self.assertComputeScore(
             gmin.compute_score(sr),
-            s2 + s3 * 0.1, 0.0, [0, 0, s2, s3 * 0.1], [
-                {"idx": 0},
-                {"idx": 1},
-                {"idx": 2},
-                {"idx": 3}
-            ])
+            s2 + s3 * 0.1,
+            0.0,
+            [0, 0, s2, s3 * 0.1],
+            [{"idx": 0}, {"idx": 1}, {"idx": 2}, {"idx": 3}],
+        )
+
+    def test_get_json_details(self):
+        from cms import (
+            FEEDBACK_LEVEL_FULL,
+            FEEDBACK_LEVEL_RESTRICTED,
+            FEEDBACK_LEVEL_OI_RESTRICTED,
+        )
+
+        parameters = [[10.0, "1_*"], [20.0, "2_*"]]
+        gmin = GroupMin(parameters, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        self.set_outcome(sr, "1_0", 0.0)
+        self.set_outcome(sr, "1_1", 0.0)
+        _, subtasks, _, _, _ = gmin.compute_score(sr)
+
+        # FULL feedback level includes all testcases and times/memory
+        full = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_FULL)
+        self.assertEqual(len(full), 2)
+        self.assertEqual(len(full[0]["testcases"]), 2)
+        self.assertIn("time", full[0]["testcases"][0])
+        self.assertIn("memory", full[0]["testcases"][0])
+        self.assertIn("outcome", full[0]["testcases"][0])
+
+        # RESTRICTED feedback level strips time and keeps placeholders for
+        # hidden testcases
+        restricted = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertEqual(len(restricted), 2)
+        self.assertNotIn("time", restricted[0]["testcases"][0])
+        self.assertNotIn("memory", restricted[0]["testcases"][0])
+        self.assertEqual(restricted[0]["testcases"][0]["outcome"], "Not correct")
+        # 1_1 was hidden because 1_0 was lowest, but placeholder exists
+        self.assertNotIn("outcome", restricted[0]["testcases"][1])
+        self.assertEqual(restricted[0]["testcases"][1]["idx"], "1_1")
+
+        # OI_RESTRICTED feedback level omits non-visible testcases
+        oi = gmin.get_json_details(subtasks, FEEDBACK_LEVEL_OI_RESTRICTED)
+        self.assertEqual(len(oi[0]["testcases"]), 1)
+        self.assertEqual(oi[0]["testcases"][0]["idx"], "1_0")
 
 
 if __name__ == "__main__":

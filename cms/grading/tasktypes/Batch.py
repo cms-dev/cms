@@ -195,7 +195,7 @@ class Batch(TaskType):
 
         """
         name = "_".join(sorted(codename.replace(".%l", "")
-                               for codename in codenames))
+                               for codename in codenames if codename.endswith(".%l")))
         return name + language.executable_extension
 
     def _do_compile(self, job: CompilationJob, file_cacher: FileCacher):

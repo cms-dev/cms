@@ -48,7 +48,7 @@ except:
 
 import tornado.web
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Query, subqueryload
+from sqlalchemy.orm import Query, selectinload
 
 from cms import __version__, config
 from cms.db import Admin, Contest, Participation, Question, Submission, \
@@ -592,12 +592,12 @@ class BaseHandler(CommonRequestHandler):
 
         """
         query = query\
-            .options(subqueryload(Submission.task))\
-            .options(subqueryload(Submission.participation))\
-            .options(subqueryload(Submission.files))\
-            .options(subqueryload(Submission.token))\
-            .options(subqueryload(Submission.results)
-                     .subqueryload(SubmissionResult.evaluations))\
+            .options(selectinload(Submission.task))\
+            .options(selectinload(Submission.participation))\
+            .options(selectinload(Submission.files))\
+            .options(selectinload(Submission.token))\
+            .options(selectinload(Submission.results)
+                     .selectinload(SubmissionResult.evaluations))\
             .order_by(Submission.timestamp.desc())
 
         offset = page * page_size
@@ -628,10 +628,10 @@ class BaseHandler(CommonRequestHandler):
 
         """
         query = query\
-            .options(subqueryload(UserTest.task))\
-            .options(subqueryload(UserTest.participation))\
-            .options(subqueryload(UserTest.files))\
-            .options(subqueryload(UserTest.results))\
+            .options(selectinload(UserTest.task))\
+            .options(selectinload(UserTest.participation))\
+            .options(selectinload(UserTest.files))\
+            .options(selectinload(UserTest.results))\
             .order_by(UserTest.timestamp.desc())
 
         offset = page * page_size
