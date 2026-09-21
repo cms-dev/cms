@@ -21,8 +21,9 @@
 import unittest
 
 from cms.grading.scoretypes.Sum import Sum
-from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils \
-    import ScoreTypeTestMixin
+from cmstestsuite.unit_tests.grading.scoretypes.scoretypetestutils import (
+    ScoreTypeTestMixin,
+)
 
 
 class TestSum(ScoreTypeTestMixin, unittest.TestCase):
@@ -50,9 +51,10 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
 
     def test_max_scores(self):
         testcase_score = 10.5
-        self.assertEqual(Sum(testcase_score,
-                             self._public_testcases, 2).max_scores(),
-                         (testcase_score * 4, testcase_score, []))
+        self.assertEqual(
+            Sum(testcase_score, self._public_testcases, 2).max_scores(),
+            (testcase_score * 4, testcase_score, []),
+        )
 
     def test_compute_score(self):
         testcase_score = 10.5
@@ -62,45 +64,73 @@ class TestSum(ScoreTypeTestMixin, unittest.TestCase):
         # All correct.
         self.assertComputeScore(
             st.compute_score(sr),
-            testcase_score * 4, testcase_score, [], [
-                {"idx": '0'},
-                {"idx": '1'},
-                {"idx": '2'},
-                {"idx": '3'}
-            ])
+            testcase_score * 4,
+            testcase_score,
+            [],
+            [{"idx": "0"}, {"idx": "1"}, {"idx": "2"}, {"idx": "3"}],
+        )
 
         # Some non-public subtask is incorrect.
         self.set_outcome(sr, "3", 0.0)
         self.assertComputeScore(
             st.compute_score(sr),
-            testcase_score * 3, testcase_score, [], [
-                {"idx": '0'},
-                {"idx": '1'},
-                {"idx": '2'},
-                {"idx": '3'}
-            ])
+            testcase_score * 3,
+            testcase_score,
+            [],
+            [{"idx": "0"}, {"idx": "1"}, {"idx": "2"}, {"idx": "3"}],
+        )
 
         # Also the public subtask is incorrect.
         self.set_outcome(sr, "1", 0.0)
         self.assertComputeScore(
             st.compute_score(sr),
-            testcase_score * 2, 0.0, [], [
-                {"idx": '0'},
-                {"idx": '1'},
-                {"idx": '2'},
-                {"idx": '3'}
-            ])
+            testcase_score * 2,
+            0.0,
+            [],
+            [{"idx": "0"}, {"idx": "1"}, {"idx": "2"}, {"idx": "3"}],
+        )
 
         # Now the public subtask has some partial scores.
         self.set_outcome(sr, "1", 0.2)
         self.assertComputeScore(
             st.compute_score(sr),
-            testcase_score * 2.2, testcase_score * 0.2, [], [
-                {"idx": '0'},
-                {"idx": '1'},
-                {"idx": '2'},
-                {"idx": '3'}
-            ])
+            testcase_score * 2.2,
+            testcase_score * 0.2,
+            [],
+            [{"idx": "0"}, {"idx": "1"}, {"idx": "2"}, {"idx": "3"}],
+        )
+
+    def test_get_json_details(self):
+        from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+
+        st = Sum(10, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        _, testcases, _, _, _ = st.compute_score(sr)
+
+        full = st.get_json_details(testcases, FEEDBACK_LEVEL_FULL)
+        self.assertEqual(len(full), 4)
+        self.assertIn("time", full[0])
+        self.assertIn("memory", full[0])
+
+        restricted = st.get_json_details(testcases, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertEqual(len(restricted), 4)
+        self.assertNotIn("time", restricted[0])
+        self.assertNotIn("memory", restricted[0])
+
+    def test_get_html_details(self):
+        from cms import FEEDBACK_LEVEL_FULL, FEEDBACK_LEVEL_RESTRICTED
+
+        st = Sum(10, self._public_testcases, 2)
+        sr = self.get_submission_result(self._public_testcases)
+        _, testcases, _, _, _ = st.compute_score(sr)
+
+        html_full = st.get_html_details(testcases, FEEDBACK_LEVEL_FULL)
+        self.assertIn("execution-time", html_full)
+        self.assertIn("memory-used", html_full)
+
+        html_restricted = st.get_html_details(testcases, FEEDBACK_LEVEL_RESTRICTED)
+        self.assertNotIn("execution-time", html_restricted)
+        self.assertNotIn("memory-used", html_restricted)
 
 
 if __name__ == "__main__":

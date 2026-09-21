@@ -36,8 +36,8 @@ class Interactive(TaskType):
 
     CONTROLLER_FILENAME = "controller"
     COMPILATION_ALONE = "alone"
-    COMPILATION_STUB = "stub"
-    STUB_BASENAME = "stub"
+    COMPILATION_GRADER = "grader"
+    GRADER_BASENAME = "grader"
 
     _COMPILATION = ParameterTypeChoice(
         "Compilation",
@@ -45,7 +45,7 @@ class Interactive(TaskType):
         "",
         {
             COMPILATION_ALONE: "Submissions are self-sufficient",
-            COMPILATION_STUB: "Submissions are compiled with a stub",
+            COMPILATION_GRADER: "Submissions are compiled with a grader",
         },
     )
 
@@ -102,8 +102,8 @@ class Interactive(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         codenames_to_compile = []
-        if self._uses_stub():
-            codenames_to_compile.append(self.STUB_BASENAME + ".%l")
+        if self._uses_grader():
+            codenames_to_compile.append(self.GRADER_BASENAME + ".%l")
         codenames_to_compile.extend([x for x in submission_format if x.endswith(".%l")])
         res = dict()
         for language in LANGUAGES:
@@ -120,8 +120,8 @@ class Interactive(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        if self._uses_stub():
-            return [self.STUB_BASENAME + ".%l"]
+        if self._uses_grader():
+            return [self.GRADER_BASENAME + ".%l"]
         else:
             return []
 
@@ -129,8 +129,8 @@ class Interactive(TaskType):
         """See TaskType.get_auto_managers."""
         return []
 
-    def _uses_stub(self) -> bool:
-        return self.compilation_type == self.COMPILATION_STUB
+    def _uses_grader(self) -> bool:
+        return self.compilation_type == self.COMPILATION_GRADER
 
     def compile(self, job, file_cacher):
         """See TaskType.compile."""
@@ -144,8 +144,8 @@ class Interactive(TaskType):
         filenames_and_digests_to_get = {}
 
         # Grader (if needed).
-        if self._uses_stub():
-            grader_filename = self.STUB_BASENAME + source_ext
+        if self._uses_grader():
+            grader_filename = self.GRADER_BASENAME + source_ext
             if not check_manager_present(job, grader_filename):
                 return
             filenames_to_compile.append(grader_filename)

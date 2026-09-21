@@ -37,7 +37,6 @@ _COVERAGE_DIRECTORIES = [
     "cmscommon",
     "cmscontrib",
     "cmsranking",
-    "cmstaskenv",
 ]
 _COVERAGE_CMDLINE = [
     sys.executable, "-m", "coverage", "run", "-p",

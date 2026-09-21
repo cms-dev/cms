@@ -1,4 +1,4 @@
-program stub;
+program grader;
 uses sysutils, user1, user2;
 
 var

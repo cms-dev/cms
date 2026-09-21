@@ -55,13 +55,16 @@ COMPILATION_MESSAGES = MessageCollection([
                  N_("Your submission exceeded the time limit while compiling. "
                     "This might be caused by an excessive use of C++ "
                     "templates, for example.")),
+    HumanMessage("memorylimit",
+                 N_("Compilation memory limit exceeded"),
+                 N_("Your submission exceeded the memory limit while compiling. "
+                    "This might be caused by an excessive use of C++ "
+                    "templates, or too large global variables, for example.")),
     HumanMessage("signal",
-                 N_("Compilation killed with signal %s (could be triggered "
-                    "by violating memory limits)"),
+                 N_("Compilation killed with signal %s"),
                  N_("Your submission was killed with the specified signal. "
-                    "Among other things, this might be caused by exceeding "
-                    "the memory limit for the compilation, and in turn by an "
-                    "excessive use of C++ templates, for example.")),
+                    "This might be caused by a bug in the compiler, "
+                    "for example.")),
 ])
 
 
@@ -134,6 +137,13 @@ def compilation_step(
         # to them.
         logger.debug("Compilation timed out.")
         text = [COMPILATION_MESSAGES.get("timeout").message]
+        return True, False, text, stats
+
+    elif exit_status == Sandbox.EXIT_MEM_LIMIT:
+        # Memory limit: we assume it is the user's fault, and we return the
+        # error to them.
+        logger.debug("Compilation memory limit exceeded.")
+        text = [COMPILATION_MESSAGES.get("memorylimit").message]
         return True, False, text, stats
 
     elif exit_status == Sandbox.EXIT_SIGNAL:

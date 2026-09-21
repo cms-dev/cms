@@ -294,7 +294,7 @@ class CompilationJob(Job):
     """Job representing a compilation.
 
     Can represent either the compilation of a user test, or of a
-    submission, or of an arbitrary source (as used in cmsMake).
+    submission.
 
     Input data (usually filled by ES): language, files,
     managers. Output data (filled by the Worker): success,
@@ -511,7 +511,7 @@ class EvaluationJob(Job):
     """Job representing an evaluation on a testcase.
 
     Can represent either the evaluation of a user test, or of a
-    submission, or of an arbitrary source (as used in cmsMake).
+    submission.
 
     Input data (usually filled by ES): testcase_codename, language,
     files, managers, executables, input, output, time_limit,

@@ -64,7 +64,12 @@ def rpc_authorization_checker(
 
     with SessionGen() as session:
         # Load admin.
-        admin: Admin = session.query(Admin).filter(Admin.id == admin_id).first()
+        admin: Admin | None = (
+            session.query(Admin)
+            .filter(Admin.id == admin_id)
+            .filter(Admin.enabled.is_(True))
+            .first()
+        )
         if admin is None:
             return False
 
