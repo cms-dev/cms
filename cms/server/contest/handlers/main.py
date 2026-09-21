@@ -10,6 +10,8 @@
 # Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 # Copyright © 2015-2018 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2021 Grace Hawkins <amoomajid99@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
+# Copyright © 2025 kk@cscmu-cnx
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
