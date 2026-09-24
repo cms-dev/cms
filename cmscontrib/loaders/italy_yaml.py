@@ -49,16 +49,6 @@ from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader, LANG
 logger = logging.getLogger(__name__)
 
 
-# Patch PyYAML to make it load all strings as unicode instead of str
-# (see http://stackoverflow.com/questions/2890146).
-def construct_yaml_str(self, node):
-    return self.construct_scalar(node)
-
-
-yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
-yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
-
-
 def getmtime(fname):
     return os.stat(fname).st_mtime
 
