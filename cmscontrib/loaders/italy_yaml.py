@@ -605,7 +605,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 stubs = True
 
         if graders and stubs:
-            logger.fatal("Task contains both sol/grader and sol/stub")
+            logger.critical("Task contains both sol/grader and sol/stub")
             return None
         elif graders:
             # Read grader for each language
