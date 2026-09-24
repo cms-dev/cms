@@ -475,9 +475,14 @@ class EvaluationService(TriggeredService[ESOperation, EvaluationExecutor]):
                 if job.success:
                     logger.info("`%s' succeeded.", operation)
                 else:
-                    logger.error("`%s' failed, see worker logs and (possibly) "
-                                 "sandboxes at '%s'.",
-                                 operation, " ".join(job.sandboxes))
+                    sboxes: list[str] = []
+                    for x in job.sandboxes:
+                        hash = job.sandbox_digests.get(x)
+                        if hash:
+                            sboxes.append(f'sandbox("{x}", hash={hash})')
+                        else:
+                            sboxes.append(f'sandbox("{x}")')
+                    logger.error(f"`{operation}' failed, see worker logs and (possibly) sandboxes: {' '.join(sboxes)}")
                 if isinstance(to_ignore, list) and operation in to_ignore:
                     logger.info("`%s' result ignored as requested", operation)
                 else:

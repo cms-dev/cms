@@ -61,8 +61,6 @@ These files are a pretty good starting point if you want to try CMS. There are s
 
 * you must change the connection string given in ``database``; this usually means to change username, password and database with the ones you chose before;
 
-* if you are running low on disk space, you may want to make sure ``keep_sandbox`` is set to ``false``;
-
 If you are organizing a real contest, you must also change ``secret_key`` to a random key (the admin interface will suggest one if you visit it when ``secret_key`` is the default). You will also need to think about how to distribute your services and change ``core_services`` accordingly. Finally, you should change the ranking section of :file:`cms.toml`, and :file:`cms_ranking.toml`, using non-trivial username and password.
 
 .. warning::
