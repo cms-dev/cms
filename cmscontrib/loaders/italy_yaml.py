@@ -230,10 +230,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         # Times
         main_group = {}
-        load(conf, main_group, ["start", "inizio"], conv=parse_datetime)
-        load(conf, main_group, ["stop", "fine"], conv=parse_datetime)
+        load(conf, main_group, ["start", "inizio"])
+        load(conf, main_group, ["stop", "fine"])
         load(conf, args, ["timezone"])
-        load(conf, main_group, ["per_user_time"], conv=make_timedelta)
+        load(conf, main_group, ["per_user_time"])
 
         # Limits
         load(conf, args, "max_submission_number")
@@ -243,8 +243,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         # Analysis mode
         load(conf, main_group, "analysis_enabled")
-        load(conf, main_group, "analysis_start", conv=parse_datetime)
-        load(conf, main_group, "analysis_stop", conv=parse_datetime)
+        load(conf, main_group, "analysis_start")
+        load(conf, main_group, "analysis_stop")
 
         # Groups
         main_group_name: str | None = load(conf, None, "main_group")
