@@ -25,6 +25,9 @@
 
 import logging
 
+from markupsafe import Markup, escape
+
+from cms.grading.steps.messages import MESSAGE_REGISTRY
 from cms.locale import DEFAULT_TRANSLATION, Translation
 from .language import Language, CompiledLanguage
 
@@ -61,9 +64,10 @@ def format_status_text(
 
     A status text is the content of SubmissionResult.compilation_text,
     Evaluation.text and UserTestResult.(compilation|evaluation)_text.
-    It is a list whose first element is a string with printf-like
-    placeholders and whose other elements are the data to use to fill
-    them.
+    It is a list whose first element is a message ID identifying a
+    MessageCollection and a message in it, and whose other elements are the
+    data to use to fill them. If the message ID begins with "custom:", it is
+    used as a string directly without attempting to look up a message.
     The first element will be translated using the given translator (or
     the identity function, if not given), completed with the data and
     returned.
@@ -78,9 +82,21 @@ def format_status_text(
         if not isinstance(status, list):
             raise TypeError("Invalid type: %r" % type(status))
 
-        # The empty msgid corresponds to the headers of the pofile.
-        text = _(status[0]) if status[0] != '' else ''
-        return text % tuple(status[1:])
+        if status[0] == '':
+            return ''
+        elif status[0].startswith("custom:"):
+            return status[0].removeprefix("custom:") % tuple(status[1:])
+        else:
+            message = MESSAGE_REGISTRY.get(status[0])
+            msg_text = _(message.message) % tuple(status[1:])
+            if message.inline_help:
+                # XXX: is this the best place for this?
+                help = Markup(
+                    f' <i class="icon-question-sign" title="{escape(message.help_text)}"></i>'
+                )
+                return msg_text + help
+            else:
+                return msg_text
     except Exception:
         logger.error("Unexpected error when formatting status "
                      "text: %r", status, exc_info=True)

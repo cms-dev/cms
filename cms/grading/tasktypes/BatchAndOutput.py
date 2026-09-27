@@ -29,11 +29,6 @@ from .Batch import Batch
 logger = logging.getLogger(__name__)
 
 
-# Dummy function to mark translatable string.
-def N_(message):
-    return message
-
-
 class BatchAndOutput(Batch):
     """Task type class for a task that is a combination of Batch and
     OutputOnly.
@@ -115,7 +110,7 @@ class BatchAndOutput(Batch):
             # This submission did not have any source files, skip compilation
             job.success = True
             job.compilation_success = True
-            job.text = [N_("No compilation needed")]
+            job.text = ["outputonly:nocompile"]
             job.plus = {}
             return
 
@@ -145,7 +140,7 @@ class BatchAndOutput(Batch):
         if output_file_params is None and outcome is None:
             job.success = True
             job.outcome = "0.0"
-            job.text = [N_("File not submitted")]
+            job.text = ["outputonly:nofile"]
             job.plus = {}
             return
 
