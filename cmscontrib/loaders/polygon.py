@@ -32,6 +32,7 @@ from datetime import datetime, timedelta
 
 from cms import config
 from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
+from cms.grading.languagemanager import HEADER_EXTS, LANGUAGES
 from cmscommon.crypto import build_password
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader, LANGUAGE_MAP
@@ -203,18 +204,44 @@ class PolygonTaskLoader(TaskLoader):
 
             # Polygon batch graders are source files compiled together with
             # the contestant's submission. CMS expects these as managers
-            # named grader.<extension> (for example, grader.cpp).
-            grader_src = os.path.join(self.path, "files", "grader.cpp")
-            if not os.path.exists(grader_src):
-                grader_src = os.path.join(self.path, "grader.cpp")
+            # named grader.<extension> (for example, grader.cpp). Polygon
+            # packages commonly put them in files/, but accept the package
+            # root as well.
             compilation_param = "alone"
-            if os.path.exists(grader_src):
+            package_files = [self.path, os.path.join(self.path, "files")]
+            for language in LANGUAGES:
+                grader_filename = "grader%s" % language.source_extension
+                grader_src = next(
+                    (os.path.join(directory, grader_filename)
+                     for directory in package_files
+                     if os.path.isfile(os.path.join(directory, grader_filename))),
+                    None)
+                if grader_src is None:
+                    continue
                 logger.info("Batch grader found, importing %s", grader_src)
                 grader_digest = self.file_cacher.put_file_from_path(
-                    grader_src, "Grader for task %s" % name)
-                args["managers"]["grader.cpp"] = Manager(
-                    "grader.cpp", grader_digest)
+                    grader_src, "Grader for task %s and language %s" %
+                    (name, language.name))
+                args["managers"][grader_filename] = Manager(
+                    grader_filename, grader_digest)
                 compilation_param = "grader"
+
+            # Graders may include package-provided headers (for example,
+            # a participant API header). Import only direct files so the
+            # manager filename remains valid in the compilation sandbox.
+            files_directory = os.path.join(self.path, "files")
+            if os.path.isdir(files_directory):
+                for filename in os.listdir(files_directory):
+                    if not any(filename.endswith(extension)
+                               for extension in HEADER_EXTS):
+                        continue
+                    header_src = os.path.join(files_directory, filename)
+                    if not os.path.isfile(header_src):
+                        continue
+                    header_digest = self.file_cacher.put_file_from_path(
+                        header_src,
+                        "Header manager %s for task %s" % (filename, name))
+                    args["managers"][filename] = Manager(filename, header_digest)
 
             # Checker can be in any of these two locations.
             checker_src = os.path.join(self.path, "files", "check.cpp")
