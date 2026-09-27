@@ -201,6 +201,21 @@ class PolygonTaskLoader(TaskLoader):
             infile_param = judging.attrib['input-file']
             outfile_param = judging.attrib['output-file']
 
+            # Polygon batch graders are source files compiled together with
+            # the contestant's submission. CMS expects these as managers
+            # named grader.<extension> (for example, grader.cpp).
+            grader_src = os.path.join(self.path, "files", "grader.cpp")
+            if not os.path.exists(grader_src):
+                grader_src = os.path.join(self.path, "grader.cpp")
+            compilation_param = "alone"
+            if os.path.exists(grader_src):
+                logger.info("Batch grader found, importing %s", grader_src)
+                grader_digest = self.file_cacher.put_file_from_path(
+                    grader_src, "Grader for task %s" % name)
+                args["managers"]["grader.cpp"] = Manager(
+                    "grader.cpp", grader_digest)
+                compilation_param = "grader"
+
             # Checker can be in any of these two locations.
             checker_src = os.path.join(self.path, "files", "check.cpp")
             if not os.path.exists(checker_src):
@@ -235,8 +250,11 @@ class PolygonTaskLoader(TaskLoader):
                 evaluation_param = "diff"
 
             args["task_type"] = "Batch"
-            args["task_type_parameters"] = \
-                ["alone", [infile_param, outfile_param], evaluation_param]
+            args["task_type_parameters"] = [
+                compilation_param,
+                [infile_param, outfile_param],
+                evaluation_param,
+            ]
 
             args["score_type"] = "Sum"
             total_value = 100.0
