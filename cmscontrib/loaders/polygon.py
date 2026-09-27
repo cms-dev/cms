@@ -229,13 +229,14 @@ class PolygonTaskLoader(TaskLoader):
             # Graders may include package-provided headers (for example,
             # a participant API header). Import only direct files so the
             # manager filename remains valid in the compilation sandbox.
-            files_directory = os.path.join(self.path, "files")
-            if os.path.isdir(files_directory):
-                for filename in os.listdir(files_directory):
+            for directory in package_files:
+                if not os.path.isdir(directory):
+                    continue
+                for filename in os.listdir(directory):
                     if not any(filename.endswith(extension)
                                for extension in HEADER_EXTS):
                         continue
-                    header_src = os.path.join(files_directory, filename)
+                    header_src = os.path.join(directory, filename)
                     if not os.path.isfile(header_src):
                         continue
                     header_digest = self.file_cacher.put_file_from_path(
