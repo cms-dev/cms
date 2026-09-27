@@ -44,6 +44,16 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
+def _format_test_path(pattern, test_number):
+    """Format a Polygon test path pattern for a one-based test number."""
+    try:
+        return pattern % test_number
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            "Invalid Polygon test path pattern %r: %s" % (pattern, error)
+        ) from error
+
+
 class PolygonTaskLoader(TaskLoader):
     """Load a task stored using the Codeforces Polygon format.
 
@@ -105,6 +115,20 @@ class PolygonTaskLoader(TaskLoader):
 
         tree = ET.parse(os.path.join(self.path, "problem.xml"))
         root = tree.getroot()
+
+        # A Polygon interactor speaks the Polygon file/stdio protocol. CMS
+        # interactive controllers use a different START_SOLUTION protocol and
+        # cannot run this binary as a normal batch checker or manager.
+        interactor_paths = (
+            os.path.join(self.path, "files", "interactor.cpp"),
+            os.path.join(self.path, "interactor.cpp"),
+        )
+        if any(os.path.exists(path) for path in interactor_paths):
+            logger.critical(
+                "Polygon interactors are not supported by the Polygon loader "
+                "(task %s). Convert the interactor to a CMS controller.", name
+            )
+            return None
 
         args["name"] = name
         args["title"] = str(root.find('names').find("name").attrib['value'])
@@ -218,7 +242,27 @@ class PolygonTaskLoader(TaskLoader):
             total_value = 100.0
             input_value = 0.0
 
-            testcases = int(testset.find('test-count').text)
+            test_count = testset.findtext('test-count')
+            if test_count is None:
+                logger.critical(
+                    "Testset %s for task %s has no test-count.",
+                    testset_name, name)
+                return None
+            try:
+                testcases = int(test_count)
+            except ValueError:
+                logger.critical(
+                    "Testset %s for task %s has an invalid test-count %r.",
+                    testset_name, name, test_count)
+                return None
+
+            input_pattern = testset.findtext('input-path-pattern')
+            answer_pattern = testset.findtext('answer-path-pattern')
+            if input_pattern is None or answer_pattern is None:
+                logger.critical(
+                    "Testset %s for task %s has no input/answer path pattern.",
+                    testset_name, name)
+                return None
 
             n_input = testcases
             if n_input != 0:
@@ -228,10 +272,21 @@ class PolygonTaskLoader(TaskLoader):
             args["testcases"] = {}
 
             for i in range(testcases):
-                infile = os.path.join(self.path, testset_name,
-                                      "%02d" % (i + 1))
-                outfile = os.path.join(self.path, testset_name,
-                                       "%02d.a" % (i + 1))
+                try:
+                    infile = os.path.join(
+                        self.path, _format_test_path(input_pattern, i + 1))
+                    outfile = os.path.join(
+                        self.path, _format_test_path(answer_pattern, i + 1))
+                except ValueError as error:
+                    logger.critical("%s", error)
+                    return None
+                missing = [path for path in (infile, outfile)
+                           if not os.path.isfile(path)]
+                if missing:
+                    logger.critical(
+                        "Testset %s for task %s references missing file(s): %s",
+                        testset_name, name, ", ".join(missing))
+                    return None
                 if self.dos2unix_found:
                     os.system('dos2unix -q %s' % (infile, ))
                     os.system('dos2unix -q %s' % (outfile, ))
