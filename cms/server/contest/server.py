@@ -46,7 +46,6 @@ from cms import ConfigError, ServiceCoord, config
 from cms.io import WebService
 from cms.locale import get_translations
 from cms.server.contest.jinja2_toolbox import CWS_ENVIRONMENT
-from cmscommon.binary import hex_to_bin
 from .handlers import HANDLERS
 from .handlers.base import ContestListHandler
 from .handlers.main import MainHandler
@@ -66,7 +65,7 @@ class ContestWebServer(WebService):
         parameters = {
             "static_files": [("cms.server", "static"),
                              ("cms.server.contest", "static")],
-            "cookie_secret": hex_to_bin(config.web_server.secret_key),
+            "cookie_secret": bytes.fromhex(config.web_server.secret_key),
             "debug": config.web_server.tornado_debug,
             "is_proxy_used": None,
             "num_proxies_used": config.contest_web_server.num_proxies_used,

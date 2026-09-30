@@ -48,7 +48,7 @@ class AWSSubmissionViewRequest(GenericRequest):
     def __init__(self, browser, submission_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.submission_id = submission_id
-        self.url = "%s/submission/%s" % (self.base_url, submission_id)
+        self.url = "%s/submission/opaque_%s" % (self.base_url, submission_id)
 
     def describe(self):
         return "check submission %s" % self.submission_id
@@ -105,7 +105,7 @@ class AWSUserTestViewRequest(GenericRequest):
     def __init__(self, browser, user_test_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
         self.user_test_id = user_test_id
-        self.url = "%s/user_test/%s" % (self.base_url, user_test_id)
+        self.url = "%s/user_test/opaque_%s" % (self.base_url, user_test_id)
 
     def describe(self):
         return "check user_test %s" % self.user_test_id

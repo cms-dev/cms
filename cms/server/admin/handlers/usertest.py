@@ -20,6 +20,15 @@
 
 """
 
+import collections
+try:
+    collections.MutableMapping
+except:
+    # Monkey-patch: Tornado 4.5.3 does not work on Python 3.11 by default
+    collections.MutableMapping = collections.abc.MutableMapping
+
+import tornado.web
+
 from cms.db import Dataset, UserTestFile, UserTest
 from cms.grading.languagemanager import safe_get_lang_filename
 
@@ -29,8 +38,18 @@ from .base import BaseHandler, FileHandler, require_permission
 class UserTestHandler(BaseHandler):
     """Shows the details of a user test."""
     @require_permission(BaseHandler.AUTHENTICATED)
-    def get(self, user_test_id, dataset_id=None):
-        user_test = self.safe_get_item(UserTest, user_test_id)
+    def get(self, user_test_id: str, dataset_id=None):
+        if user_test_id.startswith("opaque_"):
+            oid = int(user_test_id.removeprefix("opaque_"))
+            user_test = (
+                self.sql_session.query(UserTest)
+                .filter(UserTest.opaque_id == oid)
+                .first()
+            )
+            if user_test is None:
+                raise tornado.web.HTTPError(404)
+        else:
+            user_test = self.safe_get_item(UserTest, user_test_id)
         task = user_test.task
         self.contest = task.contest
 
