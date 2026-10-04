@@ -49,16 +49,6 @@ from .base_loader import ContestLoader, TaskLoader, UserLoader, TeamLoader, LANG
 logger = logging.getLogger(__name__)
 
 
-# Patch PyYAML to make it load all strings as unicode instead of str
-# (see http://stackoverflow.com/questions/2890146).
-def construct_yaml_str(self, node):
-    return self.construct_scalar(node)
-
-
-yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
-yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
-
-
 def getmtime(fname):
     return os.stat(fname).st_mtime
 
@@ -240,10 +230,10 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         # Times
         main_group = {}
-        load(conf, main_group, ["start", "inizio"], conv=parse_datetime)
-        load(conf, main_group, ["stop", "fine"], conv=parse_datetime)
+        load(conf, main_group, ["start", "inizio"])
+        load(conf, main_group, ["stop", "fine"])
         load(conf, args, ["timezone"])
-        load(conf, main_group, ["per_user_time"], conv=make_timedelta)
+        load(conf, main_group, ["per_user_time"])
 
         # Limits
         load(conf, args, "max_submission_number")
@@ -253,8 +243,8 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
 
         # Analysis mode
         load(conf, main_group, "analysis_enabled")
-        load(conf, main_group, "analysis_start", conv=parse_datetime)
-        load(conf, main_group, "analysis_stop", conv=parse_datetime)
+        load(conf, main_group, "analysis_start")
+        load(conf, main_group, "analysis_stop")
 
         # Groups
         main_group_name: str | None = load(conf, None, "main_group")
@@ -605,7 +595,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 stubs = True
 
         if graders and stubs:
-            logger.fatal("Task contains both sol/grader and sol/stub")
+            logger.critical("Task contains both sol/grader and sol/stub")
             return None
         elif graders:
             # Read grader for each language
@@ -766,13 +756,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 args["score_type_parameters"] = input_value
 
         # If output_only is set, then the task type is OutputOnly
-        if conf.get('output_only', False):
-            args["task_type"] = "OutputOnly"
-            args["time_limit"] = None
-            args["memory_limit"] = None
-            args["task_type_parameters"] = [evaluation_param]
-            task.submission_format = \
-                ["output_%03d.txt" % i for i in range(n_input)]
+        output_only = bool(conf.get('output_only', False))
 
         # If there is check/controller (or equivalent), then the task
         # type is Interactive
@@ -792,8 +776,9 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 manager_path = path
                 break
 
-        if controller_path is not None and manager_path is not None:
-            logger.fatal("Cannot have both a manager and a controller")
+        if sum((controller_path is not None, manager_path is not None, output_only)) > 1:
+            logger.critical("Can have at most one of manager, controller, and output_only")
+            sys.exit(1)
 
         if controller_path is not None:
             args["task_type"] = "Interactive"
@@ -812,6 +797,7 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 controller_path,
                 "Controller for task %s" % task.name)
             args["managers"] += [Manager("controller", digest)]
+
         elif manager_path is not None:
             num_processes = load(conf, None, "num_processes")
             if num_processes is None:
@@ -832,6 +818,14 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
                 manager_path,
                 "Manager for task %s" % task.name)
             args["managers"] += [Manager("manager", digest)]
+
+        elif output_only:
+            args["task_type"] = "OutputOnly"
+            args["time_limit"] = None
+            args["memory_limit"] = None
+            args["task_type_parameters"] = [evaluation_param]
+            task.submission_format = ["output_%03d.txt" % i for i in range(n_input)]
+
         else:
             # Otherwise, the task type is Batch or BatchAndOutput
             args["task_type"] = "Batch"

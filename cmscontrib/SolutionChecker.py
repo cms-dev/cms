@@ -32,6 +32,7 @@ Each check should be an object with the following fields:
   - "WrongAnswer" (at least one testcase produced a wrong answer)
   - "TimeLimitExceeded" (at least one testcase exceeded CPU time limit)
   - "WallTimeLimitExceeded" (at least one testcase exceeded wall time limit)
+  - "MemoryLimitExceeded" (at least one testcase exceeded memory limit)
   - "RuntimeError" (at least one testcase failed due to runtime error)
 
 Such a file can be generated with `task-maker-rust export-solution-checks`.
@@ -257,6 +258,40 @@ class SolutionChecker:
         return False
 
     @staticmethod
+    def get_max_execution_time(
+        details: list[dict[str, Any]] | None,
+    ) -> float | None:
+        if not isinstance(details, list):
+            return None
+        max_time = None
+        for item in details:
+            if not isinstance(item, dict):
+                continue
+            testcases = item.get("testcases")
+            if isinstance(testcases, list):
+                for tc in testcases:
+                    if not isinstance(tc, dict):
+                        continue
+                    t = tc.get("time")
+                    if t is not None:
+                        try:
+                            val = float(t)
+                            if max_time is None or val > max_time:
+                                max_time = val
+                        except (ValueError, TypeError):
+                            pass
+            else:
+                t = item.get("time")
+                if t is not None:
+                    try:
+                        val = float(t)
+                        if max_time is None or val > max_time:
+                            max_time = val
+                    except (ValueError, TypeError):
+                        pass
+        return max_time
+
+    @staticmethod
     def get_testcase_status(tc: dict[str, Any]) -> str:
         outcome = tc.get("outcome")
         text_list = tc.get("text", [])
@@ -265,24 +300,23 @@ class SolutionChecker:
             if isinstance(text_list, list) and text_list
             else str(text_list)
         )
-        if "wall clock" in text_str.lower():
+        combined = f"{outcome} {text_str}".lower()
+        if "wall clock" in combined:
             return "WallTimeLimitExceeded"
-        if tc.get("time_limit_was_exceeded", False) or "timed out" in text_str.lower():
+        if tc.get("time_limit_was_exceeded", False) or "timed out" in combined:
             return "TimeLimitExceeded"
-        if (
-            "signal" in text_str.lower()
-            or "return code" in text_str.lower()
-            or "memory limit" in text_str.lower()
-        ):
+        if "memory limit" in combined:
+            return "MemoryLimitExceeded"
+        if "signal" in combined or "return code" in combined:
             return "RuntimeError"
-        if outcome == "Correct" or "output is correct" in text_str.lower():
+        if outcome == "Correct" or "output is correct" in combined:
             return "Accepted"
         if outcome == "Partially correct":
             return "PartialScore"
         if (
             outcome == "Not correct"
-            or "output isn't correct" in text_str.lower()
-            or "wrong answer" in text_str.lower()
+            or "output isn't correct" in combined
+            or "wrong answer" in combined
         ):
             return "WrongAnswer"
         return "Unknown"
@@ -355,6 +389,7 @@ class SolutionChecker:
             "WrongAnswer",
             "TimeLimitExceeded",
             "WallTimeLimitExceeded",
+            "MemoryLimitExceeded",
             "RuntimeError",
         ]:
             if check not in statuses:
@@ -407,6 +442,7 @@ class SolutionChecker:
         "WrongAnswer": "WA",
         "TimeLimitExceeded": "TLE",
         "WallTimeLimitExceeded": "WTL",
+        "MemoryLimitExceeded": "MLE",
         "RuntimeError": "RTE",
         "PartialScore": "PS",
         "Zero": "0",
@@ -476,6 +512,28 @@ class SolutionChecker:
 
                 row_cells.append((cell_text, cell_color))
 
+            # Longest execution time
+            max_time = r.get("max_time")
+            if max_time is None:
+                max_time = self.get_max_execution_time(details)
+
+            if compilation_failed:
+                time_text = "-"
+                time_color = RED
+            elif max_time is not None:
+                time_text = f"{max_time:.3f}s"
+                if time_limit > 0 and max_time > time_limit:
+                    time_color = RED
+                elif time_limit > 0 and max_time > time_limit * 0.5:
+                    time_color = YELLOW
+                else:
+                    time_color = GREEN
+            else:
+                time_text = "-"
+                time_color = ""
+
+            row_cells.append((time_text, time_color))
+
             if compilation_failed:
                 score_text = "CE"
                 expected_str = ""
@@ -505,8 +563,8 @@ class SolutionChecker:
 
             rows.append((row_cells, score_text, expected_str, total_color))
 
-        num_subtask_cols = num_subtasks + 1  # sol_name + subtasks
-        col_widths = [0] * num_subtask_cols
+        num_cols = max(len(row_cells) for row_cells, _, _, _ in rows)
+        col_widths = [0] * num_cols
         score_col_width = 0
 
         for row_cells, score_text, _, _ in rows:
@@ -657,6 +715,7 @@ def main():
                     "score": score,
                     "compilation_failed": compilation_failed,
                     "details": details,
+                    "max_time": checker.get_max_execution_time(details),
                     "failed": failed,
                     "slow": slow,
                 }

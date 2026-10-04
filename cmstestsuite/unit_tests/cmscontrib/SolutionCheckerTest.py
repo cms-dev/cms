@@ -245,6 +245,40 @@ class TestSolutionChecker(unittest.TestCase):
             [],
         )
 
+    def test_check_subtasks_memory_limit_exceeded(self):
+        details = [
+            {
+                "idx": 0,
+                "testcases": [
+                    {
+                        "outcome": "Not correct",
+                        "text": ["Memory limit exceeded"],
+                    }
+                ],
+            }
+        ]
+        self.assertEqual(
+            self.checker.check_subtasks(details, ["MemoryLimitExceeded"]), []
+        )
+
+        details_no_mle = [
+            {
+                "idx": 0,
+                "testcases": [
+                    {
+                        "outcome": "Not correct",
+                        "text": ["Output isn't correct"],
+                    }
+                ],
+            }
+        ]
+        errors = self.checker.check_subtasks(details_no_mle, ["MemoryLimitExceeded"])
+        self.assertEqual(len(errors), 1)
+        self.assertIn(
+            "expected MemoryLimitExceeded, got statuses ['WrongAnswer']",
+            errors[0],
+        )
+
     def test_check_subtasks_multiple_statuses(self):
         # Subtask with multiple different testcase failures
         details = [
@@ -361,6 +395,33 @@ class TestSolutionChecker(unittest.TestCase):
         # Flat testcase structure (e.g. Sum score type)
         details_flat = [{"idx": 0, "time": 0.8}]
         self.assertTrue(self.checker.has_slow_testcases(details_flat, time_limit))
+
+    def test_get_max_execution_time(self):
+        # Subtask structure
+        details_subtasks = [
+            {
+                "idx": 0,
+                "testcases": [{"time": 0.1}, {"time": 0.35}],
+            },
+            {
+                "idx": 1,
+                "testcases": [{"time": 0.2}, {"time": 0.7}],
+            },
+        ]
+        self.assertEqual(SolutionChecker.get_max_execution_time(details_subtasks), 0.7)
+
+        # Flat testcase structure
+        details_flat = [{"time": 0.2}, {"time": 0.85}, {"time": 0.5}]
+        self.assertEqual(SolutionChecker.get_max_execution_time(details_flat), 0.85)
+
+        # None / empty / no times
+        self.assertIsNone(SolutionChecker.get_max_execution_time(None))
+        self.assertIsNone(SolutionChecker.get_max_execution_time([]))
+        self.assertIsNone(
+            SolutionChecker.get_max_execution_time(
+                [{"idx": 0, "testcases": [{"outcome": "Correct"}]}]
+            )
+        )
 
     def test_login_validations(self):
         # Password without username
@@ -651,6 +712,10 @@ class TestSolutionChecker(unittest.TestCase):
         self.assertIn("AC", table_colored)
         self.assertIn("WA", table_colored)
         self.assertIn("CE", table_colored)
+        # Verify longest execution times
+        self.assertIn("0.100s", table_colored)
+        self.assertIn("0.700s", table_colored)
+        self.assertIn("0.001s", table_colored)
         # Verify ANSI colors
         self.assertIn("\x1b[32;1m", table_colored)  # Green
         self.assertIn("\x1b[33;1m", table_colored)  # Yellow
@@ -664,6 +729,9 @@ class TestSolutionChecker(unittest.TestCase):
         self.assertIn("CE", table_plain)
         self.assertIn("71 (expected 110-120)", table_plain)
         self.assertIn("100", table_plain)
+        self.assertIn("0.100s", table_plain)
+        self.assertIn("0.700s", table_plain)
+        self.assertIn("0.001s", table_plain)
 
         # Empty results -> empty string
         self.assertEqual(self.checker.format_report_table([], time_limit), "")

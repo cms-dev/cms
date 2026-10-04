@@ -283,10 +283,6 @@ class Sandbox:
 
         self.add_mapped_directory(self._home, dest=self._home_dest, options="rw")
 
-        # Create temporary directory on /dev/shm to prevent communication
-        # between sandboxes.
-        self.dirs.append((None, "/dev/shm", "tmp"))
-
         # Set common environment variables.
         # Specifically needed by Python, that searches the home for
         # packages.
