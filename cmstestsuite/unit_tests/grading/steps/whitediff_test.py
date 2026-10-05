@@ -72,6 +72,13 @@ class TestWhiteDiff(unittest.TestCase):
         line2 = line1 + "0"
         self.assertFalse(self._diff(line1, line2))
 
+    def test_diff_nul_byte_escaped_in_admin_text(self):
+        correct, admin_text = _white_diff(
+            BytesIO(b"hello\x00world"), BytesIO(b"helloworld"))
+        self.assertFalse(correct)
+        self.assertNotIn("\x00", admin_text)
+        self.assertIn("hello\\x00world", admin_text)
+
 
 if __name__ == "__main__":
     unittest.main()
