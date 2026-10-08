@@ -32,6 +32,7 @@ from datetime import datetime, timedelta
 
 from cms import config
 from cms.db import Contest, User, Task, Statement, Dataset, Manager, Testcase
+from cms.grading.languagemanager import HEADER_EXTS, LANGUAGES
 from cmscommon.crypto import build_password
 from cmscontrib import touch
 from .base_loader import ContestLoader, TaskLoader, UserLoader, LANGUAGE_MAP
@@ -42,6 +43,16 @@ logger = logging.getLogger(__name__)
 
 def make_timedelta(t):
     return timedelta(seconds=t)
+
+
+def _format_test_path(pattern, test_number):
+    """Format a Polygon test path pattern for a one-based test number."""
+    try:
+        return pattern % test_number
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            "Invalid Polygon test path pattern %r: %s" % (pattern, error)
+        ) from error
 
 
 class PolygonTaskLoader(TaskLoader):
@@ -105,6 +116,20 @@ class PolygonTaskLoader(TaskLoader):
 
         tree = ET.parse(os.path.join(self.path, "problem.xml"))
         root = tree.getroot()
+
+        # A Polygon interactor speaks the Polygon file/stdio protocol. CMS
+        # interactive controllers use a different START_SOLUTION protocol and
+        # cannot run this binary as a normal batch checker or manager.
+        interactor_paths = (
+            os.path.join(self.path, "files", "interactor.cpp"),
+            os.path.join(self.path, "interactor.cpp"),
+        )
+        if any(os.path.exists(path) for path in interactor_paths):
+            logger.critical(
+                "Polygon interactors are not supported by the Polygon loader "
+                "(task %s). Convert the interactor to a CMS controller.", name
+            )
+            return None
 
         args["name"] = name
         args["title"] = str(root.find('names').find("name").attrib['value'])
@@ -177,6 +202,48 @@ class PolygonTaskLoader(TaskLoader):
             infile_param = judging.attrib['input-file']
             outfile_param = judging.attrib['output-file']
 
+            # Polygon batch graders are source files compiled together with
+            # the contestant's submission. CMS expects these as managers
+            # named grader.<extension> (for example, grader.cpp). Polygon
+            # packages commonly put them in files/, but accept the package
+            # root as well.
+            compilation_param = "alone"
+            package_files = [self.path, os.path.join(self.path, "files")]
+            for language in LANGUAGES:
+                grader_filename = "grader%s" % language.source_extension
+                grader_src = next(
+                    (os.path.join(directory, grader_filename)
+                     for directory in package_files
+                     if os.path.isfile(os.path.join(directory, grader_filename))),
+                    None)
+                if grader_src is None:
+                    continue
+                logger.info("Batch grader found, importing %s", grader_src)
+                grader_digest = self.file_cacher.put_file_from_path(
+                    grader_src, "Grader for task %s and language %s" %
+                    (name, language.name))
+                args["managers"][grader_filename] = Manager(
+                    grader_filename, grader_digest)
+                compilation_param = "grader"
+
+            # Graders may include package-provided headers (for example,
+            # a participant API header). Import only direct files so the
+            # manager filename remains valid in the compilation sandbox.
+            for directory in package_files:
+                if not os.path.isdir(directory):
+                    continue
+                for filename in os.listdir(directory):
+                    if not any(filename.endswith(extension)
+                               for extension in HEADER_EXTS):
+                        continue
+                    header_src = os.path.join(directory, filename)
+                    if not os.path.isfile(header_src):
+                        continue
+                    header_digest = self.file_cacher.put_file_from_path(
+                        header_src,
+                        "Header manager %s for task %s" % (filename, name))
+                    args["managers"][filename] = Manager(filename, header_digest)
+
             # Checker can be in any of these two locations.
             checker_src = os.path.join(self.path, "files", "check.cpp")
             if not os.path.exists(checker_src):
@@ -211,14 +278,37 @@ class PolygonTaskLoader(TaskLoader):
                 evaluation_param = "diff"
 
             args["task_type"] = "Batch"
-            args["task_type_parameters"] = \
-                ["alone", [infile_param, outfile_param], evaluation_param]
+            args["task_type_parameters"] = [
+                compilation_param,
+                [infile_param, outfile_param],
+                evaluation_param,
+            ]
 
             args["score_type"] = "Sum"
             total_value = 100.0
             input_value = 0.0
 
-            testcases = int(testset.find('test-count').text)
+            test_count = testset.findtext('test-count')
+            if test_count is None:
+                logger.critical(
+                    "Testset %s for task %s has no test-count.",
+                    testset_name, name)
+                return None
+            try:
+                testcases = int(test_count)
+            except ValueError:
+                logger.critical(
+                    "Testset %s for task %s has an invalid test-count %r.",
+                    testset_name, name, test_count)
+                return None
+
+            input_pattern = testset.findtext('input-path-pattern')
+            answer_pattern = testset.findtext('answer-path-pattern')
+            if input_pattern is None or answer_pattern is None:
+                logger.critical(
+                    "Testset %s for task %s has no input/answer path pattern.",
+                    testset_name, name)
+                return None
 
             n_input = testcases
             if n_input != 0:
@@ -228,10 +318,21 @@ class PolygonTaskLoader(TaskLoader):
             args["testcases"] = {}
 
             for i in range(testcases):
-                infile = os.path.join(self.path, testset_name,
-                                      "%02d" % (i + 1))
-                outfile = os.path.join(self.path, testset_name,
-                                       "%02d.a" % (i + 1))
+                try:
+                    infile = os.path.join(
+                        self.path, _format_test_path(input_pattern, i + 1))
+                    outfile = os.path.join(
+                        self.path, _format_test_path(answer_pattern, i + 1))
+                except ValueError as error:
+                    logger.critical("%s", error)
+                    return None
+                missing = [path for path in (infile, outfile)
+                           if not os.path.isfile(path)]
+                if missing:
+                    logger.critical(
+                        "Testset %s for task %s references missing file(s): %s",
+                        testset_name, name, ", ".join(missing))
+                    return None
                 if self.dos2unix_found:
                     os.system('dos2unix -q %s' % (infile, ))
                     os.system('dos2unix -q %s' % (outfile, ))
