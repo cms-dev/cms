@@ -51,11 +51,11 @@ var Config = new function () {
     };
 
     self.get_flag_url = function (t_key) {
-        return "flags/" + t_key;
+        return "flags/" + t_key + PublicConfig.flags_extension;
     };
 
     self.get_face_url = function (u_key) {
-        return "faces/" + u_key;
+        return "faces/" + u_key + PublicConfig.faces_extension;
     };
 
     self.get_submissions_url = function (u_key) {
@@ -80,7 +80,11 @@ var Config = new function () {
 };
 
 var PublicConfig = {
-    show_id_column: false
+    show_id_column: false,
+    flags_extension: "",
+    faces_extension: "",
+    cache_interval: 1,
+    retry_backoff_seconds: 0,
 };
 
 $.ajax({

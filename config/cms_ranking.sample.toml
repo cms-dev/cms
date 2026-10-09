@@ -29,3 +29,13 @@ buffer_size = 100
 # UI
 [public]
 show_id_column = false
+faces_extension = ""
+flags_extension = ""
+
+# The following value controls the size of buckets into which we split the requests to get new events.
+# A larger value increases caching efficiency but increases the delay of receiving new events by users.
+cache_interval = 1
+
+# The following value controls how quickly the client retries after a disconnect
+# from the event source. 
+retry_backoff_seconds = 0 

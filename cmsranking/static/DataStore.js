@@ -807,11 +807,16 @@ var DataStore = new function () {
 
     self.create_event_source = function () {
         if (self.last_event_id == null) {
-            self.last_event_id = Math.round(Math.min(self.contest_init_time,
-                                                     self.task_init_time,
-                                                     self.team_init_time,
-                                                     self.user_init_time,
-                                                     self.score_init_time) * 1000000).toString(16);
+            self.last_event_id = (Math.floor(Math.min(self.contest_init_time,
+                                                      self.task_init_time,
+                                                      self.team_init_time,
+                                                      self.user_init_time,
+                                                      self.score_init_time
+                                                     ) / PublicConfig.cache_interval
+                                            ) 
+                                            * PublicConfig.cache_interval 
+                                            * 1000000
+                                 ).toString(16);
         }
 
         if (self.es) {
@@ -823,6 +828,7 @@ var DataStore = new function () {
         self.es.addEventListener("open", self.es_open_handler, false);
         self.es.addEventListener("error", self.es_error_handler, false);
         self.es.addEventListener("reload", self.es_reload_handler, false);
+        self.es.addEventListener("reinit", self.es_reload_handler, false);
         self.es.addEventListener("contest", function (event) {
             var timestamp = parseInt(event.lastEventId, 16) / 1000000;
             if (timestamp > self.contest_init_time) {
@@ -860,8 +866,29 @@ var DataStore = new function () {
         }, false);
     };
 
+    self.previous_network_state = null;
+    self.reconnect_timer = null;
+
     self.update_network_status = function (state) {
-        if (state == 0) { // self.es.CONNECTING
+        if (state != 0 && self.reconnect_timer) {
+            clearTimeout(self.reconnect_timer);
+            self.reconnect_timer = null;
+        }
+        if (self.previous_network_state == 1 && state == 0) {
+            var announce_disconnection_fn = () => {
+                if (self.previous_network_state === 0) {
+                    $("#ConnectionStatus_box").attr("data-status", "reconnecting");
+                    $("#ConnectionStatus_text").text("You are disconnected from the server but your browser is trying to connect.");
+                }
+            };
+            if (PublicConfig.retry_backoff_seconds > 0)
+                self.reconnect_timer = setTimeout(
+                    announce_disconnection_fn, 
+                    PublicConfig.retry_backoff_seconds * 2000,
+                );
+            else
+                announce_disconnection_fn();
+        } else if (state == 0) { // self.es.CONNECTING
             $("#ConnectionStatus_box").attr("data-status", "reconnecting");
             $("#ConnectionStatus_text").text("You are disconnected from the server but your browser is trying to connect.");
         } else if (state == 1) { // self.es.OPEN
@@ -877,6 +904,7 @@ var DataStore = new function () {
             $("#ConnectionStatus_box").attr("data-status", "init_error");
             $("#ConnectionStatus_text").html("An error occurred while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
         }
+        self.previous_network_state = state;
     };
 
     self.es_open_handler = function () {
