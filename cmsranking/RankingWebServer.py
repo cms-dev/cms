@@ -131,7 +131,7 @@ class StoreHandler:
 
     def get(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
-        if re.match("^[A-Za-z0-9_]+$", key) is None:
+        if re.fullmatch("[A-Za-z0-9_]+", key) is None:
             return NotFound()
         if key not in self.store:
             raise NotFound()
@@ -149,7 +149,7 @@ class StoreHandler:
 
     def put(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
-        if re.match("^[A-Za-z0-9_]+$", key) is None:
+        if re.fullmatch("[A-Za-z0-9_]+", key) is None:
             return Forbidden()
         if not self.authorized(request):
             logger.warning("Unauthorized request.",
@@ -213,7 +213,7 @@ class StoreHandler:
 
     def delete(self, request: Request, response: Response, key: str):
         # Limit charset of keys.
-        if re.match("^[A-Za-z0-9_]+$", key) is None:
+        if re.fullmatch("[A-Za-z0-9_]+", key) is None:
             return NotFound()
         if key not in self.store:
             raise NotFound()
