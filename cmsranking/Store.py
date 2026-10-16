@@ -89,8 +89,7 @@ class Store(Generic[EntityT]):
 
         try:
             for name in os.listdir(self._path):
-                # TODO check that the key is '[A-Za-z0-9_]+'
-                if name[-5:] == '.json' and name[:-5] != '':
+                if name[-5:] == '.json' and re.fullmatch('[A-Za-z0-9_]+', name[:-5]):
                     with open(os.path.join(self._path, name), 'rb') as rec:
                         item = self._entity()
                         item.set(json.load(rec))
@@ -148,7 +147,9 @@ class Store(Generic[EntityT]):
             some properties or if properties are of the wrong type.
 
         """
-        if not isinstance(key, str) or key in self._store:
+        if not isinstance(key, str) or not re.fullmatch('[A-Za-z0-9_]+', key):
+            raise InvalidKey("Invalid key.")
+        if key in self._store:
             raise InvalidKey("Key already in store.")
 
         # create entity
@@ -232,7 +233,7 @@ class Store(Generic[EntityT]):
                 try:
                     # FIXME We should allow keys to be arbitrary unicode
                     # strings, so this just needs to be a non-empty check.
-                    if not re.match('[A-Za-z0-9_]+', key):
+                    if not isinstance(key, str) or not re.fullmatch('[A-Za-z0-9_]+', key):
                         raise InvalidData("Invalid key")
                     item = self._entity()
                     item.set(value)
