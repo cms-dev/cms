@@ -13,6 +13,7 @@
 # Copyright © 2026 Tobias Lenz <t_lenz94@web.de>
 # Copyright © 2026 Chuyang Wang <mail@chuyang-wang.de>
 # Copyright © 2026 Jonathan Baumann <Jonathan.Baumann@edu.ruhr-uni-bochum.de>
+# Copyright © 2026 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -106,6 +107,8 @@ class ContestHandler(SimpleContestHandler("contest.html")):
             self.get_bool(attrs, "allow_questions")
             self.get_bool(attrs, "allow_user_tests")
             self.get_bool(attrs, "allow_unofficial_submission_before_analysis_mode")
+            self.get_bool(attrs, "show_task_scores_in_overview")
+            self.get_bool(attrs, "show_task_scores_in_sidebar")
             self.get_bool(attrs, "block_hidden_participations")
             self.get_bool(attrs, "allow_password_authentication")
             self.get_bool(attrs, "allow_registration")
