@@ -65,6 +65,7 @@ from cms.db import (
     Digest,
     SessionGen,
     Admin,
+    Team,
     Contest,
     Submission,
     SubmissionResult,
@@ -290,16 +291,21 @@ class DumpImporter:
                             queue.extend(references.values())
 
                 self.objs = dict()
+                reused_keys = set()
+                shared_classes = {"Admin": (Admin, "username"),
+                                  "User": (User, "username"),
+                                  "Team": (Team, "code")}
                 for id_, data in self.datas.items():
                     if id_ in import_keys:
-                        # Keep destination credentials and permissions for shared admins.
-                        if data["_class"] == "Admin":
-                            admin = session.query(Admin).filter(
-                                Admin.username == data["username"]).one_or_none()
-                            if admin is not None:
-                                self.objs[id_] = admin
-                                logger.info("Reusing existing administrator %s.",
-                                            admin.username)
+                        if data["_class"] in shared_classes:
+                            cls, field = shared_classes[data["_class"]]
+                            existing = session.query(cls).filter(
+                                getattr(cls, field) == data[field]).one_or_none()
+                            if existing is not None:
+                                self.objs[id_] = existing
+                                reused_keys.add(id_)
+                                logger.info("Reusing existing %s %s.",
+                                            data["_class"], data[field])
                                 continue
                         self.objs[id_] = self.import_object(data)
 
@@ -325,7 +331,8 @@ class DumpImporter:
                         del self.objs[k]
 
                 for id_, data in self.datas.items():
-                    if not id_.startswith("_") and id_ in self.objs:
+                    # Preserve existing memberships, credentials and permissions.
+                    if id_ in self.objs and id_ not in reused_keys:
                         self.add_relationships(data, self.objs[id_])
 
                 contest_id = list()
