@@ -262,9 +262,35 @@ class DumpImporter:
 
                 assert self.datas["_version"] == model_version
 
+                # Only root contests were selected for export; shared users
+                # and teams can also reference unrelated contests in old dumps.
+                contest_keys = {key for key in self.datas["_objects"]
+                                if self.datas[key]["_class"] == "Contest"}
+                import_keys = set()
+                queue = list(self.datas["_objects"])
+                while queue:
+                    key = queue.pop()
+                    if key in import_keys:
+                        continue
+                    data = self.datas[key]
+                    if ((data["_class"] == "Contest" and key not in contest_keys)
+                            or (data.get("contest") is not None
+                                and data["contest"] not in contest_keys)):
+                        continue
+                    import_keys.add(key)
+                    cls = getattr(class_hook, data["_class"])
+                    for prp in cls._rel_props:
+                        references = data.get(prp.key)
+                        if isinstance(references, str):
+                            queue.append(references)
+                        elif isinstance(references, list):
+                            queue.extend(references)
+                        elif isinstance(references, dict):
+                            queue.extend(references.values())
+
                 self.objs = dict()
                 for id_, data in self.datas.items():
-                    if not id_.startswith("_"):
+                    if id_ in import_keys:
                         self.objs[id_] = self.import_object(data)
 
                 for k, v in list(self.objs.items()):
