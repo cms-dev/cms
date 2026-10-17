@@ -64,6 +64,7 @@ from cms.db import (
     FilenameSchemaArray,
     Digest,
     SessionGen,
+    Admin,
     Contest,
     Submission,
     SubmissionResult,
@@ -291,6 +292,15 @@ class DumpImporter:
                 self.objs = dict()
                 for id_, data in self.datas.items():
                     if id_ in import_keys:
+                        # Keep destination credentials and permissions for shared admins.
+                        if data["_class"] == "Admin":
+                            admin = session.query(Admin).filter(
+                                Admin.username == data["username"]).one_or_none()
+                            if admin is not None:
+                                self.objs[id_] = admin
+                                logger.info("Reusing existing administrator %s.",
+                                            admin.username)
+                                continue
                         self.objs[id_] = self.import_object(data)
 
                 for k, v in list(self.objs.items()):
