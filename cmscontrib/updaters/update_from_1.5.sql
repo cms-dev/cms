@@ -133,6 +133,7 @@ WHERE user_test_managers.user_test_id IN (
 )
 AND user_test_managers.filename LIKE 'stub.%';
 
+-- https://github.com/cms-dev/cms/pull/1731
 -- Relaxed time and memory limits for submissions
 ALTER TABLE submissions ADD COLUMN override_time_limit double precision;
 ALTER TABLE submissions ADD COLUMN override_mem_limit bigint;
