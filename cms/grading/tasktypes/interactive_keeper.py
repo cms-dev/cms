@@ -240,6 +240,9 @@ def main():
         pass
     elif not (success_mgr and box_success_user):
         success = False
+    elif not evaluation_success_mgr:
+        success = False
+        text = ["Controller failed"]
     else:
         if not evaluation_success_user:
             outcome = 0.0
@@ -250,11 +253,11 @@ def main():
                     + controller_text[1:]
                     + text[1:]
                 )
-        elif not evaluation_success_mgr:
-            outcome = 0.0
-            text = ["Controller failed"] + (controller_text if controller_text else [])
+        elif score is None:
+            success = False
+            text = ["Controller did not report a score"]
         else:
-            outcome = score if score is not None else 0.0
+            outcome = score
             text = controller_text
 
     result = {
