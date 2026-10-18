@@ -186,17 +186,24 @@ restrictions:
 * Hidden participation is never blocked.
 
 * Requests can carry special parameters (either in the URL or in ``POST`` data)
-  that bypasses further restrictions when set to ``1``:
+  that bypasses further restrictions:
 
-    * ``override_phase_check`` lets the operation proceed regardless of contest
-      phase (for example, you can submit even though the contest has already
-      ended).
+    * ``override_phase_check`` set to ``1`` lets the operation proceed
+      regardless of contest phase (for example, you can submit even though the
+      contest has already ended).
 
-    * ``override_official`` (in the submit endpoint) makes the submission count
-      as official regardless of contest phase.
+    * ``override_official`` set to ``1`` (in the submit endpoint) makes the
+      submission count as official regardless of contest phase.
 
-    * ``override_max_number`` (in the submit endpoint) skips all checks for the
-      maximum number of submits.
+    * ``override_max_number`` set to ``1`` (in the submit endpoint) skips all
+      checks for the maximum number of submits.
 
-    * ``override_min_interval`` (in the submit endpoint) skips all checks for
-      the minimum time interval between submits.
+    * ``override_min_interval`` set to ``1`` (in the submit endpoint) skips all
+      checks for the minimum time interval between submits.
+
+    * ``override_time_limit`` specifies an altered time limit for the submission
+      (floating point number, in seconds). Note that manager / controller wall
+      time limits in interactive tasks are not adjusted.
+
+    * ``override_mem_limit`` specifies an altered memory limit for the submission
+      (int, in bytes, must be a multiple of 1MiB).

@@ -630,6 +630,14 @@ class EvaluationJob(Job):
         info = "evaluate submission %d on testcase %s" % \
             (submission.id, testcase.codename)
 
+        # A submission may carry its own (usually larger) limits.
+        time_limit = submission.override_time_limit \
+            if submission.override_time_limit is not None \
+            else dataset.time_limit
+        memory_limit = submission.override_mem_limit \
+            if submission.override_mem_limit is not None \
+            else dataset.memory_limit
+
         # dict() is required to detach the dictionary that gets added
         # to the Job from the control of SQLAlchemy
         return EvaluationJob(
@@ -644,8 +652,8 @@ class EvaluationJob(Job):
             executables=dict(submission_result.executables),
             input=testcase.input,
             output=testcase.output,
-            time_limit=dataset.time_limit,
-            memory_limit=dataset.memory_limit,
+            time_limit=time_limit,
+            memory_limit=memory_limit,
             info=info
         )
 
