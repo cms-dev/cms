@@ -202,7 +202,8 @@ restrictions:
       checks for the minimum time interval between submits.
 
     * ``override_time_limit`` specifies an altered time limit for the submission
-      (floating point number, in seconds).
+      (floating point number, in seconds). Note that manager / controller wall
+      time limits in interactive tasks are not adjusted.
 
     * ``override_mem_limit`` specifies an altered memory limit for the submission
       (int, in bytes, must be a multiple of 1MiB).
