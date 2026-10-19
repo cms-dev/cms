@@ -251,10 +251,13 @@ def main():
                     + text[1:]
                 )
         elif not evaluation_success_mgr:
-            outcome = 0.0
-            text = ["Controller failed"] + (controller_text if controller_text else [])
+            success = False
+            text = ["Controller failed"]
+        elif score is None:
+            success = False
+            text = ["Controller did not report a score"]
         else:
-            outcome = score if score is not None else 0.0
+            outcome = score
             text = controller_text
 
     result = {
