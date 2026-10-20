@@ -1,29 +1,23 @@
---- testlib.h.orig	2018-12-03 23:31:33.532335025 +0200
-+++ testlib.h	2018-12-04 19:00:42.933212959 +0200
-@@ -41,6 +41,22 @@
-  *
-  */
+--- testlib.h.orig
++++ testlib.h
+@@ -27,6 +27,16 @@
+ 
+ #define VERSION "0.9.45"
  
 +/*
-+ * Artem Iglikov
-+ * Alexander Kernozhitsky
-+ * Andrey Vihrov
-+ *
 + * Modifications for Contest Management System (CMS) support:
 + *   - Write checker outcome to stdout and message to stderr
 + *   - Use special localizable message strings by default
-+ *   - Adjust checker exit code
-+ *   - Adjust checker argument order (except in help and comments)
-+ *   - Add the "CMS" conditional macro for CMS checker format
-+ *   - Add the "CMS_VERBOSE_FEEDBACK" conditional macro to enable
-+ *     testlib-style messages
-+ *   - Interactors are not supported
++ *   - Adjust checker exit code and argument order
++ *   - Add the CMS conditional macro for checker format
++ *   - Add CMS_VERBOSE_FEEDBACK to opt into testlib-style messages
++ *   - Interactors remain unsupported by this checker adapter
 + */
 +
- /* NOTE: This file contains testlib library for C++.
+ /*
+  * Mike Mirzayanov
   *
-  *   Check, using testlib running format:
-@@ -2468,6 +2484,57 @@
+@@ -3102,6 +3112,59 @@ NORETURN void InStream::quit(TResult result, const char *msg) {
      int pctype = result - _partially;
      bool isPartial = false;
  
@@ -40,7 +34,7 @@
 +#  ifndef CMS_VERBOSE_FEEDBACK
 +#    define CMS_MSG(code, text) "translate:" code "\n"
 +#  else
-+#    define CMS_MSG(code, text) text " %s\n", msg
++#    define CMS_MSG(code, text) text " %s\n", message.c_str()
 +#  endif
 +
 +    if (result == _ok) {
@@ -56,53 +50,59 @@
 +        std::fprintf(stdout, "0.0\n");
 +        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Output Format"));
 +    } else if (result == _points) {
-+        std::string stringPoints(removeDoubleTrailingZeroes(
-+            format("%.10f", __testlib_points)));
++        char pointsBuffer[64];
++        std::snprintf(pointsBuffer, sizeof(pointsBuffer), "%.10f",
++                      __testlib_points);
++        std::string stringPoints(removeDoubleTrailingZeroes(pointsBuffer));
 +        std::fprintf(stdout, "%s\n", stringPoints.c_str());
 +        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
 +    } else if (result == _unexpected_eof) {
 +        std::fprintf(stdout, "0.0\n");
 +        std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Unexpected EOF"));
 +    } else if (result >= _partially) {
-+        double score = (double)pctype / 200.0;
++        double score = (double) pctype / 200.0;
 +        std::fprintf(stdout, "%.3f\n", score);
 +        std::fprintf(stderr, CMS_MSG(CMS_PARTIAL, "Partial Score"));
 +    } else if (result == _fail) {
-+        std::fprintf(stderr, "FAIL %s\n", msg);
++        std::fprintf(stderr, "FAIL %s\n", message.c_str());
 +        halt(1);
 +    } else {
-+        std::fprintf(stderr, "FAIL unknown result %d\n", (int)result);
++        std::fprintf(stderr, "FAIL unknown result %d\n", (int) result);
 +        halt(1);
 +    }
 +
 +    halt(0);
 +#endif
 +
-     switch (result)
-     {
-     case _ok:
-@@ -3922,6 +3989,10 @@
+     switch (result) {
+         case _ok:
+             errorName = "ok ";
+@@ -4667,6 +4730,12 @@ void setAppesModeEncoding(std::string appesModeEncoding) {
+ }
  
- void registerInteraction(int argc, char* argv[])
- {
+ void registerInteraction(int argc, char *argv[]) {
 +#ifdef CMS
-+    quit(_fail, "Interactors are not supported");
++    TestlibFinalizeGuard::registered = true;
++    std::fprintf(stderr, "FAIL Interactors are not supported\n");
++    halt(1);
 +#endif
 +
      __testlib_ensuresPreconditions();
+     __testlib_set_testset_and_group(argc, argv);
+     TestlibFinalizeGuard::registered = true;
+@@ -4899,9 +4968,14 @@ void registerTestlibCmd(int argc, char *argv[]) {
+ #endif
  
-     testlibMode = _interactor;
-@@ -4081,8 +4152,13 @@
-     }
- 
-     inf.init(argv[1], _input);
+     inf.init(args[1], _input);
 +#ifdef CMS
-+    ouf.init(argv[3], _output);
-+    ans.init(argv[2], _answer);
++    ouf.init(args[3], _output);
++    ans.init(args[2], _answer);
 +#else
-     ouf.init(argv[2], _output);
-     ans.init(argv[3], _answer);
+     ouf.init(args[2], _output);
+-    ouf.skipBom();
+     ans.init(args[3], _answer);
 +#endif
++    ouf.skipBom();
  }
  
- void registerTestlib(int argc, ...)
+ void registerTestlib(int argc, ...) {
