@@ -48,9 +48,11 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import tornado.web
+from sqlalchemy.orm import joinedload, selectinload
 
 from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest
+from cms.db import Contest, Dataset, Submission, Task, UserTest
+from cms.grading.scoring import task_score
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -192,6 +194,78 @@ class ContestHandler(BaseHandler):
 
         self.impersonated_by_admin = impersonated
         return participation
+
+    def _load_participation_for_scores(
+        self, participation: Participation
+    ) -> Participation | None:
+        """Load participation with relationships needed for task score computation."""
+        return (
+            self.sql_session.query(Participation)
+            .filter(Participation.id == participation.id)
+            .options(
+                joinedload(Participation.user),
+                joinedload(Participation.contest)
+                .joinedload(Contest.tasks)
+                .joinedload(Task.active_dataset)
+                .selectinload(Dataset.testcases),
+                selectinload(Participation.submissions).joinedload(Submission.token),
+                selectinload(Participation.submissions).joinedload(Submission.results),
+            )
+            .first()
+        )
+
+    def _compute_task_scores(
+        self,
+        participation: Participation,
+        *,
+        actual_phase: int,
+    ) -> dict[int, tuple[float, float, str]]:
+        """Compute per-task scores for UI task lists.
+
+        By default, this shows public scores. If a token has been played on a
+        task (or we're in analysis mode), it shows the tokened/total score for
+        that task instead.
+        """
+        task_scores: dict[int, tuple[float, float, str]] = {}
+        tokened_task_ids = {
+            s.task_id for s in participation.submissions if s.official and s.tokened()
+        }
+
+        for task in participation.contest.tasks:
+            if task.active_dataset is None:
+                continue
+            score_type = task.active_dataset.score_type_object
+
+            has_tokened_submission = task.id in tokened_task_ids
+            show_tokened_total = (
+                score_type.max_public_score < score_type.max_score
+                and (has_tokened_submission or actual_phase == 3)
+            )
+
+            if show_tokened_total:
+                score_value, _ = task_score(
+                    participation, task, only_tokened=actual_phase != 3)
+                max_score_value = score_type.max_score
+            else:
+                max_score_value = score_type.max_public_score
+                if max_score_value <= 0:
+                    continue
+                score_value, _ = task_score(participation, task, public=True)
+
+            score_message = score_type.format_score(
+                score_value, max_score_value, None, translation=self.translation)
+            task_scores[task.id] = (score_value, max_score_value, score_message)
+
+        return task_scores
+
+    @functools.cached_property
+    def task_scores(self) -> dict[int, tuple[float, float, str]]:
+        """Load scores only when a template displays them, once per request."""
+        participation = self._load_participation_for_scores(self.current_user)
+        if participation is None:
+            return {}
+        return self._compute_task_scores(
+            participation, actual_phase=self.r_params["actual_phase"])
 
     def render_params(self):
         ret = super().render_params()
