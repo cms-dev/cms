@@ -94,5 +94,5 @@ in CMS, please follow these steps:
      is trusted. Anything that can be triggered by sending RPCs only
      is not a vulnerability.
    
-4) If you did (1) and (2), please open a GitHub Security Advisory under
+3) If you did (1) and (2), please open a GitHub Security Advisory under
    the "Security" tab.
