@@ -46,8 +46,61 @@ Some of the services can be replicated on several machine: these are ResourceSer
 
 In addition to services, CMS includes many command line tools. They help with importing, exporting and managing of contest data, and with testing.
 
+.. _introduction_security-considerations:
 
 Security considerations
 =======================
 
-With the exception of RWS, there are no cryptographic or authentication schemes between the various services or between the services and the database. Thus, it is mandatory to keep the services on a dedicated network, properly isolating it via firewalls from contestants or other people's computers. This sort of operations, like also preventing contestants from communicating and cheating, is responsibility of the administrator and is not managed by CMS itself.
+Network
+-------
+
+With the exception of RWS, there are no cryptographic or authentication schemes between the various services or between the services and the database.
+Thus, it is mandatory to keep the services on a dedicated network, properly isolating it via firewalls from contestants or other people's computers.
+
+It is recommended to not make AdminWebServer publicly accessible
+(instead, either restrict it to only be accessed from a VPN or add authentication in a reverse proxy).
+While AWS does have its own authentication, there have been bugs in it, and restricting access also prevents possible DoS attacks.
+
+Default credentials
+-------------------
+
+To ease testing, the configuration file contains default values for ``web_server.secret_key`` and for RWS credentials
+(``proxy_service.rankings`` in ``cms.toml``, and ``username``/``password`` in ``cms_ranking.toml``).
+These must be changed in real deployments, ideally to long random values.
+Failure to do so (for ``secret_key``) may allow attackers to log in as arbitrary users in CWS or get access to AWS.
+Weak or default RWS credentials may allow attackers to deface the leaderboard.
+
+Sandbox
+-------
+
+The sandbox that submissions are evaluated in is quite conservative.
+However, it does allow access to the following directories on the host file system:
+
+- ``/bin``
+- ``/dev`` (except for ``/dev/shm``)
+- ``/etc`` (during compilation)
+- ``/etc/alternatives``, ``/etc/mono``
+- ``/opt/pypy3``
+- ``/lib`` and ``/lib64``
+- ``/usr``
+- ``/var/lib/ghc`` (during compilation)
+
+The most notable of these is ``/etc``.
+
+Thus, you should make sure that these directories do not contain any world-readable sensitive information.
+
+Passwords
+---------
+
+CMS can use both plaintext and bcrypt-hashed passwords. bcrypt is recommended in all cases.
+
+The browser cookie that is generated upon logging in via CWS contains the authentication data (plaintext password or bcrypt hash, depending on method) in an unencrypted form.
+Thus it is recommended to use randomly-generated passwords if possible.
+
+Denial of service
+-----------------
+
+CWS is written in pure Python and cannot handle many simultaneous connections.
+Thus, it is quite vulnerable to denial of service attacks.
+For on-site contests, it is recommended to limit CWS to only be accessed from the site using a reverse proxy.
+Otherwise, one should be prepared to deploy DoS mitigation techniques (IP banning, etc) if availability is a concern.
