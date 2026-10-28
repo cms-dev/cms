@@ -135,6 +135,8 @@ Interactive has six parameters:
 - the maximum CPU time (in seconds) that the controller can use;
 - the maximum wall time (in seconds) that the controller can use.
 
+Each solution gets the same wall time limit as in Batch, reduced if needed so that all solutions terminate at least one second before the controller's wall time limit. Hence, the controller should always be able to report an outcome: any controller failure is reported as an evaluation failure, as it indicates a problem with the task.
+
 The ``concurrent`` parameter controls how the total wall clock time and total memory usage of the submission is computed. If concurrent, then wall clock times are max'd and memory usages added; if not concurrent, then wall clock times are added and memory usages max'd. This only affects the display of statistics, not the actual verdict (for the verdict, each spawned solution gets the full time/memory limit). Also note that CPU times are always added.
 
 Note that in the current implementation, all file descriptors for communication are preallocated before running the controller, which means that the controller always uses (at least) ``2*process_limit`` file descriptors. Thus it is not a good idea to set process_limit significantly higher than necessary.
