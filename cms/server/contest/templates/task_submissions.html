@@ -117,6 +117,23 @@ update_score = function(score_elem, task_score_elem,
     task_score_elem.addClass(get_score_class(task_score, max_score));
 };
 
+update_sidebar_task_score = function(task_score, task_score_message, max_score) {
+    var task_header = $('.nav-list li.nav-header[data-task-name="{{ task.name }}"]');
+    if (task_header.length === 0) {
+        return;
+    }
+
+    var badge = task_header.find('.task_score_badge');
+    if (badge.length === 0) {
+        return;
+    }
+
+    badge.removeClass('undefined score_0 score_0_100 score_100');
+    badge.addClass(task_score === undefined ? 'undefined' : get_score_class(task_score, max_score));
+    badge.text(task_score_message);
+    badge.show();
+};
+
 update_scores = function (submission_id, data) {
     var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
@@ -135,7 +152,26 @@ update_scores = function (submission_id, data) {
             data["public_score"], data["public_score_message"],
             data["task_public_score"], data["task_public_score_message"],
             data["task_score_is_partial"], data["max_public_score"]);
-{% if can_use_tokens %}
+
+        if (data["task_use_tokened_score"]
+                && data["task_tokened_score"] !== undefined
+                && data["task_tokened_score_message"] !== undefined
+                && data["max_score"] !== undefined) {
+            update_sidebar_task_score(
+                data["task_tokened_score"],
+                data["task_tokened_score_message"],
+                data["max_score"]);
+        } else if (data["task_public_score"] !== undefined
+                && data["task_public_score_message"] !== undefined
+                && data["max_public_score"] !== undefined) {
+            update_sidebar_task_score(
+                data["task_public_score"],
+                data["task_public_score_message"],
+                data["max_public_score"]);
+        } else {
+            update_sidebar_task_score(undefined, {{ gettext("N/A")|tojson }}, undefined);
+        }
+{% if can_use_tokens or actual_phase == 3 %}
         update_score(
             row.children("td.total_score"), $("#task_score_tokened"),
             data["score"], data["score_message"],
@@ -214,9 +250,9 @@ $(document).ready(function () {
     {% if score_type.max_public_score < score_type.max_score %}
         {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
     <div id="task_score_tokened"
-         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens else "undefined" }}">
+         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens or actual_phase == 3 else "undefined" }}">
         <span>
-        {% if can_use_tokens %}
+        {% if can_use_tokens and actual_phase != 3 %}
             {% trans %}Score of tokened submissions:{% endtrans %}
         {% else %}
             {% trans %}Total score:{% endtrans %}
@@ -224,7 +260,7 @@ $(document).ready(function () {
         </span>
       <br/>
         <span class="score">
-        {% if can_use_tokens %}
+        {% if can_use_tokens or actual_phase == 3 %}
             {{ score_type.format_score(tokened_score, score_type.max_score, none, translation=translation) }}
             {% if is_score_partial %}
             <img src="{{ static_url("static", "loading.gif") }}" />
