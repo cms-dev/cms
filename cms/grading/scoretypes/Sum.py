@@ -185,6 +185,9 @@ class Sum(ScoreTypeAlone):
             else:
                 public_testcases.append({"idx": idx})
 
+        score = round(score, self.score_precision)
+        public_score = round(public_score, self.score_precision)
+
         return score, testcases, public_score, public_testcases, []
 
     def get_public_outcome(self, outcome: float) -> str:
