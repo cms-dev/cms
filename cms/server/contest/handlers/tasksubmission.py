@@ -145,7 +145,7 @@ class TaskSubmissionsHandler(ContestHandler):
         public_score, is_public_score_partial = task_score(
             participation, task, public=True)
         tokened_score, is_tokened_score_partial = task_score(
-            participation, task, only_tokened=True)
+            participation, task, only_tokened=self.r_params["actual_phase"] != 3)
         # These two should be the same, anyway.
         is_score_partial = is_public_score_partial or is_tokened_score_partial
 
@@ -207,10 +207,12 @@ class SubmissionStatusHandler(ContestHandler):
         task: task for which we want the score.
         data: where to put the data; all fields will start with "task",
             followed by "public" if referring to the public scores, or
-            "tokened" if referring to the total score (always limited to
-            tokened submissions); for both public and tokened, the fields are:
+            "tokened" if referring to the total score (limited to tokened
+            submissions during contest, full score in analysis mode); for both
+            public and tokened, the fields are:
             "score" and "score_message"; in addition we have
             "task_is_score_partial" as partial info is the same for both.
+            "task_use_tokened_score" selects the full score for task badges.
 
         """
         # Just to preload all information required to compute the task score.
@@ -223,7 +225,11 @@ class SubmissionStatusHandler(ContestHandler):
         data["task_public_score"], public_score_is_partial = \
             task_score(participation, task, public=True)
         data["task_tokened_score"], tokened_score_is_partial = \
-            task_score(participation, task, only_tokened=True)
+            task_score(participation, task,
+                       only_tokened=self.r_params["actual_phase"] != 3)
+        data["task_use_tokened_score"] = self.r_params["actual_phase"] == 3 or any(
+            s.official and s.task_id == task.id and s.tokened()
+            for s in participation.submissions)
         # These two should be the same, anyway.
         data["task_score_is_partial"] = \
             public_score_is_partial or tokened_score_is_partial
