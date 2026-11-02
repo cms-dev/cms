@@ -22,6 +22,7 @@ import logging
 import os
 import shutil
 import sys
+import time
 from functools import reduce
 
 from cms.grading.Sandbox import Sandbox, wait_without_std
@@ -97,6 +98,10 @@ def main():
             with open(os.path.join(temp_dir, path), "rb") as g:
                 shutil.copyfileobj(g, f)
 
+    # Solutions must finish at least 1s before the controller's wall limit, so
+    # that the controller always outlives them and can report an outcome: any
+    # controller failure is thus a problem with the task.
+    solutions_deadline = time.monotonic() + controller_wall_limit - 1
     controller_proc = evaluation_step_before_run(
         controller_sandbox,
         controller_command,
@@ -144,17 +149,15 @@ def main():
             # Matches Communication's handling of multi-command executions.
             if len(solution_commands) > 1:
                 trusted_step(sandbox_sol, solution_commands[:-1])
+            # Same default wall limit as Batch, capped by the deadline.
+            wall_limit = solutions_deadline - time.monotonic()
+            if solution_time_limit is not None:
+                wall_limit = min(wall_limit, 2 * solution_time_limit + 1)
             sol_proc = evaluation_step_before_run(
                 sandbox_sol,
                 solution_commands[-1],
                 time_limit=solution_time_limit,
-                wall_limit=controller_wall_limit,
-                # the wall-clock limit mostly exists to eventually kill stuck
-                # solutions. there's no point setting it higher than the
-                # controller's limit (as then the controller would die before
-                # any of the solutions), and there's little to be gained from
-                # setting it any lower. to reduce the amount of unnecessary
-                # configuration, set it to the same limit as the controller.
+                wall_limit=max(wall_limit, 0.001),  # must be positive
                 memory_limit=solution_memory_limit,
                 stdin_redirect=p["c_to_u"][0],
                 stdout_redirect=p["u_to_c"][1],
@@ -234,12 +237,15 @@ def main():
     except Exception as e:
         success = False
         text = ["Internal error"]
-        admin_text = [f"Internal error: {e}"]
+        admin_text = f"Internal error: {e}"
 
     if not success:
         pass
     elif not (success_mgr and box_success_user):
         success = False
+    elif not evaluation_success_mgr:
+        success = False
+        text = ["Controller failed"]
     else:
         if not evaluation_success_user:
             outcome = 0.0
@@ -250,11 +256,11 @@ def main():
                     + controller_text[1:]
                     + text[1:]
                 )
-        elif not evaluation_success_mgr:
-            outcome = 0.0
-            text = ["Controller failed"] + (controller_text if controller_text else [])
+        elif score is None:
+            success = False
+            text = ["Controller did not report a score"]
         else:
-            outcome = score if score is not None else 0.0
+            outcome = score
             text = controller_text
 
     result = {
