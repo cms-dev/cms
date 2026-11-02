@@ -85,6 +85,10 @@ class ScoreType(metaclass=ABCMeta):
             self.max_score, self.max_public_score, self.ranking_headers = (
                 self.max_scores()
             )
+            # Sums of floats may accumulate errors (e.g. 0.1 + 0.2); round
+            # so that they compare equal to the (rounded) submission scores.
+            self.max_score = round(self.max_score, score_precision)
+            self.max_public_score = round(self.max_public_score, score_precision)
         except Exception as e:
             raise ValueError(
                 "Unable to instantiate score type (probably due to invalid "
@@ -639,6 +643,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         # are rounded. However we are using floats not Decimals
         # and this can cause errors. So we round again to be sure.
         score = round(score, score_precision)
+        public_score = round(public_score, score_precision)
 
         return score, subtasks, public_score, public_subtasks, ranking_details
 
