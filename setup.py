@@ -177,7 +177,8 @@ setup(
             "PHP=cms.grading.languages.php:Php",
             "Python 3 / CPython=cms.grading.languages.python3_cpython:Python3CPython",
             "Python 3 / PyPy=cms.grading.languages.python3_pypy:Python3PyPy",
-            "Rust=cms.grading.languages.rust:Rust",
+            "Rust (2021 edition)=cms.grading.languages.rust:Rust2021",
+            "Rust (2024 edition)=cms.grading.languages.rust:Rust2024",
         ],
     },
 )

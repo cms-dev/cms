@@ -21,30 +21,41 @@
 from cms.grading import CompiledLanguage
 
 
-__all__ = ["Rust"]
+def make_rust(edition):
+    class Rust(CompiledLanguage):
+        """This defines the Rust programming language, compiled with the
+        standard Rust compiler available in the system.
 
+        """
 
-class Rust(CompiledLanguage):
-    """This defines the Rust programming language, compiled with the
-    standard Rust compiler available in the system.
+        @property
+        def name(self):
+            """See Language.name."""
+            return f"Rust ({edition} edition)"
 
-    """
+        @property
+        def source_extensions(self):
+            """See Language.source_extensions."""
+            return [".rs"]
 
-    @property
-    def name(self):
-        """See Language.name."""
-        return "Rust"
+        def get_compilation_commands(self,
+                                    source_filenames, executable_filename,
+                                    for_evaluation=True):
+            """See Language.get_compilation_commands."""
+            # In Rust only the source file containing the main function has
+            # to be passed to the compiler
+            return [["/usr/bin/rustc",
+                     "--edition", edition,
+                     "-O",
+                     "-o", executable_filename,
+                     source_filenames[0]]]
 
-    @property
-    def source_extensions(self):
-        """See Language.source_extensions."""
-        return [".rs"]
+    return Rust
 
-    def get_compilation_commands(self,
-                                 source_filenames, executable_filename,
-                                 for_evaluation=True):
-        """See Language.get_compilation_commands."""
-        # In Rust only the source file containing the main function has
-        # to be passed to the compiler
-        return [["/usr/bin/rustc", "-O", "-o",
-                 executable_filename, source_filenames[0]]]
+Rust2021 = make_rust("2021")
+Rust2024 = make_rust("2024")
+
+__all__ = [
+    "Rust2021",
+    "Rust2024",
+]
