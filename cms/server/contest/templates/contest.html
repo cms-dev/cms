@@ -81,7 +81,7 @@ $(document).ready(function () {
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
-                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
+                <button type="button" class="close" data-dismiss="alert" aria-label="{% trans %}Close{% endtrans %}">&#xD7;</button>
                 <h4 class="alert-heading">{% trans %}Failed to log in.{% endtrans %}</h4>
             </div>
         </div>
@@ -135,6 +135,9 @@ $(document).ready(function () {
         </div>
         <div style="display: none" id="translation_new_answer">
             {% trans %}New answer{% endtrans %}
+        </div>
+        <div style="display: none" id="translation_close">
+            {% trans %}Close{% endtrans %}
         </div>
         <div style="display: none" id="translation_unread">
             {% trans %}%d unread{% endtrans %}

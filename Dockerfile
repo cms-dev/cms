@@ -87,6 +87,13 @@ COPY --chown=cmsuser:cmsuser . /home/cmsuser/src
 
 RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=2000 ./install.py cms --devel
 
+# Browser tests (cmstestsuite/browser_tests)
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/cmsuser/ms-playwright
+RUN --mount=type=cache,target=/home/cmsuser/.cache/pip,uid=2000 \
+    pip install -c constraints.txt ".[browser-test]" \
+    && sudo "$(which playwright)" install-deps chromium \
+    && playwright install chromium
+
 RUN <<EOF
 #!/bin/bash -ex
     sed 's|/cmsuser:your_password_here@localhost:5432/cmsdb"|/postgres@testdb:5432/cmsdbfortesting"|' \
