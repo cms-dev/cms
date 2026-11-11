@@ -40,19 +40,41 @@ is running, will return the following object:
     "tasks": [
       {
         "name": /* string */,
+        "title": /* string */,
         "statements": [/* strings */],
-        "submission_format": [/* strings */]
+        "primary_statements": [/* strings */],
+        "attachments": [/* strings */],
+        "submission_format": [/* strings */],
+        "allowed_languages": [/* strings */],
+        "task_type": /* string */,
+        "time_limit": /* number or null */,
+        "memory_limit": /* integer or null */,
+        "max_score": /* number */,
+        "max_public_score": /* number */,
+        "score_precision": /* integer */,
+        "score_mode": /* string */,
+        "max_submission_number": /* integer or null */,
+        "min_submission_interval": /* number or null */
       }
     ]
   }
 
 
 Tasks are ordered in the same order as in the UI. The ``name`` of the task is
-used for additional task-specific API calls. ``statements`` contains a list of
-languages for which a statement is available. ``submission_format`` contains a
-list of files that will need to be submitted, where filenames containing the
-``%l`` string represent source files (that will be compiled and run on the
-server), and all other filenames represent output files.
+used for additional task-specific API calls, while ``title`` is its
+human-readable title. ``statements`` contains a list of languages for which a
+statement is available, and ``primary_statements`` lists the highlighted
+languages. ``attachments`` contains a list of filenames of available
+attachments. ``submission_format`` contains a list of files that will need to be
+submitted, where filenames containing the ``%l`` string represent source files
+(that will be compiled and run on the server), and all other filenames represent
+output files. ``allowed_languages`` lists the programming languages allowed for
+this task. ``task_type``, ``time_limit`` (in seconds), ``memory_limit`` (in
+bytes), ``max_score``, and ``max_public_score`` describe the active dataset of
+the task. ``score_precision`` and ``score_mode`` describe how scores are rounded
+and aggregated across submissions. ``max_submission_number`` and
+``min_submission_interval`` (in seconds) specify the per-task submission limits,
+if any.
 
 Submit
 ======
@@ -83,12 +105,15 @@ in chronological order:
     ]
   }
 
-Task statement
-==============
+Task statement and attachments
+==============================
 
 A PDF version of the task statement for a given language can be retrieved by
 making an authenticated ``GET`` request to
-``tasks/{taskname}/statements/{lang}``.
+``/tasks/{taskname}/statements/{lang}``.
+
+Task attachments can be retrieved by making an authenticated ``GET`` request to
+``/tasks/{taskname}/attachments/{filename}``.
 
 Scoring information
 ===================
