@@ -108,6 +108,7 @@ def task_score(
     task: Task,
     public: bool = False,
     only_tokened: bool = False,
+    submissions: list[Submission] | None = None,
 ) -> tuple[float, bool]:
     """Return the score of a contest's user on a task.
 
@@ -121,6 +122,7 @@ def task_score(
         at the results of tokened submissions (that is, the score that the user
         would obtain if all non-tokened submissions scored 0.0, or equivalently
         had not been scored yet).
+    submissions: optional preloaded list of submissions for participation.
 
     return: the score of user on task, and True if not
         all submissions of the participation in the task have been scored.
@@ -140,7 +142,9 @@ def task_score(
             "This is a programming error: users have access to all public "
             "scores regardless of token status.")
 
-    submissions = [s for s in participation.submissions
+    if submissions is None:
+        submissions = participation.submissions
+    submissions = [s for s in submissions
                    if s.task is task and s.official]
     if len(submissions) == 0:
         return 0.0, False
