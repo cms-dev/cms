@@ -790,6 +790,20 @@ class YamlLoader(ContestLoader, TaskLoader, UserLoader, TeamLoader):
             controller_time_limit = conf.get("controller_time_limit", None)
             controller_wall_limit = conf.get("controller_wall_time_limit", None)
 
+            if controller_memory_limit_mb is None or controller_wall_limit is None:
+                logger.critical("Interactive tasks require controller_memory_limit "
+                                "and controller_wall_time_limit")
+                sys.exit(1)
+
+            # Solutions get a wall limit of 2*time_limit+1, but must finish
+            # 1s before the controller's wall limit.
+            time_limit = args.get("time_limit")
+            if time_limit is not None and controller_wall_limit <= 2 * time_limit + 2:
+                logger.warning("controller_wall_time_limit (%s) is not larger than "
+                               "2*time_limit+2 (%s): solutions' wall time limit "
+                               "will be reduced", controller_wall_limit,
+                               2 * time_limit + 2)
+
             args["task_type_parameters"] = \
                 [process_limit, compilation_param, concurrent,
                  controller_memory_limit_mb, controller_time_limit, controller_wall_limit]
