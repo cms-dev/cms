@@ -51,8 +51,13 @@ logger = logging.getLogger(__name__)
 class TeamImporter:
     """Script to create a team in the database."""
 
-    def __init__(self, path: str, loader_class: type[TeamLoader]):
-        self.file_cacher = FileCacher()
+    def __init__(
+        self,
+        path: str,
+        loader_class: type[TeamLoader],
+        file_cacher: FileCacher | None = None,
+    ):
+        self.file_cacher = file_cacher if file_cacher is not None else FileCacher()
         self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def do_import(self):
@@ -96,7 +101,8 @@ class TeamImporter:
                     added.add(team_path)
                     importer = TeamImporter(
                         path=team_path,
-                        loader_class=get_loader(team_path)
+                        loader_class=get_loader(team_path),
+                        file_cacher=self.file_cacher,
                     )
                     importer.do_import()
 
