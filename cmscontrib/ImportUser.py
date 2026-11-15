@@ -58,8 +58,14 @@ class UserImporter:
 
     """
 
-    def __init__(self, path: str, contest_id: int, loader_class: type[UserLoader]):
-        self.file_cacher = FileCacher()
+    def __init__(
+        self,
+        path: str,
+        contest_id: int,
+        loader_class: type[UserLoader],
+        file_cacher: FileCacher | None = None,
+    ):
+        self.file_cacher = file_cacher if file_cacher is not None else FileCacher()
         self.contest_id = contest_id
         self.loader = loader_class(os.path.abspath(path), self.file_cacher)
 
@@ -107,7 +113,8 @@ class UserImporter:
             importer = UserImporter(
                 path=user_path,
                 contest_id=self.contest_id,
-                loader_class=get_loader(user_path)
+                loader_class=get_loader(user_path),
+                file_cacher=self.file_cacher,
             )
             importer.do_import()
 
