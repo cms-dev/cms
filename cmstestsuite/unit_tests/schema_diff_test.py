@@ -40,6 +40,10 @@ def split_schema(schema: str) -> list[list[str]]:
             or line.startswith("--")
             or line.startswith("\\restrict")
             or line.startswith("\\unrestrict")
+            # Some PostgreSQL servers expose an internal per-column option
+            # (pg_attver) that newer pg_dump clients print for every column;
+            # it is not part of the schema we want to compare.
+            or (line.startswith("ALTER TABLE ") and " SET (pg_attver=" in line)
         ):
             continue
         cur_statement.append(line)
