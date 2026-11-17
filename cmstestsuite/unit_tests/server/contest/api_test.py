@@ -19,10 +19,11 @@
 """Unit tests for submission details API handlers."""
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from cms import FEEDBACK_LEVEL_RESTRICTED, FEEDBACK_LEVEL_FULL
 from cms.server.contest.handlers.api import (
+    ApiSubmitHandler,
     ApiSubmissionDetailsHandler,
     ApiSubmissionFullDetailsHandler,
 )
@@ -174,6 +175,69 @@ class TestApiSubmissionFullDetailsHandler(BaseApiHandlerTest):
         self.score_type.get_json_details.assert_called_once_with(
             self.submission_result.score_details, FEEDBACK_LEVEL_FULL
         )
+
+
+class TestApiSubmitHandler(BaseApiHandlerTest):
+    """Weak limits may only be set when submitting with the admin token."""
+
+    def make_submit_handler(self, impersonated, arguments):
+        handler = self.create_handler(
+            ApiSubmitHandler, impersonated=impersonated
+        )
+        handler.sql_session = MagicMock()
+        handler.timestamp = MagicMock()
+        handler.request.files = {}
+        handler.request.arguments = arguments
+        return handler
+
+    def test_weak_limits_set_when_impersonated(self):
+        handler = self.make_submit_handler(
+            True,
+            {
+                "override_time_limit": [b"3.5"],
+                "override_mem_limit": [b"524288000"],
+            },
+        )
+        with patch(
+            "cms.server.contest.handlers.api.accept_submission"
+        ) as accept:
+            accept.return_value = self.submission
+            handler.post("my_task")
+
+        kwargs = accept.call_args.kwargs
+        self.assertEqual(kwargs["override_time_limit"], 3.5)
+        self.assertEqual(kwargs["override_mem_limit"], 524288000)
+        self.assertEqual(handler.status_code, 200)
+
+    def test_weak_limits_ignored_for_contestants(self):
+        # A contestant sending the same arguments must not get them applied.
+        handler = self.make_submit_handler(
+            False,
+            {
+                "override_time_limit": [b"3.5"],
+                "override_mem_limit": [b"524288000"],
+            },
+        )
+        with patch(
+            "cms.server.contest.handlers.api.accept_submission"
+        ) as accept:
+            accept.return_value = self.submission
+            handler.post("my_task")
+
+        kwargs = accept.call_args.kwargs
+        self.assertIsNone(kwargs["override_time_limit"])
+        self.assertIsNone(kwargs["override_mem_limit"])
+        self.assertEqual(handler.status_code, 200)
+
+    def test_weak_limits_invalid_value_rejected_when_impersonated(self):
+        handler = self.make_submit_handler(True, {"override_time_limit": [b"abc"]})
+        with patch(
+            "cms.server.contest.handlers.api.accept_submission"
+        ) as accept:
+            handler.post("my_task")
+
+        self.assertEqual(handler.status_code, 400)
+        accept.assert_not_called()
 
 
 if __name__ == "__main__":

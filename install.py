@@ -49,7 +49,7 @@ def verbose(msg: str) -> None:
 
 def find_target_path(dir: str | None) -> Path:
     if dir:
-        tp = Path(dir)
+        tp = Path(dir).resolve()
     else:
         tp = Path.home() / 'cms'
     if (tp / 'cms/server/__init__.py').is_file():

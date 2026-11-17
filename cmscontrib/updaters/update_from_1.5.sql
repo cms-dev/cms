@@ -133,4 +133,12 @@ WHERE user_test_managers.user_test_id IN (
 )
 AND user_test_managers.filename LIKE 'stub.%';
 
+-- https://github.com/cms-dev/cms/pull/1731
+-- Relaxed time and memory limits for submissions
+ALTER TABLE submissions ADD COLUMN override_time_limit double precision;
+ALTER TABLE submissions ADD COLUMN override_mem_limit bigint;
+ALTER TABLE submissions ADD CONSTRAINT submissions_override_time_limit_check CHECK (override_time_limit > 0);
+ALTER TABLE submissions ADD CONSTRAINT submissions_override_mem_limit_check CHECK (override_mem_limit > 0);
+ALTER TABLE submissions ADD CONSTRAINT submissions_override_mem_limit_check1 CHECK (MOD(override_mem_limit, 1048576) = 0);
+
 COMMIT;

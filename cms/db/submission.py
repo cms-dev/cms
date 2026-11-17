@@ -33,7 +33,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
-    UniqueConstraint
+    UniqueConstraint, CheckConstraint
 from sqlalchemy.types import Integer, Float, String, Unicode, DateTime, Enum, \
     BigInteger
 
@@ -107,6 +107,21 @@ class Submission(Base):
         nullable=False,
         default=True,
     )
+
+    # Time and memory limits (in seconds and bytes) overriding the dataset's
+    # ones for this submission's evaluation; None to use the dataset's
+    # limits.
+    override_time_limit: float | None = Column(
+        Float,
+        CheckConstraint("override_time_limit > 0"),
+        nullable=True)
+    override_mem_limit: int | None = Column(
+        BigInteger,
+        CheckConstraint("override_mem_limit > 0",
+                        name='submissions_override_mem_limit_check'),
+        CheckConstraint("MOD(override_mem_limit, 1048576) = 0",
+                        name='submissions_override_mem_limit_check1'),
+        nullable=True)
 
     @property
     def short_comment(self) -> str:

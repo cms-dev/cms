@@ -89,6 +89,8 @@ def accept_submission(
     official: bool,
     override_max_number: bool = False,
     override_min_interval: bool = False,
+    override_time_limit: float | None = None,
+    override_mem_limit: int | None = None,
 ) -> Submission:
     """Process a contestant's request to submit a submission.
 
@@ -110,6 +112,10 @@ def accept_submission(
         during the analysis mode.
     override_max_number: skip checks for the maximum number of submissions
     override_min_interval: skip checks for the minimum interval between submissions
+    override_time_limit: if set, a time limit (in seconds) overriding the
+        dataset's one to evaluate this submission with
+    override_mem_limit: if set, a memory limit (in bytes, a multiple of 1 MiB)
+        overriding the dataset's one to evaluate this submission with
 
     return: the resulting submission, if all went well.
 
@@ -156,6 +162,20 @@ def accept_submission(
                 N_("For this task, you can submit again "
                    "after %d seconds from last submission."),
                 task.min_submission_interval.total_seconds())
+
+    # Check whether special time / memory limits conform to the constraints
+    # enforced by the database.
+
+    if override_time_limit is not None and override_time_limit <= 0:
+        raise UnacceptableSubmission(
+            N_("Invalid relaxed time limit!"),
+            N_("The relaxed time limit must be positive."))
+    if override_mem_limit is not None and (
+            override_mem_limit <= 0 or override_mem_limit % (1024 * 1024) != 0):
+        raise UnacceptableSubmission(
+            N_("Invalid relaxed memory limit!"),
+            N_("The relaxed memory limit must be a positive multiple of "
+               "1 MiB."))
 
     # Process the data we received and ensure it's valid.
 
@@ -275,7 +295,9 @@ def accept_submission(
         task=task,
         participation=participation,
         comment=received_filenames_joined,
-        official=official)
+        official=official,
+        override_time_limit=override_time_limit,
+        override_mem_limit=override_mem_limit)
     sql_session.add(submission)
 
     for codename, digest in digests.items():

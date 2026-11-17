@@ -1,6 +1,10 @@
 Running CMS
 ***********
 
+.. warning::
+
+   Make sure to read the :ref:`introduction_security-considerations` before running CMS!
+
 Configuring the DB
 ==================
 

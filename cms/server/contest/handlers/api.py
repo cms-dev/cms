@@ -110,7 +110,7 @@ class ApiLoginHandler(ApiContestHandler):
 
 
 class ApiTaskListHandler(ApiContestHandler):
-    """Handler to list all tasks and their statements."""
+    """Handler to list all tasks and their metadata."""
 
     @api_login_required
     @actual_phase_required(0, 3)
@@ -119,14 +119,29 @@ class ApiTaskListHandler(ApiContestHandler):
         contest = self.contest
         tasks = []
         for task in contest.tasks:
-            name = task.name
-            statements = [s for s in task.statements]
-            sub_format = task.submission_format
+            dataset = task.active_dataset
             tasks.append(
                 {
-                    "name": name,
-                    "statements": statements,
-                    "submission_format": sub_format,
+                    "name": task.name,
+                    "title": task.title,
+                    "statements": [s for s in task.statements],
+                    "primary_statements": task.primary_statements,
+                    "attachments": [a for a in task.attachments],
+                    "submission_format": task.submission_format,
+                    "allowed_languages": task.get_allowed_languages(),
+                    "task_type": dataset.task_type,
+                    "time_limit": dataset.time_limit,
+                    "memory_limit": dataset.memory_limit,
+                    "max_score": dataset.score_type_object.max_score,
+                    "max_public_score": dataset.score_type_object.max_public_score,
+                    "score_precision": task.score_precision,
+                    "score_mode": task.score_mode,
+                    "max_submission_number": task.max_submission_number,
+                    "min_submission_interval": (
+                        task.min_submission_interval.total_seconds()
+                        if task.min_submission_interval is not None
+                        else None
+                    ),
                 }
             )
         self.json({"tasks": tasks})
@@ -150,6 +165,8 @@ class ApiSubmitHandler(ApiContestHandler):
 
         # If the submission is performed by the administrator acting on behalf
         # of a contestant, allow overriding.
+        override_time_limit = None
+        override_mem_limit = None
         if self.impersonated_by_admin:
             try:
                 official = self.get_boolean_argument("override_official", official)
@@ -159,6 +176,12 @@ class ApiSubmitHandler(ApiContestHandler):
                 override_min_interval = self.get_boolean_argument(
                     "override_min_interval", False
                 )
+                # Special (usually larger) limits (seconds / bytes) to evaluate
+                # the submission with.
+                override_time_str = self.get_argument("override_time_limit", "")
+                override_mem_str = self.get_argument("override_mem_limit", "")
+                override_time_limit = float(override_time_str) if override_time_str else None
+                override_mem_limit = int(override_mem_str) if override_mem_str else None
             except ValueError as err:
                 self.json({"error": str(err)}, 400)
                 return
@@ -178,6 +201,8 @@ class ApiSubmitHandler(ApiContestHandler):
                 official,
                 override_max_number=override_max_number,
                 override_min_interval=override_min_interval,
+                override_time_limit=override_time_limit,
+                override_mem_limit=override_mem_limit,
             )
             self.sql_session.commit()
         except UnacceptableSubmission as e:
