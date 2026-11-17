@@ -34,7 +34,7 @@ from sqlalchemy.dialects.postgresql import OID
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String, Unicode
 
-from . import Base, custom_psycopg2_connection, Session
+from . import Base, engine, Session
 
 
 class LargeObject(io.RawIOBase, typing.BinaryIO):
@@ -96,27 +96,32 @@ class LargeObject(io.RawIOBase, typing.BinaryIO):
         self._readable = 'r' in modeset
         self._writable = 'w' in modeset
 
-        self._conn = custom_psycopg2_connection()
-        cursor = self._conn.cursor()
+        self._conn = engine.raw_connection()
+        try:
+            cursor = self._conn.cursor()
 
-        # If the loid is 0, create the large object.
-        if self.loid == 0:
-            creat_mode = LargeObject.INV_READ | LargeObject.INV_WRITE
-            self.loid = self._execute("SELECT lo_creat(%(mode)s);",
-                                      {'mode': creat_mode},
-                                      "Couldn't create large object.", cursor)
+            # If the loid is 0, create the large object.
             if self.loid == 0:
-                raise OSError("Couldn't create large object.")
+                creat_mode = LargeObject.INV_READ | LargeObject.INV_WRITE
+                self.loid = self._execute("SELECT lo_creat(%(mode)s);",
+                                          {'mode': creat_mode},
+                                          "Couldn't create large object.", cursor)
+                if self.loid == 0:
+                    raise OSError("Couldn't create large object.")
 
-        # Open the large object.
-        open_mode = (LargeObject.INV_READ if self._readable else 0) | \
-                    (LargeObject.INV_WRITE if self._writable else 0)
-        self._fd = self._execute("SELECT lo_open(%(loid)s, %(mode)s);",
-                                 {'loid': self.loid, 'mode': open_mode},
-                                 "Couldn't open large object with LOID "
-                                 "%s." % self.loid, cursor)
+            # Open the large object.
+            open_mode = (LargeObject.INV_READ if self._readable else 0) | \
+                        (LargeObject.INV_WRITE if self._writable else 0)
+            self._fd = self._execute("SELECT lo_open(%(loid)s, %(mode)s);",
+                                     {'loid': self.loid, 'mode': open_mode},
+                                     "Couldn't open large object with LOID "
+                                     "%s." % self.loid, cursor)
 
-        cursor.close()
+            cursor.close()
+        except Exception:
+            self._conn.close()
+            self._conn = None
+            raise
 
     # cursor is typed as typing.Any because psycopg2 doesn't have good type hints.
     def _execute(
@@ -223,7 +228,7 @@ class LargeObject(io.RawIOBase, typing.BinaryIO):
 
         data = self._execute("SELECT loread(%(fd)s, %(len)s);",
                              {'fd': self._fd, 'len': len(buf)},
-                             "Couldn't write to large object.")
+                             "Couldn't read from large object.")
         buf[:len(data)] = data
         return len(data)
 
@@ -326,30 +331,34 @@ class LargeObject(io.RawIOBase, typing.BinaryIO):
         if self._fd is None:
             return
 
-        self._execute("SELECT lo_close(%(fd)s);",
-                      {'fd': self._fd},
-                      "Couldn't close large object.")
-
-        self._conn.commit()
-
-        # We delete the fd number to avoid writing on another file by
-        # mistake
-        self._fd = None
+        try:
+            self._execute("SELECT lo_close(%(fd)s);",
+                          {'fd': self._fd},
+                          "Couldn't close large object.")
+            self._conn.commit()
+        finally:
+            # We delete the fd number to avoid writing on another file by
+            # mistake, and always return the pooled connection.
+            self._fd = None
+            if self._conn is not None:
+                self._conn.close()
+                self._conn = None
 
     @staticmethod
-    def unlink(loid: int, conn=None):
+    def unlink(loid: int):
         """Delete the large object, removing its content.
 
         After an unlink, the content can't be restored anymore, so use
         with caution!
 
         """
-        if conn is None:
-            conn = custom_psycopg2_connection()
-            conn.autocommit = True
-
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT lo_unlink(%(loid)s);", {'loid': loid})
+        conn = engine.raw_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT lo_unlink(%(loid)s);", {'loid': loid})
+            conn.commit()
+        finally:
+            conn.close()
 
 
 class FSObject(Base):
