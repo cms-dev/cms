@@ -66,18 +66,25 @@ def drop_db() -> bool:
         return False
     cursor.execute("CREATE SCHEMA public")
 
-    # But we also have to drop the large objects
+    # But we also have to drop the large objects, in batches to avoid
+    # exceeding max_locks_per_transaction while minimizing round-trips.
     try:
-        cursor.execute("SELECT oid FROM pg_largeobject_metadata")
+        while True:
+            cursor.execute(
+                "SELECT count(*) FROM ("
+                "  SELECT lo_unlink(oid) FROM ("
+                "    SELECT oid FROM pg_largeobject_metadata LIMIT 1000"
+                "  ) sub"
+                ") res"
+            )
+            if cursor.fetchone()[0] == 0:
+                break
     except ProgrammingError:
         logger.error("Couldn't list large objects, probably you don't have "
                      "the privileges. Please execute as database superuser: "
                      "\"GRANT SELECT ON pg_largeobject TO %s;\" and run "
                      "again", make_url(config.database.url).username)
         return False
-    rows = cursor.fetchall()
-    for row in rows:
-        cursor.execute("SELECT lo_unlink(%d)" % row[0])
 
     cursor.close()
 
