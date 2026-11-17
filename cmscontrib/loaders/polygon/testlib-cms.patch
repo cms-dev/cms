@@ -1,10 +1,9 @@
 --- testlib.h.orig
 +++ testlib.h
-@@ -27,6 +27,16 @@
+@@ -28,6 +28,16 @@
+ #define VERSION "0.9.51"
  
- #define VERSION "0.9.45"
- 
-+/*
+ /*
 + * Modifications for Contest Management System (CMS) support:
 + *   - Write checker outcome to stdout and message to stderr
 + *   - Use special localizable message strings by default
@@ -14,10 +13,11 @@
 + *   - Interactors remain unsupported by this checker adapter
 + */
 +
- /*
++/*
   * Mike Mirzayanov
   *
-@@ -3102,6 +3112,59 @@ NORETURN void InStream::quit(TResult result, const char *msg) {
+  * This material is provided "as is", with absolutely no warranty expressed
+@@ -3117,6 +3127,59 @@ NORETURN void InStream::quit(TResult res
      int pctype = result - _partially;
      bool isPartial = false;
  
@@ -77,7 +77,7 @@
      switch (result) {
          case _ok:
              errorName = "ok ";
-@@ -4667,6 +4730,12 @@ void setAppesModeEncoding(std::string appesModeEncoding) {
+@@ -4683,6 +4746,12 @@ void setAppesModeEncoding(std::string va
  }
  
  void registerInteraction(int argc, char *argv[]) {
@@ -90,7 +90,7 @@
      __testlib_ensuresPreconditions();
      __testlib_set_testset_and_group(argc, argv);
      TestlibFinalizeGuard::registered = true;
-@@ -4899,9 +4968,14 @@ void registerTestlibCmd(int argc, char *argv[]) {
+@@ -4915,9 +4984,14 @@ void registerTestlibCmd(int argc, char *
  #endif
  
      inf.init(args[1], _input);

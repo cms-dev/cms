@@ -22,10 +22,10 @@
 #define _TESTLIB_H_
 
 /*
- * Copyright (c) 2005-2025
+ * Copyright (c) 2005-2026
  */
 
-#define VERSION "0.9.45"
+#define VERSION "0.9.51"
 
 /*
  * Modifications for Contest Management System (CMS) support:
@@ -73,6 +73,11 @@
  */
 
 const char *latestFeatures[] = {
+        "InStream::unreadChar(char) puts back bytes 0x80..0xFF as data (0xFF no longer becomes EOF); EOF cannot be put back through it",
+        "No shadowing warnings from testlib.h: g++ -Wshadow, clang++ -Wshadow-all, MSVC C4456-C4459",
+        "readLine()/readString(): a CR right before EOF no longer appends a 0xFF byte to the line",
+        "Byte 0xFF in input is data, not EOF: EOFC is -1 now, readers return bytes as unsigned char",
+        "testlib format()/println() work with using namespace std; call std::format/std::println explicitly for standard formatting",
         "Remove incorrect const attributes",
         "Added ConstantBoundsLog, VariablesLog to validator testOverviewLogFile",
         "Use setAppesModeEncoding to change xml encoding from windows-1251 to other",
@@ -200,6 +205,10 @@ const char *latestFeatures[] = {
 #include <functional>
 #include <cstdint>
 
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#include <type_traits>
+#endif
+
 #ifdef TESTLIB_THROW_EXIT_EXCEPTION_INSTEAD_OF_EXIT
 #   include <exception>
 #endif
@@ -240,7 +249,7 @@ const char *latestFeatures[] = {
 #define CR ((char)13)
 #define TAB ((char)9)
 #define SPACE ((char)' ')
-#define EOFC (255)
+#define EOFC (-1)
 
 #ifndef OK_EXIT_CODE
 #   ifdef CONTESTER
@@ -333,10 +342,11 @@ static int __testlib_format_buffer_usage_count = 0;
             if (__testlib_format_buffer_usage_count != 0)                                  \
                 __testlib_fail("FMT_TO_RESULT::__testlib_format_buffer_usage_count != 0"); \
             __testlib_format_buffer_usage_count++;                                         \
-            va_list ap;                                                                    \
-            va_start(ap, fmt);                                                             \
-            vsnprintf(__testlib_format_buffer, sizeof(__testlib_format_buffer), cstr, ap); \
-            va_end(ap);                                                                    \
+            va_list _ap;                                                                   \
+            va_start(_ap, fmt);                                                            \
+            int __testlib_format_result = vsnprintf(__testlib_format_buffer, sizeof(__testlib_format_buffer), cstr, _ap); \
+            (void) __testlib_format_result;                                                \
+            va_end(_ap);                                                                   \
             __testlib_format_buffer[sizeof(__testlib_format_buffer) - 1] = 0;              \
             result = std::string(__testlib_format_buffer);                                 \
             __testlib_format_buffer_usage_count--;                                         \
@@ -364,36 +374,41 @@ void unsetTestCase() {
 
 NORETURN static void __testlib_fail(const std::string &message);
 
+// Parameters and locals of templates have a "_" prefix (_n, _value, ...). MSVC, and Clang with
+// delayed template parsing, check a template body where it is instantiated, after the program's
+// own globals, so a plain name like "n" would hide a global "n" (C4459, -Wshadow) inside testlib.h.
+// Such names are reserved in the global namespace, so no program global has them. Instantiate new
+// templates in tests/test-011_shadow/files/shadow-probe.cpp.
 template<typename T>
 #ifdef __GNUC__
 __attribute__((const))
 #endif
-static inline T __testlib_abs(const T &x) {
-    return x > 0 ? x : -x;
+static inline T __testlib_abs(const T &_x) {
+    return _x > 0 ? _x : -_x;
 }
 
 template<typename T>
 #ifdef __GNUC__
 __attribute__((const))
 #endif
-static inline T __testlib_min(const T &a, const T &b) {
-    return a < b ? a : b;
+static inline T __testlib_min(const T &_a, const T &_b) {
+    return _a < _b ? _a : _b;
 }
 
 template<typename T>
 #ifdef __GNUC__
 __attribute__((const))
 #endif
-static inline T __testlib_max(const T &a, const T &b) {
-    return a > b ? a : b;
+static inline T __testlib_max(const T &_a, const T &_b) {
+    return _a > _b ? _a : _b;
 }
 
 template<typename T>
 #ifdef __GNUC__
 __attribute__((const))
 #endif
-static inline T __testlib_crop(T value, T a, T b) {
-    return __testlib_min(__testlib_max(value, a), --b);
+static inline T __testlib_crop(T _value, T _a, T _b) {
+    return __testlib_min(__testlib_max(_value, _a), --_b);
 }
 
 #ifdef __GNUC__
@@ -556,82 +571,82 @@ static void __testlib_set_binary(std::FILE *file) {
 
 #if __cplusplus > 199711L || defined(_MSC_VER)
 template<typename T>
-static std::string vtos(const T &t, std::true_type) {
-    if (t == 0)
+static std::string vtos(const T &_t, std::true_type) {
+    if (_t == 0)
         return "0";
     else {
-        T n(t);
-        bool negative = n < 0;
-        std::string s;
-        while (n != 0) {
-            T digit = n % 10;
-            if (digit < 0)
-                digit = -digit;
-            s += char('0' + digit);
-            n /= 10;
+        T _n(_t);
+        bool _negative = _n < 0;
+        std::string _s;
+        while (_n != 0) {
+            T _digit = _n % 10;
+            if (_digit < 0)
+                _digit = -_digit;
+            _s += char('0' + _digit);
+            _n /= 10;
         }
-        std::reverse(s.begin(), s.end());
-        return negative ? "-" + s : s;
+        std::reverse(_s.begin(), _s.end());
+        return _negative ? "-" + _s : _s;
     }
 }
 
 template<typename T>
-static std::string vtos(const T &t, std::false_type) {
-    std::string s;
-    static std::stringstream ss;
-    ss.str(std::string());
-    ss.clear();
-    ss << t;
-    ss >> s;
-    return s;
+static std::string vtos(const T &_t, std::false_type) {
+    std::string _s;
+    static std::stringstream _ss;
+    _ss.str(std::string());
+    _ss.clear();
+    _ss << _t;
+    _ss >> _s;
+    return _s;
 }
 
 template<typename T>
-static std::string vtos(const T &t) {
-    return vtos(t, std::is_integral<T>());
+static std::string vtos(const T &_t) {
+    return vtos(_t, std::is_integral<T>());
 }
 
 /* signed case. */
 template<typename T>
-static std::string toHumanReadableString(const T &n, std::false_type) {
-    if (n == 0)
-        return vtos(n);
-    int trailingZeroCount = 0;
-    T n_ = n;
-    while (n_ % 10 == 0)
-        n_ /= 10, trailingZeroCount++;
-    if (trailingZeroCount >= 7) {
-        if (n_ == 1)
-            return "10^" + vtos(trailingZeroCount);
-        else if (n_ == -1)
-            return "-10^" + vtos(trailingZeroCount);
+static std::string toHumanReadableString(const T &_n, std::false_type) {
+    if (_n == 0)
+        return vtos(_n);
+    int _trailingZeroCount = 0;
+    T _rest = _n;
+    while (_rest % 10 == 0)
+        _rest /= 10, _trailingZeroCount++;
+    if (_trailingZeroCount >= 7) {
+        if (_rest == 1)
+            return "10^" + vtos(_trailingZeroCount);
+        else if (_rest == -1)
+            return "-10^" + vtos(_trailingZeroCount);
         else
-            return vtos(n_) + "*10^" + vtos(trailingZeroCount);
+            return vtos(_rest) + "*10^" + vtos(_trailingZeroCount);
     } else
-        return vtos(n);
+        return vtos(_n);
 }
 
 /* unsigned case. */
 template<typename T>
-static std::string toHumanReadableString(const T &n, std::true_type) {
-    if (n == 0)
-        return vtos(n);
-    int trailingZeroCount = 0;
-    T n_ = n;
-    while (n_ % 10 == 0)
-        n_ /= 10, trailingZeroCount++;
-    if (trailingZeroCount >= 7) {
-        if (n_ == 1)
-            return "10^" + vtos(trailingZeroCount);
+static std::string toHumanReadableString(const T &_n, std::true_type) {
+    if (_n == 0)
+        return vtos(_n);
+    int _trailingZeroCount = 0;
+    T _rest = _n;
+    while (_rest % 10 == 0)
+        _rest /= 10, _trailingZeroCount++;
+    if (_trailingZeroCount >= 7) {
+        if (_rest == 1)
+            return "10^" + vtos(_trailingZeroCount);
         else
-            return vtos(n_) + "*10^" + vtos(trailingZeroCount);
+            return vtos(_rest) + "*10^" + vtos(_trailingZeroCount);
     } else
-        return vtos(n);
+        return vtos(_n);
 }
 
 template<typename T>
-static std::string toHumanReadableString(const T &n) {
-    return toHumanReadableString(n, std::is_unsigned<T>());
+static std::string toHumanReadableString(const T &_n) {
+    return toHumanReadableString(_n, std::is_unsigned<T>());
 }
 #else
 template<typename T>
@@ -653,8 +668,8 @@ static std::string toHumanReadableString(const T &n) {
 #endif
 
 template<typename T>
-static std::string toString(const T &t) {
-    return vtos(t);
+static std::string toString(const T &_t) {
+    return vtos(_t);
 }
 
 #if __cplusplus > 199711L || defined(_MSC_VER)
@@ -726,19 +741,19 @@ class random_t;
 class pattern {
 public:
     /* Create pattern instance by string. */
-    pattern(std::string s);
+    pattern(std::string ptrn);
 
     /* Generate new string by pattern and given random_t. */
     std::string next(random_t &rnd) const;
 
     /* Checks if given string match the pattern. */
-    bool matches(const std::string &s) const;
+    bool matches(const std::string &str) const;
 
     /* Returns source string of the pattern. */
     std::string src() const;
 
 private:
-    bool matches(const std::string &s, size_t pos) const;
+    bool matches(const std::string &str, size_t pos) const;
 
     std::string s;
     std::vector<pattern> children;
@@ -946,24 +961,24 @@ public:
 
     /* Returns random element from container. */
     template<typename Container>
-    typename Container::value_type any(const Container &c) {
-        int size = int(c.size());
-        if (size <= 0)
+    typename Container::value_type any(const Container &_c) {
+        int _size = int(_c.size());
+        if (_size <= 0)
             __testlib_fail("random_t::any(const Container& c): c.size() must be positive");
-        typename Container::const_iterator it = c.begin();
-        std::advance(it, next(size));
-        return *it;
+        typename Container::const_iterator _it = _c.begin();
+        std::advance(_it, next(_size));
+        return *_it;
     }
 
     /* Returns random element from iterator range. */
     template<typename Iter>
-    typename Iter::value_type any(const Iter &begin, const Iter &end) {
-        int size = static_cast<int>(std::distance(begin, end));
-        if (size <= 0)
+    typename Iter::value_type any(const Iter &_begin, const Iter &_end) {
+        int _size = static_cast<int>(std::distance(_begin, _end));
+        if (_size <= 0)
             __testlib_fail("random_t::any(const Iter& begin, const Iter& end): range must have positive length");
-        Iter it = begin;
-        std::advance(it, next(size));
-        return *it;
+        Iter _it = _begin;
+        std::advance(_it, next(_size));
+        return *_it;
     }
 
     /* Random string value by given pattern (see pattern documentation). */
@@ -1148,152 +1163,152 @@ public:
 
     /* Returns weighted random element from container. */
     template<typename Container>
-    typename Container::value_type wany(const Container &c, int type) {
-        int size = int(c.size());
-        if (size <= 0)
+    typename Container::value_type wany(const Container &_c, int _type) {
+        int _size = int(_c.size());
+        if (_size <= 0)
             __testlib_fail("random_t::wany(const Container& c, int type): c.size() must be positive");
-        typename Container::const_iterator it = c.begin();
-        std::advance(it, wnext(size, type));
-        return *it;
+        typename Container::const_iterator _it = _c.begin();
+        std::advance(_it, wnext(_size, _type));
+        return *_it;
     }
 
     /* Returns weighted random element from iterator range. */
     template<typename Iter>
-    typename Iter::value_type wany(const Iter &begin, const Iter &end, int type) {
-        int size = static_cast<int>(std::distance(begin, end));
-        if (size <= 0)
+    typename Iter::value_type wany(const Iter &_begin, const Iter &_end, int _type) {
+        int _size = static_cast<int>(std::distance(_begin, _end));
+        if (_size <= 0)
             __testlib_fail(
                     "random_t::any(const Iter& begin, const Iter& end, int type): range must have positive length");
-        Iter it = begin;
-        std::advance(it, wnext(size, type));
-        return *it;
+        Iter _it = _begin;
+        std::advance(_it, wnext(_size, _type));
+        return *_it;
     }
 
     /* Returns random permutation of the given size (values are between `first` and `first`+size-1)*/
     template<typename T, typename E>
-    std::vector<E> perm(T size, E first) {
-        if (size < 0)
+    std::vector<E> perm(T _size, E _first) {
+        if (_size < 0)
             __testlib_fail("random_t::perm(T size, E first = 0): size must non-negative");
-        else if (size == 0)
+        else if (_size == 0)
             return std::vector<E>();
-        std::vector<E> p(size);
-        E current = first;
-        for (T i = 0; i < size; i++)
-            p[i] = current++;
-        if (size > 1)
-            for (T i = 1; i < size; i++)
-                std::swap(p[i], p[next(i + 1)]);
-        return p;
+        std::vector<E> _p(_size);
+        E _current = _first;
+        for (T _i = 0; _i < _size; _i++)
+            _p[_i] = _current++;
+        if (_size > 1)
+            for (T _i = 1; _i < _size; _i++)
+                std::swap(_p[_i], _p[next(_i + 1)]);
+        return _p;
     }
 
     /* Returns random permutation of the given size (values are between 0 and size-1)*/
     template<typename T>
-    std::vector<T> perm(T size) {
-        return perm(size, T(0));
+    std::vector<T> perm(T _size) {
+        return perm(_size, T(0));
     }
 
     /* Returns `size` unordered (unsorted) distinct numbers between `from` and `to`. */
     template<typename T>
-    std::vector<T> distinct(int size, T from, T to) {
-        std::vector<T> result;
-        if (size == 0)
-            return result;
+    std::vector<T> distinct(int _size, T _from, T _to) {
+        std::vector<T> _result;
+        if (_size == 0)
+            return _result;
 
-        if (from > to)
+        if (_from > _to)
             __testlib_fail("random_t::distinct expected from <= to");
 
-        if (size < 0)
+        if (_size < 0)
             __testlib_fail("random_t::distinct expected size >= 0");
 
-        uint64_t n = to - from + 1;
-        if (uint64_t(size) > n)
+        uint64_t _n = _to - _from + 1;
+        if (uint64_t(_size) > _n)
             __testlib_fail("random_t::distinct expected size <= to - from + 1");
 
-        double expected = 0.0;
-        for (int i = 1; i <= size; i++)
-            expected += double(n) / double(n - i + 1);
+        double _expected = 0.0;
+        for (int _i = 1; _i <= _size; _i++)
+            _expected += double(_n) / double(_n - _i + 1);
 
-        if (expected < double(n)) {
-            std::set<T> vals;
-            while (int(vals.size()) < size) {
-                T x = T(next(from, to));
-                if (vals.insert(x).second)
-                    result.push_back(x);
+        if (_expected < double(_n)) {
+            std::set<T> _vals;
+            while (int(_vals.size()) < _size) {
+                T _x = T(next(_from, _to));
+                if (_vals.insert(_x).second)
+                    _result.push_back(_x);
             }
         } else {
-            if (n > 1000000000)
+            if (_n > 1000000000)
                 __testlib_fail("random_t::distinct here expected to - from + 1 <= 1000000000");
-            std::vector<T> p(perm(int(n), from));
-            result.insert(result.end(), p.begin(), p.begin() + size);
+            std::vector<T> _p(perm(int(_n), _from));
+            _result.insert(_result.end(), _p.begin(), _p.begin() + _size);
         }
 
-        return result;
+        return _result;
     }
 
     /* Returns `size` unordered (unsorted) distinct numbers between `0` and `upper`-1. */
     template<typename T>
-    std::vector<T> distinct(int size, T upper) {
-        if (size < 0)
+    std::vector<T> distinct(int _size, T _upper) {
+        if (_size < 0)
             __testlib_fail("random_t::distinct expected size >= 0");
-        if (size == 0)
+        if (_size == 0)
             return std::vector<T>();
 
-        if (upper <= 0)
+        if (_upper <= 0)
             __testlib_fail("random_t::distinct expected upper > 0");
-        if (size > upper)
+        if (_size > _upper)
             __testlib_fail("random_t::distinct expected size <= upper");
 
-        return distinct(size, T(0), upper - 1);
+        return distinct(_size, T(0), _upper - 1);
     }
 
     /* Returns random (unsorted) partition which is a representation of sum as a sum of integers not less than min_part. */
     template<typename T>
-    std::vector<T> partition(int size, T sum, T min_part) {
-        if (size < 0)
+    std::vector<T> partition(int _size, T _sum, T _min_part) {
+        if (_size < 0)
             __testlib_fail("random_t::partition: size < 0");
-        if (size == 0 && sum != 0)
+        if (_size == 0 && _sum != 0)
             __testlib_fail("random_t::partition: size == 0 && sum != 0");
-        if (min_part * size > sum)
+        if (_min_part * _size > _sum)
             __testlib_fail("random_t::partition: min_part * size > sum");
-        if (size == 0 && sum == 0)
+        if (_size == 0 && _sum == 0)
             return std::vector<T>();
 
-        T sum_ = sum;
-        sum -= min_part * size;
+        T _total = _sum;
+        _sum -= _min_part * _size;
 
-        std::vector<T> septums(size);
-        std::vector<T> d = distinct(size - 1, T(1), T(sum + size - 1));
-        for (int i = 0; i + 1 < size; i++)
-            septums[i + 1] = d[i];
-        sort(septums.begin(), septums.end());
+        std::vector<T> _septums(_size);
+        std::vector<T> _d = distinct(_size - 1, T(1), T(_sum + _size - 1));
+        for (int _i = 0; _i + 1 < _size; _i++)
+            _septums[_i + 1] = _d[_i];
+        sort(_septums.begin(), _septums.end());
 
-        std::vector<T> result(size);
-        for (int i = 0; i + 1 < size; i++)
-            result[i] = septums[i + 1] - septums[i] - 1;
-        result[size - 1] = sum + size - 1 - septums.back();
+        std::vector<T> _result(_size);
+        for (int _i = 0; _i + 1 < _size; _i++)
+            _result[_i] = _septums[_i + 1] - _septums[_i] - 1;
+        _result[_size - 1] = _sum + _size - 1 - _septums.back();
 
-        for (std::size_t i = 0; i < result.size(); i++)
-            result[i] += min_part;
+        for (std::size_t _i = 0; _i < _result.size(); _i++)
+            _result[_i] += _min_part;
 
-        T result_sum = 0;
-        for (std::size_t i = 0; i < result.size(); i++)
-            result_sum += result[i];
-        if (result_sum != sum_)
+        T _result_sum = 0;
+        for (std::size_t _i = 0; _i < _result.size(); _i++)
+            _result_sum += _result[_i];
+        if (_result_sum != _total)
             __testlib_fail("random_t::partition: partition sum is expected to be the given sum");
 
-        if (*std::min_element(result.begin(), result.end()) < min_part)
+        if (*std::min_element(_result.begin(), _result.end()) < _min_part)
             __testlib_fail("random_t::partition: partition min is expected to be no less than the given min_part");
 
-        if (int(result.size()) != size || result.size() != (size_t) size)
+        if (int(_result.size()) != _size || _result.size() != (size_t) _size)
             __testlib_fail("random_t::partition: partition size is expected to be equal to the given size");
 
-        return result;
+        return _result;
     }
 
     /* Returns random (unsorted) partition which is a representation of sum as a sum of positive integers. */
     template<typename T>
-    std::vector<T> partition(int size, T sum) {
-        return partition(size, sum, T(1));
+    std::vector<T> partition(int _size, T _sum) {
+        return partition(_size, _sum, T(1));
     }
 };
 
@@ -1304,8 +1319,8 @@ const unsigned long long random_t::mask = (1LL << 48) - 1;
 int random_t::version = -1;
 
 /* Pattern implementation */
-bool pattern::matches(const std::string &s) const {
-    return matches(s, 0);
+bool pattern::matches(const std::string &str) const {
+    return matches(str, 0);
 }
 
 static bool __pattern_isSlash(const std::string &s, size_t pos) {
@@ -1358,11 +1373,11 @@ std::string pattern::src() const {
     return s;
 }
 
-bool pattern::matches(const std::string &s, size_t pos) const {
+bool pattern::matches(const std::string &str, size_t pos) const {
     std::string result;
 
     if (to > 0) {
-        int size = __pattern_greedyMatch(s, pos, chars);
+        int size = __pattern_greedyMatch(str, pos, chars);
         if (size < from)
             return false;
         if (size > to)
@@ -1372,11 +1387,11 @@ bool pattern::matches(const std::string &s, size_t pos) const {
 
     if (children.size() > 0) {
         for (size_t child = 0; child < children.size(); child++)
-            if (children[child].matches(s, pos))
+            if (children[child].matches(str, pos))
                 return true;
         return false;
     } else
-        return pos == s.length();
+        return pos == str.length();
 }
 
 std::string pattern::next(random_t &rnd) const {
@@ -1538,24 +1553,24 @@ static std::vector<char> __pattern_scanCharSet(const std::string &s, size_t &pos
     return result;
 }
 
-pattern::pattern(std::string s) : s(s), from(0), to(0) {
+pattern::pattern(std::string ptrn) : s(ptrn), from(0), to(0) {
     std::string t;
-    for (size_t i = 0; i < s.length(); i++)
-        if (!__pattern_isCommandChar(s, i, ' '))
-            t += s[i];
-    s = t;
+    for (size_t i = 0; i < ptrn.length(); i++)
+        if (!__pattern_isCommandChar(ptrn, i, ' '))
+            t += ptrn[i];
+    ptrn = t;
 
     int opened = 0;
     int firstClose = -1;
     std::vector<int> seps;
 
-    for (size_t i = 0; i < s.length(); i++) {
-        if (__pattern_isCommandChar(s, i, '(')) {
+    for (size_t i = 0; i < ptrn.length(); i++) {
+        if (__pattern_isCommandChar(ptrn, i, '(')) {
             opened++;
             continue;
         }
 
-        if (__pattern_isCommandChar(s, i, ')')) {
+        if (__pattern_isCommandChar(ptrn, i, ')')) {
             opened--;
             if (opened == 0 && firstClose == -1)
                 firstClose = int(i);
@@ -1563,33 +1578,33 @@ pattern::pattern(std::string s) : s(s), from(0), to(0) {
         }
 
         if (opened < 0)
-            __testlib_fail("pattern: Illegal pattern (or part) \"" + s + "\"");
+            __testlib_fail("pattern: Illegal pattern (or part) \"" + ptrn + "\"");
 
-        if (__pattern_isCommandChar(s, i, '|') && opened == 0)
+        if (__pattern_isCommandChar(ptrn, i, '|') && opened == 0)
             seps.push_back(int(i));
     }
 
     if (opened != 0)
-        __testlib_fail("pattern: Illegal pattern (or part) \"" + s + "\"");
+        __testlib_fail("pattern: Illegal pattern (or part) \"" + ptrn + "\"");
 
-    if (seps.size() == 0 && firstClose + 1 == (int) s.length()
-        && __pattern_isCommandChar(s, 0, '(') && __pattern_isCommandChar(s, s.length() - 1, ')')) {
-        children.push_back(pattern(s.substr(1, s.length() - 2)));
+    if (seps.size() == 0 && firstClose + 1 == (int) ptrn.length()
+        && __pattern_isCommandChar(ptrn, 0, '(') && __pattern_isCommandChar(ptrn, ptrn.length() - 1, ')')) {
+        children.push_back(pattern(ptrn.substr(1, ptrn.length() - 2)));
     } else {
         if (seps.size() > 0) {
-            seps.push_back(int(s.length()));
+            seps.push_back(int(ptrn.length()));
             int last = 0;
 
             for (size_t i = 0; i < seps.size(); i++) {
-                children.push_back(pattern(s.substr(last, seps[i] - last)));
+                children.push_back(pattern(ptrn.substr(last, seps[i] - last)));
                 last = seps[i] + 1;
             }
         } else {
             size_t pos = 0;
-            chars = __pattern_scanCharSet(s, pos);
-            __pattern_scanCounts(s, pos, from, to);
-            if (pos < s.length())
-                children.push_back(pattern(s.substr(pos)));
+            chars = __pattern_scanCharSet(ptrn, pos);
+            __pattern_scanCounts(ptrn, pos, from, to);
+            if (pos < ptrn.length())
+                children.push_back(pattern(ptrn.substr(pos)));
         }
     }
 }
@@ -1597,18 +1612,18 @@ pattern::pattern(std::string s) : s(s), from(0), to(0) {
 /* End of pattern implementation */
 
 template<typename C>
-inline bool isEof(C c) {
-    return c == EOFC;
+inline bool isEof(C _c) {
+    return _c == EOFC || _c == C(EOFC);
 }
 
 template<typename C>
-inline bool isEoln(C c) {
-    return (c == LF || c == CR);
+inline bool isEoln(C _c) {
+    return (_c == LF || _c == CR);
 }
 
 template<typename C>
-inline bool isBlanks(C c) {
-    return (c == LF || c == CR || c == SPACE || c == TAB);
+inline bool isBlanks(C _c) {
+    return (_c == LF || _c == CR || _c == SPACE || _c == TAB);
 }
 
 inline std::string trim(const std::string &s) {
@@ -1728,7 +1743,7 @@ public:
         if (pos >= s.length())
             return EOFC;
         else
-            return s[pos];
+            return (unsigned char) s[pos];
     }
 
     int nextChar() {
@@ -1736,7 +1751,7 @@ public:
             pos++;
             return EOFC;
         } else
-            return s[pos++];
+            return (unsigned char) s[pos++];
     }
 
     void skipChar() {
@@ -1784,12 +1799,12 @@ private:
             return EOFC;
     }
 
-    int getc(FILE *file) {
+    int getc(FILE *f) {
         int c;
         int rc;
 
         if (undoChars.empty()) {
-            c = rc = ::getc(file);
+            c = rc = ::getc(f);
         } else {
             c = undoChars.back();
             undoChars.pop_back();
@@ -1816,7 +1831,7 @@ private:
     }
 
 public:
-    FileInputStreamReader(std::FILE *file, const std::string &name) : file(file), name(name), line(1) {
+    FileInputStreamReader(std::FILE *f, const std::string &fileName) : file(f), name(fileName), line(1) {
         // No operations.
     }
 
@@ -1922,15 +1937,15 @@ private:
             return true;
     }
 
-    char increment() {
+    int increment() {
         char c;
         if ((c = buffer[bufferPos++]) == LF)
             line++;
-        return c;
+        return (unsigned char) c;
     }
 
 public:
-    BufferedFileInputStreamReader(std::FILE *file, const std::string &name) : file(file), name(name), line(1) {
+    BufferedFileInputStreamReader(std::FILE *f, const std::string &fileName) : file(f), name(fileName), line(1) {
         buffer = new char[BUFFER_SIZE];
         isEof = new bool[BUFFER_SIZE];
         bufferSize = MAX_UNREAD_COUNT;
@@ -1960,7 +1975,7 @@ public:
         if (!refill())
             return EOFC;
 
-        return isEof[bufferPos] ? EOFC : buffer[bufferPos];
+        return isEof[bufferPos] ? EOFC : (unsigned char) buffer[bufferPos];
     }
 
     int nextChar() {
@@ -2038,9 +2053,9 @@ struct InStream {
     size_t maxTokenLength;
     size_t maxMessageLength;
 
-    void init(std::string fileName, TMode mode);
+    void init(std::string fileName, TMode type);
 
-    void init(std::FILE *f, TMode mode);
+    void init(std::FILE *f, TMode type);
 
     void setTestCase(int testCase);
     std::vector<int> getReadChars();
@@ -2066,7 +2081,7 @@ struct InStream {
     /* As "readChar()" but ensures that the result is equal to the space (code=32). */
     char readSpace();
 
-    /* Puts back the character into the stream. */
+    /* Puts back the data byte into the stream (cannot put back EOF). */
     void unreadChar(char c);
 
     /* Reopens stream, you should not use it. */
@@ -2403,7 +2418,7 @@ struct ValidatorBoundsHit {
     bool minHit;
     bool maxHit;
 
-    ValidatorBoundsHit(bool minHit = false, bool maxHit = false) : minHit(minHit), maxHit(maxHit) {
+    ValidatorBoundsHit(bool lower = false, bool upper = false) : minHit(lower), maxHit(upper) {
     };
 
     ValidatorBoundsHit merge(const ValidatorBoundsHit &validatorBoundsHit, bool ignoreMinBound, bool ignoreMaxBound) {
@@ -2419,15 +2434,15 @@ struct ConstantBound {
     bool broken;
 
     template<typename T>
-    void adjust(T t) {
-        std::string t_string = std::to_string(t);
-        if (t_string.length() >= 32) {
+    void adjust(T _t) {
+        std::string _t_string = std::to_string(_t);
+        if (_t_string.length() >= 32) {
             broken = true;
             value = "";
         } else {
             if (!broken && value.empty())
-                value = t_string;
-            if (!broken && value != t_string) {
+                value = _t_string;
+            if (!broken && value != _t_string) {
                 broken = true;
                 value = "";
             }
@@ -2586,12 +2601,12 @@ public:
     }
 
     template<typename T>
-    void adjustConstantBounds(const std::string &variableName, T lower, T upper) {
-        if (isVariableNameBoundsAnalyzable(variableName)
+    void adjustConstantBounds(const std::string &_variableName, T _lower, T _upper) {
+        if (isVariableNameBoundsAnalyzable(_variableName)
                 && _constantBoundsByVariableName.size() < VALIDATOR_MAX_VARIABLE_COUNT) {
-            std::string preparedVariableName = prepVariableName(variableName);
-            _constantBoundsByVariableName[preparedVariableName].lowerBound.adjust(lower);
-            _constantBoundsByVariableName[preparedVariableName].upperBound.adjust(upper);
+            std::string _preparedVariableName = prepVariableName(_variableName);
+            _constantBoundsByVariableName[_preparedVariableName].lowerBound.adjust(_lower);
+            _constantBoundsByVariableName[_preparedVariableName].upperBound.adjust(_upper);
         }
     }
 
@@ -2978,7 +2993,7 @@ class exit_exception: public std::exception {
 private:
     int exitCode;
 public:
-    exit_exception(int exitCode): exitCode(exitCode) {}
+    exit_exception(int code): exitCode(code) {}
     int getExitCode() { return exitCode; }
 };
 #endif
@@ -3344,11 +3359,11 @@ void InStream::reset(std::FILE *file) {
     }
 }
 
-void InStream::init(std::string fileName, TMode mode) {
+void InStream::init(std::string fileName, TMode type) {
     opened = false;
     name = fileName;
     stdfile = false;
-    this->mode = mode;
+    this->mode = type;
 
     std::ifstream stream;
     stream.open(fileName.c_str(), std::ios::in);
@@ -3368,10 +3383,10 @@ void InStream::init(std::string fileName, TMode mode) {
     reset();
 }
 
-void InStream::init(std::FILE *f, TMode mode) {
+void InStream::init(std::FILE *f, TMode type) {
     opened = false;
     name = "untitled";
-    this->mode = mode;
+    this->mode = type;
 
     if (f == stdin)
         name = "stdin", stdfile = true;
@@ -3429,7 +3444,7 @@ char InStream::readSpace() {
 }
 
 void InStream::unreadChar(char c) {
-    reader->unreadChar(c);
+    reader->unreadChar((unsigned char) c);
 }
 
 void InStream::skipChar() {
@@ -4342,6 +4357,7 @@ void InStream::readStringTo(std::string &result) {
                 reader->unreadChar(cur);
                 break;
             }
+            continue;
         }
 
         lastLine = reader->getLine();
@@ -4565,9 +4581,9 @@ template<typename F>
 #ifdef __GNUC__
 __attribute__ ((format (printf, 2, 3)))
 #endif
-NORETURN void quitp(F points, const char *format, ...) {
-    FMT_TO_RESULT(format, format, message);
-    quitp(points, message);
+NORETURN void quitp(F _pts, const char *_fmt, ...) {
+    FMT_TO_RESULT(_fmt, _fmt, _message);
+    quitp(_pts, _message);
 }
 
 #ifdef __GNUC__
@@ -4591,7 +4607,7 @@ void quitif(bool condition, TResult result, const char *format, ...) {
 NORETURN void __testlib_help() {
     InStream::textColor(InStream::LightCyan);
     std::fprintf(stderr, "TESTLIB %s, https://github.com/MikeMirzayanov/testlib/ ", VERSION);
-    std::fprintf(stderr, "by Mike Mirzayanov, copyright(c) 2005-2020\n");
+    std::fprintf(stderr, "by Mike Mirzayanov, copyright(c) 2005-2026\n");
     std::fprintf(stderr, "Checker name: \"%s\"\n", checkerName.c_str());
     InStream::textColor(InStream::LightGray);
 
@@ -4705,7 +4721,7 @@ void registerGen(int argc, char *argv[]) {
 }
 #endif
 
-void setAppesModeEncoding(std::string appesModeEncoding) {
+void setAppesModeEncoding(std::string value) {
     static const char* const ENCODINGS[] = {"ascii", "utf-7", "utf-8", "utf-16", "utf-16le", "utf-16be", "utf-32", "utf-32le", "utf-32be", "iso-8859-1", 
 "iso-8859-2", "iso-8859-3", "iso-8859-4", "iso-8859-5", "iso-8859-6", "iso-8859-7", "iso-8859-8", "iso-8859-9", "iso-8859-10", "iso-8859-11", 
 "iso-8859-13", "iso-8859-14", "iso-8859-15", "iso-8859-16", "windows-1250", "windows-1251", "windows-1252", "windows-1253", "windows-1254", "windows-1255", 
@@ -4717,16 +4733,16 @@ void setAppesModeEncoding(std::string appesModeEncoding) {
 "cp1006", "cp775", "cp858", "cp737", "cp853", "cp856", "cp922", "cp1046", "cp1125", "cp1131", 
 "ptcp154", "koi8-t", "koi8-ru", "mulelao-1", "cp1133", "iso-ir-166", "tcvn", "iso-ir-14", "iso-ir-87", "iso-ir-159"};
     
-    appesModeEncoding = lowerCase(appesModeEncoding);
+    value = lowerCase(value);
     bool valid = false;
     for (size_t i = 0; i < sizeof(ENCODINGS) / sizeof(ENCODINGS[0]); i++)
-        if (appesModeEncoding == ENCODINGS[i]) {
+        if (value == ENCODINGS[i]) {
             valid = true;
             break;
         }
     if (!valid)
         quit(_fail, "Unexpected encoding for setAppesModeEncoding(encoding)");
-    ::appesModeEncoding = appesModeEncoding;
+    ::appesModeEncoding = value;
 }
 
 void registerInteraction(int argc, char *argv[]) {
@@ -5123,32 +5139,32 @@ inline std::string englishEnding(int x) {
 }
 
 template<typename _ForwardIterator, typename _Separator>
-std::string join(_ForwardIterator first, _ForwardIterator last, _Separator separator) {
-    std::stringstream ss;
-    bool repeated = false;
-    for (_ForwardIterator i = first; i != last; i++) {
-        if (repeated)
-            ss << separator;
+std::string join(_ForwardIterator _first, _ForwardIterator _last, _Separator _separator) {
+    std::stringstream _ss;
+    bool _repeated = false;
+    for (_ForwardIterator _i = _first; _i != _last; _i++) {
+        if (_repeated)
+            _ss << _separator;
         else
-            repeated = true;
-        ss << *i;
+            _repeated = true;
+        _ss << *_i;
     }
-    return ss.str();
+    return _ss.str();
 }
 
 template<typename _ForwardIterator>
-std::string join(_ForwardIterator first, _ForwardIterator last) {
-    return join(first, last, ' ');
+std::string join(_ForwardIterator _first, _ForwardIterator _last) {
+    return join(_first, _last, ' ');
 }
 
 template<typename _Collection, typename _Separator>
-std::string join(const _Collection &collection, _Separator separator) {
-    return join(collection.begin(), collection.end(), separator);
+std::string join(const _Collection &_collection, _Separator _separator) {
+    return join(_collection.begin(), _collection.end(), _separator);
 }
 
 template<typename _Collection>
-std::string join(const _Collection &collection) {
-    return join(collection, ' ');
+std::string join(const _Collection &_collection) {
+    return join(_collection, ' ');
 }
 
 /**
@@ -5258,11 +5274,11 @@ template<typename T>
 #ifdef __GNUC__
 __attribute__ ((format (printf, 4, 5)))
 #endif
-NORETURN void expectedButFound(TResult result, T expected, T found, const char *prependFormat = "", ...) {
-    FMT_TO_RESULT(prependFormat, prependFormat, prepend);
-    std::string expectedString = vtos(expected);
-    std::string foundString = vtos(found);
-    __testlib_expectedButFound(result, expectedString, foundString, prepend.c_str());
+NORETURN void expectedButFound(TResult _result, T _expected, T _found, const char *_prependFormat = "", ...) {
+    FMT_TO_RESULT(_prependFormat, _prependFormat, _prepend);
+    std::string _expectedString = vtos(_expected);
+    std::string _foundString = vtos(_found);
+    __testlib_expectedButFound(_result, _expectedString, _foundString, _prepend.c_str());
 }
 
 template<>
@@ -5338,19 +5354,19 @@ struct __testlib_enable_if<true, T> {
 };
 
 template<typename T>
-typename __testlib_enable_if<!is_iterable<T>::value, void>::type __testlib_print_one(const T &t) {
-    std::cout << t;
+typename __testlib_enable_if<!is_iterable<T>::value, void>::type __testlib_print_one(const T &_t) {
+    std::cout << _t;
 }
 
 template<typename T>
-typename __testlib_enable_if<is_iterable<T>::value, void>::type __testlib_print_one(const T &t) {
-    bool first = true;
-    for (typename T::const_iterator i = t.begin(); i != t.end(); i++) {
-        if (first)
-            first = false;
+typename __testlib_enable_if<is_iterable<T>::value, void>::type __testlib_print_one(const T &_t) {
+    bool _first = true;
+    for (typename T::const_iterator _i = _t.begin(); _i != _t.end(); _i++) {
+        if (_first)
+            _first = false;
         else
             std::cout << " ";
-        std::cout << *i;
+        std::cout << *_i;
     }
 }
 
@@ -5361,14 +5377,14 @@ __testlib_print_one<std::string>(const std::string &t) {
 }
 
 template<typename A, typename B>
-void __println_range(A begin, B end) {
-    bool first = true;
-    for (B i = B(begin); i != end; i++) {
-        if (first)
-            first = false;
+void __println_range(A _begin, B _end) {
+    bool _first = true;
+    for (B _i = B(_begin); _i != _end; _i++) {
+        if (_first)
+            _first = false;
         else
             std::cout << " ";
-        __testlib_print_one(*i);
+        __testlib_print_one(*_i);
     }
     std::cout << std::endl;
 }
@@ -5395,22 +5411,91 @@ struct is_iterator<T, typename __testlib_enable_if<std::is_array<T>::value>::typ
     static const bool value = false;
 };
 
+// println(a, b) prints the range [a, b) only if b is an iterator and __println_range can start from a:
+// println(n, flag ? "YES" : "NO") prints two values. If b is not an iterator, a is not inspected at all.
+template<typename A, typename B, bool = is_iterator<B>::value>
+struct __testlib_is_range {
+    // __println_range takes a copy of const A&, then constructs B from that local lvalue.
+    typedef typename std::decay<const A>::type Begin;
+    typedef typename std::decay<const B>::type End;
+    static const bool legacy = std::is_convertible<A, B>::value || std::is_pointer<A>::value;
+    struct ExplicitRange : std::conditional<
+        std::is_convertible<const A &, Begin>::value && std::is_convertible<const B &, End>::value,
+        std::is_constructible<End, Begin &>, std::false_type>::type {};
+    // Do not inspect explicit constructors for an existing range.
+    typedef typename std::conditional<!legacy, ExplicitRange, std::false_type>::type Range;
+    static const bool value = legacy || Range::value;
+};
+
 template<typename A, typename B>
-typename __testlib_enable_if<!is_iterator<B>::value, void>::type println(const A &a, const B &b) {
+struct __testlib_is_range<A, B, false> {
+    static const bool value = false;
+};
+
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
+inline void __testlib_print_line_rest() {
+    std::cout << std::endl;
+}
+
+template<typename T, typename... Args>
+void __testlib_print_line_rest(const T &_value, const Args&... _args) {
+    std::cout << " ";
+    __testlib_print_one(_value);
+    __testlib_print_line_rest(_args...);
+}
+#endif
+
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
+// C++23: Args&& beats std::println on mutable lvalues; the const& overloads below serve the rest:
+// explicit template arguments (the empty int&... pack keeps them away) and calls where Args&& would
+// bind exactly like const& (only const lvalues and functions).
+#if __cplusplus > 202002L || (defined(_MSVC_LANG) && _MSVC_LANG > 202002L)
+template<typename... Ts>
+constexpr bool __testlib_all_const_lvalues = ((std::is_lvalue_reference<Ts>::value && std::is_same<typename std::remove_reference<Ts>::type, const typename std::remove_reference<Ts>::type>::value) && ...);
+
+template<int&... ExplicitArgumentBarrier, typename A, typename B>
+typename __testlib_enable_if<!__testlib_is_range<A, typename std::remove_reference<B>::type>::value && !__testlib_all_const_lvalues<B>, void>::type
+println(const A &_a, B &&_b) {
+    __testlib_print_one(_a);
+    __testlib_print_line_rest(_b);
+}
+
+template<int&... ExplicitArgumentBarrier, typename A, typename B, typename C, typename... Args>
+typename __testlib_enable_if<!__testlib_all_const_lvalues<B, C, Args...>, void>::type
+println(const A &_a, B &&_b, C &&_c, Args&&... _args) {
+    __testlib_print_one(_a);
+    __testlib_print_line_rest(_b, _c, _args...);
+}
+#endif
+template<typename A, typename B>
+typename __testlib_enable_if<!__testlib_is_range<A, B>::value, void>::type println(const A &_a, const B &_b) {
+    __testlib_print_one(_a);
+    __testlib_print_line_rest(_b);
+}
+
+template<typename A, typename B, typename C, typename... Args>
+void println(const A &_a, const B &_b, const C &_c, const Args&... _args) {
+    __testlib_print_one(_a);
+    __testlib_print_line_rest(_b, _c, _args...);
+}
+#else
+template<typename A, typename B>
+typename __testlib_enable_if<!__testlib_is_range<A, B>::value, void>::type println(const A &a, const B &b) {
     __testlib_print_one(a);
     std::cout << " ";
     __testlib_print_one(b);
     std::cout << std::endl;
 }
+#endif
 
 template<typename A, typename B>
-typename __testlib_enable_if<is_iterator<B>::value, void>::type println(const A &a, const B &b) {
-    __println_range(a, b);
+typename __testlib_enable_if<__testlib_is_range<A, B>::value, void>::type println(const A &_a, const B &_b) {
+    __println_range(_a, _b);
 }
 
 template<typename A>
-void println(const A *a, const A *b) {
-    __println_range(a, b);
+void println(const A *_a, const A *_b) {
+    __println_range(_a, _b);
 }
 
 template<>
@@ -5422,11 +5507,12 @@ void println<char>(const char *a, const char *b) {
 }
 
 template<typename T>
-void println(const T &x) {
-    __testlib_print_one(x);
+void println(const T &_x) {
+    __testlib_print_one(_x);
     std::cout << std::endl;
 }
 
+#if __cplusplus < 201103L && (!defined(_MSC_VER) || _MSC_VER < 1800)
 template<typename A, typename B, typename C>
 void println(const A &a, const B &b, const C &c) {
     __testlib_print_one(a);
@@ -5496,6 +5582,7 @@ void println(const A &a, const B &b, const C &c, const D &d, const E &e, const F
     __testlib_print_one(g);
     std::cout << std::endl;
 }
+#endif
 
 /* opts */
 
@@ -5662,7 +5749,7 @@ std::string __testlib_keyToOpts(const std::string &key) {
 }
 
 template<typename T>
-T optValueToIntegral(const std::string &s, bool nonnegative);
+T optValueToIntegral(const std::string &_text, bool _nonnegative);
 
 long double optValueToLongDouble(const std::string &s);
 
@@ -5729,31 +5816,31 @@ std::string parseExponentialOptValue(const std::string &s) {
 }
 
 template<typename T>
-T optValueToIntegral(const std::string &s_, bool nonnegative) {
-    std::string s(parseExponentialOptValue(s_));
-    if (s.empty())
-        __testlib_fail("Opts: expected integer but '" + compress(s_) + "' found");
-    T value = 0;
-    long double about = 0.0;
-    signed char sign = +1;
-    size_t pos = 0;
-    if (s[pos] == '-') {
-        if (nonnegative)
-            __testlib_fail("Opts: expected non-negative integer but '" + compress(s_) + "' found");
-        sign = -1;
-        pos++;
+T optValueToIntegral(const std::string &_text, bool _nonnegative) {
+    std::string _s(parseExponentialOptValue(_text));
+    if (_s.empty())
+        __testlib_fail("Opts: expected integer but '" + compress(_text) + "' found");
+    T _value = 0;
+    long double _about = 0.0;
+    signed char _sign = +1;
+    size_t _pos = 0;
+    if (_s[_pos] == '-') {
+        if (_nonnegative)
+            __testlib_fail("Opts: expected non-negative integer but '" + compress(_text) + "' found");
+        _sign = -1;
+        _pos++;
     }
-    for (size_t i = pos; i < s.length(); i++) {
-        if (s[i] < '0' || s[i] > '9')
-            __testlib_fail("Opts: expected integer but '" + compress(s_) + "' found");
-        value = T(value * 10 + s[i] - '0');
-        about = about * 10 + s[i] - '0';
+    for (size_t _i = _pos; _i < _s.length(); _i++) {
+        if (_s[_i] < '0' || _s[_i] > '9')
+            __testlib_fail("Opts: expected integer but '" + compress(_text) + "' found");
+        _value = T(_value * 10 + _s[_i] - '0');
+        _about = _about * 10 + _s[_i] - '0';
     }
-    value *= sign;
-    about *= sign;
-    if (fabsl(value - about) > 0.1)
-        __testlib_fail("Opts: integer overflow: expected integer but '" + compress(s_) + "' found");
-    return value;
+    _value *= _sign;
+    _about *= _sign;
+    if (fabsl(_value - _about) > 0.1)
+        __testlib_fail("Opts: integer overflow: expected integer but '" + compress(_text) + "' found");
+    return _value;
 }
 
 long double optValueToLongDouble(const std::string &s_) {
@@ -5856,23 +5943,23 @@ std::string opt(std::false_type /*is_floating_point*/, int index) {
 }
 
 template<typename T>
-T opt(std::true_type /*is_floating_point*/, int index) {
-    return T(optValueToLongDouble(__testlib_indexToArgv(index)));
+T opt(std::true_type /*is_floating_point*/, int _index) {
+    return T(optValueToLongDouble(__testlib_indexToArgv(_index)));
 }
 
 template<typename T, typename U>
-T opt(std::false_type /*is_integral*/, U /*is_unsigned*/, int index) {
-    return opt<T>(std::is_floating_point<T>(), index);
+T opt(std::false_type /*is_integral*/, U /*is_unsigned*/, int _index) {
+    return opt<T>(std::is_floating_point<T>(), _index);
 }
 
 template<typename T>
-T opt(std::true_type /*is_integral*/, std::false_type /*is_unsigned*/, int index) {
-    return optValueToIntegral<T>(__testlib_indexToArgv(index), false);
+T opt(std::true_type /*is_integral*/, std::false_type /*is_unsigned*/, int _index) {
+    return optValueToIntegral<T>(__testlib_indexToArgv(_index), false);
 }
 
 template<typename T>
-T opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, int index) {
-    return optValueToIntegral<T>(__testlib_indexToArgv(index), true);
+T opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, int _index) {
+    return optValueToIntegral<T>(__testlib_indexToArgv(_index), true);
 }
 
 template<>
@@ -5890,8 +5977,8 @@ bool opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, int ind
  * Return the parsed argv by a given index.
  */
 template<typename T>
-T opt(int index) {
-    return opt<T>(std::is_integral<T>(), std::is_unsigned<T>(), index);
+T opt(int _index) {
+    return opt<T>(std::is_integral<T>(), std::is_unsigned<T>(), _index);
 }
 
 /**
@@ -5906,11 +5993,11 @@ std::string opt(int index) {
  * the number of argv, return the given default_value.
  */
 template<typename T>
-T opt(int index, const T &default_value) {
-    if (index >= int(__testlib_argv.size())) {
-        return default_value;
+T opt(int _index, const T &_default_value) {
+    if (_index >= int(__testlib_argv.size())) {
+        return _default_value;
     }
-    return opt<T>(index);
+    return opt<T>(_index);
 }
 
 /**
@@ -5930,23 +6017,23 @@ std::string opt(std::false_type /*is_floating_point*/, const std::string &key) {
 }
 
 template<typename T>
-T opt(std::true_type /*is_integral*/, const std::string &key) {
-    return T(optValueToLongDouble(__testlib_keyToOpts(key)));
+T opt(std::true_type /*is_integral*/, const std::string &_key) {
+    return T(optValueToLongDouble(__testlib_keyToOpts(_key)));
 }
 
 template<typename T, typename U>
-T opt(std::false_type /*is_integral*/, U, const std::string &key) {
-    return opt<T>(std::is_floating_point<T>(), key);
+T opt(std::false_type /*is_integral*/, U, const std::string &_key) {
+    return opt<T>(std::is_floating_point<T>(), _key);
 }
 
 template<typename T>
-T opt(std::true_type /*is_integral*/, std::false_type /*is_unsigned*/, const std::string &key) {
-    return optValueToIntegral<T>(__testlib_keyToOpts(key), false);
+T opt(std::true_type /*is_integral*/, std::false_type /*is_unsigned*/, const std::string &_key) {
+    return optValueToIntegral<T>(__testlib_keyToOpts(_key), false);
 }
 
 template<typename T>
-T opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, const std::string &key) {
-    return optValueToIntegral<T>(__testlib_keyToOpts(key), true);
+T opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, const std::string &_key) {
+    return optValueToIntegral<T>(__testlib_keyToOpts(_key), true);
 }
 
 template<>
@@ -5966,8 +6053,8 @@ bool opt(std::true_type /*is_integral*/, std::true_type /*is_unsigned*/, const s
  * Return the parsed opt by a given key.
  */
 template<typename T>
-T opt(const std::string &key) {
-    return opt<T>(std::is_integral<T>(), std::is_unsigned<T>(), key);
+T opt(const std::string &_key) {
+    return opt<T>(std::is_integral<T>(), std::is_unsigned<T>(), _key);
 }
 
 /**
@@ -6232,11 +6319,11 @@ void registerScorer(int argc, char *argv[], std::function<double(std::vector<Tes
  * turn it off.
  */
 template<typename T>
-T opt(const std::string &key, const T &default_value) {
-    if (!has_opt(key)) {
-        return default_value;
+T opt(const std::string &_key, const T &_default_value) {
+    if (!has_opt(_key)) {
+        return _default_value;
     }
-    return opt<T>(key);
+    return opt<T>(_key);
 }
 
 /**
@@ -6292,21 +6379,39 @@ std::string testlib_format_(const std::string fmt, ...) {
     return result;
 }
 
-#if (__cplusplus >= 202002L && __has_include(<format>)) || __cpp_lib_format
+#if defined(__cpp_lib_format)
+    #define TESTLIB_INTERNAL_HAS_STD_FORMAT
+#elif (defined(__cplusplus) && __cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+    #if defined(__has_include)
+        #if __has_include(<format>)
+            #define TESTLIB_INTERNAL_HAS_STD_FORMAT
+        #endif
+    #endif
+#endif
+
+#ifdef TESTLIB_INTERNAL_HAS_STD_FORMAT
+// Copies the arguments once, so both passes see the same values (%n). The trailing 0 is ignored by
+// snprintf and keeps -Wformat-security quiet for a format without arguments.
 template <typename... Args>
-std::string format(const char* fmt, Args&&... args) {
-    size_t size = size_t(std::snprintf(nullptr, 0, fmt, args...) + 1);
-    std::vector<char> buffer(size);
-    std::snprintf(buffer.data(), size, fmt, args...);
-    return std::string(buffer.data());
+std::string __testlib_format_values(const char* _fmt, Args... _args) {
+    int _size = std::snprintf(NULL, 0, _fmt, _args..., 0);
+    if (_size < 0)
+        __testlib_fail("format(): formatting failed");
+    std::vector<char> _buffer(size_t(_size) + 1);
+    int _written = std::snprintf(_buffer.data(), _buffer.size(), _fmt, _args..., 0);
+    if (_written < 0)
+        __testlib_fail("format(): formatting failed");
+    return std::string(_buffer.data());
 }
 
 template <typename... Args>
-std::string format(const std::string fmt, Args&&... args) {
-    size_t size = size_t(std::snprintf(nullptr, 0, fmt.c_str(), args...) + 1);
-    std::vector<char> buffer(size);
-    std::snprintf(buffer.data(), size, fmt.c_str(), args...);
-    return std::string(buffer.data());
+std::string format(const char* _fmt, Args&&... _args) {
+    return __testlib_format_values(_fmt, _args...);
+}
+
+template <typename... Args>
+std::string format(const std::string _fmt, Args&&... _args) {
+    return __testlib_format_values(_fmt.c_str(), _args...);
 }
 #else
 #ifdef __GNUC__
@@ -6314,13 +6419,19 @@ __attribute__ ((format (printf, 1, 2)))
 #endif
 std::string format(const char *fmt, ...) {
     FMT_TO_RESULT(fmt, fmt, result);
+    if (__testlib_format_result < 0)
+        __testlib_fail("format(): formatting failed");
     return result;
 }
 
 std::string format(const std::string fmt, ...) {
     FMT_TO_RESULT(fmt, fmt.c_str(), result);
+    if (__testlib_format_result < 0)
+        __testlib_fail("format(): formatting failed");
     return result;
 }
 #endif
+
+#undef TESTLIB_INTERNAL_HAS_STD_FORMAT
 
 #endif
