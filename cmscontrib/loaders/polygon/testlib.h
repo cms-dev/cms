@@ -34,6 +34,7 @@
  *   - Adjust checker exit code and argument order
  *   - Add the CMS conditional macro for checker format
  *   - Add CMS_VERBOSE_FEEDBACK to opt into testlib-style messages
+ *   - Reject quitp() points outside [0, 1], since CMS reads a fraction
  *   - Interactors remain unsupported by this checker adapter
  */
 
@@ -3156,6 +3157,12 @@ NORETURN void InStream::quit(TResult result, const char *msg) {
         std::fprintf(stdout, "0.0\n");
         std::fprintf(stderr, CMS_MSG(CMS_WRONG, "Wrong Output Format"));
     } else if (result == _points) {
+        if (!(__testlib_points >= 0.0 && __testlib_points <= 1.0)) {
+            std::fprintf(stderr,
+                         "FAIL quitp() points must be in [0, 1] for CMS, got %f\n",
+                         __testlib_points);
+            halt(1);
+        }
         char pointsBuffer[64];
         std::snprintf(pointsBuffer, sizeof(pointsBuffer), "%.10f",
                       __testlib_points);

@@ -55,6 +55,59 @@ def _format_test_path(pattern, test_number):
         ) from error
 
 
+def _package_path(package_dir, relative_path):
+    """Resolve a path taken from a Polygon package.
+
+    Paths in problem.xml are relative to the package directory. Refuse
+    absolute paths and ".." components that would read files outside it.
+
+    """
+    package_dir = os.path.realpath(package_dir)
+    path = os.path.realpath(os.path.join(package_dir, relative_path))
+    if os.path.commonpath([package_dir, path]) != package_dir:
+        raise ValueError(
+            "Path %r points outside the Polygon package" % relative_path)
+    return path
+
+
+def _is_header(filename):
+    """Return whether filename is a header for some CMS language."""
+    return any(filename.endswith(extension) for extension in HEADER_EXTS)
+
+
+def _languages_for_source(filename):
+    """Return the CMS languages that compile sources named like filename."""
+    extension = os.path.splitext(filename)[1]
+    return [language for language in LANGUAGES
+            if extension in language.source_extensions]
+
+
+def _solution_compile_resources(root):
+    """Return the paths of resources Polygon compiles with solutions.
+
+    Polygon exports graders, and the headers they need, as resources with
+    the "compile" stage and the "solution" asset, for example:
+
+        <file for-types="cpp.*" path="files/grader.cpp" type="cpp.g++17">
+          <stages><stage name="compile"/></stages>
+          <assets><asset name="solution"/></assets>
+        </file>
+
+    Other resources, such as testlib.h or olymp.sty, have no such marks.
+
+    """
+    paths = []
+    for resource in root.iterfind("files/resources/file"):
+        stages = {stage.get("name", "").lower()
+                  for stage in resource.iterfind("stages/stage")}
+        assets = {asset.get("name", "").lower()
+                  for asset in resource.iterfind("assets/asset")}
+        if "compile" in stages and "solution" in assets \
+                and resource.get("path"):
+            paths.append(resource.get("path"))
+    return paths
+
+
 class PolygonTaskLoader(TaskLoader):
     """Load a task stored using the Codeforces Polygon format.
 
@@ -71,7 +124,18 @@ class PolygonTaskLoader(TaskLoader):
     Loaders assumes that checker is check.cpp and written with usage of
     testlib.h. It provides customized version of testlib.h which allows
     using Polygon checkers with CMS. Checkers will be compiled during
-    importing the contest.
+    importing the contest. A checker that calls quitp() must report a
+    fraction of the test's score in [0, 1].
+
+    Graders are taken from the resources that problem.xml marks as
+    compiled with solutions. Each grader becomes the CMS manager
+    grader.<extension> (for example grader.cpp or grader.py), headers
+    marked the same way are imported under their own names, and the task
+    only allows the languages that have a grader. As usual in CMS, a
+    Python grader is the entry point and must import the contestant's
+    module, which is named after the task.
+
+    Interactive problems are not supported.
 
     """
 
@@ -91,14 +155,120 @@ class PolygonTaskLoader(TaskLoader):
         """
         return True
 
+    def _has_interactor(self, root):
+        """Return whether the package contains a Polygon interactor."""
+        if root.find("assets/interactor") is not None:
+            return True
+        return any(os.path.exists(path) for path in (
+            os.path.join(self.path, "files", "interactor.cpp"),
+            os.path.join(self.path, "interactor.cpp"),
+        ))
+
+    def _find_checker(self, root):
+        """Return the path of the checker source, or None if there is none.
+
+        Prefer the source declared in problem.xml, then files/check.cpp,
+        then check.cpp in the package root.
+
+        """
+        source = root.find("assets/checker/source")
+        if source is not None and source.get("path"):
+            path = _package_path(self.path, source.get("path"))
+            if os.path.isfile(path):
+                return path
+        for path in (os.path.join(self.path, "files", "check.cpp"),
+                     os.path.join(self.path, "check.cpp")):
+            if os.path.isfile(path):
+                return path
+        return None
+
+    def _find_grader_files(self, root):
+        """Find the graders and headers compiled with solutions.
+
+        return: a dict mapping each CMS manager filename to its source path.
+
+        raise ValueError: if a declared file is missing, has no matching
+            CMS language, or two files map to the same manager.
+
+        """
+        declared = _solution_compile_resources(root)
+        if declared:
+            sources = [_package_path(self.path, path) for path in declared]
+        else:
+            # Hand-made packages may lack the resource metadata. Accept
+            # grader.<extension> and the headers next to it, looking in
+            # files/ first like the checker lookup does.
+            sources = []
+            extensions = sorted({language.source_extension
+                                 for language in LANGUAGES})
+            for directory in (os.path.join(self.path, "files"), self.path):
+                graders = [os.path.join(directory, "grader" + extension)
+                           for extension in extensions]
+                graders = [path for path in graders if os.path.isfile(path)]
+                if not graders:
+                    continue
+                headers = [os.path.join(directory, filename)
+                           for filename in sorted(os.listdir(directory))
+                           if _is_header(filename)
+                           and filename != "testlib.h"]
+                sources = graders + [path for path in headers
+                                     if os.path.isfile(path)]
+                break
+
+        files = {}
+        for source in sources:
+            if not os.path.isfile(source):
+                raise ValueError("Grader resource %s is missing" % source)
+            filename = os.path.basename(source)
+            if _is_header(filename):
+                manager_name = filename
+            else:
+                languages = _languages_for_source(filename)
+                if not languages:
+                    raise ValueError(
+                        "No CMS language compiles the grader %s" % source)
+                manager_name = "grader" + languages[0].source_extension
+            if manager_name in files and files[manager_name] != source:
+                raise ValueError(
+                    "Both %s and %s would be imported as manager %s" %
+                    (files[manager_name], source, manager_name))
+            files[manager_name] = source
+        return files
+
+    def _compile_checker(self, checker_src, name):
+        """Compile a testlib checker with the patched testlib.h.
+
+        return: the digest of the checker binary, or None on failure.
+
+        """
+        with tempfile.TemporaryDirectory() as tempdir:
+            # We need to override the testlib.h from the polygon
+            # package with our patched version. Since the package
+            # includes a testlib.h too, the easiest way to achieve this
+            # is to copy the checker source to a temporary directory.
+            testlib_res = importlib.resources.files(
+                "cmscontrib.loaders").joinpath("polygon/testlib.h")
+            with testlib_res.open('rb') as src, \
+                    open(os.path.join(tempdir, "testlib.h"), "wb") as dst:
+                shutil.copyfileobj(src, dst)
+            new_checker_src = os.path.join(tempdir, "check.cpp")
+            output_path = os.path.join(tempdir, "check")
+            shutil.copyfile(checker_src, new_checker_src)
+            code = subprocess.call(["g++", "-x", "c++", "-O2",
+                                    "-static", "-DCMS", "-o",
+                                    output_path, new_checker_src])
+            if code != 0:
+                return None
+            return self.file_cacher.put_file_from_path(
+                output_path, "Manager for task %s" % name)
+
     def get_task(self, get_statement=True):
         """See docstring in class Loader.
 
         """
 
         logger.info("Checking dos2unix presence")
-        i = os.system('dos2unix -V 2>/dev/null')
-        self.dos2unix_found = (i == 0)
+        self.dos2unix_found = shutil.which("dos2unix") is not None
         if not self.dos2unix_found:
             logger.error("dos2unix not found - tests will not be converted!")
 
@@ -120,11 +290,7 @@ class PolygonTaskLoader(TaskLoader):
         # A Polygon interactor speaks the Polygon file/stdio protocol. CMS
         # interactive controllers use a different START_SOLUTION protocol and
         # cannot run this binary as a normal batch checker or manager.
-        interactor_paths = (
-            os.path.join(self.path, "files", "interactor.cpp"),
-            os.path.join(self.path, "interactor.cpp"),
-        )
-        if any(os.path.exists(path) for path in interactor_paths):
+        if self._has_interactor(root):
             logger.critical(
                 "Polygon interactors are not supported by the Polygon loader "
                 "(task %s). Convert the interactor to a CMS controller.", name
@@ -169,6 +335,29 @@ class PolygonTaskLoader(TaskLoader):
         # args['token_gen_interval'] = make_timedelta(1800)
         # args['token_gen_max'] = 2
 
+        # Graders and headers do not depend on the testset, so find and
+        # store them once. A grader only exists for some languages (usually
+        # C++), so the task allows just those; cms_conf.py can override it.
+        try:
+            grader_files = self._find_grader_files(root)
+            checker_src = self._find_checker(root)
+        except ValueError as error:
+            logger.critical("Task %s: %s", name, error)
+            return None
+        grader_managers = {}
+        for filename, source in grader_files.items():
+            logger.info("Importing %s as manager %s", source, filename)
+            grader_managers[filename] = self.file_cacher.put_file_from_path(
+                source, "Manager %s for task %s" % (filename, name))
+        grader_languages = [
+            language.name for language in LANGUAGES
+            if "grader%s" % language.source_extension in grader_managers]
+        compilation_param = "grader" if grader_languages else "alone"
+        if grader_languages:
+            logger.info("Task %s uses graders, allowing only: %s",
+                        name, ", ".join(grader_languages))
+            args["allowed_languages"] = grader_languages
+
         task_cms_conf_path = os.path.join(self.path, 'files', 'cms_conf.py')
         task_cms_conf = None
         if os.path.exists(task_cms_conf_path):
@@ -181,6 +370,16 @@ class PolygonTaskLoader(TaskLoader):
             args.update(task_cms_conf.general)
 
         task = Task(**args)
+
+        checker_digest = None
+        if checker_src is not None:
+            logger.info("Checker found, compiling %s", checker_src)
+            checker_digest = self._compile_checker(checker_src, name)
+            if checker_digest is None:
+                logger.critical("Could not compile checker")
+                return None
+        else:
+            logger.info("Checker not found, using diff")
 
         judging = root.find('judging')
         testset = None
@@ -202,79 +401,13 @@ class PolygonTaskLoader(TaskLoader):
             infile_param = judging.attrib['input-file']
             outfile_param = judging.attrib['output-file']
 
-            # Polygon batch graders are source files compiled together with
-            # the contestant's submission. CMS expects these as managers
-            # named grader.<extension> (for example, grader.cpp). Polygon
-            # packages commonly put them in files/, but accept the package
-            # root as well.
-            compilation_param = "alone"
-            package_files = [self.path, os.path.join(self.path, "files")]
-            for language in LANGUAGES:
-                grader_filename = "grader%s" % language.source_extension
-                grader_src = next(
-                    (os.path.join(directory, grader_filename)
-                     for directory in package_files
-                     if os.path.isfile(os.path.join(directory, grader_filename))),
-                    None)
-                if grader_src is None:
-                    continue
-                logger.info("Batch grader found, importing %s", grader_src)
-                grader_digest = self.file_cacher.put_file_from_path(
-                    grader_src, "Grader for task %s and language %s" %
-                    (name, language.name))
-                args["managers"][grader_filename] = Manager(
-                    grader_filename, grader_digest)
-                compilation_param = "grader"
-
-            # Graders may include package-provided headers (for example,
-            # a participant API header). Import only direct files so the
-            # manager filename remains valid in the compilation sandbox.
-            for directory in package_files:
-                if not os.path.isdir(directory):
-                    continue
-                for filename in os.listdir(directory):
-                    if not any(filename.endswith(extension)
-                               for extension in HEADER_EXTS):
-                        continue
-                    header_src = os.path.join(directory, filename)
-                    if not os.path.isfile(header_src):
-                        continue
-                    header_digest = self.file_cacher.put_file_from_path(
-                        header_src,
-                        "Header manager %s for task %s" % (filename, name))
-                    args["managers"][filename] = Manager(filename, header_digest)
-
-            # Checker can be in any of these two locations.
-            checker_src = os.path.join(self.path, "files", "check.cpp")
-            if not os.path.exists(checker_src):
-                checker_src = os.path.join(self.path, "check.cpp")
-
-            if os.path.exists(checker_src):
-                logger.info("Checker found, compiling")
-                with tempfile.TemporaryDirectory() as tempdir:
-                    # We need to override the testlib.h from the polygon
-                    # package with our patched version. Since the package
-                    # includes a testlib.h too, the easiest way to achieve this
-                    # is to copy the checker source to a temporary directory.
-                    testlib_res = importlib.resources.files("cmscontrib.loaders").joinpath("polygon/testlib.h")
-                    with testlib_res.open('rb') as src, open(tempdir + "/testlib.h", "wb") as dst:
-                        shutil.copyfileobj(src, dst)
-                    new_checker_src = tempdir + '/check.cpp'
-                    output_path = tempdir + '/check'
-                    shutil.copyfile(checker_src, new_checker_src)
-                    code = subprocess.call(["g++", "-x", "c++", "-O2",
-                                            "-static", "-DCMS", "-o",
-                                            output_path, new_checker_src])
-                    if code != 0:
-                        logger.critical("Could not compile checker")
-                        return None
-                    digest = self.file_cacher.put_file_from_path(
-                        output_path,
-                        "Manager for task %s" % name)
-                args["managers"]["checker"] = Manager("checker", digest)
+            for filename, digest in grader_managers.items():
+                args["managers"][filename] = Manager(filename, digest)
+            if checker_digest is not None:
+                args["managers"]["checker"] = Manager("checker",
+                                                      checker_digest)
                 evaluation_param = "comparator"
             else:
-                logger.info("Checker not found, using diff")
                 evaluation_param = "diff"
 
             args["task_type"] = "Batch"
@@ -319,9 +452,9 @@ class PolygonTaskLoader(TaskLoader):
 
             for i in range(testcases):
                 try:
-                    infile = os.path.join(
+                    infile = _package_path(
                         self.path, _format_test_path(input_pattern, i + 1))
-                    outfile = os.path.join(
+                    outfile = _package_path(
                         self.path, _format_test_path(answer_pattern, i + 1))
                 except ValueError as error:
                     logger.critical("%s", error)
@@ -334,8 +467,7 @@ class PolygonTaskLoader(TaskLoader):
                         testset_name, name, ", ".join(missing))
                     return None
                 if self.dos2unix_found:
-                    os.system('dos2unix -q %s' % (infile, ))
-                    os.system('dos2unix -q %s' % (outfile, ))
+                    subprocess.call(["dos2unix", "-q", infile, outfile])
                 input_digest = self.file_cacher.put_file_from_path(
                     infile,
                     "Input %d for task %s" % (i, name))
