@@ -117,6 +117,19 @@ update_score = function(score_elem, task_score_elem,
     task_score_elem.addClass(get_score_class(task_score, max_score));
 };
 
+update_sidebar_task_score = function(task_score, task_score_message, max_score, is_partial) {
+    var wrap = $('.nav-list li.nav-header[data-task-name="{{ task.name }}"] .task_score_wrap');
+    wrap.find('img.task_score_loading').remove();
+    wrap.find('.task_score_badge')
+        .removeClass('undefined score_0 score_0_100 score_100')
+        .addClass(task_score === null ? 'undefined' : get_score_class(task_score, max_score))
+        .text(task_score_message);
+    if (is_partial) {
+        wrap.append(
+            $("<img class=\"task_score_loading\" src=\"{{ static_url("static", "loading.gif") }}\"/>"));
+    }
+};
+
 update_scores = function (submission_id, data) {
     var row = $(".submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
@@ -135,7 +148,17 @@ update_scores = function (submission_id, data) {
             data["public_score"], data["public_score_message"],
             data["task_public_score"], data["task_public_score_message"],
             data["task_score_is_partial"], data["max_public_score"]);
-{% if can_use_tokens %}
+
+        // The server decides which score the sidebar badge shows.
+        if (data["task_badge_score"] != null) {
+            update_sidebar_task_score(
+                data["task_badge_score"], data["task_badge_message"],
+                data["task_badge_max_score"], data["task_badge_is_partial"]);
+        } else {
+            update_sidebar_task_score(
+                null, {{ gettext("N/A")|tojson }}, null, false);
+        }
+{% if can_use_tokens or actual_phase == 3 %}
         update_score(
             row.children("td.total_score"), $("#task_score_tokened"),
             data["score"], data["score_message"],
@@ -214,9 +237,9 @@ $(document).ready(function () {
     {% if score_type.max_public_score < score_type.max_score %}
         {# Show the tokened score (alone if everything is non-public, or together with the public score). #}
     <div id="task_score_tokened"
-         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens else "undefined" }}">
+         class="{{ "span6" if two_task_scores else "span12" }}  well well-small task_score {{ get_score_class(tokened_score, score_type.max_score) if can_use_tokens or actual_phase == 3 else "undefined" }}">
         <span>
-        {% if can_use_tokens %}
+        {% if can_use_tokens and actual_phase != 3 %}
             {% trans %}Score of tokened submissions:{% endtrans %}
         {% else %}
             {% trans %}Total score:{% endtrans %}
@@ -224,7 +247,7 @@ $(document).ready(function () {
         </span>
       <br/>
         <span class="score">
-        {% if can_use_tokens %}
+        {% if can_use_tokens or actual_phase == 3 %}
             {{ score_type.format_score(tokened_score, score_type.max_score, none, translation=translation) }}
             {% if is_score_partial %}
             <img src="{{ static_url("static", "loading.gif") }}" />

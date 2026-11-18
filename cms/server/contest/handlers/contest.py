@@ -11,6 +11,8 @@
 # Copyright © 2015-2016 William Di Luigi <williamdiluigi@gmail.com>
 # Copyright © 2016 Myungwoo Chun <mc.tamaki@gmail.com>
 # Copyright © 2016 Amir Keivan Mohtashami <akmohtashami97@gmail.com>
+# Copyright © 2025 Pasit Sangprachathanarak <ouipingpasit@gmail.com>
+# Copyright © 2025 kk@cscmu-cnx
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -48,9 +50,11 @@ except:
     collections.MutableMapping = collections.abc.MutableMapping
 
 import tornado.web
+from sqlalchemy.orm import joinedload, selectinload
 
-from cms import config, TOKEN_MODE_MIXED
-from cms.db import Contest, Submission, Task, UserTest
+from cms import config, TOKEN_MODE_DISABLED, TOKEN_MODE_MIXED
+from cms.db import Contest, Dataset, Submission, Task, UserTest
+from cms.grading.scoring import task_score
 from cms.locale import filter_language_codes
 from cms.server import FileHandlerMixin
 from cms.server.contest.authentication import authenticate_request
@@ -192,6 +196,140 @@ class ContestHandler(BaseHandler):
 
         self.impersonated_by_admin = impersonated
         return participation
+
+    def _load_participation_for_scores(
+        self, participation: Participation
+    ) -> Participation | None:
+        """Load participation with relationships needed for task score computation."""
+        return (
+            self.sql_session.query(Participation)
+            .filter(Participation.id == participation.id)
+            .options(
+                joinedload(Participation.contest)
+                .joinedload(Contest.tasks)
+                .joinedload(Task.active_dataset)
+                .selectinload(Dataset.testcases),
+            )
+            .first()
+        )
+
+    def _load_official_submissions(
+        self, participation: Participation
+    ) -> dict[int, list[Submission]]:
+        """Load the official submissions of the participation, by task id.
+
+        Tokens and results are loaded together with the submissions, so that
+        computing the scores does not issue any further query. (We query the
+        submissions directly rather than going through
+        participation.submissions, which might already be loaded, without
+        tokens and results, by someone else.)
+
+        """
+        submissions = (
+            self.sql_session.query(Submission)
+            .filter(Submission.participation_id == participation.id)
+            .filter(Submission.official.is_(True))
+            .options(joinedload(Submission.token))
+            .options(joinedload(Submission.results))
+            .populate_existing()
+            .all()
+        )
+        by_task: dict[int, list[Submission]] = {}
+        for s in submissions:
+            by_task.setdefault(s.task_id, []).append(s)
+        return by_task
+
+    def _task_badge_score(
+        self,
+        participation: Participation,
+        task: Task,
+        submissions: list[Submission],
+        actual_phase: int,
+    ) -> tuple[float, float, str, bool] | None:
+        """Compute the score shown in the badge of a single task.
+
+        By default this is the public score. If an official submission has
+        been tokened (and tokens are enabled for the task), or we are in
+        analysis mode, and the task has non-public testcases, it is the
+        tokened/total score instead.
+
+        participation: the participation whose score is computed.
+        task: the task.
+        submissions: the submissions of the participation on the task
+            (with tokens and results preloaded).
+        actual_phase: the actual phase of the participation.
+
+        return: a tuple (score, max score, formatted message, is partial), or
+            None if there is nothing to show (no dataset, or no public score).
+
+        """
+        if task.active_dataset is None:
+            return None
+        score_type = task.active_dataset.score_type_object
+
+        tokens_enabled = (
+            self.contest.token_mode != TOKEN_MODE_DISABLED
+            and task.token_mode != TOKEN_MODE_DISABLED
+        )
+        has_tokened_submission = tokens_enabled and any(
+            s.official and s.tokened() for s in submissions)
+
+        if score_type.max_public_score < score_type.max_score and (
+                has_tokened_submission or actual_phase == 3):
+            score, is_partial = task_score(
+                participation, task, only_tokened=actual_phase != 3,
+                submissions=submissions)
+            max_score = score_type.max_score
+        else:
+            max_score = score_type.max_public_score
+            if max_score <= 0:
+                return None
+            score, is_partial = task_score(
+                participation, task, public=True, submissions=submissions)
+
+        message = score_type.format_score(
+            score, max_score, None, translation=self.translation)
+        return score, max_score, message, is_partial
+
+    def _compute_task_scores(
+        self,
+        participation: Participation,
+        *,
+        actual_phase: int,
+        submissions_by_task: dict[int, list[Submission]],
+    ) -> dict[int, tuple[float, float, str, bool]]:
+        """Compute per-task scores for UI task lists.
+
+        See _task_badge_score for the rules. Tasks for which there is nothing
+        to show, or whose score cannot be computed, are left out.
+
+        return: for each task id, a tuple (score, max score, formatted
+            message, is partial).
+        """
+        task_scores: dict[int, tuple[float, float, str, bool]] = {}
+        for task in participation.contest.tasks:
+            try:
+                badge = self._task_badge_score(
+                    participation, task,
+                    submissions_by_task.get(task.id, []), actual_phase)
+            except Exception:
+                # A misconfigured task must not break every contest page.
+                logger.exception(
+                    "Cannot compute the score of task %s", task.name)
+                continue
+            if badge is not None:
+                task_scores[task.id] = badge
+        return task_scores
+
+    @functools.cached_property
+    def task_scores(self) -> dict[int, tuple[float, float, str, bool]]:
+        """Load scores only when a template displays them, once per request."""
+        participation = self._load_participation_for_scores(self.current_user)
+        if participation is None:
+            return {}
+        return self._compute_task_scores(
+            participation, actual_phase=self.r_params["actual_phase"],
+            submissions_by_task=self._load_official_submissions(participation))
 
     def render_params(self):
         ret = super().render_params()

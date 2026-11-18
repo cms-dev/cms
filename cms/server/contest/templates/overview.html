@@ -180,9 +180,34 @@
 
 
 {% if actual_phase >= 0 or participation.unrestricted %}
+    {% if contest.show_task_scores_in_overview %}
+        {% set task_scores = handler.task_scores %}
+    {% endif %}
 <h2>{% trans %}Task overview{% endtrans %}</h2>
 
-<table class="table table-bordered table-striped">
+{% if contest.show_task_scores_in_overview and task_scores is defined and task_scores %}
+    {% set totals = namespace(score=0, max_score=0, partial=false) %}
+    {% for t_iter in contest.tasks if t_iter.id in task_scores %}
+        {% set totals.score = totals.score + task_scores[t_iter.id][0] %}
+        {% set totals.max_score = totals.max_score + task_scores[t_iter.id][1] %}
+        {% set totals.partial = totals.partial or task_scores[t_iter.id][3] %}
+    {% endfor %}
+<div class="task_score_container row-fluid">
+    <div id="overview_total_score"
+         class="span12 well well-small task_score {{ get_score_class(totals.score, totals.max_score) }}">
+        <span>{% trans %}Total score{% endtrans %}</span>
+        <br/>
+        <span class="score">
+            {{ "%g"|format(totals.score) }} / {{ "%g"|format(totals.max_score) }}
+        {% if totals.partial %}
+            <img src="{{ static_url("static", "loading.gif") }}" class="task_score_loading" />
+        {% endif %}
+        </span>
+    </div>
+</div>
+{% endif %}
+
+<table class="main_task_list table table-bordered table-striped">
     <!-- <colgroup>
         <col class="task"/>
         <col class="time_limit"/>
@@ -193,6 +218,9 @@
     </colgroup> -->
     <thead>
         <tr>
+{% if contest.show_task_scores_in_overview and task_scores is defined%}
+            <th>{% trans %}Score{% endtrans %}</th>
+{% endif %}
             <th>{% trans %}Task{% endtrans %}</th>
             <th>{% trans %}Name{% endtrans %}</th>
             <th>{% trans %}Time limit{% endtrans %}</th>
@@ -209,23 +237,30 @@
         {% set task_allowed_languages = t_iter.get_allowed_languages() %}
         {% set extensions = "[%s]"|format(task_allowed_languages|map("to_language")|map(attribute="source_extension")|unique|join("|")) %}
         <tr>
+{% if contest.show_task_scores_in_overview and task_scores is defined %}
+    {% if t_iter.id in task_scores %}
+            <td class="public_score {{ get_score_class(task_scores[t_iter.id][0], task_scores[t_iter.id][1]) }}">{{ task_scores[t_iter.id][2] }}{% if task_scores[t_iter.id][3] %}<img src="{{ static_url("static", "loading.gif") }}" class="task_score_loading" />{% endif %}</td>
+    {% else %}
+            <td class="public_score undefined">{% trans %}N/A{% endtrans %}</td>
+    {% endif %}
+{% endif %}
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
-    {% if t_iter.active_dataset.time_limit is not none %}
+    {% if t_iter.active_dataset is not none and t_iter.active_dataset.time_limit is not none %}
         {{ t_iter.active_dataset.time_limit|format_duration(length="long") }}
     {% else %}
         {% trans %}N/A{% endtrans %}
     {% endif %}
             </td>
             <td>
-    {% if t_iter.active_dataset.memory_limit is not none %}
+    {% if t_iter.active_dataset is not none and t_iter.active_dataset.memory_limit is not none %}
         {{ t_iter.active_dataset.memory_limit|format_size }}
     {% else %}
         {% trans %}N/A{% endtrans %}
     {% endif %}
             </td>
-            <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
+            <td>{% if t_iter.active_dataset is not none %}{{ get_task_type(dataset=t_iter.active_dataset).name }}{% else %}{% trans %}N/A{% endtrans %}{% endif %}</td>
             <td>{{ t_iter.submission_format|map("replace", ".%l", extensions)|join(" ") }}</td>
     {% if tokens_contest != TOKEN_MODE_DISABLED and tokens_tasks != TOKEN_MODE_DISABLED %}
             <td>
