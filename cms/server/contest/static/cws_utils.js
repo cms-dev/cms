@@ -94,9 +94,11 @@ CMS.CWSUtils.prototype.display_notification = function(type, timestamp,
     // TODO somehow display timestamp, subject and text
 
     var alert = $('<div class="alert alert-block notification">' +
-                  '<a class="close" data-dismiss="alert" href="#">×</a>' +
+                  '<button type="button" class="close" data-dismiss="alert">×</button>' +
                   '<h4 class="alert-heading"></h4>' +
                   '</div>');
+    alert.children("button.close").attr(
+        "aria-label", $("#translation_close").text().trim());
 
     if (type == "message") {
         alert.children("h4").text($("#translation_new_message").text());

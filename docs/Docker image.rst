@@ -15,6 +15,13 @@ dependencies. We also provide:
      users logging in via ContestWebServer and repeatedly performing actions
      such as download task statements and submitting solutions.
 
+* :gh_blob:`docker/cms-browser-test.sh`: Similar to ``cms-test.sh`` but runs the
+     browser tests instead of the unit and functional tests. The browser tests
+     start a ContestWebServer on a database filled with sample data, and drive
+     it with a real browser (Chromium, through Playwright) to check that the
+     contestant pages work, including their JavaScript. See
+     :ref:`docker-image_running-browser-tests`.
+
 * :gh_blob:`docker/cms-dev.sh`: This file uses :gh_blob:`docker/docker-compose.dev.yml` to
      spawn a database (**persisted** in the local ``.dev/postgres-data`` folder
      within the repository) as well as a CMS container that only runs ``bash``,
@@ -83,6 +90,50 @@ To delete the ``cms-testdb-1`` container after testing you can run:
 .. sourcecode:: bash
 
     docker rm -f cms-testdb-1
+
+.. _docker-image_running-browser-tests:
+
+Running browser tests
+---------------------
+
+The browser tests (in :gh_blob:`cmstestsuite/browser_tests`) are not part of the
+command above. Run them with:
+
+.. sourcecode:: bash
+
+    docker/cms-browser-test.sh
+
+or, with the full command:
+
+.. sourcecode:: bash
+
+    docker compose -p someprojectname -f docker/docker-compose.test.yml run --build --rm browsertestcms
+
+The same notes about ``-p``, ``sudo`` and cleaning up the database container
+apply as above.
+
+The tests recreate the test database, fill it with a small contest (a few users,
+two tasks, already evaluated submissions, an announcement, and so on), start a
+ContestWebServer on it and then open its pages in a browser. They do not start
+any evaluation service, so submissions made during the tests are never graded.
+A test fails if a page logs a JavaScript error or fails to load one of its
+static files. Tests look for elements by their role, label or text and not by
+CSS class, so that they keep working when the front-end framework changes.
+
+If you want to run them without Docker, install the extra dependencies, download
+the browser, point ``CMS_CONFIG`` to a configuration whose database name ends
+with ``fortesting`` (the tests refuse to run on any other database, since they
+delete its content), and run pytest on the directory:
+
+.. sourcecode:: bash
+
+    pip install ".[browser-test]"
+    playwright install chromium
+    pytest cmstestsuite/browser_tests
+
+Plain ``pytest`` does not collect them. To watch the browser, add ``--headed``;
+to see the output of the ContestWebServer used by the tests, set the
+``CMS_BROWSER_TEST_VERBOSE`` environment variable.
 
 Developing CMS
 ==============

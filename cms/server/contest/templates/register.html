@@ -163,7 +163,7 @@ $(document).ready(function() {
                     <div id="username-input" class="control-group">
                         <label class="control-label" for="username">{% trans %}Username{% endtrans %}</label>
                         <div class="controls">
-                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_-]+$" type="text" class="input-xlarge" name="username" id="username">
+                            <input required minlength="1" maxlength="{{ MAX_INPUT_LENGTH }}" pattern="^[A-Za-z0-9_\-]+$" type="text" class="input-xlarge" name="username" id="username">
                             <span class="help-block"></span>
                         </div>
                     </div>

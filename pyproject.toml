@@ -64,6 +64,11 @@ devel = [
     # "Sphinx>=1.8,<1.9",
 ]
 
+# Only for the browser tests in cmstestsuite/browser_tests.
+browser-test = [
+    "pytest-playwright>=0.5,<1",
+]
+
 [build-system]
 requires = ["setuptools==82.0.0", "babel==2.12.1"]
 build-backend = "setuptools.build_meta"

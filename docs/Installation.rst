@@ -158,6 +158,9 @@ If you want to develop CMS, you can use :samp:`./install.py --dir={install_dir} 
 This includes development dependencies. It also makes the installation linked to the
 source directory, so you don't need to reinstall if you edit the source.
 
+The browser tests need some more dependencies, which are not installed by
+``--devel``; see :ref:`docker-image_running-browser-tests`.
+
 
 Configuring the worker machines
 ===============================

@@ -28,6 +28,10 @@ jobs:
         run: |
           docker compose -p cms -f docker/docker-compose.test.yml run --rm testcms
 
+      - name: Run browser tests
+        run: |
+          docker compose -p cms -f docker/docker-compose.test.yml run --rm browsertestcms
+
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
