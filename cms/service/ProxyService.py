@@ -567,8 +567,8 @@ class ProxyService(TriggeredService[ProxyOperation, ProxyExecutor]):
             # ignore this update.
             if task.contest_id != self.contest_id:
                 logger.debug("Ignoring dataset change for task %d of contest "
-                             "%d (this ProxyService considers contest %d "
-                             "only).", task_id, task.contest.id,
+                             "%s (this ProxyService considers contest %d "
+                             "only).", task_id, task.contest_id,
                              self.contest_id)
                 return
 
