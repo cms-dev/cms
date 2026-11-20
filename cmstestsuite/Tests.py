@@ -54,7 +54,8 @@ LANG_PASCAL = "Pascal / fpc"
 LANG_PHP = "PHP"
 LANG_PYTHON3 = "Python 3 / CPython"
 LANG_PYPY3 = "Python 3 / PyPy"
-LANG_RUST = "Rust"
+LANG_RUST_2021 = "Rust (2021 edition)"
+LANG_RUST_2024 = "Rust (2024 edition)"
 LANG_C_SHARP = "C# / Mono"
 
 ALL_LANGUAGES = (
@@ -66,13 +67,13 @@ ALL_LANGUAGES = (
     LANG_PASCAL,
     LANG_PHP,
     LANG_PYTHON3, LANG_PYPY3,
-    LANG_RUST,
+    LANG_RUST_2021, LANG_RUST_2024,
 )
 
 # Languages which support compilation with a manager/grader.
 # TODO: this should be the same as `ALL_LANGUAGES`.
 MANAGER_LANGUAGES = [
-    lang for lang in ALL_LANGUAGES if lang not in (LANG_HS, LANG_PHP, LANG_RUST)
+    lang for lang in ALL_LANGUAGES if lang not in (LANG_HS, LANG_PHP, LANG_RUST_2021, LANG_RUST_2024)
 ]
 
 # Languages for which solutions to be linked to a grader for communication tasks
