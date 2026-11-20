@@ -64,6 +64,8 @@ from cms.db import (
     FilenameSchemaArray,
     Digest,
     SessionGen,
+    Admin,
+    Team,
     Contest,
     Submission,
     SubmissionResult,
@@ -262,9 +264,49 @@ class DumpImporter:
 
                 assert self.datas["_version"] == model_version
 
+                # Only root contests were selected for export; shared users
+                # and teams can also reference unrelated contests in old dumps.
+                contest_keys = {key for key in self.datas["_objects"]
+                                if self.datas[key]["_class"] == "Contest"}
+                import_keys = set()
+                queue = list(self.datas["_objects"])
+                while queue:
+                    key = queue.pop()
+                    if key in import_keys:
+                        continue
+                    data = self.datas[key]
+                    if ((data["_class"] == "Contest" and key not in contest_keys)
+                            or (data.get("contest") is not None
+                                and data["contest"] not in contest_keys)):
+                        continue
+                    import_keys.add(key)
+                    cls = getattr(class_hook, data["_class"])
+                    for prp in cls._rel_props:
+                        references = data.get(prp.key)
+                        if isinstance(references, str):
+                            queue.append(references)
+                        elif isinstance(references, list):
+                            queue.extend(references)
+                        elif isinstance(references, dict):
+                            queue.extend(references.values())
+
                 self.objs = dict()
+                reused_keys = set()
+                shared_classes = {"Admin": (Admin, "username"),
+                                  "User": (User, "username"),
+                                  "Team": (Team, "code")}
                 for id_, data in self.datas.items():
-                    if not id_.startswith("_"):
+                    if id_ in import_keys:
+                        if data["_class"] in shared_classes:
+                            cls, field = shared_classes[data["_class"]]
+                            existing = session.query(cls).filter(
+                                getattr(cls, field) == data[field]).one_or_none()
+                            if existing is not None:
+                                self.objs[id_] = existing
+                                reused_keys.add(id_)
+                                logger.info("Reusing existing %s %s.",
+                                            data["_class"], data[field])
+                                continue
                         self.objs[id_] = self.import_object(data)
 
                 for k, v in list(self.objs.items()):
@@ -289,7 +331,8 @@ class DumpImporter:
                         del self.objs[k]
 
                 for id_, data in self.datas.items():
-                    if not id_.startswith("_") and id_ in self.objs:
+                    # Preserve existing memberships, credentials and permissions.
+                    if id_ in self.objs and id_ not in reused_keys:
                         self.add_relationships(data, self.objs[id_])
 
                 contest_id = list()

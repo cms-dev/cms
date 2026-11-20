@@ -183,9 +183,6 @@ class DumpExporter:
                 )
                 self.tasks_ids = [task.id for task in tasks]
         else:
-            # FIXME: this is ATM broken, because if you export a contest, you
-            # then export the users who participated in it and then all of the
-            # contests those users participated in.
             self.contests_ids = contest_ids
             self.users_ids = []
             self.tasks_ids = []
@@ -376,6 +373,10 @@ class DumpExporter:
             elif isinstance(val, other_cls):
                 data[prp.key] = self.get_id(val)
             elif isinstance(val, list):
+                # Shared users and teams must not pull in other contests.
+                if other_cls is Participation:
+                    val = [i for i in val
+                           if i.contest_id in self.contests_ids]
                 data[prp.key] = list(self.get_id(i) for i in val)
             elif isinstance(val, dict):
                 data[prp.key] = \
