@@ -341,8 +341,7 @@ class SubmissionResult(Base):
         nullable=True)
 
     # The output from the sandbox (to allow localization the first item
-    # of the list is a format string, possibly containing some "%s",
-    # that will be filled in using the remaining items of the list).
+    # of the list is a message ID, and the rest are format parameters).
     compilation_text: list[str] = Column(
         ARRAY(String),
         nullable=False,
@@ -773,9 +772,8 @@ class Evaluation(Base):
         nullable=True)
 
     # The output from the grader, usually "Correct", "Time limit", ...
-    # (to allow localization the first item of the list is a format
-    # string, possibly containing some "%s", that will be filled in
-    # using the remaining items of the list).
+    # (to allow localization the first item of the list is a message ID, and
+    # the rest are format parameters).
     text: list[str] = Column(
         ARRAY(String),
         nullable=False,

@@ -55,7 +55,7 @@ def get_controller_text(sandbox):
                 score = float(line[len("SCORE: ") :].strip())
             elif line.startswith("USER_MESSAGE: "):
                 assert not text
-                text = [line[len("USER_MESSAGE: ") :].strip()]
+                text = ["custom:" + line[len("USER_MESSAGE: ") :].strip()]
             elif line.startswith("ADMIN_MESSAGE: "):
                 assert admin_text is None
                 admin_text = line[len("ADMIN_MESSAGE: ") :].strip()
